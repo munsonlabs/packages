@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Video Player Demo</title>
+    <!-- Prebid's own test build, for the "Header bidding" entry's `headerBidding` prop. -->
+    <script>
+      window.pbjs = window.pbjs || {}
+      window.pbjs.que = window.pbjs.que || []
+      // Debug mode routes Prebid's auction/bid logging through console.log/info, which
+      // usePrebidLog.ts captures for the demo's "Prebid" event log tab.
+      window.pbjs.que.push(function () {
+        window.pbjs.setConfig({ debug: true })
+      })
+    </script>
+    <script async src="//cdn.jsdelivr.net/npm/prebid.js@latest/dist/not-for-prod/prebid.js"></script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

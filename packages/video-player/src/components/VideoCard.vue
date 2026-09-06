@@ -1,0 +1,70 @@
+<script setup lang="ts">
+import { ref, nextTick } from 'vue'
+import { hasStage } from '@/composables/registries/stageRegistry'
+import { dispatchStageEvent } from '@/composables/stage/useStageBus'
+import { useForwardedPlayer } from '@/composables/useForwardedPlayer'
+import { WIN_VIDEO_SELECT } from '@/constants'
+import { resolveGestureMuted } from '@/utils/audioPreference'
+import VideoPlaceholder from '@/components/VideoPlaceholder.vue'
+import VideoPlayer from '@/components/VideoPlayer.vue'
+import type { StateChangeEvent, VideoSelectDetail } from '@/types/player'
+
+const props = withDefaults(defineProps<VideoSelectDetail>(), {
+  lazy: true,
+  action: null,
+  muted: undefined,
+  controls: undefined,
+})
+
+const emit = defineEmits<{ 'state-change': [event: StateChangeEvent] }>()
+
+const activated = ref(false)
+
+/** Set only by a real click - lets that path mount per the stored audio preference instead of the autoplay-implies-muted rule. */
+const userActivated = ref(false)
+
+function onPlaceholderClick(): void {
+  userActivated.value = true
+  activated.value = true
+}
+
+/** Mounts the real player, then waits a tick so `playerRef` is live before the caller's method runs. */
+async function ensureMounted(): Promise<void> {
+  if (activated.value) return
+  activated.value = true
+  await nextTick()
+}
+
+const { playerRef, forwarded } = useForwardedPlayer(async (key) => {
+  /** hasStage mode plays through VideoStage, not this instance. */
+  if (hasStage.value) {
+    if (key === 'togglePlay')
+      dispatchStageEvent(WIN_VIDEO_SELECT, { ...props, fromGesture: true, autoplay: true, muted: resolveGestureMuted(props.muted) })
+    return false
+  }
+  await ensureMounted()
+  return true
+})
+
+defineExpose(forwarded)
+</script>
+
+<template>
+  <VideoPlaceholder v-if="hasStage" v-bind="props" />
+  <template v-else>
+    <VideoPlaceholder
+      v-if="props.lazy && !activated && !props.autoplay"
+      v-bind="props"
+      @click.capture="onPlaceholderClick"
+      @enter-view="activated = true"
+    />
+    <VideoPlayer
+      v-else
+      ref="playerRef"
+      v-bind="props"
+      :autoplay="activated || props.autoplay"
+      :muted="resolveGestureMuted(props.muted, userActivated)"
+      @state-change="emit('state-change', $event)"
+    />
+  </template>
+</template>

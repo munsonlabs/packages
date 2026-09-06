@@ -1,0 +1,31 @@
+.git
+.github
+.vscode
+
+# Host node_modules — the container installs its own via vp install
+node_modules
+apps/*/node_modules
+apps/demos/*/node_modules
+packages/*/node_modules
+docs/node_modules
+
+# Built output — regenerated at runtime by dev servers or build steps
+dist
+apps/demos/*/dist
+packages/*/dist
+
+# Local env / secrets
+.env.local
+**/.env.local
+
+# Nuxt (docs service)
+.nuxt
+.output
+.cache
+
+# Test artefacts
+test-results
+playwright-report
+
+# macOS
+.DS_Store

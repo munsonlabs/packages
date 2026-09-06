@@ -1,0 +1,56 @@
+/*
+ * Shared by VideoStage (.stage--pin-*) and VideoPlayer (.player--pin-*) - both apply the same
+ * corner offset/tuck-transform math to their own pinned box, just against different BEM prefixes.
+ * The pinned dismiss/scroll-to buttons themselves live in PinnedControls.vue's own scoped style.
+ */
+
+.stage--pin-bottom-right,
+.stage--pin-bottom-left,
+.stage--pin-top-right,
+.stage--pin-top-left,
+.player--pin-bottom-right,
+.player--pin-bottom-left,
+.player--pin-top-right,
+.player--pin-top-left {
+  border-radius: var(--mlv-radius, 12px);
+  transition: transform 0.18s ease;
+}
+
+.stage--pin-bottom-right,
+.player--pin-bottom-right {
+  bottom: 1.25rem;
+  right: 1.25rem;
+}
+
+.stage--pin-bottom-left,
+.player--pin-bottom-left {
+  bottom: 1.25rem;
+  left: 1.25rem;
+}
+
+.stage--pin-top-right,
+.player--pin-top-right {
+  top: 1.25rem;
+  right: 1.25rem;
+}
+
+.stage--pin-top-left,
+.player--pin-top-left {
+  top: 1.25rem;
+  left: 1.25rem;
+}
+
+/* Slid mostly off-screen, leaving a sliver visible, while a HideMarker in the page is in view. */
+.stage--pin-bottom-right.stage--tucked,
+.stage--pin-top-right.stage--tucked,
+.player--pin-bottom-right.player--tucked,
+.player--pin-top-right.player--tucked {
+  transform: translateX(calc(100% - var(--mlv-stage-tuck, 32px)));
+}
+
+.stage--pin-bottom-left.stage--tucked,
+.stage--pin-top-left.stage--tucked,
+.player--pin-bottom-left.player--tucked,
+.player--pin-top-left.player--tucked {
+  transform: translateX(calc(-100% + var(--mlv-stage-tuck, 32px)));
+}

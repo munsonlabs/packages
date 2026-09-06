@@ -1,0 +1,35 @@
+{
+  "name": "packages",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Munson Labs public npm packages",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*",
+    "docs",
+    "apps/demos/*"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "vp run -r dev",
+    "build": "vp run -r build",
+    "test": "vp run -r test",
+    "check": "vp run -r check",
+    "lint": "vp run -r lint",
+    "fmt": "vp run -r fmt",
+    "publish:local": "shipkit deploy --local --scope @munsonlabs/",
+    "publish": "shipkit deploy --commit",
+    "prepare": "vp config"
+  },
+  "devDependencies": {
+    "@munsonlabs/shipkit": "*",
+    "vite-plus": "0.3.2"
+  },
+  "overrides": {
+    "playwright": "1.62.1",
+    "vite": "npm:@voidzero-dev/vite-plus-core@0.3.2",
+    "vitest": "4.1.11",
+    "vue": "3.5.33"
+  },
+  "packageManager": "npm@11.11.1"
+}

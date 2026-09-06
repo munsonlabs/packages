@@ -1,0 +1,15 @@
+@import 'tailwindcss';
+@import '@nuxt/ui';
+
+@theme {
+  --font-sans: 'Geist', sans-serif;
+}
+
+[data-reka-navigation-menu] {
+  margin: 0 auto;
+}
+
+[data-reka-navigation-menu] ul {
+  display: flex;
+  gap: 1rem;
+}

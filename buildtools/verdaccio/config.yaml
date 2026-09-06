@@ -1,0 +1,37 @@
+storage: /verdaccio/storage
+plugins: /verdaccio/plugins
+
+auth:
+  htpasswd:
+    file: /verdaccio/storage/htpasswd
+    max_users: 1000
+
+uplinks:
+  npmjs:
+    url: https://registry.npmjs.org/
+
+packages:
+  # @munsonlabs/* packages are local-only here — never proxy to npmjs
+  '@munsonlabs/*':
+    access: $anonymous
+    publish: $anonymous
+    allow_republish: true
+
+  # Everything else proxies through to the public registry
+  '**':
+    access: $all
+    publish: $authenticated
+    proxy: npmjs
+
+publish:
+  allow_offline: false
+  allow_republish: true
+
+server:
+  keepAliveTimeout: 60
+
+middlewares:
+  audit:
+    enabled: true
+
+log: { type: stdout, format: pretty, level: http }

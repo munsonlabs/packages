@@ -1,0 +1,75 @@
+name: Deploy to GitHub Pages
+
+on:
+  # Only rebuild the site when something that ends up in it changed. Anything
+  # missed here can still be deployed by hand via the workflow_dispatch below.
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'apps/demos/video-player/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
+      - '.node-version'
+      - '.github/workflows/pages.yml'
+      - '.github/actions/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ./.github/actions/setup
+
+      - uses: actions/configure-pages@v6
+        id: pages
+
+      - name: Build demo
+        run: vp run --filter video-player-demo build
+        env:
+          # Read by shipkit's getPackageBase() as the Vite `base`.
+          VITE_BASE_VIDEO_PLAYER_DEMO: /${{ github.event.repository.name }}/demo/
+
+      # `generate`, not `build` — static prerender, no nitro server or better-sqlite3 at runtime.
+      - name: Generate docs
+        run: npm run generate
+        working-directory: docs
+        env:
+          NUXT_APP_BASE_URL: /${{ github.event.repository.name }}/
+          NUXT_SITE_URL: ${{ steps.pages.outputs.base_url }}
+
+      - name: Assemble site
+        run: |
+          cp -r apps/demos/video-player/dist docs/.output/public/demo
+          # Nuxt emits _nuxt/, _payload.json and _og/, which Jekyll would drop.
+          touch docs/.output/public/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: docs/.output/public
+          # v4+ excludes dotfiles by default, which would drop .nojekyll.
+          include-hidden-files: true
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

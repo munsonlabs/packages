@@ -1,0 +1,87 @@
+name: munsonlabs
+
+services:
+  traefik:
+    image: traefik:v3
+    command:
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+    ports:
+      - 80:80
+      - 8080:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - munsonlabs-network-shared
+
+  verdaccio:
+    image: verdaccio/verdaccio:5
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.verdaccio.rule=Host(`munsonlabs-registry.localhost`)
+      - traefik.http.services.verdaccio.loadbalancer.server.port=4873
+    volumes:
+      - ../verdaccio:/verdaccio/conf
+      - verdaccio-storage:/verdaccio/storage
+    networks:
+      - munsonlabs-network-shared
+
+  docs:
+    build:
+      context: ../../docs
+      dockerfile: ./../buildtools/containers/Dockerfile
+    stdin_open: true
+    tty: true
+    command: npm run dev
+    env_file:
+      - path: ../../docs/.env.local
+        required: false
+    environment:
+      - NUXT_SITE_URL=http://munsonlabs-docs.localhost
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.docs.rule=Host(`munsonlabs-docs.localhost`)
+      - traefik.http.services.docs.loadbalancer.server.port=3000
+    volumes:
+      - ../../docs:/usr/src/app
+      - ../../packages:/usr/src/packages
+      - /usr/src/app/node_modules
+    networks:
+      - munsonlabs-network-shared
+
+  web:
+    build:
+      context: ../..
+      dockerfile: ./buildtools/containers/Dockerfile
+    stdin_open: true
+    tty: true
+    restart: always
+    command: vp run -r --parallel dev
+    environment:
+      - VERDACCIO_URL=http://verdaccio:4873
+    labels:
+      - traefik.enable=true
+
+      # video-player demo — munsonlabs-video-player.localhost (port 5176)
+      - traefik.http.routers.video-player.rule=Host(`munsonlabs-video-player.localhost`)
+      - traefik.http.routers.video-player.service=video-player-svc
+      - traefik.http.services.video-player-svc.loadbalancer.server.port=5176
+    volumes:
+      - ../../:/usr/src/app
+      # shadow host node_modules with container-installed ones (avoids macOS/Linux binary conflicts)
+      - /usr/src/app/node_modules
+      - /usr/src/app/apps/demos/video-player/node_modules
+      - /usr/src/app/packages/shipkit/node_modules
+      - /usr/src/app/packages/video-player/node_modules
+      - /usr/src/app/docs/node_modules
+    networks:
+      - munsonlabs-network-shared
+
+volumes:
+  verdaccio-storage:
+
+networks:
+  munsonlabs-network-shared:
+    external: true

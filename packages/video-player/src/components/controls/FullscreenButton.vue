@@ -1,0 +1,42 @@
+<script setup lang="ts">
+import { toRef } from 'vue'
+import { IconFullscreenEnter, IconFullscreenExit } from '@/components/icons'
+import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/controls/useResolvedPlayer'
+
+const props = defineProps<ResolvedPlayerProps>()
+const player = useResolvedPlayer(toRef(props, 'player'), toRef(props, 'for'))
+</script>
+
+<template>
+  <button
+    type="button"
+    class="mlv-fullscreen-button"
+    :aria-label="player?.isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'"
+    @click="player?.toggleFullscreen()"
+  >
+    <slot :is-fullscreen="player?.isFullscreen ?? false">
+      <IconFullscreenExit v-if="player?.isFullscreen" />
+      <IconFullscreenEnter v-else />
+    </slot>
+  </button>
+</template>
+
+<style scoped>
+:where(.mlv-fullscreen-button) {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:where(.mlv-fullscreen-button):focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+:where(.mlv-fullscreen-button svg) {
+  width: 1em;
+  height: 1em;
+}
+</style>

@@ -1,0 +1,62 @@
+{
+  "name": "@munsonlabs/shipkit",
+  "version": "0.1.6",
+  "private": false,
+  "license": "MIT",
+  "bin": {
+    "shipkit": "./dist/index.mjs"
+  },
+  "files": [
+    "dist",
+    "src/tsconfig",
+    "src/vite",
+    "src/utils"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
+    },
+    "./vite/*": {
+      "import": "./src/vite/*.ts"
+    },
+    "./vite/shared": {
+      "import": "./src/vite/shared/index.ts"
+    },
+    "./tsconfig/*": {
+      "default": "./src/tsconfig/*.json"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "lint": "vp lint",
+    "fmt": "vp fmt",
+    "fmt:check": "vp fmt --check",
+    "check": "vp check",
+    "typecheck": "vp check --types",
+    "prepublishOnly": "vp pack",
+    "dev": "vp pack --watch",
+    "test": "vp test",
+    "test:watch": "vp test --watch"
+  },
+  "dependencies": {
+    "@changesets/cli": "^2.27.0",
+    "@vitejs/plugin-vue": "^6.0.6",
+    "vue": "^3.5.0",
+    "vue-tsc": "^3.2.5"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "@vitejs/devtools": "0.7.3",
+    "@vue/test-utils": "^2.4.6",
+    "cac": "^6.7.14",
+    "happy-dom": "^20.8.4",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "vite-plus": "*"
+  }
+}

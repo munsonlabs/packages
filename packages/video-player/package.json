@@ -1,0 +1,81 @@
+{
+  "name": "@munsonlabs/video-player",
+  "version": "0.2.2",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "./dist/elements/**",
+    "./dist/**/*.css"
+  ],
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
+    },
+    "./element": {
+      "source": "./src/elements/index.ts",
+      "import": "./dist/elements/index.mjs",
+      "types": "./dist/elements/index.d.mts"
+    },
+    "./element/core": {
+      "source": "./src/elements/core.ts",
+      "import": "./dist/elements/core.mjs",
+      "types": "./dist/elements/core.d.mts"
+    },
+    "./element/controls": {
+      "source": "./src/elements/controls.ts",
+      "import": "./dist/elements/controls.mjs",
+      "types": "./dist/elements/controls.d.mts"
+    },
+    "./style": {
+      "types": "./src/style.d.ts",
+      "import": "./dist/style.css"
+    },
+    "./style/core": {
+      "types": "./src/style.d.ts",
+      "import": "./dist/elements/core.css"
+    },
+    "./style/controls": {
+      "types": "./src/style.d.ts",
+      "import": "./dist/elements/controls.css"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "AUTO_ENTRIES=1 vp pack --watch",
+    "clean": "rm -rf dist",
+    "lint": "vp lint",
+    "fmt": "vp fmt",
+    "typecheck": "vp check --types",
+    "check": "vp check",
+    "test": "vp test",
+    "test:watch": "vp test --watch"
+  },
+  "devDependencies": {
+    "@munsonlabs/shipkit": "*",
+    "dashjs": "^4.7.4",
+    "hls.js": "^1.6.16",
+    "vue": "3.5.33"
+  },
+  "peerDependencies": {
+    "dashjs": "^4.7.4",
+    "hls.js": "^1.6.16",
+    "vue": ">=3"
+  },
+  "peerDependenciesMeta": {
+    "dashjs": {
+      "optional": true
+    },
+    "hls.js": {
+      "optional": true
+    }
+  }
+}

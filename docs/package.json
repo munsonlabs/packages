@@ -1,0 +1,17 @@
+{
+  "name": "docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "dev:tunnel": "nuxt dev --tunnel",
+    "clean": "nuxt cleanup",
+    "build": "nuxt build"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.6.2",
+    "docus": "latest",
+    "nuxt": "^4.3.1"
+  }
+}

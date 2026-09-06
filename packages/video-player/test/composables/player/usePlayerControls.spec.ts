@@ -1,0 +1,63 @@
+import { describe, it, expect, vi } from 'vite-plus/test'
+import { ref } from 'vue'
+import { usePlayerControls } from '@/composables/player/usePlayerControls'
+import type { PlaybackAdapter } from '@/types/playback'
+
+function makeAdapter(overrides: Partial<PlaybackAdapter> = {}): PlaybackAdapter {
+  return {
+    play: vi.fn(),
+    pause: vi.fn(),
+    paused: () => false,
+    ...overrides,
+  } as unknown as PlaybackAdapter
+}
+
+function setup(adapter: PlaybackAdapter | null, isPlaying = ref(false)) {
+  const isReady = ref(true)
+  const total = ref(100)
+  const isLooping = ref(false)
+  const playbackRate = ref(1)
+  const controls = usePlayerControls(() => adapter, isReady, total, isLooping, playbackRate, isPlaying)
+  return { controls, isPlaying }
+}
+
+describe('togglePlay', () => {
+  it('calls play() when isPlaying is false', () => {
+    const adapter = makeAdapter()
+    const { controls } = setup(adapter, ref(false))
+    controls.togglePlay()
+    expect(adapter.play).toHaveBeenCalledOnce()
+    expect(adapter.pause).not.toHaveBeenCalled()
+  })
+
+  it('calls pause() when isPlaying is true', () => {
+    const adapter = makeAdapter()
+    const { controls } = setup(adapter, ref(true))
+    controls.togglePlay()
+    expect(adapter.pause).toHaveBeenCalledOnce()
+    expect(adapter.play).not.toHaveBeenCalled()
+  })
+
+  /**
+   * Regression test: a native <video>'s raw `.paused` DOM property flips to false synchronously
+   * the instant play() is called, before its returned promise settles — branching on that
+   * instead of the reactive isPlaying state would call pause() while a play() is still in
+   * flight (e.g. autoplay racing an early click), aborting the promise with an AbortError.
+   */
+  it('does not call pause() while a play() is in flight but isPlaying has not caught up yet', () => {
+    const adapter = makeAdapter({ paused: () => false })
+    const { controls } = setup(adapter, ref(false))
+    controls.togglePlay()
+    expect(adapter.play).toHaveBeenCalledOnce()
+    expect(adapter.pause).not.toHaveBeenCalled()
+  })
+
+  it('does nothing when the player is not ready', () => {
+    const adapter = makeAdapter()
+    const isReady = ref(false)
+    const controls = usePlayerControls(() => adapter, isReady, ref(100), ref(false), ref(1), ref(false))
+    controls.togglePlay()
+    expect(adapter.play).not.toHaveBeenCalled()
+    expect(adapter.pause).not.toHaveBeenCalled()
+  })
+})

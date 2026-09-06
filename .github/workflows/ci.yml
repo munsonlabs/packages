@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  # main/beta are covered by Release, which calls this workflow — without the
+  # ignore they would run it twice on every push.
+  push:
+    branches-ignore: [main, beta]
+  pull_request:
+  workflow_call:
+    inputs:
+      upload-dist:
+        description: Upload packages/*/dist for the caller's later jobs to consume.
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - run: vp run -r build
+
+      # Release consumes this in its version/publish jobs; branch and PR runs
+      # have no use for it, so they skip the upload.
+      - if: inputs.upload-dist
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: packages/*/dist
+          retention-days: 1
+
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+        with:
+          nuxt: 'false'
+      - run: vp run -r check
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+        with:
+          nuxt: 'false'
+          playwright: 'true'
+      - run: vp run -r test

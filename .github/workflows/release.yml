@@ -1,0 +1,99 @@
+name: Release
+
+on:
+  push:
+    branches: [main, beta]
+
+permissions:
+  contents: write
+
+jobs:
+  # The same checks CI runs on every other branch, as one definition rather
+  # than a second copy that can drift out of step with it. Its build job also
+  # uploads the dist artifact the jobs below download, so nothing is built twice.
+  verify:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    uses: ./.github/workflows/ci.yml
+    with:
+      upload-dist: true
+
+  # Environment approval is requested before any step in a job runs, so this
+  # check cannot live inside `version` — it would still ask for an approval on
+  # commits with nothing to release, which is how approvals become reflexive.
+  changesets:
+    needs: verify
+    runs-on: ubuntu-latest
+    outputs:
+      pending: ${{ steps.check.outputs.pending }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: check
+        run: |
+          n=$(find .changeset -maxdepth 1 -name '*.md' ! -name 'README.md' | wc -l)
+          pending=$([ "$n" -gt 0 ] && echo true || echo false)
+          echo "$n pending changeset(s) -> pending=$pending"
+          echo "pending=$pending" >> "$GITHUB_OUTPUT"
+
+  # Manual gate: requires an approval in the "release-version" Environment.
+  # `publish` needs no equivalent guard — a skipped dependency skips it too.
+  version:
+    needs: [verify, changesets]
+    if: needs.changesets.outputs.pending == 'true'
+    runs-on: ubuntu-latest
+    environment: release-version
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: voidzero-dev/setup-vp@v1.19.0
+        with:
+          node-version-file: .node-version
+          cache: true
+          run-install: false
+
+      - run: npm ci --prefer-offline
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: packages
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Version packages
+        run: node packages/shipkit/dist/index.mjs deploy --version
+
+  # Manual gate: requires a separate approval in the "release-publish" Environment.
+  publish:
+    needs: version
+    runs-on: ubuntu-latest
+    environment: release-publish
+    steps:
+      # `version` just pushed a new commit to this branch — check out the
+      # branch tip, not the original commit that triggered this run.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - uses: voidzero-dev/setup-vp@v1.19.0
+        with:
+          node-version-file: .node-version
+          cache: true
+          run-install: false
+
+      - run: npm ci --prefer-offline
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: packages
+
+      - name: Publish to npm
+        run: node packages/shipkit/dist/index.mjs deploy --publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

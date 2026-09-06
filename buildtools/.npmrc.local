@@ -1,0 +1,8 @@
+# Local development overrides for Verdaccio
+
+min-release-age=1
+
+@munsonlabs:registry=${VERDACCIO_URL}
+
+//munsonlabs-registry.localhost/:_authToken=local
+//verdaccio:4873/:_authToken=local

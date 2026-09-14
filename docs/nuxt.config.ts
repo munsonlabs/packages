@@ -13,7 +13,7 @@ export default defineNuxtConfig({
         {
           type: 'importmap',
           innerHTML: JSON.stringify({
-            imports: { vue: 'https://unpkg.com/vue@3/dist/vue.esm-browser.js' },
+            imports: { vue: 'https://unpkg.com/vue@3/dist/vue.runtime.esm-browser.prod.js' },
           }),
         },
       ],

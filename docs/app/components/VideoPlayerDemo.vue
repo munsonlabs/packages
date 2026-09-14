@@ -29,7 +29,13 @@ const state = ref<'loading' | 'loaded' | 'error'>('loading')
 
 onMounted(async () => {
   try {
-    await import(/* @vite-ignore */ `https://esm.sh/@munsonlabs/video-player@${props.version}/element`)
+    // `?external=vue` is load-bearing. Without it esm.sh resolves Vue itself, to the ESM
+    // *bundler* build, whose compile-time flags nothing substitutes on a CDN — the first
+    // `connectedCallback` then dies with `ReferenceError: __VUE_PROD_DEVTOOLS__ is not
+    // defined` and the element sits in the DOM registered and empty. With it, the bundle
+    // imports bare `vue` and the import map in nuxt.config resolves that to a browser
+    // build with the flags already baked in.
+    await import(/* @vite-ignore */ `https://esm.sh/@munsonlabs/video-player@${props.version}/element?external=vue`)
     state.value = 'loaded'
   } catch {
     state.value = 'error'

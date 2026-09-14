@@ -29,13 +29,17 @@ const state = ref<'loading' | 'loaded' | 'error'>('loading')
 
 onMounted(async () => {
   try {
-    // `?external=vue` is load-bearing. Without it esm.sh resolves Vue itself, to the ESM
-    // *bundler* build, whose compile-time flags nothing substitutes on a CDN — the first
-    // `connectedCallback` then dies with `ReferenceError: __VUE_PROD_DEVTOOLS__ is not
-    // defined` and the element sits in the DOM registered and empty. With it, the bundle
-    // imports bare `vue` and the import map in nuxt.config resolves that to a browser
-    // build with the flags already baked in.
-    await import(/* @vite-ignore */ `https://esm.sh/@munsonlabs/video-player@${props.version}/element?external=vue`)
+    // Vue's esm-bundler build expects its compile-time feature flags to be substituted by a
+    // bundler, and nothing does that on a CDN. Vue defines them itself in initFeatureFlags(),
+    // but that runs inside createApp() — and VueElement._mount reads __VUE_PROD_DEVTOOLS__ on
+    // its first line, before the app exists, so this one has to be supplied. Vue fills in
+    // __VUE_OPTIONS_API__ and __VUE_PROD_HYDRATION_MISMATCH_DETAILS__ once the app is created.
+    //
+    // Without it every element registers, lands in the DOM, and renders nothing: the
+    // ReferenceError is thrown inside connectedCallback, where the catch below cannot see it.
+    globalThis.__VUE_PROD_DEVTOOLS__ = false
+
+    await import(/* @vite-ignore */ `https://esm.sh/@munsonlabs/video-player@${props.version}/element`)
     state.value = 'loaded'
   } catch {
     state.value = 'error'

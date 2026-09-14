@@ -9,14 +9,6 @@ export default defineNuxtConfig({
   app: {
     head: {
       link: [{ rel: 'icon', type: 'image/svg+xml', href: `${baseURL}favicon.svg` }],
-      script: [
-        {
-          type: 'importmap',
-          innerHTML: JSON.stringify({
-            imports: { vue: 'https://unpkg.com/vue@3/dist/vue.runtime.esm-browser.prod.js' },
-          }),
-        },
-      ],
     },
   },
   extends: ['docus'],

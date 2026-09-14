@@ -495,7 +495,7 @@ Outside fullscreen, the full controls bar only appears after clicking "show cont
 
 ## Web Component Usage
 
-Import an element bundle to register components as native custom elements. These render into the light DOM (not shadow roots), so styling has nowhere encapsulated to live. Vue is an external dependency: use an import map to provide it.
+Import an element bundle to register components as native custom elements. These render into the light DOM (not shadow roots), so styling has nowhere encapsulated to live. Vue is an external dependency.
 
 Three bundles are available: pick exactly one, since importing more than one double-registers any tag they share and throws:
 
@@ -505,15 +505,33 @@ Three bundles are available: pick exactly one, since importing more than one dou
 
 `/element` and `/element/core` dynamically `import()` platform adapter code only when a URL for that platform mounts (from a sibling `chunks/` directory); self-hosting either bundle means deploying `chunks/` alongside it.
 
+### From a CDN, with no build step
+
 ```html
+<!--
+  Vue's esm-bundler build expects its compile-time feature flags to be substituted by a
+  bundler. Nothing does that on a CDN, and `VueElement._mount` reads this one before Vue
+  can self-default it — so without this line every element registers, appears in the DOM,
+  and renders nothing, with the ReferenceError buried in `connectedCallback`.
+
+  It must be its own script: `import` is hoisted, so an assignment inside the module
+  below would run after the bundle had already mounted.
+-->
+<script>
+  globalThis.__VUE_PROD_DEVTOOLS__ = false
+</script>
+
 <script type="importmap">
   {
     "imports": {
-      "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+      "@munsonlabs/video-player/element": "https://esm.sh/@munsonlabs/video-player/element"
     }
   }
 </script>
-<script type="module" src="@munsonlabs/video-player/element"></script>
+
+<script type="module">
+  import '@munsonlabs/video-player/element'
+</script>
 
 <ml-video-card
   src="https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4"
@@ -521,6 +539,30 @@ Three bundles are available: pick exactly one, since importing more than one dou
   poster="https://storage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"
 ></ml-video-card>
 ```
+
+### With a bundler
+
+None of the above applies — your bundler substitutes Vue's feature flags at build time, so
+`import '@munsonlabs/video-player/element'` is all you need.
+
+### Supplying your own Vue instead
+
+If you would rather control which Vue build is used, mark it external and map it yourself.
+Vue's `esm-browser` builds have the flags already substituted, so no global is needed:
+
+```html
+<script type="importmap">
+  {
+    "imports": {
+      "vue": "https://unpkg.com/vue@3/dist/vue.runtime.esm-browser.prod.js",
+      "@munsonlabs/video-player/element": "https://esm.sh/@munsonlabs/video-player/element?external=vue"
+    }
+  }
+</script>
+```
+
+Without `?external=vue`, esm.sh resolves Vue itself and a bare `vue` import map entry is
+never consulted.
 
 If you'll be playing HLS (`.m3u8`) or DASH (`.mpd`) sources, also add an import map entry for `hls.js`/`dashjs`. Each is loaded on demand via a dynamic `import(...)`, which (unlike the Vue usage, where your own bundler resolves it) has no resolution path in a plain browser without one:
 

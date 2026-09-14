@@ -38,11 +38,26 @@ jobs:
       - uses: actions/configure-pages@v6
         id: pages
 
-      - name: Build demo
-        run: vp run --filter video-player-demo build
+      # Every app under apps/demos is built and published at /demo/<dir>/, so
+      # adding one needs no change here. shipkit's getPackageBase() reads
+      # VITE_BASE_<PACKAGE NAME>, mangled as below, to set each Vite `base`;
+      # exporting them all up front lets one pass build the lot, since each
+      # package only ever reads its own.
+      #
+      # A new demo must declare that variable in its own build task's `env`
+      # (see apps/demos/video-player/vite.config.ts) or vp will serve a cached
+      # root-relative build in place of the sub-path one, silently.
+      - name: Build demos
+        run: |
+          for dir in apps/demos/*/; do
+            name=$(node -p "require('./$dir/package.json').name")
+            var="VITE_BASE_$(printf '%s' "$name" | sed 's|^@||; s|[/.-]|_|g' | tr '[:lower:]' '[:upper:]')"
+            export "$var=/$REPO/demo/$(basename "$dir")/"
+            echo "$var=/$REPO/demo/$(basename "$dir")/"
+          done
+          vp run --filter './apps/demos/*' build
         env:
-          # Read by shipkit's getPackageBase() as the Vite `base`.
-          VITE_BASE_VIDEO_PLAYER_DEMO: /${{ github.event.repository.name }}/demo/
+          REPO: ${{ github.event.repository.name }}
 
       # `generate`, not `build` — static prerender, no nitro server or better-sqlite3 at runtime.
       - name: Generate docs
@@ -54,7 +69,12 @@ jobs:
 
       - name: Assemble site
         run: |
-          cp -r apps/demos/video-player/dist docs/.output/public/demo
+          for dir in apps/demos/*/; do
+            target="docs/.output/public/demo/$(basename "$dir")"
+            mkdir -p "$(dirname "$target")"
+            cp -r "$dir/dist" "$target"
+            echo "published $target"
+          done
           # Nuxt emits _nuxt/, _payload.json and _og/, which Jekyll would drop.
           touch docs/.output/public/.nojekyll
 

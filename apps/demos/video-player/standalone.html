@@ -277,9 +277,27 @@
     <script type="importmap">
       {
         "imports": {
-          "@munsonlabs/video-player/element": "https://esm.sh/@munsonlabs/video-player@0.0.1/element"
+          "@munsonlabs/video-player/element": "https://esm.sh/@munsonlabs/video-player@0.2.2/element"
         }
       }
+    </script>
+
+    <!--
+      Vue's esm-bundler build expects its compile-time feature flags to be substituted by a
+      bundler; nothing does that on a CDN. Vue defines them itself in initFeatureFlags(), but
+      that runs inside createApp() — and VueElement._mount reads __VUE_PROD_DEVTOOLS__ on its
+      first line, before the app exists. So this one flag is the only one that has to be
+      supplied; Vue fills in __VUE_OPTIONS_API__ and __VUE_PROD_HYDRATION_MISMATCH_DETAILS__
+      once the app is created.
+
+      Without it every <ml-video-card> registers, lands in the DOM, and renders nothing — the
+      ReferenceError surfaces in connectedCallback, where no try/catch of ours can see it.
+
+      Separate <script> on purpose: `import` is hoisted, so an assignment inside the module
+      below would run after the element bundle had already mounted.
+    -->
+    <script>
+      globalThis.__VUE_PROD_DEVTOOLS__ = false
     </script>
 
     <script type="module">

@@ -37,16 +37,25 @@ be installed once (`npx playwright install chromium`).
 
 ## Releasing
 
-Releases go through [Changesets](https://github.com/changesets/changesets):
+Releases follow the standard [Changesets](https://github.com/changesets/changesets) flow, driven by [`changesets/action`](https://github.com/changesets/action).
 
-```bash
-npm run publish   # shipkit deploy --commit — creates & commits a changeset
-```
+1. On your feature branch, describe the change and commit the changeset alongside the code:
 
-Pushing to `main` (or `beta`) runs [`.github/workflows/release.yml`](.github/workflows/release.yml), which builds, checks, tests, bumps versions, and publishes to npm using the `NPM_TOKEN` repo secret. This requires:
+   ```bash
+   npm run publish   # shipkit deploy --commit — creates & commits a changeset
+   ```
 
-- An npm automation token with publish access to the `@munsonlabs` scope, stored as the `NPM_TOKEN` repository secret
-- The `main` branch to allow the release workflow to push version-bump commits (Settings → Actions → General → Workflow permissions → Read and write)
+2. Open a PR to `main` and merge it. Reviewers see the changeset (bump level and changelog entry) in the diff.
+3. [`.github/workflows/release.yml`](.github/workflows/release.yml) runs on the merge. It builds, checks and tests, then opens (or refreshes) a **Version Packages** PR containing the version bumps, changelog entries and lockfile update for every pending changeset. Keep merging features; the PR is regenerated each time and always shows exactly what the next release contains.
+4. Merge the Version Packages PR when you want to release. The workflow runs again, finds no pending changesets, and publishes every bumped package to npm, tagging each one (`@munsonlabs/video-player@1.3.0`).
+
+To try unreleased work without cutting a release, publish a snapshot from any branch — `shipkit deploy --snapshot <tag>` publishes `0.0.0-<tag>-<timestamp>` under that dist-tag and leaves changesets and git untouched.
+
+Setup the workflow needs:
+
+- `NPM_TOKEN` — an npm automation token with publish access to the `@munsonlabs` scope, stored as a repository secret.
+- Permission to open the Version Packages PR. Either enable _Settings → Actions → General → Allow GitHub Actions to create and approve pull requests_, or store a personal access token (repo scope) as the `CHANGESETS_TOKEN` secret. Prefer the token: PRs opened with the default `GITHUB_TOKEN` do not trigger CI on themselves.
+- Optionally install the [changeset-bot](https://github.com/apps/changeset-bot) GitHub app so PRs without a changeset get a reminder comment.
 
 ## Local Verdaccio registry
 

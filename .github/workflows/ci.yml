@@ -1,10 +1,11 @@
 name: CI
 
 on:
-  # main/beta are covered by Release, which calls this workflow — without the
-  # ignore they would run it twice on every push.
+  # main is covered by Release, which calls this workflow, and the Version
+  # Packages branch by its pull_request run — without the ignores both would
+  # run twice on every push.
   push:
-    branches-ignore: [main, beta]
+    branches-ignore: [main, changeset-release/**]
   pull_request:
   workflow_call:
     inputs:

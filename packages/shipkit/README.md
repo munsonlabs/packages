@@ -36,13 +36,11 @@ export default mergeConfig(base, {
 
 ### `shipkit deploy`
 
-| Flag               | Description                                                                         |
-| ------------------ | ----------------------------------------------------------------------------------- |
-| `--commit`         | Opens the Changesets CLI to create a changeset, then offers to commit it            |
-| `--publish`        | Stable release: bumps versions, publishes to npm, commits and pushes git tags       |
-| `--beta`           | Beta prerelease: enters/continues prerelease mode, publishes to npm with `beta` tag |
-| `--local`          | Publishes non-private workspace packages to a local Verdaccio registry              |
-| `--snapshot <tag>` | Snapshot release to npm with the given tag — no changeset consumed, no git changes  |
+| Flag               | Description                                                                        |
+| ------------------ | ---------------------------------------------------------------------------------- |
+| `--commit`         | Opens the Changesets CLI to create a changeset, then offers to commit it           |
+| `--local`          | Publishes non-private workspace packages to a local Verdaccio registry             |
+| `--snapshot <tag>` | Snapshot release to npm with the given tag — no changeset consumed, no git changes |
 
 ```bash
 # create a changeset on your feature branch
@@ -56,7 +54,7 @@ shipkit deploy --snapshot my-feature
 VERDACCIO_URL=http://localhost:4873 shipkit deploy --local
 ```
 
-`--publish` and `--beta` are CI-only (GitHub Actions) — they will error if run locally.
+Versioning and publishing are not shipkit's job: the repo's release workflow runs [`changesets/action`](https://github.com/changesets/action), which opens a Version Packages PR from pending changesets and publishes when that PR is merged.
 
 ## Shared vite configs
 

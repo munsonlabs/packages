@@ -33,19 +33,15 @@ export default mergeConfig(base, {
 
 ### `shipkit deploy`
 
-Handles the full release pipeline using Changesets.
+The developer side of a Changesets release. Versioning and publishing to npm are done in CI by `changesets/action` (Version Packages PR → merge → publish), not by shipkit.
 
-| Flag               | What it does                                                                                                               |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| `--commit`         | Opens Changesets CLI to create a changeset, then offers to commit it                                                       |
-| `--publish`        | **CI only.** Bumps versions, publishes to npm, commits and pushes git tags (main branch). Exits prerelease mode if needed. |
-| `--beta`           | **CI only.** Enters/continues prerelease mode, bumps versions, publishes with `beta` tag (beta branch).                    |
-| `--local`          | Publishes non-private workspace packages to local Verdaccio registry with a timestamp version.                             |
-| `--package <name>` | Target a specific package (use with `--local`).                                                                            |
-| `--scope <scope>`  | Filter packages by name prefix, e.g. `@munsonlabs/` (use with `--local` and `--snapshot`).                                 |
-| `--snapshot <tag>` | Publishes snapshot release to npm with the given tag. No changeset consumed, no git changes.                               |
-
-`--publish` and `--beta` require `GITHUB_ACTIONS` to be set — they exit with an error if run locally. The GitHub Actions release workflow writes `NPM_TOKEN` into `.npmrc` before running, which routes all packages to public npm.
+| Flag               | What it does                                                                                   |
+| ------------------ | ---------------------------------------------------------------------------------------------- |
+| `--commit`         | Opens Changesets CLI to create a changeset, then offers to commit it                           |
+| `--local`          | Publishes non-private workspace packages to local Verdaccio registry with a timestamp version. |
+| `--package <name>` | Target a specific package (use with `--local`).                                                |
+| `--scope <scope>`  | Filter packages by name prefix, e.g. `@munsonlabs/` (use with `--local` and `--snapshot`).     |
+| `--snapshot <tag>` | Publishes snapshot release to npm with the given tag. No changeset consumed, no git changes.   |
 
 `VERDACCIO_URL` must be set for `--local` — there is no default. In Docker it is injected automatically via `docker-compose.yml`. Outside Docker, export it in your shell before running `shipkit deploy --local`.
 
@@ -53,8 +49,6 @@ Version formats:
 
 - `--local`: `1.2.0-local.<unix-timestamp>`
 - `--snapshot`: `0.0.0-<tag>-<unix-timestamp>`
-- `--beta`: `1.2.0-beta.0`, `1.2.0-beta.1`, …
-- `--publish`: `1.2.0`, `1.3.0`, …
 
 ## Shared vite configs
 
@@ -102,7 +96,7 @@ src/
   bin/index.ts              — CLI entry point (cac), registers init / deploy commands
   commands/
     init.ts                 — runInit(target) — writes vite.config.ts from template
-    deploy.ts               — runDeploy(options) — commit / publish / beta / local / snapshot flows
+    deploy.ts               — runDeploy(options) — commit / local / snapshot flows
   vite/
     vue.config.ts           — main Vue config (pack + build pipelines)
     base.config.ts          — plain TS library config (pack only)

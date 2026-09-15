@@ -1,15 +1,10 @@
 import { spawnSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
-import { resolve } from 'node:path'
 import { createInterface } from 'node:readline/promises'
 
 const CHG_DIR = '.changeset'
 
 export interface DeployOptions {
   commit?: boolean
-  version?: boolean
-  publish?: boolean
-  beta?: boolean
   local?: boolean
   snapshot?: string
   package?: string
@@ -48,72 +43,6 @@ async function commitFlow() {
     }
   } else {
     console.log('✅ No new changeset files to commit.')
-  }
-}
-
-function requireCI() {
-  if (!process.env.GITHUB_ACTIONS) {
-    console.error('❌ This command must run in CI (GITHUB_ACTIONS not set).')
-    process.exit(1)
-  }
-}
-
-function getBranch() {
-  return process.env.GITHUB_REF_NAME || spawnSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { encoding: 'utf-8' }).stdout?.trim() || ''
-}
-
-function versionFlow(beta = false) {
-  requireCI()
-  const branch = getBranch()
-
-  if ((branch === 'main' || branch === 'master') && !beta) {
-    console.log('🚀 Versioning for stable release...')
-
-    if (existsSync(resolve(CHG_DIR, 'pre.json'))) {
-      console.log('🔄 Exiting prerelease mode...')
-      run('npx', ['changeset', 'pre', 'exit'])
-    }
-
-    run('npx', ['changeset', 'version'])
-
-    if (spawnSync('git', ['status', '--porcelain'], { encoding: 'utf-8' }).stdout.trim()) {
-      run('npm', ['install', '--package-lock-only'])
-      run('git', ['add', '.'])
-      run('git', ['commit', '-m', 'chore(release): version bump and changelog [skip ci]'])
-      run('git', ['push'])
-    } else {
-      console.log('✅ No version changes to commit.')
-    }
-  } else if (branch === 'beta' || beta === true) {
-    console.log('🌟 Versioning for beta prerelease...')
-
-    if (!existsSync(resolve(CHG_DIR, 'pre.json'))) {
-      console.log('🔄 Entering prerelease mode for beta...')
-      run('npx', ['changeset', 'pre', 'enter', 'beta'])
-    }
-
-    run('npx', ['changeset', 'version'])
-    run('npm', ['install', '--package-lock-only'])
-    run('git', ['add', '.'])
-    run('git', ['commit', '-m', 'chore(release): beta version bump [skip ci]'])
-    run('git', ['push'])
-  } else {
-    console.log('✅ Not on main or beta — skipping version.')
-  }
-}
-
-function publishFlow() {
-  requireCI()
-  const branch = getBranch()
-
-  if (branch === 'main' || branch === 'master') {
-    console.log('📦 Publishing stable release...')
-    run('npx', ['changeset', 'publish', '--no-git-tag'])
-  } else if (branch === 'beta') {
-    console.log('📦 Publishing beta release...')
-    run('npx', ['changeset', 'publish', '--no-git-tag'])
-  } else {
-    console.log('✅ Not on main or beta — skipping publish.')
   }
 }
 
@@ -188,16 +117,14 @@ function publishSnapshotFlow(tag: string, scope?: string) {
 }
 
 export async function runDeploy(options: DeployOptions) {
-  const { commit, version, publish, beta, local, snapshot, package: pkg, scope } = options
+  const { commit, local, snapshot, package: pkg, scope } = options
 
-  if (!commit && !version && !publish && !beta && !local && !snapshot) {
-    console.log('No action specified. Use --commit, --version, --publish, --beta, --local, or --snapshot <tag>')
+  if (!commit && !local && !snapshot) {
+    console.log('No action specified. Use --commit, --local, or --snapshot <tag>')
     return
   }
 
   if (commit) await commitFlow()
-  if (version) versionFlow(beta)
-  if (publish) publishFlow()
   if (local) publishLocalFlow(pkg, scope)
   if (snapshot) publishSnapshotFlow(snapshot, scope)
 }

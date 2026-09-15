@@ -9,11 +9,8 @@ import { getFormattedVersion } from '@/utils/version'
 const cli = cac('shipkit')
 
 cli
-  .command('deploy', 'Commit and publish changesets')
+  .command('deploy', 'Author changesets and publish local or snapshot builds')
   .option('--commit', 'Commit new changesets')
-  .option('--version', 'Bump versions via Changesets and commit')
-  .option('--publish', 'Publish packages via Changesets')
-  .option('--beta', 'Publish beta prerelease (on beta branch)')
   .option('--local', 'Publish workspace packages to local Verdaccio registry')
   .option('--package <name>', 'Target a specific package (used with --local)')
   .option('--scope <scope>', 'Filter packages by name prefix, e.g. @munsonlabs/ (used with --local and --snapshot)')

@@ -51,9 +51,11 @@ jobs:
         with:
           title: 'chore(release): version packages'
           commit: 'chore(release): version packages'
-          # `changeset version` rewrites package.json versions; the lockfile
-          # has to follow, or the Version Packages PR fails `npm ci`.
-          version: npx changeset version && npm install --package-lock-only
+          # The action execs these without a shell, so anything compound has
+          # to live in a script. version-packages also refreshes the lockfile,
+          # which `changeset version` leaves behind — without it the Version
+          # Packages PR fails `npm ci`.
+          version: npm run version-packages
           publish: npx changeset publish
         env:
           # A PAT (or GitHub App token) lets CI run on the Version Packages PR.

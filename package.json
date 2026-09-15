@@ -19,6 +19,7 @@
     "fmt": "vp run -r fmt",
     "publish:local": "shipkit deploy --local --scope @munsonlabs/",
     "publish": "shipkit deploy --commit",
+    "version-packages": "changeset version && npm install --package-lock-only",
     "prepare": "vp config"
   },
   "devDependencies": {

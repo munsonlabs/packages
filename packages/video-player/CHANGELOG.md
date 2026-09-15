@@ -1,5 +1,11 @@
 # @munsonlabs/video-player
 
+## 0.2.4
+
+### Patch Changes
+
+- 6d79256: Add `loop` and `preload` props to `VideoPlayer`/`VideoCard` (and the matching custom-element attributes).
+
 ## 0.2.3
 
 ### Patch Changes

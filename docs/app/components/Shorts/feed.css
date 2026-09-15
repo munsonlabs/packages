@@ -1,0 +1,87 @@
+.shorts {
+  margin: 1.5rem 0;
+}
+
+.shorts__status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 22rem;
+  color: var(--ui-text-muted);
+  background: var(--ui-bg-elevated);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius, 8px);
+}
+
+.shorts__stage {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #0f0f0f;
+  border: 1px solid var(--ui-border);
+  border-radius: 14px;
+}
+
+.shorts__scroller {
+  height: 34rem;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+}
+.shorts__scroller::-webkit-scrollbar {
+  display: none;
+}
+
+/* Must match the scroller's height exactly: playInView's observer has no root, so a shorter
+   slide never reaches the 0.5 threshold and nothing autoplays. */
+.shorts__slide {
+  height: 34rem;
+  scroll-snap-align: start;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.shorts__nav {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.shorts__navbtn {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.1);
+  color: #f1f1f1;
+  cursor: pointer;
+}
+
+.shorts__navbtn:hover:not(:disabled) {
+  background: rgb(255 255 255 / 0.2);
+}
+
+.shorts__navbtn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+@media (max-width: 720px) {
+  .shorts__stage {
+    padding: 0.5rem;
+  }
+  .shorts__nav {
+    display: none;
+  }
+  .shorts__scroller,
+  .shorts__slide {
+    height: 26rem;
+  }
+}

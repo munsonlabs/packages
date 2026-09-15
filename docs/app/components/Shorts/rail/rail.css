@@ -1,0 +1,29 @@
+.shorts__rail {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+}
+
+.shorts__action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  border: none;
+  background: none;
+  color: #f1f1f1;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+
+.shorts__action svg {
+  padding: 0.6rem;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.1);
+  box-sizing: content-box;
+}
+
+.shorts__action:hover svg {
+  background: rgb(255 255 255 / 0.2);
+}

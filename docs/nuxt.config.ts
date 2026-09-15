@@ -1,3 +1,5 @@
+import { fileIncludeHook } from './app/utils/fileInclude'
+
 const baseURL = (process.env.NUXT_APP_BASE_URL || '/').replace(/\/?$/, '/')
 
 export default defineNuxtConfig({
@@ -10,6 +12,9 @@ export default defineNuxtConfig({
     head: {
       link: [{ rel: 'icon', type: 'image/svg+xml', href: `${baseURL}favicon.svg` }],
     },
+  },
+  hooks: {
+    'content:file:beforeParse': fileIncludeHook,
   },
   extends: ['docus'],
   css: ['~/assets/css/main.css'],

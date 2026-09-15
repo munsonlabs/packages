@@ -1,6 +1,5 @@
 ---
 seo:
-  title: Munson Labs Documentation
   description: Public npm packages published under the @munsonlabs scope.
 ---
 

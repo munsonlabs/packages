@@ -60,6 +60,13 @@ function queryWorkspaces(scope?: string): string[] {
     .map((w) => w.name)
 }
 
+// `.npmrc` sets ignore-scripts, so no lifecycle hook can build on publish.
+// Build explicitly, or whatever is sitting in dist/ ships.
+function buildWorkspaces(packages: string[]) {
+  console.log(`🔨 Building ${packages.join(', ')}`)
+  run('vp', ['run', ...packages.flatMap((name) => ['--filter', name]), 'build'])
+}
+
 function publishLocalFlow(pkg?: string, scope?: string) {
   const registry = process.env.VERDACCIO_URL
   if (!registry) {
@@ -74,6 +81,8 @@ function publishLocalFlow(pkg?: string, scope?: string) {
     console.log('No publishable workspaces found.')
     return
   }
+
+  buildWorkspaces(packages)
 
   console.log(`📦 Publishing to ${registry}: ${packages.join(', ')}`)
   for (const name of packages) {
@@ -99,6 +108,8 @@ function publishSnapshotFlow(tag: string, scope?: string) {
     console.log('No publishable workspaces found.')
     return
   }
+
+  buildWorkspaces(snapshotPackages)
 
   console.log(`📦 Publishing snapshot tag "${tag}" to npm: ${snapshotPackages.join(', ')}`)
   for (const name of snapshotPackages) {

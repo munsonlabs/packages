@@ -42,6 +42,18 @@ describe('runDeploy', () => {
 })
 
 describe('publishLocalFlow', () => {
+  it('builds the selected workspaces before publishing', async () => {
+    setupWorkspaces(['@munsonlabs/bridge', 'some-app'])
+
+    await runDeploy({ local: true, scope: '@munsonlabs/' })
+
+    const build = mockSpawn.mock.calls.findIndex(([cmd, args]) => cmd === 'vp' && args?.[0] === 'run')
+    const publish = mockSpawn.mock.calls.findIndex(([cmd, args]) => cmd === 'npm' && args?.[0] === 'publish')
+    expect(build).toBeGreaterThan(-1)
+    expect(build).toBeLessThan(publish)
+    expect(mockSpawn.mock.calls[build][1]).toEqual(['run', '--filter', '@munsonlabs/bridge', 'build'])
+  })
+
   it('publishes only @munsonlabs/* workspaces, ignoring others', async () => {
     setupWorkspaces(['@munsonlabs/bridge', 'some-app'])
 
@@ -118,6 +130,17 @@ describe('publishLocalFlow', () => {
 })
 
 describe('publishSnapshotFlow', () => {
+  it('builds before publishing', async () => {
+    setupWorkspaces(['@munsonlabs/bridge'])
+
+    await runDeploy({ snapshot: 'my-feature' })
+
+    const build = mockSpawn.mock.calls.findIndex(([cmd, args]) => cmd === 'vp' && args?.[0] === 'run')
+    const publish = mockSpawn.mock.calls.findIndex(([cmd, args]) => cmd === 'npm' && args?.[0] === 'publish')
+    expect(build).toBeGreaterThan(-1)
+    expect(build).toBeLessThan(publish)
+  })
+
   it('publishes with a 0.0.0-<tag>-<timestamp> version', async () => {
     setupWorkspaces(['@munsonlabs/bridge'])
 

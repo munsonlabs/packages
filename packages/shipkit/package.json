@@ -37,7 +37,6 @@
     "fmt:check": "vp fmt --check",
     "check": "vp check",
     "typecheck": "vp check --types",
-    "prepublishOnly": "vp pack",
     "dev": "vp pack --watch",
     "test": "vp test",
     "test:watch": "vp test --watch"

@@ -159,4 +159,4 @@ npm run test       # vitest
 npm run typecheck
 ```
 
-The package builds itself with `vp pack` via its own `prepublishOnly` script.
+The package is built by its `build` vp task (`vp pack`), run by `vp run -r build` in CI and by `shipkit deploy --local` / `--snapshot` before they publish. There is no publish lifecycle hook: `.npmrc` sets `ignore-scripts`, so none would run.

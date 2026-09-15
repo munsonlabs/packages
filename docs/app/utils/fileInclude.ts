@@ -1,5 +1,5 @@
-import { readFileSync, readdirSync } from 'node:fs'
-import { resolve, extname, join, basename } from 'node:path'
+import { readFileSync, readdirSync, realpathSync } from 'node:fs'
+import { resolve, extname, join, basename, sep } from 'node:path'
 
 const EXT_LANG: Record<string, string> = {
   '.ts': 'ts',
@@ -97,13 +97,38 @@ function sortFiles(files: string[]): string[] {
   })
 }
 
-function dirToCodeTree(absDir: string, defaultFile?: string): string {
-  let files: string[]
+/**
+ * Resolves an include path relative to the repo root and insists it exists with exactly the
+ * casing written in the markdown. macOS resolves `components/shorts` to `components/Shorts`
+ * and the page looks fine locally; the Linux CI runner does not, and the page shipped with a
+ * "Directory not found" comment where the code should be.
+ *
+ * Nuxt Content catches a throwing hook and drops the page with a warning, which would let the
+ * build succeed with the page missing - so the exit code is set as well, to fail the generate.
+ */
+function fail(message: string): never {
+  console.error(`[fileInclude] ${message}`)
+  process.exitCode = 1
+  throw new Error(message)
+}
+
+function resolveInclude(relPath: string): string {
+  const rel = relPath.trim()
+  const abs = resolve(process.cwd(), '..', rel)
+  let real: string
   try {
-    files = sortFiles(walkDir(absDir))
+    real = realpathSync.native(abs)
   } catch {
-    return `\`\`\`\n// Directory not found: ${absDir}\n\`\`\``
+    return fail(`path not found: ${rel}`)
   }
+  if (!real.endsWith(rel.replace(/\//g, sep))) {
+    return fail(`path case mismatch: ${rel} is on disk as ${real}`)
+  }
+  return abs
+}
+
+function dirToCodeTree(absDir: string, defaultFile?: string): string {
+  const files = sortFiles(walkDir(absDir))
 
   const resolvedDefault = defaultFile ?? files.find((f) => /^src[/\\]index/.test(f)) ?? files[0] ?? ''
 
@@ -127,19 +152,11 @@ export function fileIncludeHook(ctx: { file?: { body?: string; id?: string } }) 
   if (!file.body || !file.id?.endsWith('.md')) return
 
   // Process <<<tree directives first (they produce multi-file code-tree blocks)
-  file.body = file.body.replace(TREE_RE, (_, dirPath: string, defaultFile?: string) => {
-    const abs = resolve(process.cwd(), '..', dirPath.trim())
-    return dirToCodeTree(abs, defaultFile)
-  })
+  file.body = file.body.replace(TREE_RE, (_, dirPath: string, defaultFile?: string) => dirToCodeTree(resolveInclude(dirPath), defaultFile))
 
   // Process single-file <<< includes
   file.body = file.body.replace(INCLUDE_RE, (_, filePath: string) => {
-    const abs = resolve(process.cwd(), '..', filePath.trim())
-    const lang = EXT_LANG[extname(abs)] ?? ''
-    try {
-      return fileToMarkdown(readFileSync(abs, 'utf-8'), lang)
-    } catch {
-      return `\`\`\`\n// File not found: ${filePath.trim()}\n\`\`\``
-    }
+    const abs = resolveInclude(filePath)
+    return fileToMarkdown(readFileSync(abs, 'utf-8'), EXT_LANG[extname(abs)] ?? '')
   })
 }

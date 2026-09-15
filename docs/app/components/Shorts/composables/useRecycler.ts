@@ -33,8 +33,14 @@ export function useRecycler<T>(scroller: Ref<HTMLElement | null>, items: T[]): U
     el.scrollTo({ top: slideHeight, behavior: smooth ? 'smooth' : 'auto' })
     if (bounceTimer) clearTimeout(bounceTimer)
     // Smooth scrolling has no cross-browser completion callback, so a fixed delay beats juggling 'scrollend'.
-    if (smooth) bounceTimer = setTimeout(() => { recycling = false }, BOUNCE_MS)
-    else requestAnimationFrame(() => { recycling = false })
+    if (smooth)
+      bounceTimer = setTimeout(() => {
+        recycling = false
+      }, BOUNCE_MS)
+    else
+      requestAnimationFrame(() => {
+        recycling = false
+      })
   }
 
   function measure(): void {

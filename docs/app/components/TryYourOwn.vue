@@ -18,16 +18,31 @@ const STORAGE_KEY = 'mlv-docs:try-your-own'
 
 // Google's official IMA sample tags, same ones the demo and the ads page use.
 const AD_PRESETS = [
-  { label: 'VAST - linear pre-roll', url: 'https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator=' },
-  { label: 'VAST - skippable pre-roll', url: 'https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=' },
-  { label: 'VMAP - pre/mid/post-roll', url: 'https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpost&cmsid=496&vid=short_onecue&correlator=' },
-  { label: 'VMAP - 3-ad pod', url: 'https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/vmap_ad_samples&sz=640x480&cust_params=sample_ar%3Dpremidpostpod&ciu_szs=300x250&gdfp_req=1&ad_rule=1&output=vmap&unviewed_position_start=1&env=vp&cmsid=496&vid=short_onecue&correlator=' },
+  {
+    label: 'VAST - linear pre-roll',
+    url: 'https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator=',
+  },
+  {
+    label: 'VAST - skippable pre-roll',
+    url: 'https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator=',
+  },
+  {
+    label: 'VMAP - pre/mid/post-roll',
+    url: 'https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpost&cmsid=496&vid=short_onecue&correlator=',
+  },
+  {
+    label: 'VMAP - 3-ad pod',
+    url: 'https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/vmap_ad_samples&sz=640x480&cust_params=sample_ar%3Dpremidpostpod&ciu_szs=300x250&gdfp_req=1&ad_rule=1&output=vmap&unviewed_position_start=1&env=vp&cmsid=496&vid=short_onecue&correlator=',
+  },
 ]
 
 const VIDEO_PRESETS = [
   { label: 'MP4 - Big Buck Bunny', src: 'https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4' },
   { label: 'HLS - Mux test stream', src: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8' },
-  { label: 'HLS - bipbop (captions + quality)', src: 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8' },
+  {
+    label: 'HLS - bipbop (captions + quality)',
+    src: 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8',
+  },
   { label: 'YouTube', src: 'https://www.youtube.com/watch?v=UnktCDi-BVs' },
   { label: 'Vimeo', src: 'https://vimeo.com/347119375' },
   { label: 'Dailymotion', src: 'https://www.dailymotion.com/video/x84sh87' },
@@ -37,7 +52,9 @@ const VIDEO_PRESETS = [
 const HB_EXAMPLE = {
   adUnit: {
     code: 'video-instream-demo',
-    mediaTypes: { video: { context: 'instream', playerSize: [640, 480], mimes: ['video/mp4'], protocols: [1, 2, 3, 4, 5, 6, 7, 8], playbackmethod: [2], skip: 1 } },
+    mediaTypes: {
+      video: { context: 'instream', playerSize: [640, 480], mimes: ['video/mp4'], protocols: [1, 2, 3, 4, 5, 6, 7, 8], playbackmethod: [2], skip: 1 },
+    },
     bids: [{ bidder: 'appnexus', params: { placementId: 13232361 } }],
   },
   iu: '/21775744923/external/single_ad_samples',
@@ -74,13 +91,17 @@ onMounted(async () => {
   }
 })
 
-watch(entries, (list) => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
-  } catch {
-    /* private mode, blocked storage - the list just won't survive a reload */
-  }
-}, { deep: true })
+watch(
+  entries,
+  (list) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
+    } catch {
+      /* private mode, blocked storage - the list just won't survive a reload */
+    }
+  },
+  { deep: true },
+)
 
 function loadHbExample(): void {
   hbEnabled.value = true
@@ -188,7 +209,12 @@ function submit(): void {
         <template v-if="hbEnabled">
           <label class="tyo__field">
             <span class="tyo__label">Ad unit JSON <em class="tyo__hint">the object you would pass to pbjs.addAdUnits()</em></span>
-            <textarea v-model="adUnitJson" class="tyo__input tyo__textarea" rows="6" placeholder='{"code":"video-preroll","mediaTypes":{…},"bids":[…]}' />
+            <textarea
+              v-model="adUnitJson"
+              class="tyo__input tyo__textarea"
+              rows="6"
+              placeholder='{"code":"video-preroll","mediaTypes":{…},"bids":[…]}'
+            />
           </label>
           <div class="tyo__row">
             <label class="tyo__field">

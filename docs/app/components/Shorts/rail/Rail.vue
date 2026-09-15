@@ -29,5 +29,5 @@ defineProps<{ likes: string; comments: string }>()
 </template>
 
 <style scoped>
-@import './rail.css'
+@import './rail.css';
 </style>

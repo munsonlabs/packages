@@ -60,5 +60,5 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-@import './feed.css'
+@import './feed.css';
 </style>

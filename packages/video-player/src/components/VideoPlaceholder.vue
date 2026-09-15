@@ -98,6 +98,10 @@ onBeforeUnmount(() => unobserve?.())
 <style scoped>
 .placeholder {
   width: 100%;
+  /* Must match VideoPlayer's .player - VideoCard renders the two as siblings, so a cap on only
+     one of them makes the placeholder-to-player swap jump. */
+  max-width: var(--mlv-max-width, 800px);
+  margin: 0 auto;
 }
 
 .placeholder__shell {

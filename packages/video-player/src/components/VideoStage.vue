@@ -241,7 +241,7 @@ defineExpose({ playNext, playPrevious, hasNext, hasPrevious, ...forwarded })
 <style scoped>
 .stage-wrapper {
   width: 100%;
-  max-width: 800px;
+  max-width: var(--mlv-max-width, 800px);
   margin: 0 auto;
 }
 

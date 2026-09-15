@@ -198,7 +198,10 @@ defineExpose(forwarded)
 .player {
   position: relative;
   width: 100%;
-  max-width: 800px;
+  /* Shared with VideoPlaceholder and VideoStage so the lazy placeholder and the real player are
+     never different widths - swapping one for the other used to visibly jump in any container
+     wider than the cap. Pinned/pip sizes below are deliberately exempt. */
+  max-width: var(--mlv-max-width, 800px);
   margin: 0 auto;
   user-select: none;
   -webkit-tap-highlight-color: transparent;

@@ -1,0 +1,58 @@
+/* Beside the frame by default. */
+.shorts__rail {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+}
+
+.shorts__action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  border: none;
+  background: none;
+  color: #f1f1f1;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+
+.shorts__action svg {
+  padding: 0.6rem;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.1);
+  box-sizing: content-box;
+}
+
+.shorts__action:hover svg {
+  background: rgb(255 255 255 / 0.2);
+}
+
+/* Once the stage is too narrow to seat the rail beside a 9:16 frame, it moves over the video's
+   right edge. Queries the stage, not the viewport, so it tracks the resize handle. */
+@container (max-width: 34rem) {
+  .shorts__rail {
+    position: absolute;
+    right: 0.4rem;
+    bottom: 1.25rem;
+    z-index: 5;
+    gap: 0.6rem;
+    padding-bottom: 0;
+    text-shadow: 0 1px 4px rgb(0 0 0 / 0.7);
+  }
+
+  .shorts__action {
+    font-size: 0.65rem;
+  }
+
+  .shorts__action svg {
+    padding: 0.45rem;
+    background: rgb(0 0 0 / 0.35);
+    filter: drop-shadow(0 1px 3px rgb(0 0 0 / 0.5));
+  }
+
+  .shorts__action:hover svg {
+    background: rgb(0 0 0 / 0.55);
+  }
+}

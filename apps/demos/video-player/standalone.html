@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>video-player web component — esm.sh demo</title>
+    <meta name="description" content="Standalone demo of @munsonlabs/video-player web components via esm.sh + importmap, no build step required." />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: #0f172a;
+        color: #e2e8f0;
+        font-family: system-ui, sans-serif;
+        padding: 2rem 1rem;
+        min-height: 100dvh;
+      }
+
+      h1 {
+        font-size: 1.6rem;
+        color: #f8fafc;
+        margin-bottom: 0.4rem;
+      }
+      .subtitle {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin-bottom: 2.5rem;
+      }
+      .subtitle code {
+        color: #60a5fa;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+        gap: 2rem;
+        max-width: 1200px;
+      }
+
+      .card {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .card h2 {
+        font-size: 0.9rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .badge {
+        display: inline-block;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 1px 6px;
+        border-radius: 4px;
+        margin-right: 6px;
+        color: #fff;
+      }
+      .badge.youtube {
+        background: #ff0000;
+      }
+      .badge.vimeo {
+        background: #1ab7ea;
+      }
+      .badge.dailymotion {
+        background: #0099e5;
+      }
+      .badge.brightcove {
+        background: #f97316;
+      }
+      .badge.jwplayer {
+        background: #10b981;
+      }
+      .badge.html5 {
+        background: #e44d26;
+      }
+      .badge.extensibility {
+        background: #8b5cf6;
+      }
+
+      .log-section {
+        max-width: 1200px;
+        margin-top: 2.5rem;
+      }
+
+      .log-section h2 {
+        font-size: 1rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 0.75rem;
+      }
+
+      #log {
+        background: #0f172a;
+        border: 1px solid #1e293b;
+        border-radius: 8px;
+        padding: 1rem;
+        height: 220px;
+        overflow-y: auto;
+        font-family: monospace;
+        font-size: 0.78rem;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .log-entry {
+        display: flex;
+        gap: 0.75rem;
+        padding: 3px 6px;
+        border-radius: 4px;
+      }
+      .log-entry:nth-child(odd) {
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .log-time {
+        color: #475569;
+        flex-shrink: 0;
+      }
+      .log-type {
+        font-weight: 700;
+        flex-shrink: 0;
+        min-width: 60px;
+      }
+      .log-type.play {
+        color: #4ade80;
+      }
+      .log-type.pause {
+        color: #facc15;
+      }
+      .log-type.ended {
+        color: #f87171;
+      }
+      .log-type.seeked {
+        color: #60a5fa;
+      }
+      .log-type.error {
+        color: #f87171;
+      }
+      .log-data {
+        color: #94a3b8;
+      }
+
+      .log-clear {
+        margin-top: 0.5rem;
+        background: #1e293b;
+        border: 1px solid #334155;
+        color: #94a3b8;
+        padding: 4px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.8rem;
+      }
+      .log-clear:hover {
+        color: #e2e8f0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>&lt;ml-video-card&gt; via esm.sh</h1>
+    <p class="subtitle"><code>@munsonlabs/video-player/element</code> loaded from npm via esm.sh — open this file directly, no build step needed</p>
+
+    <div class="grid">
+      <div class="card">
+        <h2><span class="badge youtube">youtube</span>YouTube</h2>
+        <ml-video-card
+          src="https://www.youtube.com/watch?v=-WUlOSHMao8"
+          title="Adele - Hello (VEVO)"
+          action="mute"
+          poster="https://img.youtube.com/vi/-WUlOSHMao8/maxresdefault.jpg"
+          payload='{"platform":"youtube"}'
+        ></ml-video-card>
+      </div>
+
+      <div class="card">
+        <h2><span class="badge vimeo">vimeo</span>Vimeo</h2>
+        <ml-video-card
+          src="https://vimeo.com/17585577"
+          title="Tears of Steel"
+          poster="https://vumbnail.com/17585577.jpg"
+          payload='{"platform":"vimeo"}'
+        ></ml-video-card>
+      </div>
+
+      <div class="card">
+        <h2><span class="badge dailymotion">dailymotion</span>Dailymotion</h2>
+        <ml-video-card
+          src="https://www.dailymotion.com/video/x7tgad0"
+          title="Dailymotion Sample"
+          poster="https://www.dailymotion.com/thumbnail/video/x7tgad0"
+          payload='{"platform":"dailymotion"}'
+        ></ml-video-card>
+      </div>
+
+      <div class="card">
+        <h2><span class="badge jwplayer">jwplayer</span>JW Player</h2>
+        <ml-video-card
+          src="https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4"
+          title="JW Player"
+          poster="https://cdn.jwplayer.com/thumbs/O5chtspP-720.jpg"
+          payload='{"platform":"jwplayer"}'
+        ></ml-video-card>
+      </div>
+
+      <div class="card">
+        <h2><span class="badge html5">html5</span>HTML5 + skippable pre-roll</h2>
+        <ml-video-card
+          src="https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4"
+          title="Big Buck Bunny (skippable pre-roll)"
+          poster="https://storage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"
+          ad-tag-url="https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator="
+          payload='{"platform":"html5"}'
+        ></ml-video-card>
+      </div>
+
+      <div class="card">
+        <h2><span class="badge html5">html5</span>HTML5 + pre-roll</h2>
+        <ml-video-card
+          src="https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4"
+          title="Big Buck Bunny (pre-roll)"
+          poster="https://storage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"
+          ad-tag-url="https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator="
+          payload='{"platform":"html5"}'
+        ></ml-video-card>
+      </div>
+
+      <div class="card">
+        <h2><span class="badge html5">html5</span>HTML5 + VMAP</h2>
+        <ml-video-card
+          src="https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4"
+          title="Big Buck Bunny (VMAP — pre + mid + post)"
+          poster="https://storage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"
+          ad-tag-url="https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpost&cmsid=496&vid=short_onecue&correlator="
+          payload='{"platform":"html5"}'
+        ></ml-video-card>
+      </div>
+
+      <div class="card">
+        <h2><span class="badge html5">html5</span>Inline JSON attrs</h2>
+        <ml-video-card
+          src="https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4"
+          title="Inline JSON attrs"
+          poster="https://storage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"
+          ad-tag-url="https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator="
+          payload='{"source":"standalone"}'
+        ></ml-video-card>
+      </div>
+
+      <div class="card">
+        <h2><span class="badge extensibility">extensibility</span>registerPlatform (one call)</h2>
+        <div id="one-call-mount"></div>
+      </div>
+    </div>
+
+    <div class="log-section">
+      <h2>state-change events</h2>
+      <div id="log"></div>
+      <button class="log-clear" onclick="document.getElementById('log').innerHTML = ''">Clear</button>
+    </div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "@munsonlabs/video-player/element": "https://esm.sh/@munsonlabs/video-player/element"
+        }
+      }
+    </script>
+
+    <!--
+      Vue's esm-bundler build expects its compile-time feature flags to be substituted by a
+      bundler; nothing does that on a CDN. Vue defines them itself in initFeatureFlags(), but
+      that runs inside createApp() — and VueElement._mount reads __VUE_PROD_DEVTOOLS__ on its
+      first line, before the app exists. So this one flag is the only one that has to be
+      supplied; Vue fills in __VUE_OPTIONS_API__ and __VUE_PROD_HYDRATION_MISMATCH_DETAILS__
+      once the app is created.
+
+      Without it every <ml-video-card> registers, lands in the DOM, and renders nothing — the
+      ReferenceError surfaces in connectedCallback, where no try/catch of ours can see it.
+
+      Separate <script> on purpose: `import` is hoisted, so an assignment inside the module
+      below would run after the element bundle had already mounted.
+    -->
+    <script>
+      globalThis.__VUE_PROD_DEVTOOLS__ = false
+    </script>
+
+    <script type="module">
+      import '@munsonlabs/video-player/element'
+
+      const log = document.getElementById('log')
+
+      function addLogEntry({ type, currentTime, duration, payload }) {
+        const time = new Date().toLocaleTimeString('en', { hour12: false })
+        const ct = currentTime != null ? `${currentTime.toFixed(1)}s` : '\u2014'
+        const dur = duration ? `/ ${duration.toFixed(1)}s` : ''
+        const meta = payload ? ` \u00b7 ${JSON.stringify(payload)}` : ''
+        const el = document.createElement('div')
+        el.className = 'log-entry'
+        el.innerHTML = `
+          <span class="log-time">${time}</span>
+          <span class="log-type ${type}">${type}</span>
+          <span class="log-data">${ct} ${dur}${meta}</span>
+        `
+        log.prepend(el)
+      }
+
+      // Exposed for the registerPlatform demo script below, whose element doesn't exist yet
+      // when this querySelectorAll runs.
+      window.__mvpDemoLog = addLogEntry
+
+      document.querySelectorAll('ml-video-card, ml-video-stage').forEach((el) => {
+        el.addEventListener('state-change', (e) => addLogEntry(e.detail[0]))
+      })
+    </script>
+
+    <script type="module">
+      // The one-call way: registerPlatform registers the matcher plus the source resolver in a
+      // single call - what most consumers reach for. Creating the <ml-video-card> from script,
+      // after registering, avoids a statically-declared tag racing the registration (see README's
+      // "Registering a platform from a web component").
+      import { registerPlatform } from '@munsonlabs/video-player/element'
+
+      registerPlatform({
+        key: 'demo-one-call',
+        test: (src) => src.startsWith('demo-one-call://'),
+        embed: false,
+        resolveSource: () => ({ src: 'https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4', type: 'video/mp4' }),
+      })
+
+      const oneCallItem = document.createElement('ml-video-card')
+      oneCallItem.setAttribute('src', 'demo-one-call://anything')
+      oneCallItem.setAttribute('title', 'Registered via registerPlatform')
+      oneCallItem.setAttribute('poster', 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg')
+      oneCallItem.addEventListener('state-change', (e) => window.__mvpDemoLog(e.detail[0]))
+      document.getElementById('one-call-mount').appendChild(oneCallItem)
+    </script>
+  </body>
+</html>

@@ -1,0 +1,102 @@
+name: Deploy to GitHub Pages
+
+on:
+  # Only rebuild the site when something that ends up in it changed. Anything
+  # missed here can still be deployed by hand via the workflow_dispatch below.
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'apps/demos/video-player/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
+      - '.node-version'
+      - '.github/workflows/pages.yml'
+      - '.github/actions/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    # Merging the Version Packages PR touches package.json/CHANGELOG/lockfile,
+    # which match the paths above, but nothing on the site changes until the
+    # packages are actually on npm. Release dispatches this workflow once they
+    # are, so the push itself is skipped. `contains`, not `startsWith`: a merge
+    # commit prefixes the title with "Merge pull request …".
+    if: "!contains(github.event.head_commit.message, 'chore(release): version packages')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ./.github/actions/setup
+
+      - uses: actions/configure-pages@v6
+        id: pages
+
+      # Every app under apps/demos is built and published at /demo/<dir>/, so
+      # adding one needs no change here. shipkit's getPackageBase() reads
+      # VITE_BASE_<PACKAGE NAME>, mangled as below, to set each Vite `base`;
+      # exporting them all up front lets one pass build the lot, since each
+      # package only ever reads its own.
+      #
+      # A new demo must declare that variable in its own build task's `env`
+      # (see apps/demos/video-player/vite.config.ts) or vp will serve a cached
+      # root-relative build in place of the sub-path one, silently.
+      - name: Build demos
+        run: |
+          for dir in apps/demos/*/; do
+            name=$(node -p "require('./$dir/package.json').name")
+            var="VITE_BASE_$(printf '%s' "$name" | sed 's|^@||; s|[/.-]|_|g' | tr '[:lower:]' '[:upper:]')"
+            export "$var=/$REPO/demo/$(basename "$dir")/"
+            echo "$var=/$REPO/demo/$(basename "$dir")/"
+          done
+          vp run --filter './apps/demos/*' build
+        env:
+          REPO: ${{ github.event.repository.name }}
+
+      # `generate`, not `build` — static prerender, no nitro server or better-sqlite3 at runtime.
+      # Run through vp rather than `npm run generate` so the task's own dependsOn builds
+      # @munsonlabs/video-player first - the docs render live examples against its dist output.
+      - name: Generate docs
+        run: vp run --filter docs generate
+        env:
+          NUXT_APP_BASE_URL: /${{ github.event.repository.name }}/
+          NUXT_SITE_URL: ${{ steps.pages.outputs.base_url }}
+
+      - name: Assemble site
+        run: |
+          for dir in apps/demos/*/; do
+            target="docs/.output/public/demo/$(basename "$dir")"
+            mkdir -p "$(dirname "$target")"
+            cp -r "$dir/dist" "$target"
+            echo "published $target"
+          done
+          # Nuxt emits _nuxt/, _payload.json and _og/, which Jekyll would drop.
+          touch docs/.output/public/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: docs/.output/public
+          # v4+ excludes dotfiles by default, which would drop .nojekyll.
+          include-hidden-files: true
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

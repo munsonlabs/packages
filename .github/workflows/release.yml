@@ -1,0 +1,77 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write # to dispatch the Pages workflow after a publish
+
+# Two runs racing on main could both try to open or publish. Queue them.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  # The same checks CI runs on every other branch, as one definition rather
+  # than a second copy that can drift out of step with it. Its build job also
+  # uploads the dist artifact `release` downloads, so nothing is built twice.
+  verify:
+    uses: ./.github/workflows/ci.yml
+    with:
+      upload-dist: true
+
+  # The standard Changesets flow. With pending changesets, the action opens or
+  # refreshes a "Version Packages" PR containing the bumps and changelogs —
+  # merging that PR is the release decision. Without pending changesets (the
+  # push that merged that PR), it publishes every package whose version is not
+  # yet on npm and tags each one.
+  release:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: voidzero-dev/setup-vp@v1.19.0
+        with:
+          node-version-file: .node-version
+          cache: true
+
+      # `.npmrc` sets ignore-scripts, so `prepublishOnly` never runs on
+      # publish. The packages are published from the build `verify` produced.
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: packages
+
+      - uses: changesets/action@v1
+        id: changesets
+        with:
+          title: 'chore(release): version packages'
+          commit: 'chore(release): version packages'
+          # The action execs these without a shell, so anything compound has
+          # to live in a script. version-packages also refreshes the lockfile,
+          # which `changeset version` leaves behind — without it the Version
+          # Packages PR fails `npm ci`.
+          version: npm run version-packages
+          publish: npx changeset publish
+        env:
+          # A PAT (or GitHub App token) lets CI run on the Version Packages PR.
+          # Falls back to GITHUB_TOKEN, whose PRs do not trigger workflows.
+          GITHUB_TOKEN: ${{ secrets.CHANGESETS_TOKEN || secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # The docs demo loads the *published* bundle at the workspace version, so
+      # the site has to be rebuilt after the packages land on npm — not on the
+      # version commit, when that version does not exist yet (pages.yml skips
+      # that push for the same reason).
+      - if: steps.changesets.outputs.published == 'true'
+        name: Redeploy the docs site
+        run: gh workflow run pages.yml --ref "$GITHUB_REF_NAME"
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -1,0 +1,39 @@
+name: Setup
+description: Install the toolchain, and optionally the extras individual jobs need.
+
+inputs:
+  nuxt:
+    description: >
+      Generate the .nuxt type scaffolding. Needed by anything that loads the
+      docs config — `vp run -r build` does, `check` and `test` do not.
+    default: 'true'
+  playwright:
+    description: Download the Chromium build the browser tests need.
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - uses: voidzero-dev/setup-vp@v1.19.0
+      with:
+        node-version-file: .node-version
+        cache: true
+
+    # setup-vp caches npm downloads, not vp's task cache — without this, every
+    # job rebuilds every package from scratch even when nothing changed.
+    # Restored after install, since it lives under node_modules.
+    - uses: actions/cache@v6
+      with:
+        path: node_modules/.vite/task-cache
+        key: vp-task-${{ runner.os }}-${{ github.sha }}
+        restore-keys: vp-task-${{ runner.os }}-
+
+    # `.npmrc` sets ignore-scripts, so Nuxt's postinstall never runs.
+    - if: inputs.nuxt == 'true'
+      run: npx nuxt prepare
+      shell: bash
+      working-directory: docs
+
+    - if: inputs.playwright == 'true'
+      run: npx playwright install --with-deps chromium
+      shell: bash

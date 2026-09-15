@@ -1,0 +1,107 @@
+.shorts {
+  margin: 1.5rem 0;
+}
+
+.shorts__status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 22rem;
+  color: var(--ui-text-muted);
+  background: var(--ui-bg-elevated);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius, 8px);
+}
+
+/* The resizable element. `overflow` has to be non-visible for `resize` to apply, and
+   `container-type` makes the stage's own width queryable, so the rail's layout responds to the
+   drag handle rather than to the viewport. Unsupported on iOS Safari - a desktop affordance. */
+.shorts__stage {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  height: 36rem;
+  min-height: 22rem;
+  max-height: 90vh;
+  min-width: 400px;
+  max-width: 100%;
+  /* Stays centred as the drag handle narrows it - `resize` writes an explicit width, which
+     would otherwise leave the stage pinned to the left. */
+  margin: 0 auto;
+  padding: 1rem;
+  overflow: hidden;
+  resize: both;
+  container-type: inline-size;
+  background: #0f0f0f;
+  border: 1px solid var(--ui-border);
+  border-radius: 14px;
+}
+
+.shorts__scroller {
+  height: 100%;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+}
+.shorts__scroller::-webkit-scrollbar {
+  display: none;
+}
+
+/* 100% rather than a repeated length: a slide shorter than the scroller never reaches
+   playInView's 0.5 threshold, so nothing autoplays. This keeps them equal by construction.
+   fit-content is what lets the rail overlay: once it goes absolute the slide collapses to the
+   frame's width, so the rail's `right` lands on the video's edge rather than the scroller's. */
+.shorts__slide {
+  position: relative;
+  height: 100%;
+  width: fit-content;
+  margin-inline: auto;
+  scroll-snap-align: start;
+  /* One short per fling: without this a fast wheel or swipe sails past several snap points. */
+  scroll-snap-stop: always;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.shorts__nav {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.shorts__navbtn {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.1);
+  color: #f1f1f1;
+  cursor: pointer;
+}
+
+.shorts__navbtn:hover:not(:disabled) {
+  background: rgb(255 255 255 / 0.2);
+}
+
+.shorts__navbtn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+@media (max-width: 720px) {
+  /* Swipe replaces the arrows, and there's no resize handle to drag on touch. */
+  .shorts__stage {
+    height: 28rem;
+    padding: 0.5rem;
+    resize: none;
+  }
+  .shorts__nav {
+    display: none;
+  }
+}

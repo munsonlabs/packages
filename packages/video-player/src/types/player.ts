@@ -106,9 +106,16 @@ export interface PlayerProps {
   playInView?: boolean
   /** Pins the player to this screen corner once scrolled out of view while playing, instead of auto-pausing. Pausing while pinned does not unpin it. Omit to disable. */
   pin?: PinCorner
+  /** Start with looping on. Reactive - changing it later is the same as calling `toggleLoop()`. */
+  loop?: boolean
+  /** How much media to fetch before playback - the native `<video preload>` attribute. Unset leaves the browser default. `'none'` also holds hls.js back until the first play (DASH is not deferred); other values leave HLS loading as normal. Embed platforms ignore it. */
+  preload?: PreloadMode
 }
 
 export type PinCorner = 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
+
+/** The native `<video preload>` values. */
+export type PreloadMode = 'none' | 'metadata' | 'auto'
 
 export interface VideoStateDetail {
   currentSrc: string | null

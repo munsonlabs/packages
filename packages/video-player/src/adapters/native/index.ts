@@ -7,6 +7,7 @@ import { createFullscreenSupport } from '@/adapters/native/fullscreenSupport'
 import { createPipSupport } from '@/adapters/native/pipSupport'
 import type { PlaybackAdapter, MediaErrorLike } from '@/types/playback'
 import { HLS_MIME_TYPE, DASH_MIME_TYPE } from '@/constants'
+import type { PreloadMode } from '@/types/player'
 
 export interface NativeAdapterOptions {
   src: string
@@ -16,6 +17,7 @@ export interface NativeAdapterOptions {
   muted?: boolean
   volume?: number
   playbackRate?: number
+  preload?: PreloadMode
 }
 
 const NATIVE_EVENTS = [
@@ -74,6 +76,9 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
   /** Guards against a slow dynamic import resolving after a newer setSrc() call superseded it. */
   let pendingHlsSrc: string | null = null
   let pendingDashSrc: string | null = null
+  /** hls.js fetches segments as soon as it attaches unless told otherwise - `preload: 'none'` holds it back until play(). */
+  const deferHlsLoad = options.preload === 'none' && !options.autoplay
+  let hlsLoadStarted = false
 
   async function loadHls(src: string): Promise<void> {
     const { default: HlsCtor } = await import('hls.js')
@@ -86,7 +91,8 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
       return
     }
     /** Live detection in usePlayerEvents depends on duration() === Infinity, matching Safari's native HLS. */
-    hls = new HlsCtor({ liveDurationInfinity: true })
+    hls = new HlsCtor({ liveDurationInfinity: true, autoStartLoad: !deferHlsLoad })
+    hlsLoadStarted = !deferHlsLoad
     hls.loadSource(src)
     hls.attachMedia(videoEl)
     if (options.autoplay) void videoEl.play()
@@ -174,8 +180,9 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
   const fullscreenSupport = createFullscreenSupport(videoEl, forwardEvent('nativefullscreenenter'), forwardEvent('nativefullscreenexit'))
   const pipSupport = createPipSupport(videoEl, forwardEvent('pipchange'))
 
-  const { poster, muted, autoplay, volume, playbackRate, src, type } = options
+  const { poster, muted, autoplay, volume, playbackRate, preload, src, type } = options
   videoEl.poster = poster ?? ''
+  if (preload) videoEl.preload = preload
   videoEl.muted = muted ?? autoplay ?? false
   videoEl.volume = volume ?? 1
   videoEl.playbackRate = playbackRate ?? 1
@@ -184,7 +191,13 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
 
   return {
     el: videoEl,
-    play: () => videoEl.play(),
+    play: () => {
+      if (hls && !hlsLoadStarted) {
+        hlsLoadStarted = true
+        hls.startLoad()
+      }
+      return videoEl.play()
+    },
     pause: () => videoEl.pause(),
     paused: () => videoEl.paused,
     currentTime: () => videoEl.currentTime,

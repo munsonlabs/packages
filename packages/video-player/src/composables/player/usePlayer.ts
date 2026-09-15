@@ -102,7 +102,7 @@ export function usePlayer(
   const adRemainingTime = ref(0)
 
   const isMuted = ref(resolveInitialMuted(props.muted, !!(props.autoplay || props.playInView)))
-  const isLooping = ref(false)
+  const isLooping = ref(!!props.loop)
   const playbackRate = ref(props.playbackRate ?? 1)
   const supportsPlaybackRate = ref(false)
 
@@ -236,6 +236,14 @@ export function usePlayer(
     controls.toggleLoop()
     if (hasStarted.value) fire('loopchange', { isLooping: isLooping.value })
   }
+
+  watch(
+    () => props.loop,
+    (val) => {
+      if (val === undefined || val === isLooping.value) return
+      toggleLoop()
+    },
+  )
 
   watch(
     () => props.muted,

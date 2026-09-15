@@ -43,6 +43,8 @@ const props = withDefaults(
     disableKeyboardShortcuts: false,
     controls: true,
     playInView: false,
+    loop: false,
+    preload: undefined,
     hasPlaylist: false,
     hasNext: false,
     hasPrevious: false,
@@ -161,7 +163,14 @@ defineExpose(forwarded)
           @focusout="handleFocusOut"
         >
           <div data-mlv-player>
-            <video ref="videoEl" class="mlv-video" :class="{ 'mlv-video--hidden': videoHidden }" :poster="props.poster" playsinline>
+            <video
+              ref="videoEl"
+              class="mlv-video"
+              :class="{ 'mlv-video--hidden': videoHidden }"
+              :poster="props.poster"
+              :preload="props.preload"
+              playsinline
+            >
               <track
                 v-for="(t, i) in props.tracks"
                 :key="`${t.src}-${i}`"

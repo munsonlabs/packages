@@ -3,13 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "nuxt dev",
-    "generate": "nuxt generate",
     "dev:tunnel": "nuxt dev --tunnel",
-    "clean": "nuxt cleanup",
-    "build": "nuxt build"
+    "clean": "nuxt cleanup"
   },
   "dependencies": {
+    "@munsonlabs/video-player": "*",
     "better-sqlite3": "^12.6.2",
     "docus": "latest",
     "nuxt": "^4.3.1"

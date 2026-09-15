@@ -60,9 +60,10 @@ jobs:
           REPO: ${{ github.event.repository.name }}
 
       # `generate`, not `build` — static prerender, no nitro server or better-sqlite3 at runtime.
+      # Run through vp rather than `npm run generate` so the task's own dependsOn builds
+      # @munsonlabs/video-player first - the docs render live examples against its dist output.
       - name: Generate docs
-        run: npm run generate
-        working-directory: docs
+        run: vp run --filter docs generate
         env:
           NUXT_APP_BASE_URL: /${{ github.event.repository.name }}/
           NUXT_SITE_URL: ${{ steps.pages.outputs.base_url }}

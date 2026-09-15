@@ -39,7 +39,7 @@ function hlsQualityEngine(hls: Hls): QualityEngineAdapter {
   return {
     levels: () => hls.levels.map((level, index) => ({ index, height: level.height, bitrate: level.bitrate, label: `${level.height}p` })),
     isAuto: () => hls.autoLevelEnabled,
-    currentIndex: () => hls.currentLevel,
+    currentIndex: () => hls.manualLevel,
     setIndex: (index) => {
       hls.currentLevel = index ?? -1
     },

@@ -16,10 +16,21 @@ export interface QualityEngineAdapter {
   setIndex(index: number | null): void
 }
 
+/** One entry per height - the highest-bitrate variant of each, ascending. Heightless variants are audio-only renditions. */
+function toResolutionLadder(levels: QualityLevelInfo[]): QualityLevelInfo[] {
+  const byHeight = new Map<number, QualityLevelInfo>()
+  for (const level of levels) {
+    if (!level.height) continue
+    const seen = byHeight.get(level.height)
+    if (!seen || level.bitrate > seen.bitrate) byHeight.set(level.height, level)
+  }
+  return [...byHeight.values()].sort((a, b) => a.height - b.height)
+}
+
 /** getEngine() returns null for plain `<video>` sources and Safari's native HLS path, since neither has variant levels to expose. */
 export function createQualitySupport(getEngine: () => QualityEngineAdapter | null): QualitySupport {
   function getQualityLevels(): QualityLevelInfo[] {
-    return getEngine()?.levels() ?? []
+    return toResolutionLadder(getEngine()?.levels() ?? [])
   }
 
   function isAutoQuality(): boolean {

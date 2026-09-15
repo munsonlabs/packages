@@ -3,8 +3,17 @@
 
 @theme {
   --font-sans: 'Geist', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
 }
 
+/* Embedded players (live examples, CDN demo, Shorts) pick up the site accent */
+:root {
+  --mlv-accent: var(--ui-primary);
+  --mlv-btn-bg: var(--ui-primary);
+  --mlv-btn-color: var(--ui-text-inverted);
+}
+
+/* Sub-navigation menu centring (pre-existing) */
 [data-reka-navigation-menu] {
   margin: 0 auto;
 }
@@ -12,4 +21,70 @@
 [data-reka-navigation-menu] ul {
   display: flex;
   gap: 1rem;
+}
+
+/* Headings: tighter, heavier */
+h1,
+h2,
+h3 {
+  letter-spacing: -0.02em;
+}
+
+/* Landing hero */
+.ml-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.ml-hero h1 {
+  background: linear-gradient(180deg, var(--ui-text-highlighted), var(--ui-text-muted));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.ml-hero h1 em {
+  font-style: normal;
+  background: linear-gradient(90deg, var(--ui-color-primary-400), var(--ui-color-primary-600));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Package cards on the landing page */
+.ml-packages > a,
+.ml-packages > div {
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease,
+    border-color 200ms ease;
+}
+
+.ml-packages > a:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--ui-primary) 50%, var(--ui-border));
+  box-shadow: 0 12px 40px -16px var(--ui-primary);
+}
+
+/* Docs: give inline code and callouts a hint of the brand colour */
+.prose :not(pre) > code,
+article :not(pre) > code {
+  color: var(--ui-color-primary-600);
+}
+
+.dark .prose :not(pre) > code,
+.dark article :not(pre) > code {
+  color: var(--ui-color-primary-400);
+}
+
+/* Active sidebar link: soft green pill */
+aside a[aria-current='page'] {
+  background: color-mix(in oklab, var(--ui-primary) 10%, transparent);
+  border-radius: var(--ui-radius);
+}
+
+/* Selection */
+::selection {
+  background: color-mix(in oklab, var(--ui-primary) 30%, transparent);
 }

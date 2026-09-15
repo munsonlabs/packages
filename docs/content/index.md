@@ -3,9 +3,9 @@ seo:
   description: Public npm packages published under the @munsonlabs scope.
 ---
 
-::u-page-hero{orientation='horizontal'}
+::u-page-hero{orientation='horizontal' class="ml-hero"}
 
-:::card-group
+:::card-group{class="ml-packages"}
 ::card
 ---
 
@@ -29,17 +29,31 @@ Shared build tooling - CLI, vite configs, and deployment.
 ::
 :::
 
+#headline
+:::u-badge
+---
+
+color: primary
+variant: subtle
+size: lg
+icon: i-lucide-sparkles
+class: rounded-md px-3 py-1.5
+---
+
+Stuff I find useful
+:::
+
 #title
-Public npm packages, one repo.
+Public npm packages, _one_ repo.
 
 #description
-Standalone packages published under the @munsonlabs scope - each independent, no shared code between them.
+Standalone packages published under the @munsonlabs scope. Each one is independent, with no shared code between them, so you install only what you need.
 
 #links
 :::u-button
 ---
 
-color: neutral
+color: primary
 size: xl
 to: /getting-started/introduction
 trailing-icon: i-lucide-arrow-right
@@ -57,23 +71,8 @@ size: xl
 to: https://github.com/munsonlabs/packages
 variant: outline
 target: \_blank
-ui:
-leadingIcon: size-4
 ---
 
 View on GitHub
-:::
-
-#headline
-:::u-button
----
-
-color: primary
-to: /getting-started/introduction
-variant: subtle
-size: lg
----
-
-New here? Start with the Introduction →
 :::
 ::

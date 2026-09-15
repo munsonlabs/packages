@@ -6,9 +6,7 @@ import { AUDIBLE, MUTED, PLAY } from '../icons'
 
 interface Handle {
   togglePlay(): void
-  toggleLoop(): void
   isPlaying: boolean
-  isLooping: boolean
 }
 
 defineProps<{ short: Short; parts: Record<string, Component> }>()
@@ -19,14 +17,9 @@ function setHandle(el: unknown): void {
   handle.value = el as Handle | null
 }
 
-/**
- * There's no `loop` prop, only `toggleLoop()` - and every forwarded method mounts the real player
- * first, so calling it when the ref attaches would defeat `lazy`. A state event means it's mounted.
- */
+/** `tap` fires from the tap-to-reveal overlay even with controls={false}. */
 function onState(e: { type?: string } | CustomEvent): void {
   const detail = e instanceof CustomEvent ? e.detail?.[0] : e
-  if (handle.value && !handle.value.isLooping) handle.value.toggleLoop()
-  // `tap` fires from the tap-to-reveal overlay even with controls={false}.
   if (detail?.type === 'tap') handle.value?.togglePlay()
 }
 </script>
@@ -39,7 +32,9 @@ function onState(e: { type?: string } | CustomEvent): void {
       :src="short.src"
       :poster="short.poster"
       :title="short.title"
-      :lazy="true"
+      :lazy="false"
+      loop
+      preload="auto"
       aspect-ratio="9:16"
       :controls="false"
       play-in-view
@@ -81,5 +76,5 @@ function onState(e: { type?: string } | CustomEvent): void {
 </template>
 
 <style scoped>
-@import './slide.css'
+@import './slide.css';
 </style>

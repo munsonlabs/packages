@@ -92,7 +92,7 @@
   width: 1.75rem;
   height: 1.75rem;
   border-radius: 50%;
-  background: #c00;
+  background: var(--mlv-accent, #c00);
   font-size: 0.75rem;
   font-weight: 700;
 }
@@ -191,7 +191,7 @@
   cursor: pointer;
   background: linear-gradient(
     to right,
-    #f00 0 var(--p, 0%),
+    var(--mlv-accent, #f00) 0 var(--p, 0%),
     rgb(255 255 255 / 0.5) var(--p, 0%) var(--b, 0%),
     rgb(255 255 255 / 0.25) var(--b, 0%) 100%
   );

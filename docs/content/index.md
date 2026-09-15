@@ -12,7 +12,7 @@ seo:
 
 title: Video Player
 icon: i-lucide:play-circle
-to: /video-player
+to: /video-player/getting-started/introduction
 ---
 
 Standalone Vue 3 video player - native/HLS/DASH, embeds, IMA ads, and Prebid header bidding.

@@ -540,6 +540,11 @@ Three bundles are available: pick exactly one, since importing more than one dou
 ></ml-video-card>
 ```
 
+esm.sh rewrites every bare specifier in the bundle to its own URLs — `vue`, and the `hls.js`
+and `dashjs` that an HLS or DASH source pulls in on demand — so that one global is the entire
+setup. The import map above only aliases the package name for readability; dropping it and
+importing the full esm.sh URL directly works just as well.
+
 ### With a bundler
 
 None of the above applies — your bundler substitutes Vue's feature flags at build time, so
@@ -547,8 +552,9 @@ None of the above applies — your bundler substitutes Vue's feature flags at bu
 
 ### Supplying your own Vue instead
 
-If you would rather control which Vue build is used, mark it external and map it yourself.
-Vue's `esm-browser` builds have the flags already substituted, so no global is needed:
+If you already have Vue on the page, or want to control which build is used, mark it external
+and map it yourself. Vue's `esm-browser` builds have the flags already substituted, so no
+global is needed:
 
 ```html
 <script type="importmap">
@@ -562,21 +568,35 @@ Vue's `esm-browser` builds have the flags already substituted, so no global is n
 ```
 
 Without `?external=vue`, esm.sh resolves Vue itself and a bare `vue` import map entry is
-never consulted.
+never consulted — it has already rewritten the specifier to its own URL.
 
-If you'll be playing HLS (`.m3u8`) or DASH (`.mpd`) sources, also add an import map entry for `hls.js`/`dashjs`. Each is loaded on demand via a dynamic `import(...)`, which (unlike the Vue usage, where your own bundler resolves it) has no resolution path in a plain browser without one:
+`?external=vue` externalises **only** Vue. `hls.js` and `dashjs` stay resolved by esm.sh, so
+nothing else changes here.
+
+### Self-hosting, or loading raw files
+
+Serving `dist/` yourself — or loading raw file paths from unpkg/jsdelivr rather than esm.sh —
+gives you the bundle byte for byte, with every bare specifier intact. Nothing rewrites them, so
+map all three yourself:
 
 ```html
 <script type="importmap">
   {
     "imports": {
-      "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js",
+      "vue": "https://unpkg.com/vue@3/dist/vue.runtime.esm-browser.prod.js",
       "hls.js": "https://cdn.jsdelivr.net/npm/hls.js@1/+esm",
       "dashjs": "https://cdn.jsdelivr.net/npm/dashjs@4/+esm"
     }
   }
 </script>
 ```
+
+`hls.js` and `dashjs` are each loaded on demand via a dynamic `import()` when an `.m3u8` or
+`.mpd` source mounts, so omitting them fails at that moment rather than at load — skip them
+only if you are certain neither format will ever play.
+
+Platform adapter chunks are relative paths, not bare specifiers, so they need no entry — just
+deploy `chunks/` alongside the bundle.
 
 ### Available elements
 

@@ -13,19 +13,33 @@
   border-radius: var(--ui-radius, 8px);
 }
 
+/* The resizable element. `overflow` has to be non-visible for `resize` to apply, and
+   `container-type` makes the stage's own width queryable, so the rail's layout responds to the
+   drag handle rather than to the viewport. Unsupported on iOS Safari - a desktop affordance. */
 .shorts__stage {
   position: relative;
   display: flex;
   justify-content: center;
   gap: 0.75rem;
+  height: 36rem;
+  min-height: 22rem;
+  max-height: 90vh;
+  min-width: 400px;
+  max-width: 100%;
+  /* Stays centred as the drag handle narrows it - `resize` writes an explicit width, which
+     would otherwise leave the stage pinned to the left. */
+  margin: 0 auto;
   padding: 1rem;
+  overflow: hidden;
+  resize: both;
+  container-type: inline-size;
   background: #0f0f0f;
   border: 1px solid var(--ui-border);
   border-radius: 14px;
 }
 
 .shorts__scroller {
-  height: 34rem;
+  height: 100%;
   overflow-y: auto;
   scroll-snap-type: y mandatory;
   scrollbar-width: none;
@@ -35,10 +49,15 @@
   display: none;
 }
 
-/* Must match the scroller's height exactly: playInView's observer has no root, so a shorter
-   slide never reaches the 0.5 threshold and nothing autoplays. */
+/* 100% rather than a repeated length: a slide shorter than the scroller never reaches
+   playInView's 0.5 threshold, so nothing autoplays. This keeps them equal by construction.
+   fit-content is what lets the rail overlay: once it goes absolute the slide collapses to the
+   frame's width, so the rail's `right` lands on the video's edge rather than the scroller's. */
 .shorts__slide {
-  height: 34rem;
+  position: relative;
+  height: 100%;
+  width: fit-content;
+  margin-inline: auto;
   scroll-snap-align: start;
   display: flex;
   align-items: flex-end;
@@ -74,14 +93,13 @@
 }
 
 @media (max-width: 720px) {
+  /* Swipe replaces the arrows, and there's no resize handle to drag on touch. */
   .shorts__stage {
+    height: 28rem;
     padding: 0.5rem;
+    resize: none;
   }
   .shorts__nav {
     display: none;
-  }
-  .shorts__scroller,
-  .shorts__slide {
-    height: 26rem;
   }
 }

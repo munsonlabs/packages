@@ -122,6 +122,50 @@
   opacity: 0.95;
 }
 
+/* Matches the rail's own threshold in rail.css - stop short of it once it's over the video. */
+@container (max-width: 34rem) {
+  .shorts__meta {
+    right: 3.75rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .shorts__meta {
+    bottom: 0.9rem;
+  }
+
+  .shorts__avatar {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 0.7rem;
+  }
+
+  .shorts__handle,
+  .shorts__subscribe {
+    font-size: 0.7rem;
+  }
+
+  .shorts__title {
+    font-size: 0.75rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .shorts__mute {
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 2rem;
+    height: 2rem;
+  }
+
+  /* Slightly thicker, since 3px is hard to see and to hit on a phone. */
+  .shorts__frame :deep(.mlv-scrubber) {
+    height: 4px;
+  }
+}
+
 /* The wrapper is Scrubber's root, and is position:relative itself - pinning the input instead
    would resolve against a zero-height box below the full-height .player, clipped by the frame. */
 .shorts__frame :deep(.mlv-scrubber-wrap) {

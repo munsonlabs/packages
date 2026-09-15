@@ -1,10 +1,16 @@
 <script setup lang="ts">
+import { version as workspaceVersion } from '../../../packages/video-player/package.json'
+
 /**
- * Loads @munsonlabs/video-player's actual published web component bundle from unpkg
+ * Loads @munsonlabs/video-player's actual published web component bundle from a CDN
  * (not a local import) so this demo runs the real npm-published package, not source code.
  * The element bundle links its own dist/style.css automatically once imported - no separate
- * CSS step needed here. Vue is an external dependency; see nuxt.config.ts for the import map
- * this needs (matches the package README's own documented web-component usage).
+ * CSS step needed here.
+ *
+ * The default version is the workspace package's own. Outside a release that is exactly
+ * what is on npm, since `changeset version` only bumps it when the Version Packages PR
+ * merges - and the release workflow redeploys the site after publishing, so the page is
+ * never built against a version the CDN does not have yet.
  */
 const props = withDefaults(
   defineProps<{
@@ -15,12 +21,13 @@ const props = withDefaults(
     adTagUrl?: string
   }>(),
   {
-    version: '0.2.2',
+    version: workspaceVersion,
     // The commonly-used GCS sample poster (storage.googleapis.com/gtv-videos-bucket/...) now
     // 403s, so this deliberately omits `poster` - VideoPlaceholder falls back to a plain
     // play-button placeholder rather than showing a broken image on a live-rendered demo.
     src: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
-    poster: 'https://upload.wikimedia.org/wikipedia/commons/7/70/Big.Buck.Bunny.-.Opening.Screen.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original',
+    poster:
+      'https://upload.wikimedia.org/wikipedia/commons/7/70/Big.Buck.Bunny.-.Opening.Screen.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original',
     title: 'Big Buck Bunny',
   },
 )
@@ -59,9 +66,7 @@ onMounted(async () => {
         :title="props.title"
         :ad-tag-url="props.adTagUrl"
       />
-      <p v-else-if="state === 'error'" class="video-player-demo__status">
-        Could not load <code>@munsonlabs/video-player</code> from unpkg.
-      </p>
+      <p v-else-if="state === 'error'" class="video-player-demo__status">Could not load <code>@munsonlabs/video-player</code> from unpkg.</p>
       <p v-else class="video-player-demo__status">Loading player from npm…</p>
     </div>
     <p class="video-player-demo__caption">

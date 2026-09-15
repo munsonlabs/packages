@@ -29,6 +29,12 @@ concurrency:
 
 jobs:
   build:
+    # Merging the Version Packages PR touches package.json/CHANGELOG/lockfile,
+    # which match the paths above, but nothing on the site changes until the
+    # packages are actually on npm. Release dispatches this workflow once they
+    # are, so the push itself is skipped. `contains`, not `startsWith`: a merge
+    # commit prefixes the title with "Merge pull request …".
+    if: "!contains(github.event.head_commit.message, 'chore(release): version packages')"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

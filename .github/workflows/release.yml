@@ -7,6 +7,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  actions: write # to dispatch the Pages workflow after a publish
 
 # Two runs racing on main could both try to open or publish. Queue them.
 concurrency:
@@ -48,6 +49,7 @@ jobs:
           path: packages
 
       - uses: changesets/action@v1
+        id: changesets
         with:
           title: 'chore(release): version packages'
           commit: 'chore(release): version packages'
@@ -63,3 +65,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.CHANGESETS_TOKEN || secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # The docs demo loads the *published* bundle at the workspace version, so
+      # the site has to be rebuilt after the packages land on npm — not on the
+      # version commit, when that version does not exist yet (pages.yml skips
+      # that push for the same reason).
+      - if: steps.changesets.outputs.published == 'true'
+        name: Redeploy the docs site
+        run: gh workflow run pages.yml --ref "$GITHUB_REF_NAME"
+        env:
+          GH_TOKEN: ${{ github.token }}

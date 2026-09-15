@@ -47,7 +47,7 @@ Releases follow the standard [Changesets](https://github.com/changesets/changese
 
 2. Open a PR to `main` and merge it. Reviewers see the changeset (bump level and changelog entry) in the diff.
 3. [`.github/workflows/release.yml`](.github/workflows/release.yml) runs on the merge. It builds, checks and tests, then opens (or refreshes) a **Version Packages** PR containing the version bumps, changelog entries and lockfile update for every pending changeset. Keep merging features; the PR is regenerated each time and always shows exactly what the next release contains.
-4. Merge the Version Packages PR when you want to release. The workflow runs again, finds no pending changesets, and publishes every bumped package to npm, tagging each one (`@munsonlabs/video-player@1.3.0`).
+4. Merge the Version Packages PR when you want to release. The workflow runs again, finds no pending changesets, and publishes every bumped package to npm, tagging each one (`@munsonlabs/video-player@1.3.0`). It then redeploys the docs site, whose published-package demo loads the workspace version from a CDN.
 
 To try unreleased work without cutting a release, publish a snapshot from any branch — `shipkit deploy --snapshot <tag>` publishes `0.0.0-<tag>-<timestamp>` under that dist-tag and leaves changesets and git untouched.
 

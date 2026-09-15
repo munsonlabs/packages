@@ -1,13 +1,19 @@
 ---
-'@munsonlabs/shipkit': patch
+'@munsonlabs/shipkit': minor
 ---
 
-Fix `inlineCss` corrupting its own state across concurrent builds.
+Initial release.
 
-A package that declares several pack configs shares one plugin instance
-between them (each spreads the same base config), and those builds run
-concurrently. The plugin stashed the output directory and chunk list in
-`generateBundle` for `closeBundle` to read, so one build could overwrite
-them while another was still mid-flight — failing with `"style.css" ... does
-not exist`, or silently inlining against the wrong build's output. It now
-uses `writeBundle`, which is handed each build's own options and bundle.
+Shared build tooling for `@munsonlabs/*` packages:
+
+- **`shipkit init <target>`** — scaffolds a `vite.config.ts` for a library or an app.
+- **`shipkit deploy`** — the release flow, over Changesets: `--commit` to author a changeset,
+  `--publish` for a stable release, `--beta` for a prerelease, `--local` to publish to a Verdaccio
+  registry, and `--snapshot <tag>` for a throwaway release off a feature branch. `--publish` and
+  `--beta` are CI-only.
+- **Shared Vite configs** — `vite/vue.config` for Vue packages and apps, `vite/base.config` for
+  plain TypeScript libraries. Both wire up DTS, lint, format and test. Includes `inlineCss()`, a
+  plugin that embeds a built CSS file into a JS chunk at an `__INLINE_CSS(<path>)__` marker, for
+  custom elements built without a shadow root.
+- **Shared tsconfigs** — `tsconfig/base` (strict ESM, `nodenext`), `tsconfig/lib` (bundler
+  resolution, DOM types, JSX) and `tsconfig/app`.

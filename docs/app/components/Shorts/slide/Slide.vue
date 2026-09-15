@@ -7,6 +7,7 @@ import { AUDIBLE, MUTED, PLAY } from '../icons'
 interface Handle {
   togglePlay(): void
   isPlaying: boolean
+  hasStarted: boolean
 }
 
 defineProps<{ short: Short; parts: Record<string, Component> }>()
@@ -45,9 +46,9 @@ function onState(e: { type?: string } | CustomEvent): void {
       <span class="shorts__spinner-ring" />
     </component>
 
-    <!-- The empty <span> matters: a v-if that renders nothing leaves a comment, which counts as an empty slot, and PlayButton falls back to its own play/pause icon. -->
+    <!-- Only shows once the viewer has paused: before the first play the poster stands alone rather than a play icon over a video that's about to autoplay. The empty <span> matters: a v-if that renders nothing leaves a comment, which counts as an empty slot, and PlayButton falls back to its own play/pause icon. -->
     <component :is="parts.PlayButton" :player="handle" class="shorts__bigplay" v-slot="{ isPlaying }">
-      <svg v-if="!isPlaying" viewBox="0 0 24 24" fill="currentColor" width="34" height="34"><path :d="PLAY" /></svg>
+      <svg v-if="handle?.hasStarted && !isPlaying" viewBox="0 0 24 24" fill="currentColor" width="34" height="34"><path :d="PLAY" /></svg>
       <span v-else />
     </component>
 

@@ -59,6 +59,8 @@
   width: fit-content;
   margin-inline: auto;
   scroll-snap-align: start;
+  /* One short per fling: without this a fast wheel or swipe sails past several snap points. */
+  scroll-snap-stop: always;
   display: flex;
   align-items: flex-end;
   gap: 0.75rem;

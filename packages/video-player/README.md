@@ -22,7 +22,7 @@ import '@munsonlabs/video-player/style'
   <VideoCard
     label="Big Buck Bunny"
     src="https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4"
-    poster="https://storage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"
+    poster="https://m.media-amazon.com/images/S/pv-target-images/fb7afef01282cdc2d846b2343f9f3d7a785b7133729776f1aa0da6501a2e1f7b.jpg"
   />
 </template>
 ```
@@ -551,7 +551,7 @@ Three bundles are available: pick exactly one, since importing more than one dou
 <ml-video-card
   src="https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4"
   label="Big Buck Bunny"
-  poster="https://storage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"
+  poster="https://m.media-amazon.com/images/S/pv-target-images/fb7afef01282cdc2d846b2343f9f3d7a785b7133729776f1aa0da6501a2e1f7b.jpg"
 ></ml-video-card>
 ```
 

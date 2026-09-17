@@ -2,7 +2,7 @@ import type { VideoEntry } from '@/types/player'
 
 export const CLIP_URL = '/test/browser/media/flower.mp4'
 export const CLIP_DURATION = 5.055
-export const POSTER_URL = '/test/browser/media/poster.svg'
+export const POSTER_URL = '/test/browser/media/poster.jpg'
 export const MISSING_URL = '/test/browser/media/missing.mp4'
 export const HLS_URL = '/test/browser/media/hls/flower.m3u8'
 

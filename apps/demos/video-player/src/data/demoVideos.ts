@@ -124,5 +124,6 @@ export const qualityVideos: VideoEntry[] = [
   {
     label: 'HLS test stream (bipbop) — adaptive bitrate',
     src: 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8#quality',
+    poster: 'https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg',
   },
 ]

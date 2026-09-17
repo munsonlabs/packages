@@ -97,7 +97,7 @@ export function usePlayerControls(
     const player = getPlayer()
     if (!player || !isReady.value) return
     if (isPlaying.value) player.pause()
-    else void player.play()
+    else void Promise.resolve(player.play()).catch(() => {})
   }
 
   function seek(percent: number): void {

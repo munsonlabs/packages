@@ -7,24 +7,15 @@
     "clean": "rm -rf dist",
     "preview": "vp preview",
     "lint": "vp lint",
-    "fmt": "vp fmt",
-    "typecheck": "vp check --types",
-    "test": "vp run test-e2e && vp run test-page",
-    "test:e2e": "vp run test-e2e",
-    "test:page": "vp run test-page",
-    "test:perf": "vp run test-perf"
+    "fmt": "vp fmt"
   },
   "dependencies": {
     "@munsonlabs/video-player": "*"
   },
   "devDependencies": {
     "@munsonlabs/shipkit": "*",
-    "@playwright/test": "1.62.1",
     "@vitest/browser-playwright": "4.1.11",
     "playwright": "1.62.1",
-    "vite": "npm:@voidzero-dev/vite-plus-core@0.3.2",
-    "vitest": "4.1.11",
-    "vitest-browser-vue": "^2.1.0",
-    "vue": "^3.5.34"
+    "vitest-browser-vue": "^2.1.0"
   }
 }

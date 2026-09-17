@@ -145,7 +145,7 @@ export function attachAds(containerEl: HTMLElement, videoEl: HTMLVideoElement, i
             return
           }
           /** A mid-roll firing during normal playback shouldn't restart content via HTML5's restart-on-play behavior. */
-          if (!videoEl.ended) void videoEl.play()
+          if (!videoEl.ended) void videoEl.play().catch(() => {})
         })
 
         adsManager.addEventListener(ima.AdEvent.Type.PAUSED, () => {
@@ -167,7 +167,7 @@ export function attachAds(containerEl: HTMLElement, videoEl: HTMLVideoElement, i
         adsManager.addEventListener(ima.AdErrorEvent.Type.AD_ERROR, (errEvent) => {
           setAdPlaying(false)
           callbacks.onError((errEvent as ImaAdErrorEvent).getError().getMessage())
-          void videoEl.play()
+          void videoEl.play().catch(() => {})
         })
 
         try {

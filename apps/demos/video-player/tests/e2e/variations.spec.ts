@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vite-plus/test'
-import { catalogue, POSTER_URL } from '../../src/data/catalogue'
+import { describe, it, expect, vi } from 'vite-plus/test'
+import { catalogue, POSTER_URL, CLIP_DURATION } from '../../src/data/catalogue'
 import { mountPlayer, mountCard, waitFor } from './harness'
 
 describe('variations', () => {
@@ -67,6 +67,7 @@ describe('variations', () => {
   })
 
   it('broken source: reports an error, shows Retry, and Retry re-attempts the load', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     const { screen, player, sink } = await mountPlayer(catalogue.broken, { muted: true }, { awaitMetadata: false })
 
     await sink.next('error')
@@ -79,5 +80,20 @@ describe('variations', () => {
     await sink.next('error', 1)
     expect(player.isError).toBe(true)
     await expect(player.play()).rejects.toThrow()
+  })
+
+  it('HLS: plays the fMP4 playlist (hls.js in Chromium, native in WebKit), seeks and ends', async () => {
+    const { video, player, sink } = await mountPlayer(catalogue.hls)
+    await sink.next('play')
+    expect(player.isLoaded).toBe(true)
+    expect(player.total).toBeCloseTo(CLIP_DURATION, 0)
+    expect(player.isLive).toBe(false)
+
+    player.seekTo(4)
+    await sink.next('seeked')
+    expect(video.currentTime).toBeGreaterThanOrEqual(3.9)
+
+    await sink.next('ended')
+    expect(player.hasEnded).toBe(true)
   })
 })

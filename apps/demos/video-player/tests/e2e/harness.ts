@@ -1,4 +1,4 @@
-import { defineComponent, onMounted, ref, reactive } from 'vue'
+import { defineComponent, h, onMounted, ref, reactive } from 'vue'
 import { render } from 'vitest-browser-vue'
 import { VideoPlayer, VideoStage, VideoCard } from '@munsonlabs/video-player'
 import type { PlayerHandle, StateChangeEvent, StateChangeType, VideoEntry } from '@munsonlabs/video-player'
@@ -77,19 +77,14 @@ export async function mountPlayer(
   const captured: { player: PlayerHandle | null } = { player: null }
 
   const Host = defineComponent({
-    components: { VideoPlayer },
     props: { entry: { type: Object, required: true }, extra: { type: Object, required: true } },
     setup(hostProps) {
       const playerRef = ref<PlayerHandle | null>(null)
       onMounted(() => (captured.player = playerRef.value))
-      return { playerRef, onStateChange: sink.push, merged: { ...(hostProps.entry as VideoEntry), ...(hostProps.extra as object) } }
+      const merged = { ...(hostProps.entry as VideoEntry), ...(hostProps.extra as object) }
+      return () =>
+        h('div', [h(VideoPlayer, { ...merged, ref: playerRef, onStateChange: sink.push }), h('button', { type: 'button' }, 'grant gesture')])
     },
-    template: `
-      <div>
-        <VideoPlayer ref="playerRef" v-bind="merged" @state-change="onStateChange" />
-        <button type="button">grant gesture</button>
-      </div>
-    `,
   })
 
   const screen = await render(Host, { props: { entry, extra: props } })
@@ -116,10 +111,8 @@ export interface MountedCard {
 export async function mountCard(entry: VideoEntry): Promise<MountedCard> {
   const sink = new EventSink()
   const Host = defineComponent({
-    components: { VideoCard },
     props: { entry: { type: Object, required: true } },
-    setup: () => ({ onStateChange: sink.push }),
-    template: `<div><VideoCard v-bind="entry" @state-change="onStateChange" /></div>`,
+    setup: (hostProps) => () => h('div', [h(VideoCard, { ...(hostProps.entry as VideoEntry), onStateChange: sink.push })]),
   })
   const screen = await render(Host, { props: { entry } })
   return {
@@ -143,19 +136,16 @@ export async function mountStage(playlist: VideoEntry[]): Promise<MountedStage> 
   const captured: { stage: MountedStage['stage'] | null } = { stage: null }
 
   const Host = defineComponent({
-    components: { VideoStage, VideoCard },
     props: { playlist: { type: Array, required: true } },
-    setup() {
+    setup(hostProps) {
       const stageRef = ref<MountedStage['stage'] | null>(null)
       onMounted(() => (captured.stage = stageRef.value))
-      return { stageRef, onStateChange: sink.push }
+      return () =>
+        h('div', [
+          h(VideoStage, { playlist: hostProps.playlist as VideoEntry[], ref: stageRef, onStateChange: sink.push }),
+          ...(hostProps.playlist as VideoEntry[]).map((v) => h(VideoCard, { ...v, key: v.src, lazy: true, controls: true })),
+        ])
     },
-    template: `
-      <div>
-        <VideoStage ref="stageRef" :playlist="playlist" @state-change="onStateChange" />
-        <VideoCard v-for="v in playlist" :key="v.src" v-bind="v" :lazy="true" :controls="true" />
-      </div>
-    `,
   })
 
   const screen = await render(Host, { props: { playlist } })

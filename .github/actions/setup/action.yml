@@ -8,7 +8,7 @@ inputs:
       docs config — `vp run -r build` does, `check` and `test` do not.
     default: 'true'
   playwright:
-    description: Download the Chromium build the browser tests need.
+    description: Playwright browser(s) to download for the browser tests (e.g. `chromium`, `webkit`), or `false`.
     default: 'false'
 
 runs:
@@ -34,6 +34,6 @@ runs:
       shell: bash
       working-directory: docs
 
-    - if: inputs.playwright == 'true'
-      run: npx playwright install --with-deps chromium
+    - if: inputs.playwright != 'false'
+      run: npx playwright install --with-deps ${{ inputs.playwright }}
       shell: bash

@@ -1,20 +1,27 @@
 import { mergeConfig } from 'vite-plus'
 import { playwright } from 'vite-plus/test/browser-playwright'
 import base from '@munsonlabs/shipkit/vite/vue.config'
-import { perfMediaServer } from './tests/perf/mediaServer'
-
-const PERF_FIXTURE = decodeURIComponent(new URL('./public/media/flower.mp4', import.meta.url).pathname)
-
 export default mergeConfig(base, {
-  plugins: [perfMediaServer(PERF_FIXTURE)],
   test: {
-    include: ['tests/e2e/**/*.spec.ts'],
+    include: ['tests/e2e/**/*.spec.ts', 'tests/page/**/*.spec.ts'],
     passWithNoTests: true,
-    setupFiles: ['vitest-browser-vue', './tests/e2e/setup.ts'],
+    setupFiles: ['vitest-browser-vue', './tests/setup.ts'],
     browser: {
       enabled: true,
-      provider: playwright({ launchOptions: process.env.CI ? { args: ['--no-sandbox'] } : {} }),
-      instances: [{ browser: 'chromium' }],
+      viewport: { width: 1280, height: 900 },
+      // `vp test --browser.name=chromium|webkit` narrows to one engine; CI does, one per matrix entry.
+      instances: [
+        {
+          browser: 'chromium',
+          // Offline apart from the dev server: Prebid, CDN posters and embeds fail fast instead of hanging tests.
+          provider: playwright({
+            launchOptions: {
+              args: ['--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE localhost, EXCLUDE 127.0.0.1', ...(process.env.CI ? ['--no-sandbox'] : [])],
+            },
+          }),
+        },
+        { browser: 'webkit', provider: playwright() },
+      ],
     },
   },
   run: {
@@ -36,20 +43,9 @@ export default mergeConfig(base, {
         command: 'vp check',
         dependsOn: ['@munsonlabs/video-player#build'],
       },
-      'test-e2e': {
-        // Resolves `@munsonlabs/video-player` from its dist build, so a stale build silently
-        // tests old code — this task's whole point is making that impossible to forget.
+      // Both depend on the package's dist build, so a stale build can never silently test old code.
+      test: {
         command: 'vp test',
-        dependsOn: ['@munsonlabs/video-player#build'],
-        cache: false,
-      },
-      'test-page': {
-        command: 'playwright test',
-        dependsOn: ['@munsonlabs/video-player#build'],
-        cache: false,
-      },
-      'test-perf': {
-        command: 'playwright test --config playwright.perf.config.ts',
         dependsOn: ['@munsonlabs/video-player#build'],
         cache: false,
       },

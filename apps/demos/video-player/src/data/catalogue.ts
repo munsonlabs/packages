@@ -4,6 +4,7 @@ export const CLIP_URL = '/media/flower.mp4'
 export const CLIP_DURATION = 5.055
 export const POSTER_URL = '/media/poster.svg'
 export const MISSING_URL = '/media/missing.mp4'
+export const HLS_URL = '/media/hls/flower.m3u8'
 
 const clip = (fragment: string) => `${CLIP_URL}#${fragment}`
 
@@ -25,6 +26,7 @@ export const catalogue = {
   },
   playInView: { title: 'playInView', src: clip('play-in-view'), playInView: true },
   pinned: { title: 'Pinned when scrolled away', src: clip('pinned'), pin: 'bottom-left', muted: true },
+  hls: { title: 'HLS (fMP4, same clip)', src: HLS_URL },
   broken: { title: 'Broken source (error + Retry)', src: MISSING_URL },
 } satisfies Record<string, VideoEntry>
 

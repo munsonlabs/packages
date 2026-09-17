@@ -60,8 +60,11 @@
   },
   "devDependencies": {
     "@munsonlabs/shipkit": "*",
+    "@vitest/browser-playwright": "4.1.11",
     "dashjs": "^4.7.4",
     "hls.js": "^1.6.16",
+    "playwright": "1.62.1",
+    "vitest-browser-vue": "^2.1.0",
     "vue": "3.5.42"
   },
   "peerDependencies": {

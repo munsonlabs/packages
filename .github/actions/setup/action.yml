@@ -19,16 +19,14 @@ runs:
         node-version-file: .node-version
         cache: true
 
-    # setup-vp caches npm downloads, not vp's task cache — without this, every
-    # job rebuilds every package from scratch even when nothing changed.
-    # Restored after install, since it lives under node_modules.
+    # setup-vp caches npm downloads, not vp's task cache; without this every job rebuilds every package.
     - uses: actions/cache@v6
       with:
         path: node_modules/.vite/task-cache
         key: vp-task-${{ runner.os }}-${{ github.sha }}
         restore-keys: vp-task-${{ runner.os }}-
 
-    # `.npmrc` sets ignore-scripts, so Nuxt's postinstall never runs.
+    # .npmrc sets ignore-scripts, so Nuxt's postinstall never runs.
     - if: inputs.nuxt == 'true'
       run: npx nuxt prepare
       shell: bash

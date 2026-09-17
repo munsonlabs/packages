@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { ref } from 'vue'
 import { withSetup } from '@test/composables/withSetup'
-import { usePositionMemory } from '@/composables/player/usePositionMemory'
+import { usePositionMemory } from '@/composables/player/features/usePositionMemory'
 import { savePosition, getPosition, clearPosition } from '@/utils/positionMemory'
 import type { PlaybackAdapter } from '@/types/playback'
 

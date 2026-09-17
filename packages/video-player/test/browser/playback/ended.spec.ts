@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vite-plus/test'
-import { catalogue, CLIP_DURATION } from '../../../src/data/catalogue'
-import { mountPlayer } from '../harness'
+import { catalogue, CLIP_DURATION } from '@test/browser/catalogue'
+import { mountPlayer } from '@test/browser/harness'
 
 describe('ended', () => {
   it('reaching the end emits `ended` once, at the full duration, and leaves the player stopped', async () => {

@@ -113,11 +113,26 @@ The types describing this contract (`Matcher`, `EmbedAdapterFactory`, `SourceRes
 
 ## Events (`state-change`)
 
-Emitted by `VideoCard`, `VideoPlayer`, and `VideoStage`. Full `StateChangeType` union (`src/types/player.ts`): `play`, `pause`, `ended`, `seeked`, `error`, `adstart`, `adend`, `volumechange`, `ratechange`, `captionchange`, `qualitychange`, `pipchange`, `loopchange`, `firstQuartile`, `midpoint`, `thirdQuartile`, `controlsopen`, `controlsclose`, `bufferstart`, `bufferend`, `timeupdate`, `tap`. `tap` fires from the tap-to-reveal-controls overlay regardless of `controls` — the only signal a `controls: false` consumer gets for "the user tapped the video". See `README.md`'s Events section for the full field-by-field breakdown of `StateChangeEvent` and per-type notes (e.g. `captionchange`/`qualitychange` never fire before playback has started).
+Emitted by `VideoCard`, `VideoPlayer`, and `VideoStage`. Full `StateChangeType` union (`src/types/player.ts`): `loaded`, `play`, `pause`, `ended`, `seeked`, `error`, `adstart`, `adend`, `volumechange`, `ratechange`, `captionchange`, `qualitychange`, `pipchange`, `loopchange`, `firstQuartile`, `midpoint`, `thirdQuartile`, `controlsopen`, `controlsclose`, `bufferstart`, `bufferend`, `timeupdate`, `tap`. `tap` fires from the tap-to-reveal-controls overlay regardless of `controls` — the only signal a `controls: false` consumer gets for "the user tapped the video". See `README.md`'s Events section for the full field-by-field breakdown of `StateChangeEvent` and per-type notes (e.g. `captionchange`/`qualitychange` never fire before playback has started).
 
 ## Testing
 
-Tests live in `test/`, mirroring `src/`. Run with `npm run test` (`vp test`) from this package. Both `@/` (→ `src/`) and `@test/` (→ `test/`) path aliases are available (from the shared shipkit Vite config) — no relative imports needed in either.
+Two vitest projects, both run by `npm run test` (`vp test`): the jsdom unit suite in `test/` (mirroring `src/`, mocked adapters) and the real-browser suite in `test/browser/` (Chromium and WebKit via Playwright, real media from `test/browser/media`, every prop variation listed in `test/browser/catalogue.ts`). `--browser.name=chromium|webkit` narrows the browser project to one engine. Both `@/` (→ `src/`) and `@test/` (→ `test/`) aliases are available.
+
+### Adding a browser test
+
+A browser test belongs in `test/browser/` only if it needs a real `<video>`; anything that would pass against a mocked adapter is a unit test. Start from `test/browser/catalogue.ts` (add or pick the entry whose props you are testing; the demo's Variations panel renders the same list), mount it with `mountPlayer`/`mountCard`/`mountStage` from `test/browser/harness.ts`, and assert through the returned `player` handle and the `sink` of state-change events, reading the `<video>` element only for what the handle cannot see. Wait on events or `waitFor`, never on timers.
+
+Iterate on one file, one engine, in watch mode, from this directory:
+
+```bash
+vp test --project browser --browser.name=chromium --watch test/browser/playback/auto-advance.spec.ts
+vp test --project browser --browser.name=chromium --browser.headless=false test/browser/playback/auto-advance.spec.ts   # watch it happen
+vp test --project browser --browser.name=webkit test/browser/playback/auto-advance.spec.ts                                # the Safari engine
+vp test                                                                                                                  # everything, before committing
+```
+
+From the repo root the same run is `vp run @munsonlabs/video-player#test -- --project browser --browser.name=chromium`; `--watch` and file filters only behave well from the package directory. Browsers install once with `npx playwright install chromium webkit`.
 
 ## Build
 

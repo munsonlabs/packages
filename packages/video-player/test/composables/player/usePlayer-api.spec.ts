@@ -49,6 +49,7 @@ describe('play()', () => {
   })
 
   it('rejects when the adapter errors instead', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     const { player } = await setup()
     const p = player.play()
     emitter.trigger('error')

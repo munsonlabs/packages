@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, toRef, watch } from 'vue'
-import { usePinOnScrollOut } from '@/composables/player/usePinOnScrollOut'
-import { usePinnedReservedSpace } from '@/composables/player/usePinnedReservedSpace'
+import { usePinOnScrollOut } from '@/composables/player/viewport/usePinOnScrollOut'
+import { usePinnedReservedSpace } from '@/composables/player/viewport/usePinnedReservedSpace'
 import { isStageTucked } from '@/composables/registries/stageRegistry'
 import { runFlipTransition } from '@/utils/flipTransition'
 import { scrollIntoCenter } from '@/utils/scrollIntoCenter'

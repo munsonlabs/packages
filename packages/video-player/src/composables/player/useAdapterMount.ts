@@ -4,7 +4,7 @@ import { createNativeAdapter } from '@/adapters/native'
 import { applyAdTagParams } from '@/utils/adTags'
 import type { PlaybackAdapter, ResolvedSource } from '@/types/playback'
 import type { PlayerProps } from '@/types/player'
-import type { UseAdSetupReturn } from '@/composables/player/useAdSetup'
+import type { UseAdSetupReturn } from '@/composables/player/features/useAdSetup'
 import { getAudioPreference, hasUnmutedThisSession } from '@/utils/audioPreference'
 
 export interface MountedAdapter {

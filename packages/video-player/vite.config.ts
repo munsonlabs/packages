@@ -1,25 +1,12 @@
 import base from '@munsonlabs/shipkit/vite/vue.config'
+import { playwright } from 'vite-plus/test/browser-playwright'
 
 const basePack = (base as any).pack ?? {}
 
 /**
- * One pack config for `src/elements/<name>.ts`, output to dist/elements/<name>.{mjs,d.mts} - each
- * gets its own build (not a single multi-entry one) so shared dependencies between them (e.g.
- * PlayButton.vue) don't get factored into a content-hashed shared chunk, which would break both
- * the "index/core/controls each stand alone" guarantee for CDN/`<script type=module>` consumers
- * (importing exactly one of the three should never require fetching code the others pulled in)
- * and the separate core.css/controls.css the `./style/core`/`./style/controls` exports rely on.
- *
- * This doesn't rule out splitting *within* one entry: index.mjs/core.mjs each dynamically
- * `import()` their own platform adapters (adapters/index.ts), landing in dist/elements/chunks/ -
- * shared between those two specifically (both need the same adapters), never with controls.mjs
- * (which doesn't touch adapters/index.ts at all). Self-hosting index.mjs/core.mjs means serving
- * that chunks/ directory alongside them; a directory-serving CDN (jsdelivr/unpkg/esm.sh) needs no
- * special handling.
- *
- * `cssFileName` is optional: omit it to keep the default 'style.css' (the combined `index` bundle,
- * which auto-injects its own CSS); pass it to name this build's CSS output after itself instead
- * (core.css/controls.css), doubling as the un-embedded copy `./style/core`/`./style/controls` use.
+ * Each element bundle is its own build so index/core/controls stand alone for CDN consumers (no
+ * shared hashed chunk between them) and core.css/controls.css stay separate. `cssFileName` names
+ * this build's CSS; omitted, the combined `index` bundle keeps `style.css` and injects it itself.
  */
 function elementEntry(name: string, cssFileName?: string) {
   return {
@@ -34,8 +21,42 @@ function elementEntry(name: string, cssFileName?: string) {
   }
 }
 
+const { test: unitTest, ...baseConfig } = base as any
+
 export default {
-  ...base,
+  ...baseConfig,
+  test: {
+    projects: [
+      { extends: true, test: { ...unitTest, name: 'unit', include: ['test/**/*.spec.ts'], exclude: ['test/browser/**'] } },
+      {
+        extends: true,
+        test: {
+          name: 'browser',
+          include: ['test/browser/**/*.spec.ts'],
+          setupFiles: ['vitest-browser-vue', './test/browser/setup.ts'],
+          browser: {
+            enabled: true,
+            viewport: { width: 1280, height: 900 },
+            instances: [
+              {
+                browser: 'chromium',
+                // Offline apart from the dev server, so nothing external can hang a test.
+                provider: playwright({
+                  launchOptions: {
+                    args: [
+                      '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE localhost, EXCLUDE 127.0.0.1',
+                      ...(process.env.CI ? ['--no-sandbox'] : []),
+                    ],
+                  },
+                }),
+              },
+              { browser: 'webkit', provider: playwright() },
+            ],
+          },
+        },
+      },
+    ],
+  },
   run: {
     tasks: {
       build: { command: 'vp pack' },

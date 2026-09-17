@@ -162,7 +162,7 @@ registerPlatform({
 
 Call it once, before mounting any player that might see the new URL - resolution reads the registry fresh every time, so ordering (not caching) is the only thing that matters.
 
-- **`embed: true`** - the platform owns its own player (YouTube, Twitch, Vimeo). `createAdapter` returns a full `PlaybackAdapter`: `play`/`pause`/`currentTime`/captions/quality/PiP/fullscreen/`on`/`off`/`dispose`, translating SDK events into the common set.
+- **`embed: true`** - the platform owns its own player (YouTube, Twitch, Vimeo). `createAdapter` returns a full `PlaybackAdapter`: `play` (returns a promise, resolved once the request is issued)/`pause`/`currentTime`/captions/quality/PiP/fullscreen/`on`/`off`/`dispose`, translating SDK events into the common set.
 - **`embed: false`** - the platform hosts a file/manifest behind an opaque URL. `resolveSource` (optional) returns `{ src, type?, poster?, adTagUrl? }`; the native path handles playback.
 
 This works identically from the [web component bundles](#web-component-usage) - see [Registering a platform from a web component](#registering-a-platform-from-a-web-component) for the `?defer` import mode that sidesteps a timing subtlety with statically-declared tags.

@@ -1,7 +1,7 @@
 import type { PlaybackAdapter } from '@/types/playback'
 import type { StateChangeEvent, StateChangeType } from '@/types/player'
 import type { PlayerState } from '@/composables/player/playerState'
-import type { UseAdSetupReturn } from '@/composables/player/useAdSetup'
+import type { UseAdSetupReturn } from '@/composables/player/features/useAdSetup'
 import { saveAndTrackAudioPreference } from '@/utils/audioPreference'
 
 export interface UsePlayerControlsReturn {

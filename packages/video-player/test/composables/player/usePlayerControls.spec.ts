@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vite-plus/test'
 import { ref } from 'vue'
 import { usePlayerControls } from '@/composables/player/usePlayerControls'
 import { createPlayerState } from '@/composables/player/playerState'
-import type { UseAdSetupReturn } from '@/composables/player/useAdSetup'
+import type { UseAdSetupReturn } from '@/composables/player/features/useAdSetup'
 import type { PlaybackAdapter } from '@/types/playback'
 
 function makeAdapter(overrides: Partial<PlaybackAdapter> = {}): PlaybackAdapter {

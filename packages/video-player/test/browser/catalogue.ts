@@ -1,10 +1,10 @@
-import type { VideoEntry } from '@munsonlabs/video-player'
+import type { VideoEntry } from '@/types/player'
 
-export const CLIP_URL = '/media/flower.mp4'
+export const CLIP_URL = '/test/browser/media/flower.mp4'
 export const CLIP_DURATION = 5.055
-export const POSTER_URL = '/media/poster.svg'
-export const MISSING_URL = '/media/missing.mp4'
-export const HLS_URL = '/media/hls/flower.m3u8'
+export const POSTER_URL = '/test/browser/media/poster.svg'
+export const MISSING_URL = '/test/browser/media/missing.mp4'
+export const HLS_URL = '/test/browser/media/hls/flower.m3u8'
 
 const clip = (fragment: string) => `${CLIP_URL}#${fragment}`
 
@@ -20,8 +20,8 @@ export const catalogue = {
     label: 'Captioned (English default)',
     src: clip('captioned'),
     tracks: [
-      { src: '/media/captions/bbb-en.vtt', kind: 'captions', srclang: 'en', label: 'English', default: true },
-      { src: '/media/captions/bbb-fr.vtt', kind: 'captions', srclang: 'fr', label: 'Français' },
+      { src: '/test/browser/media/captions/bbb-en.vtt', kind: 'captions', srclang: 'en', label: 'English', default: true },
+      { src: '/test/browser/media/captions/bbb-fr.vtt', kind: 'captions', srclang: 'fr', label: 'Français' },
     ],
   },
   playInView: { label: 'playInView', src: clip('play-in-view'), playInView: true },

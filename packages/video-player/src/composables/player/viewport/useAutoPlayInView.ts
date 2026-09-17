@@ -1,7 +1,7 @@
 import { onMounted, onBeforeUnmount } from 'vue'
 import type { Ref } from 'vue'
 import type { PlaybackAdapter } from '@/types/playback'
-import { observeViewportPriority } from '@/composables/player/viewportObserver'
+import { observeViewportPriority } from '@/composables/player/viewport/viewportObserver'
 import { getShellEl } from '@/adapters/embeds/embedShared'
 import { resolveInitialMuted } from '@/composables/player/useAdapterMount'
 

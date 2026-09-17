@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive, toRef, provide, inject, watch, nextTick } from 'vue'
 import { usePlayer } from '@/composables/player/usePlayer'
-import { useKeyboardShortcuts } from '@/composables/player/useKeyboardShortcuts'
+import { useKeyboardShortcuts } from '@/composables/player/features/useKeyboardShortcuts'
 import { useHud } from '@/composables/overlay/useHud'
 import { exposePlayerSurface } from '@/composables/player/playerSurface'
 import { PlayerKey, HudKey, ActionKey, PlaylistKey, NO_PLAYLIST } from '@/composables/player/playerContext'

@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { ref } from 'vue'
 import { withSetup } from '@test/composables/withSetup'
-import { useAutoPlayInView } from '@/composables/player/useAutoPlayInView'
+import { useAutoPlayInView } from '@/composables/player/viewport/useAutoPlayInView'
 import type { PlaybackAdapter } from '@/types/playback'
 
 let capturedOnWin: (() => void) | null = null
 const unobserve = vi.fn()
 
-vi.mock('@/composables/player/viewportObserver', () => ({
+vi.mock('@/composables/player/viewport/viewportObserver', () => ({
   observeViewportPriority: vi.fn((_shell: Element, onWin: () => void) => {
     capturedOnWin = onWin
     return unobserve
@@ -111,7 +111,7 @@ describe('lifecycle', () => {
   })
 
   it('does not observe when the video element has no .player__shell ancestor', async () => {
-    const { observeViewportPriority } = await import('@/composables/player/viewportObserver')
+    const { observeViewportPriority } = await import('@/composables/player/viewport/viewportObserver')
     vi.mocked(observeViewportPriority).mockClear()
     const videoEl = ref<HTMLVideoElement | null>(document.createElement('video'))
     const adapter = makeAdapter(true)

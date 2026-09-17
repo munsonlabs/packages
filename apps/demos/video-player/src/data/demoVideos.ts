@@ -114,8 +114,8 @@ export const captionVideos: VideoEntry[] = [
     src: `${BBB_URL}#captions`,
     poster: BBB_POSTER,
     tracks: [
-      { src: '/captions/bbb-en.vtt', kind: 'captions', srclang: 'en', label: 'English', default: true },
-      { src: '/captions/bbb-fr.vtt', kind: 'captions', srclang: 'fr', label: 'Français' },
+      { src: '/media/captions/bbb-en.vtt', kind: 'captions', srclang: 'en', label: 'English', default: true },
+      { src: '/media/captions/bbb-fr.vtt', kind: 'captions', srclang: 'fr', label: 'Français' },
     ],
   },
 ]

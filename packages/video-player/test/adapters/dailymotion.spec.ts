@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import { createDailymotionAdapter } from '@/adapters/embeds/dailymotion'
 import type { EmbedAdapterOptions } from '@/adapters/embeds/embedShared'
 import { loadScript } from '@/utils/loadScript'
+import { createDeferred, flush } from '@test/helpers'
 
 vi.mock('@/utils/loadScript', () => ({ loadScript: vi.fn(() => Promise.resolve()) }))
 
@@ -25,14 +26,6 @@ const DM_EVENTS: Record<string, string> = {
   PLAYER_ERROR: 'PLAYER_ERROR',
   AD_START: 'AD_START',
   AD_END: 'AD_END',
-}
-
-function createDeferred<T>() {
-  let resolve!: (value: T) => void
-  const promise = new Promise<T>((res) => {
-    resolve = res
-  })
-  return { promise, resolve }
 }
 
 class FakeDailymotionPlayer implements DailymotionPlayer {
@@ -81,10 +74,6 @@ beforeEach(() => {
 afterEach(() => {
   delete window.dailymotion
 })
-
-async function flush(times = 2): Promise<void> {
-  for (let i = 0; i < times; i++) await Promise.resolve()
-}
 
 async function createAdapter(src = DEFAULT_SRC, options: Partial<EmbedAdapterOptions> = {}) {
   const videoEl = document.createElement('video')

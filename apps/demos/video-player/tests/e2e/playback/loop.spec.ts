@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vite-plus/test'
-import { videos, CLIP_DURATION } from '../../fixtures/videos'
-import { mountPlayer, waitFor } from './harness'
+import { catalogue, CLIP_DURATION } from '../../../src/data/catalogue'
+import { mountPlayer, waitFor } from '../harness'
 
 describe('loop', () => {
   it('toggleLoop reports `loopchange` and flips isLooping', async () => {
-    const { player, sink } = await mountPlayer(videos.plain)
+    const { player, sink } = await mountPlayer(catalogue.plain)
     await sink.next('play')
     expect(player.isLooping).toBe(false)
 
@@ -16,7 +16,7 @@ describe('loop', () => {
   })
 
   it('a looping clip wraps to the start at the end instead of emitting `ended`', async () => {
-    const { video, player, sink } = await mountPlayer(videos.plain)
+    const { video, player, sink } = await mountPlayer(catalogue.plain)
     await sink.next('play')
     player.toggleLoop()
     await sink.next('loopchange')
@@ -35,7 +35,7 @@ describe('loop', () => {
   })
 
   it('turning loop off again lets the clip end normally', async () => {
-    const { player, sink } = await mountPlayer(videos.plain)
+    const { player, sink } = await mountPlayer(catalogue.plain)
     await sink.next('play')
     player.toggleLoop()
     await sink.next('loopchange')

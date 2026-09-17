@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vite-plus/test'
-import { videos } from '../../fixtures/videos'
-import { mountStage, waitFor } from './harness'
+import { playlist } from '../../../src/data/catalogue'
+import { mountStage, waitFor } from '../harness'
 
-const [first, second] = videos.playlist
+const [first, second] = playlist
 
 // VideoStage reads this once in setup, so it has to be in place before mounting.
 const AUTO_ADVANCE_KEY = 'player:autoAdvance'
@@ -13,7 +13,7 @@ describe('playlist / auto-advance (VideoStage)', () => {
   })
 
   it('selecting a card plays that entry in the stage, and knows what comes next', async () => {
-    const { stage, sink, selectCard, stageVideo } = await mountStage(videos.playlist)
+    const { stage, sink, selectCard, stageVideo } = await mountStage(playlist)
 
     await selectCard(0)
 
@@ -25,7 +25,7 @@ describe('playlist / auto-advance (VideoStage)', () => {
 
   it('with auto-advance on, finishing an entry starts the next one', async () => {
     localStorage.setItem(AUTO_ADVANCE_KEY, 'true')
-    const { stage, sink, selectCard } = await mountStage(videos.playlist)
+    const { stage, sink, selectCard } = await mountStage(playlist)
     await selectCard(0)
     await sink.next('play')
 
@@ -38,7 +38,7 @@ describe('playlist / auto-advance (VideoStage)', () => {
   })
 
   it('with auto-advance off, finishing an entry stops', async () => {
-    const { stage, sink, selectCard } = await mountStage(videos.playlist)
+    const { stage, sink, selectCard } = await mountStage(playlist)
     await selectCard(0)
     await sink.next('play')
 
@@ -51,7 +51,7 @@ describe('playlist / auto-advance (VideoStage)', () => {
   })
 
   it('playNext moves to the next entry on demand', async () => {
-    const { stage, sink, selectCard } = await mountStage(videos.playlist)
+    const { stage, sink, selectCard } = await mountStage(playlist)
     await selectCard(0)
     await sink.next('play')
 

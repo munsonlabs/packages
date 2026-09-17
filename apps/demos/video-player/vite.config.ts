@@ -1,15 +1,15 @@
 import { mergeConfig } from 'vite-plus'
 import { playwright } from 'vite-plus/test/browser-playwright'
 import base from '@munsonlabs/shipkit/vite/vue.config'
+import { perfMediaServer } from './tests/perf/mediaServer'
+
+const PERF_FIXTURE = decodeURIComponent(new URL('./public/media/flower.mp4', import.meta.url).pathname)
 
 export default mergeConfig(base, {
+  plugins: [perfMediaServer(PERF_FIXTURE)],
   test: {
     include: ['tests/e2e/**/*.spec.ts'],
     passWithNoTests: true,
-    // These drive real playback of real remote video files in a real browser - running multiple
-    // spec files' browser contexts concurrently starves the event loop enough to make timing-
-    // sensitive assertions (seek position, play state) flaky. Not worth the parallelism here.
-    fileParallelism: false,
     setupFiles: ['vitest-browser-vue', './tests/e2e/setup.ts'],
     browser: {
       enabled: true,
@@ -46,6 +46,12 @@ export default mergeConfig(base, {
       'test-page': {
         // Full-page Playwright run against the dev server; see playwright.config.ts.
         command: 'playwright test',
+        dependsOn: ['@munsonlabs/video-player#build'],
+        cache: false,
+      },
+      'test-perf': {
+        // Tap-to-play timing harness; see playwright.perf.config.ts and tests/perf/.
+        command: 'playwright test --config playwright.perf.config.ts',
         dependsOn: ['@munsonlabs/video-player#build'],
         cache: false,
       },

@@ -1,19 +1,11 @@
 <script setup lang="ts">
 import { VideoCard } from '@munsonlabs/video-player'
-import type { StateChangeEvent, VideoEntry } from '@munsonlabs/video-player'
+import type { StateChangeEvent } from '@munsonlabs/video-player'
 import { useEventLog } from '../composables/useEventLog'
+import { catalogue } from '../data/catalogue'
 
 const { addLog } = useEventLog()
-
-/**
- * Plain native mp4 (MDN's own CC0 sample asset, not routed through any platform adapter) rather
- * than a JW Player-hosted or YouTube-embedded video - autoplay is instant and reliable, which
- * matters for a demo whose whole point is "scroll away while it's already playing".
- */
-const demoVideo: VideoEntry = {
-  title: 'Flower',
-  src: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
-}
+const demoVideo = { ...catalogue.pinned, title: 'Flower' }
 
 function onStateChange(e: StateChangeEvent): void {
   addLog(e)

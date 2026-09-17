@@ -2,18 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import { createVimeoAdapter } from '@/adapters/embeds/vimeo'
 import type { EmbedAdapterOptions } from '@/adapters/embeds/embedShared'
 import { loadScript } from '@/utils/loadScript'
+import { createDeferred, flush } from '@test/helpers'
 
 vi.mock('@/utils/loadScript', () => ({ loadScript: vi.fn(() => Promise.resolve()) }))
-
-function createDeferred<T = void>() {
-  let resolve!: (value: T) => void
-  let reject!: (err: Error) => void
-  const promise = new Promise<T>((res, rej) => {
-    resolve = res
-    reject = rej
-  })
-  return { promise, resolve, reject }
-}
 
 class FakeVimeoPlayer implements VimeoPlayerInstance {
   handlers: Record<string, Array<(data: unknown) => void>> = {}
@@ -73,10 +64,6 @@ afterEach(() => {
   vi.useRealTimers()
   delete window.Vimeo
 })
-
-async function flush(times = 2): Promise<void> {
-  for (let i = 0; i < times; i++) await Promise.resolve()
-}
 
 async function createAdapter(src = 'https://vimeo.com/347119375', options: Partial<EmbedAdapterOptions> = {}) {
   const videoEl = document.createElement('video')

@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vite-plus/test'
-import { videos, CLIP_DURATION } from '../../fixtures/videos'
-import { mountPlayer } from './harness'
+import { catalogue, CLIP_DURATION } from '../../../src/data/catalogue'
+import { mountPlayer } from '../harness'
 
 describe('ended', () => {
   it('reaching the end emits `ended` once, at the full duration, and leaves the player stopped', async () => {
-    const { video, player, sink } = await mountPlayer(videos.plain)
+    const { video, player, sink } = await mountPlayer(catalogue.plain)
     await sink.next('play')
     player.seek(90)
     await sink.next('seeked')
@@ -19,7 +19,7 @@ describe('ended', () => {
   })
 
   it('togglePlay after `ended` replays from the start', async () => {
-    const { video, player, sink } = await mountPlayer(videos.plain)
+    const { video, player, sink } = await mountPlayer(catalogue.plain)
     await sink.next('play')
     player.seek(90)
     await sink.next('ended')

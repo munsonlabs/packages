@@ -1,10 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import { createYoutubeAdapter } from '@/adapters/embeds/youtube'
 import { loadScript } from '@/utils/loadScript'
+import { flush } from '@test/helpers'
 
-// Lives in its own file on purpose: the YouTube adapter caches the ready IFrame API at module
-// scope, so a failing load can only be exercised while that module has never seen a success.
-// The one success case here runs last for the same reason.
+// Own file: the adapter caches the ready API at module scope, so failures must run before any success.
 vi.mock('@/utils/loadScript', () => ({ loadScript: vi.fn(() => Promise.resolve()) }))
 
 const PlayerState = { ENDED: 0, PLAYING: 1, PAUSED: 2, BUFFERING: 3, CUED: 5 }
@@ -31,10 +30,6 @@ afterEach(() => {
   delete window.YT
 })
 
-async function flush(times = 5): Promise<void> {
-  for (let i = 0; i < times; i++) await Promise.resolve()
-}
-
 function mount() {
   const videoEl = document.createElement('video')
   document.body.appendChild(videoEl)
@@ -49,7 +44,7 @@ describe('SDK load failure', () => {
     vi.mocked(loadScript).mockRejectedValueOnce(new Error('Failed to load script: iframe_api'))
 
     const { adapter, error } = mount()
-    await flush()
+    await flush(5)
 
     expect(error).toHaveBeenCalledOnce()
     expect(adapter.error()).toEqual({ code: 4, message: 'Failed to load script: iframe_api' })
@@ -61,7 +56,7 @@ describe('SDK load failure', () => {
 
     const { adapter, error } = mount()
     adapter.dispose()
-    await flush()
+    await flush(5)
 
     expect(error).not.toHaveBeenCalled()
   })
@@ -70,7 +65,7 @@ describe('SDK load failure', () => {
     delete window.YT
 
     const { adapter, error } = mount()
-    await flush()
+    await flush(5)
 
     expect(error).toHaveBeenCalledOnce()
     expect(adapter.error()?.message).toMatch(/failed to load/i)
@@ -82,15 +77,14 @@ describe('SDK load failure', () => {
 
     const a = mount()
     const b = mount()
-    await flush()
+    await flush(5)
     expect(a.error).toHaveBeenCalledOnce()
     expect(b.error).toHaveBeenCalledOnce()
     expect(loadScript).toHaveBeenCalledTimes(1)
     expect(created).toBe(0)
 
-    // Default mock resolves - Retry must kick off a fresh load and initialise normally.
     a.adapter.setSrc('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
-    await flush()
+    await flush(5)
 
     expect(loadScript).toHaveBeenCalledTimes(2)
     expect(a.adapter.error()).toBeNull()

@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vite-plus/test'
-import { videos } from '../../fixtures/videos'
-import { mountPlayer } from './harness'
+import { catalogue } from '../../../src/data/catalogue'
+import { mountPlayer } from '../harness'
 
 describe('play / pause', () => {
   it('autoplays a muted clip and reports it', async () => {
-    const { video, player, sink } = await mountPlayer(videos.plain)
+    const { video, player, sink } = await mountPlayer(catalogue.plain)
 
     await sink.next('play')
     expect(video.paused).toBe(false)
@@ -13,7 +13,7 @@ describe('play / pause', () => {
   })
 
   it('togglePlay pauses and resumes the real <video>', async () => {
-    const { video, player, sink } = await mountPlayer(videos.plain)
+    const { video, player, sink } = await mountPlayer(catalogue.plain)
     await sink.next('play')
 
     player.togglePlay()
@@ -28,7 +28,7 @@ describe('play / pause', () => {
   })
 
   it('does not start on its own without autoplay', async () => {
-    const { video, player, sink } = await mountPlayer(videos.plain, { muted: true })
+    const { video, player, sink } = await mountPlayer(catalogue.plain, { muted: true })
 
     await new Promise((r) => setTimeout(r, 500))
     expect(video.paused).toBe(true)
@@ -38,7 +38,7 @@ describe('play / pause', () => {
   })
 
   it('an unmuted clip plays after a user gesture', async () => {
-    const { video, player, sink, activate } = await mountPlayer(videos.plain, { muted: false })
+    const { video, player, sink, activate } = await mountPlayer(catalogue.plain, { muted: false })
 
     await activate()
     player.togglePlay()

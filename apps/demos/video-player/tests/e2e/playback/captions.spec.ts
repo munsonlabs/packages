@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vite-plus/test'
-import { videos } from '../../fixtures/videos'
-import { mountPlayer, waitFor } from './harness'
+import { catalogue } from '../../../src/data/catalogue'
+import { mountPlayer, waitFor } from '../harness'
 
 function showingIndex(video: HTMLVideoElement): number | null {
   for (let i = 0; i < video.textTracks.length; i++) if (video.textTracks[i].mode === 'showing') return i
@@ -9,7 +9,7 @@ function showingIndex(video: HTMLVideoElement): number | null {
 
 describe('captions', () => {
   it('exposes the WebVTT tracks and shows the default one', async () => {
-    const { video, player, sink } = await mountPlayer(videos.captioned)
+    const { video, player, sink } = await mountPlayer(catalogue.captioned)
     await sink.next('play')
     await waitFor(() => player.captionTracks.length === 2, 'both caption tracks to register')
 
@@ -23,7 +23,7 @@ describe('captions', () => {
   })
 
   it('setCaptionTrack switches which track is showing and reports `captionchange`', async () => {
-    const { video, player, sink } = await mountPlayer(videos.captioned)
+    const { video, player, sink } = await mountPlayer(catalogue.captioned)
     await sink.next('play')
     await waitFor(() => player.captionTracks.length === 2, 'both caption tracks to register')
     await waitFor(() => player.activeCaptionIndex === 0, 'the default track to be active')
@@ -40,7 +40,7 @@ describe('captions', () => {
   })
 
   it('setCaptionTrack(null) turns captions off', async () => {
-    const { video, player, sink } = await mountPlayer(videos.captioned)
+    const { video, player, sink } = await mountPlayer(catalogue.captioned)
     await sink.next('play')
     await waitFor(() => player.captionTracks.length === 2, 'both caption tracks to register')
     // Let the default track land (and the player report it) first, or English would switch itself
@@ -57,7 +57,7 @@ describe('captions', () => {
   })
 
   it('a clip with no tracks reports no caption support', async () => {
-    const { player, sink } = await mountPlayer(videos.plain)
+    const { player, sink } = await mountPlayer(catalogue.plain)
     await sink.next('play')
 
     expect(player.captionTracks).toEqual([])

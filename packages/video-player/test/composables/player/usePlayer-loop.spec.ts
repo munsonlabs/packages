@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { ref, reactive, nextTick } from 'vue'
 import { withSetup } from '@test/composables/withSetup'
+import { mockIntersectionObserver } from '@test/helpers'
 import { createEmitter } from '@/composables/player/emitter'
 import type { PlaybackAdapter } from '@/types/playback'
 import type { PlayerProps, StateChangeEvent } from '@/types/player'
@@ -62,12 +63,7 @@ const { usePlayer } = await import('@/composables/player/usePlayer')
 beforeEach(() => {
   vi.clearAllMocks()
   emitter = createEmitter()
-  window.IntersectionObserver = class {
-    observe = vi.fn()
-    disconnect = vi.fn()
-    unobserve = vi.fn()
-    takeRecords = vi.fn()
-  } as unknown as typeof IntersectionObserver
+  mockIntersectionObserver()
 })
 
 function setup(props: Partial<PlayerProps>) {

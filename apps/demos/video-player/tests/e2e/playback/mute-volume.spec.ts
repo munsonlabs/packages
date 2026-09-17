@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vite-plus/test'
-import { videos } from '../../fixtures/videos'
-import { mountPlayer } from './harness'
+import { catalogue } from '../../../src/data/catalogue'
+import { mountPlayer } from '../harness'
 
 describe('mute / volume', () => {
   it('starts muted when asked to, and toggleMute unmutes the real <video>', async () => {
-    const { video, player, sink, activate } = await mountPlayer(videos.plain)
+    const { video, player, sink, activate } = await mountPlayer(catalogue.plain)
     await sink.next('play')
     expect(video.muted).toBe(true)
     expect(player.isMuted).toBe(true)
@@ -22,7 +22,7 @@ describe('mute / volume', () => {
   })
 
   it('toggleMute re-mutes and reports it', async () => {
-    const { video, player, sink, activate } = await mountPlayer(videos.plain)
+    const { video, player, sink, activate } = await mountPlayer(catalogue.plain)
     await sink.next('play')
     await activate()
 
@@ -36,7 +36,7 @@ describe('mute / volume', () => {
   })
 
   it('setVolume drives the element volume, and dragging to 0 mutes', async () => {
-    const { video, player, sink, activate } = await mountPlayer(videos.plain)
+    const { video, player, sink, activate } = await mountPlayer(catalogue.plain)
     await sink.next('play')
     await activate()
     player.toggleMute()

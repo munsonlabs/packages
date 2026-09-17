@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach } from 'vite-plus/test'
 import { render } from 'vitest-browser-vue'
 import TranscriptPanel from '../../src/components/TranscriptPanel.vue'
 import { useEventLog } from '../../src/composables/useEventLog'
-import { FIXTURE_CUES, FIXTURE_VIDEO, waitFor, waitForLogged, loggedTime } from './helpers'
+import { catalogue } from '../../src/data/catalogue'
+import { CUES, waitFor, waitForLogged, loggedTime } from './harness'
 
 beforeEach(() => {
   useEventLog().clearLog()
@@ -10,7 +11,7 @@ beforeEach(() => {
 
 describe('TranscriptPanel', () => {
   it('clicking a cue seeks to its timestamp and starts playback', async () => {
-    const screen = await render(TranscriptPanel, { props: { video: FIXTURE_VIDEO, cues: FIXTURE_CUES } })
+    const screen = await render(TranscriptPanel, { props: { video: catalogue.plain, cues: CUES } })
 
     const video = screen.container.querySelector<HTMLVideoElement>('video.mlv-video')!
     // Transcript's onCueClick only seeks once `player.total > 0`.
@@ -32,7 +33,7 @@ describe('TranscriptPanel', () => {
       { time: 0, text: 'Cue one - opening frame.' },
       { time: 1, end: 2, text: 'Cue two - ends at two.' },
     ]
-    const screen = await render(TranscriptPanel, { props: { video: FIXTURE_VIDEO, cues } })
+    const screen = await render(TranscriptPanel, { props: { video: catalogue.plain, cues } })
 
     const video = screen.container.querySelector<HTMLVideoElement>('video.mlv-video')!
     await waitFor(() => video.duration > 0, 'video metadata to load')

@@ -3,29 +3,19 @@ import { ref } from 'vue'
 import { withSetup } from '@test/composables/withSetup'
 import { useAutoPauseOffscreen } from '@/composables/player/useAutoPauseOffscreen'
 import type { PlaybackAdapter } from '@/types/playback'
+import { mockIntersectionObserver } from '@test/helpers'
 
-let capturedCallback: ((entries: Array<{ intersectionRatio: number }>) => void) | null = null
+let io: ReturnType<typeof mockIntersectionObserver>
 
 beforeEach(() => {
-  capturedCallback = null
-  window.IntersectionObserver = class {
-    constructor(cb: unknown) {
-      capturedCallback = cb as (entries: Array<{ intersectionRatio: number }>) => void
-    }
-    observe = vi.fn()
-    disconnect = vi.fn()
-    unobserve = vi.fn()
-    takeRecords = vi.fn()
-  } as unknown as typeof IntersectionObserver
+  io = mockIntersectionObserver()
 })
 
 function makeAdapter(paused: boolean): PlaybackAdapter {
   return { pause: vi.fn(), paused: () => paused } as unknown as PlaybackAdapter
 }
 
-function fireEntry(isIntersecting: boolean): void {
-  capturedCallback?.([{ intersectionRatio: isIntersecting ? 1 : 0 }])
-}
+const fireEntry = (inView: boolean) => io.fire(inView)
 
 function setup(adapter: PlaybackAdapter | null) {
   const video = document.createElement('video')

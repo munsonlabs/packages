@@ -2,6 +2,7 @@ import { defineComponent, onMounted, ref, reactive } from 'vue'
 import { render } from 'vitest-browser-vue'
 import { VideoPlayer, VideoStage, VideoCard } from '@munsonlabs/video-player'
 import type { PlayerHandle, StateChangeEvent, StateChangeType, VideoEntry } from '@munsonlabs/video-player'
+import { useEventLog } from '../../src/composables/useEventLog'
 
 export async function waitFor(predicate: () => boolean, message: string, timeout = 10_000): Promise<void> {
   const start = Date.now()
@@ -11,7 +12,22 @@ export async function waitFor(predicate: () => boolean, message: string, timeout
   }
 }
 
-/** Every `state-change` the mounted player emitted, in order - the surface package consumers actually depend on. */
+export const CUES = [
+  { time: 0, text: 'Cue one - opening frame.' },
+  { time: 2, text: 'Cue two - two seconds in.' },
+  { time: 4, text: 'Cue three - four seconds in.' },
+]
+
+export async function waitForLogged(type: string) {
+  const { log } = useEventLog()
+  await waitFor(() => log.value.some((e) => e.type === type), `a '${type}' state-change to be logged`)
+  return log.value.find((e) => e.type === type)!
+}
+
+export function loggedTime(entry: { ct: string }): number {
+  return parseFloat(entry.ct)
+}
+
 export class EventSink {
   readonly events: StateChangeEvent[] = reactive([])
 
@@ -42,16 +58,21 @@ export interface MountedPlayer {
   video: HTMLVideoElement
   player: PlayerHandle
   sink: EventSink
-  /** Performs a real click so the page holds a user gesture - required before anything unmuted can play. */
+  /** A real click grants the user activation Chromium requires before unmuted playback. */
   activate: () => Promise<void>
 }
 
-/**
- * Mounts a bare `VideoPlayer` on a fixture, captures its exposed handle and every state-change.
- * Muted autoplay by default: Chromium permits that without a gesture, so tests only pay for
- * `activate()` when they genuinely need sound.
- */
-export async function mountPlayer(entry: VideoEntry, props: Partial<VideoEntry> = { autoplay: true, muted: true }): Promise<MountedPlayer> {
+export interface MountOptions {
+  /** Default true. Set false for sources that never load metadata (preload="none", a broken URL). */
+  awaitMetadata?: boolean
+}
+
+/** Muted autoplay by default so tests only pay for activate() when they need sound. */
+export async function mountPlayer(
+  entry: VideoEntry,
+  props: Partial<VideoEntry> = { autoplay: true, muted: true },
+  { awaitMetadata = true }: MountOptions = {},
+): Promise<MountedPlayer> {
   const sink = new EventSink()
   const captured: { player: PlayerHandle | null } = { player: null }
 
@@ -63,12 +84,9 @@ export async function mountPlayer(entry: VideoEntry, props: Partial<VideoEntry> 
       onMounted(() => (captured.player = playerRef.value))
       return { playerRef, onStateChange: sink.push, merged: { ...(hostProps.entry as VideoEntry), ...(hostProps.extra as object) } }
     },
-    // The extra button exists only to be clicked: any real click grants the page user activation,
-    // without which Chromium refuses unmuted playback. The player's own controls are either
-    // aria-hidden (HUD) or visually clipped (the skip link), so neither is reliably clickable.
     template: `
       <div>
-        <VideoPlayer ref="playerRef" v-bind="merged" :controls="true" @state-change="onStateChange" />
+        <VideoPlayer ref="playerRef" v-bind="merged" @state-change="onStateChange" />
         <button type="button">grant gesture</button>
       </div>
     `,
@@ -77,7 +95,7 @@ export async function mountPlayer(entry: VideoEntry, props: Partial<VideoEntry> 
   const screen = await render(Host, { props: { entry, extra: props } })
   const video = screen.container.querySelector<HTMLVideoElement>('video.mlv-video')
   if (!video || !captured.player) throw new Error('VideoPlayer did not mount a <video> / expose its handle')
-  await waitFor(() => video.duration > 0, 'video metadata to load')
+  if (awaitMetadata) await waitFor(() => video.duration > 0, 'video metadata to load')
 
   return {
     screen,
@@ -88,16 +106,39 @@ export async function mountPlayer(entry: VideoEntry, props: Partial<VideoEntry> 
   }
 }
 
+export interface MountedCard {
+  screen: Awaited<ReturnType<typeof render>>
+  sink: EventSink
+  video: () => HTMLVideoElement | null
+  clickPlaceholder: () => Promise<void>
+}
+
+/** A lazy VideoCard with no stage on the page: placeholder first, real player on click or in-view activation. */
+export async function mountCard(entry: VideoEntry): Promise<MountedCard> {
+  const sink = new EventSink()
+  const Host = defineComponent({
+    components: { VideoCard },
+    props: { entry: { type: Object, required: true } },
+    setup: () => ({ onStateChange: sink.push }),
+    template: `<div><VideoCard v-bind="entry" @state-change="onStateChange" /></div>`,
+  })
+  const screen = await render(Host, { props: { entry } })
+  return {
+    screen,
+    sink,
+    video: () => screen.container.querySelector<HTMLVideoElement>('video.mlv-video'),
+    clickPlaceholder: () => screen.getByRole('button', { name: 'Play' }).click(),
+  }
+}
+
 export interface MountedStage {
   screen: Awaited<ReturnType<typeof render>>
   stage: PlayerHandle & { playNext(): void; hasNext: boolean }
   sink: EventSink
-  /** Clicks the Nth card's placeholder, which dispatches that entry to the stage (a real gesture). */
   selectCard: (index: number) => Promise<void>
   stageVideo: () => HTMLVideoElement | null
 }
 
-/** Mounts a `VideoStage` over a playlist plus one `VideoCard` per entry, the way VideoPanel does with `show-stage`. */
 export async function mountStage(playlist: VideoEntry[]): Promise<MountedStage> {
   const sink = new EventSink()
   const captured: { stage: MountedStage['stage'] | null } = { stage: null }

@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vite-plus/test'
-import { videos, CLIP_DURATION } from '../../fixtures/videos'
-import { mountPlayer, waitFor } from './harness'
+import { catalogue, CLIP_DURATION } from '../../../src/data/catalogue'
+import { mountPlayer, waitFor } from '../harness'
 
 describe('seek', () => {
   it('seek(percent) moves the playhead and emits `seeked` at the new time', async () => {
-    const { video, player, sink } = await mountPlayer(videos.plain)
+    const { video, player, sink } = await mountPlayer(catalogue.plain)
     await sink.next('play')
 
     player.seek(50)
@@ -16,7 +16,7 @@ describe('seek', () => {
   })
 
   it('seeking backwards works while playing, and playback continues', async () => {
-    const { video, player, sink } = await mountPlayer(videos.plain)
+    const { video, player, sink } = await mountPlayer(catalogue.plain)
     await sink.next('play')
     player.seek(80)
     await sink.next('seeked')
@@ -30,7 +30,7 @@ describe('seek', () => {
   })
 
   it('seeking while paused stays paused', async () => {
-    const { video, player, sink } = await mountPlayer(videos.plain)
+    const { video, player, sink } = await mountPlayer(catalogue.plain)
     await sink.next('play')
     player.togglePlay()
     await sink.next('pause')

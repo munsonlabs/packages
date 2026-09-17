@@ -5,7 +5,7 @@ import EventLogPopover from './components/EventLogPopover.vue'
 import SettingsPopover from './components/SettingsPopover.vue'
 import VideoPanel from './components/VideoPanel.vue'
 import PinnedPlayerPanel from './components/PinnedPlayerPanel.vue'
-import CustomVideoPanel from './components/CustomVideoPanel.vue'
+import VariationsPanel from './components/VariationsPanel.vue'
 import CustomControlsPanel from './components/CustomControlsPanel.vue'
 import TranscriptPanel from './components/TranscriptPanel.vue'
 import ExposedPlayerPanel from './components/ExposedPlayerPanel.vue'
@@ -41,7 +41,7 @@ const showReelPage = ref(false)
 
     <main>
       <VideoPanel heading="Videos" :videos="videos" :show-stage="showStage" />
-      <PinnedPlayerPanel />
+      <VariationsPanel />
       <PinnedPlayerPanel />
       <!-- <CustomControlsPanel /> -->
       <section class="panel">
@@ -55,7 +55,6 @@ const showReelPage = ref(false)
       </section>
       <TranscriptPanel />
       <ExposedPlayerPanel />
-      <CustomVideoPanel />
       <HideMarker class="demo-hide-marker" />
     </main>
   </div>

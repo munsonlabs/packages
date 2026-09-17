@@ -6,7 +6,8 @@ import { render } from 'vitest-browser-vue'
 import '@munsonlabs/video-player/element'
 import ExposedPlayerPanel from '../../src/components/ExposedPlayerPanel.vue'
 import { useEventLog } from '../../src/composables/useEventLog'
-import { FIXTURE_CUES, FIXTURE_VIDEO, waitFor, waitForLogged, loggedTime } from './helpers'
+import { catalogue } from '../../src/data/catalogue'
+import { CUES, waitFor, waitForLogged, loggedTime } from './harness'
 
 beforeEach(() => {
   useEventLog().clearLog()
@@ -14,7 +15,7 @@ beforeEach(() => {
 
 describe('ExposedPlayerPanel', () => {
   it('drives a plain Vue VideoPlayer from a genuine third-party web component via exposePlayerOnElement', async () => {
-    const screen = await render(ExposedPlayerPanel, { props: { video: FIXTURE_VIDEO, cues: FIXTURE_CUES } })
+    const screen = await render(ExposedPlayerPanel, { props: { video: catalogue.plain, cues: CUES } })
 
     const video = screen.container.querySelector<HTMLVideoElement>('#exposed-player video.mlv-video')!
     // Appended imperatively in onMounted - not part of the initial template render.

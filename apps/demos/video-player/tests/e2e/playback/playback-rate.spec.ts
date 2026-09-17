@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vite-plus/test'
-import { videos } from '../../fixtures/videos'
-import { mountPlayer, waitFor } from './harness'
+import { catalogue } from '../../../src/data/catalogue'
+import { mountPlayer, waitFor } from '../harness'
 
 describe('playback rate', () => {
   it('setPlaybackRate changes the element rate and reports `ratechange`', async () => {
-    const { video, player, sink } = await mountPlayer(videos.plain)
+    const { video, player, sink } = await mountPlayer(catalogue.plain)
     await sink.next('play')
     expect(player.supportsPlaybackRate).toBe(true)
     expect(player.currentPlaybackRate).toBe(1)
@@ -18,7 +18,7 @@ describe('playback rate', () => {
   })
 
   it('a faster rate actually advances the playhead faster', async () => {
-    const { video, player, sink } = await mountPlayer(videos.plain)
+    const { video, player, sink } = await mountPlayer(catalogue.plain)
     await sink.next('play')
     player.setPlaybackRate(2)
     await sink.next('ratechange')
@@ -33,7 +33,7 @@ describe('playback rate', () => {
   })
 
   it('restoring 1x reports it', async () => {
-    const { video, player, sink } = await mountPlayer(videos.plain)
+    const { video, player, sink } = await mountPlayer(catalogue.plain)
     await sink.next('play')
     player.setPlaybackRate(0.5)
     await sink.next('ratechange')

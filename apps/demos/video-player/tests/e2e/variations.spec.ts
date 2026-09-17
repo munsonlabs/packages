@@ -25,10 +25,12 @@ describe('variations', () => {
     await new Promise((r) => setTimeout(r, 500))
     expect(video.preload).toBe('none')
     expect(video.readyState).toBe(0)
+    expect(player.isLoaded).toBe(false)
+    expect(sink.has('loaded')).toBe(false)
 
-    player.togglePlay()
-    await sink.next('play')
-    await waitFor(() => video.duration > 0, 'metadata to load once playing')
+    await player.play()
+    await waitFor(() => player.isLoaded, 'loaded once playing')
+    expect(sink.has('loaded')).toBe(true)
   })
 
   it('loop prop: starts with looping on', async () => {
@@ -76,5 +78,6 @@ describe('variations', () => {
     await retry.click()
     await sink.next('error', 1)
     expect(player.isError).toBe(true)
+    await expect(player.play()).rejects.toThrow()
   })
 })

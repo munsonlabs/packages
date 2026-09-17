@@ -64,7 +64,7 @@ export interface PlaybackAdapter {
   togglePip(): void
   enterFullscreen(): void
   exitFullscreen(): void
-  on(event: string | string[], listener: PlaybackListener): void
+  on(event: string, listener: PlaybackListener): void
   off(event: string, listener: PlaybackListener): void
   dispose(): void
 }

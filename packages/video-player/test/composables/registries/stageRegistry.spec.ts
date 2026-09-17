@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vite-plus/test'
-import { hasStage, registerStage, unregisterStage } from '@/composables/registries/stageRegistry'
+import { hasStage, registerStage, unregisterStage, stageState } from '@/composables/registries/stageRegistry'
 
 beforeEach(() => {
   // Drain the registry back to zero between tests
@@ -29,5 +29,16 @@ describe('hasStage', () => {
     expect(hasStage.value).toBe(true)
     unregisterStage()
     expect(hasStage.value).toBe(false)
+  })
+})
+
+describe('stageState', () => {
+  it('starts empty and is shared', () => {
+    expect(stageState).toEqual({ currentSrc: null, isPlaying: false })
+    stageState.currentSrc = 'a.mp4'
+    stageState.isPlaying = true
+    expect(stageState.currentSrc).toBe('a.mp4')
+    stageState.currentSrc = null
+    stageState.isPlaying = false
   })
 })

@@ -204,12 +204,12 @@ describe('setMuted', () => {
 })
 
 describe('supportsPlaybackRate', () => {
-  it('reports false even though setPlaybackRate is implemented', async () => {
+  it('reports false and setPlaybackRate is a no-op', async () => {
     const { adapter, player } = await createAdapter()
 
     adapter.setPlaybackRate(2)
 
-    expect(player.setPlaybackRate).toHaveBeenCalledWith(2)
+    expect(player.setPlaybackRate).not.toHaveBeenCalled()
     expect(adapter.supportsPlaybackRate()).toBe(false)
   })
 })

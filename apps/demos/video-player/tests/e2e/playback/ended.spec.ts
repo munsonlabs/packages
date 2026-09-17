@@ -31,4 +31,17 @@ describe('ended', () => {
     expect(player.hasEnded).toBe(false)
     expect(video.paused).toBe(false)
   })
+
+  it('replay() restarts from the beginning', async () => {
+    const { video, player, sink } = await mountPlayer(catalogue.plain)
+    await sink.next('play')
+    player.seek(90)
+    await sink.next('ended')
+
+    await player.replay()
+
+    expect(video.currentTime).toBeLessThan(1)
+    expect(video.paused).toBe(false)
+    expect(player.hasEnded).toBe(false)
+  })
 })

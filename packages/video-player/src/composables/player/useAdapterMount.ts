@@ -35,20 +35,25 @@ export function resolveInitialVolume(props: PlayerProps): number {
   return props.volume ?? getAudioPreference().volume
 }
 
-function resolveInitialAudio(props: PlayerProps): { muted: boolean; volume: number } {
-  return {
-    muted: resolveInitialMuted(props.muted, !!(props.autoplay || props.playInView)),
-    volume: resolveInitialVolume(props),
-  }
+export interface InitialPlayback {
+  muted: boolean
+  volume: number
+  playbackRate: number
 }
 
-async function mountEmbedAdapter(platformKey: string, videoEl: Ref<HTMLVideoElement | null>, props: PlayerProps): Promise<MountResult> {
+async function mountEmbedAdapter(
+  platformKey: string,
+  videoEl: Ref<HTMLVideoElement | null>,
+  props: PlayerProps,
+  initial: InitialPlayback,
+): Promise<MountResult> {
   if (!videoEl.value) return { status: 'aborted' }
   const embedAdapter = await createEmbedAdapter(platformKey, videoEl.value, {
     src: props.src,
     poster: props.poster,
     autoplay: props.autoplay,
-    ...resolveInitialAudio(props),
+    muted: initial.muted,
+    volume: initial.volume,
     nativeUi: props.nativeUi,
   })
   if (!videoEl.value) return { status: 'aborted' }
@@ -63,7 +68,7 @@ async function mountNativeAdapter(
   platformKey: string,
   videoEl: Ref<HTMLVideoElement | null>,
   props: PlayerProps,
-  playbackRate: Ref<number>,
+  initial: InitialPlayback,
   adSetup: UseAdSetupReturn,
 ): Promise<MountResult> {
   const resolved = await resolveSource(platformKey, props.src).catch((): ResolvedSource => ({ src: props.src }))
@@ -74,8 +79,7 @@ async function mountNativeAdapter(
     type: resolved.type,
     poster: resolved.poster || props.poster || '',
     autoplay: props.autoplay,
-    ...resolveInitialAudio(props),
-    playbackRate: playbackRate.value,
+    ...initial,
     preload: props.preload,
   })
 
@@ -89,8 +93,10 @@ export function mountAdapter(
   platform: { key: string; embed: boolean },
   videoEl: Ref<HTMLVideoElement | null>,
   props: PlayerProps,
-  playbackRate: Ref<number>,
+  initial: InitialPlayback,
   adSetup: UseAdSetupReturn,
 ): Promise<MountResult> {
-  return platform.embed ? mountEmbedAdapter(platform.key, videoEl, props) : mountNativeAdapter(platform.key, videoEl, props, playbackRate, adSetup)
+  return platform.embed
+    ? mountEmbedAdapter(platform.key, videoEl, props, initial)
+    : mountNativeAdapter(platform.key, videoEl, props, initial, adSetup)
 }

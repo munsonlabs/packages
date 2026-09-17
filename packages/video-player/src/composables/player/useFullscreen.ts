@@ -8,7 +8,6 @@ export interface UseFullscreenReturn {
   isFullscreen: Ref<boolean>
   isFullscreenPending: Ref<boolean>
   toggleFullscreen: () => void
-  markFullscreenPending: () => void
   attachPlayerEvents: (player: PlaybackAdapter) => void
 }
 
@@ -33,11 +32,6 @@ export function useFullscreen(getPlayer: () => PlaybackAdapter | null): UseFulls
     }
     isFullscreenPending.value = true
     player.enterFullscreen()
-  }
-
-  /** Lets a caller flag a pending fullscreen request without going through toggleFullscreen() itself. */
-  function markFullscreenPending(): void {
-    isFullscreenPending.value = true
   }
 
   /** iOS's webkitEnterFullscreen path never touches document.fullscreenElement - these events cover that gap. */
@@ -65,5 +59,5 @@ export function useFullscreen(getPlayer: () => PlaybackAdapter | null): UseFulls
     unregisterDocListener?.()
   })
 
-  return { isFullscreen, isFullscreenPending, toggleFullscreen, markFullscreenPending, attachPlayerEvents }
+  return { isFullscreen, isFullscreenPending, toggleFullscreen, attachPlayerEvents }
 }

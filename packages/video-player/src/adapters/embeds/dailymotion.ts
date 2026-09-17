@@ -27,13 +27,10 @@ export function createDailymotionAdapter(videoEl: HTMLVideoElement, options: Emb
       let initialAutoplayHandled = false
 
       try {
-        const playerId = typeof options.customVars?.playerId === 'string' ? options.customVars.playerId : undefined
-        const script = playerId ? `https://geo.dailymotion.com/libs/player/${playerId}.js` : 'https://geo.dailymotion.com/libs/player.js'
-        const sdk = await loadScript(script, playerId || 'dailymotion-sdk').then(() => window.dailymotion)
+        const sdk = await loadScript('https://geo.dailymotion.com/libs/player.js', 'dailymotion-sdk').then(() => window.dailymotion)
         if (!sdk || isDisposed()) return
 
         const player = await sdk.createPlayer(techId, {
-          ...(playerId && { player: playerId }),
           video: videoId,
           params: { autoplay: !!options.autoplay, mute: !!options.muted },
         })
@@ -42,16 +39,6 @@ export function createDailymotionAdapter(videoEl: HTMLVideoElement, options: Emb
 
         const e = sdk.events
         consumeQueuedPlay(() => dm?.play())
-
-        player.on(e.PLAYER_CRITICALPATHREADY, (data: { videoThumbnails?: Record<string, string> }) => {
-          const thumbs = data.videoThumbnails
-          if (!thumbs) return
-          const bestKey = Object.keys(thumbs)
-            .map(Number)
-            .sort((a, b) => b - a)[0]
-          const best = bestKey !== undefined ? thumbs[bestKey] : undefined
-          if (best) emitter.trigger('posterchange', best)
-        })
 
         /** Dailymotion fires VIDEO_PLAY even without autoplay - pause back out the first time. */
         player.on(e.VIDEO_PLAY, () => {
@@ -88,7 +75,6 @@ export function createDailymotionAdapter(videoEl: HTMLVideoElement, options: Emb
           emitter.trigger('durationchange')
         })
 
-        player.on(e.VIDEO_SEEKSTART, () => emitter.trigger('seeking'))
         player.on(e.VIDEO_SEEKEND, (data: { videoTime?: number }) => {
           state.currentTime = data.videoTime ?? state.currentTime
           emitter.trigger('seeked')

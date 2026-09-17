@@ -54,18 +54,6 @@ describe('toggleFullscreen', () => {
   })
 })
 
-describe('markFullscreenPending', () => {
-  it('flags pending without calling enterFullscreen', () => {
-    const { adapter } = makeAdapter()
-    const { markFullscreenPending, isFullscreenPending } = setup(adapter)
-
-    markFullscreenPending()
-
-    expect(isFullscreenPending.value).toBe(true)
-    expect(adapter.enterFullscreen).not.toHaveBeenCalled()
-  })
-})
-
 describe('document fullscreenchange', () => {
   it('picks up isFullscreen from document.fullscreenElement once the browser confirms it', () => {
     const { adapter } = makeAdapter()

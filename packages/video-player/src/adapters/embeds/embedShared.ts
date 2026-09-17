@@ -43,7 +43,6 @@ export interface EmbedAdapterOptions {
   muted?: boolean
   volume?: number
   nativeUi?: boolean
-  customVars?: Record<string, unknown>
 }
 
 let mountCounter = 0
@@ -51,7 +50,6 @@ let mountCounter = 0
 export interface EmbedMount {
   techId: string
   wrapper: HTMLDivElement
-  innerDiv: HTMLDivElement
 }
 
 /** YouTube replaces its target element with the iframe itself; Vimeo/Dailymotion insert one as a descendant instead - watching the wrapper (which persists either way) covers both shapes. Self-disconnects once found, since none of the three SDKs replace the iframe node again after that. */
@@ -75,21 +73,21 @@ export function createEmbedMount(videoEl: HTMLVideoElement, cssClass: string, na
   videoEl.parentElement?.classList.add(cssClass)
 
   const techId = `${cssClass}-${++mountCounter}`
-  const innerDiv = document.createElement('div')
-  innerDiv.id = techId
-  innerDiv.className = MVP_TECH_CLASS
-  innerDiv.style.cssText = 'width:100%;height:100%;top:0;left:0;position:absolute'
+  const mount = document.createElement('div')
+  mount.id = techId
+  mount.className = MVP_TECH_CLASS
+  mount.style.cssText = 'width:100%;height:100%;top:0;left:0;position:absolute'
 
   const wrapper = document.createElement('div')
   wrapper.style.cssText = 'width:100%;height:100%;position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity 0.2s'
-  wrapper.appendChild(innerDiv)
+  wrapper.appendChild(mount)
 
   videoEl.parentElement?.insertBefore(wrapper, videoEl)
 
   /** Left alone when nativeUi is on - the platform's own accessible controls live inside that iframe, and this would block keyboard access to them entirely. */
   if (!nativeUi) excludeIframeFromTabOrder(wrapper)
 
-  return { techId, wrapper, innerDiv }
+  return { techId, wrapper }
 }
 
 export function revealEmbed(videoEl: HTMLVideoElement, wrapper: HTMLDivElement): void {
@@ -116,10 +114,6 @@ export function enterFullscreenWithIosFallback(videoEl: HTMLVideoElement, iosFal
   }
   const shell = getShellEl(videoEl)
   if (shell) requestFullscreen(shell)
-}
-
-export function exitEmbedFullscreen(): void {
-  exitDocFullscreen()
 }
 
 export interface TimerScheduler {
@@ -206,12 +200,9 @@ export interface StatefulEmbedImpl {
   hasPlayer: () => boolean
   play: () => void
   pause: () => void
-  seekToSdk?: (seconds: number) => void
+  seekToSdk: (seconds: number) => void
   volumeToSdk: (vol: number) => void
   muteToSdk: (core: StatefulEmbedCore, muted: boolean) => void
-  /** Override when seek semantics differ from the default (e.g. Vimeo defers to its own 'seeked' event). */
-  setCurrentTime?: (core: StatefulEmbedCore, seconds: number) => void
-  rate?: (core: StatefulEmbedCore) => Pick<PlaybackAdapter, 'playbackRate' | 'setPlaybackRate'>
   sdkFullscreenEnter?: () => void
   sdkFullscreenExit?: () => void
   destroyPlayer: () => void
@@ -276,13 +267,8 @@ export function createStatefulEmbedAdapter(videoEl: HTMLVideoElement, options: E
     paused: () => state.paused,
     currentTime: () => state.currentTime,
     setCurrentTime: (seconds) => {
-      if (impl.setCurrentTime) {
-        impl.setCurrentTime(core, seconds)
-        return
-      }
       state.currentTime = seconds
       impl.seekToSdk?.(seconds)
-      emitter.trigger('seeking')
     },
     duration: () => state.duration,
     volume: () => state.volume,
@@ -295,7 +281,8 @@ export function createStatefulEmbedAdapter(videoEl: HTMLVideoElement, options: E
       state.muted = muted
       impl.muteToSdk(core, muted)
     },
-    ...(impl.rate ? impl.rate(core) : { playbackRate: () => 1, setPlaybackRate: () => {} }),
+    playbackRate: () => 1,
+    setPlaybackRate: () => {},
     bufferedEnd: () => state.currentTime,
     error: (): MediaErrorLike | null => state.errorState,
     /** Only meaningful as a Retry after a failed connect (usePlayer.retry() routes through here) - a live player keeps its source. Mutates `options.src` because each impl's connect() closes over that same object. */

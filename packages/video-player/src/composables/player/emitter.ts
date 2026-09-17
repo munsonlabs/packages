@@ -1,7 +1,7 @@
 export type PlaybackListener = (...args: unknown[]) => void
 
 export interface Emitter {
-  on(event: string | string[], listener: PlaybackListener): void
+  on(event: string, listener: PlaybackListener): void
   off(event: string, listener: PlaybackListener): void
   trigger(event: string, ...args: unknown[]): void
   dispose(): void
@@ -10,11 +10,9 @@ export interface Emitter {
 export function createEmitter(): Emitter {
   const listeners = new Map<string, Set<PlaybackListener>>()
 
-  function on(event: string | string[], listener: PlaybackListener): void {
-    for (const name of Array.isArray(event) ? event : [event]) {
-      if (!listeners.has(name)) listeners.set(name, new Set())
-      listeners.get(name)?.add(listener)
-    }
+  function on(event: string, listener: PlaybackListener): void {
+    if (!listeners.has(event)) listeners.set(event, new Set())
+    listeners.get(event)?.add(listener)
   }
 
   function off(event: string, listener: PlaybackListener): void {

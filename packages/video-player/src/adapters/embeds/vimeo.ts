@@ -11,7 +11,6 @@ function parseVideoId(url: string): string | null {
 
 export function createVimeoAdapter(videoEl: HTMLVideoElement, options: EmbedAdapterOptions): PlaybackAdapter {
   let player: VimeoPlayerInstance | null = null
-  let playbackRate = 1
 
   return createStatefulEmbedAdapter(videoEl, options, {
     cssClass: MVP_VIMEO_CLASS,
@@ -87,12 +86,7 @@ export function createVimeoAdapter(videoEl: HTMLVideoElement, options: EmbedAdap
       })
       player.on('loaded', () => {
         durationSet = false
-        emitter.trigger('loadedmetadata')
         emitter.trigger('durationchange')
-      })
-      player.on('seeking', (data) => {
-        state.currentTime = (data as { seconds: number }).seconds
-        emitter.trigger('seeking')
       })
       player.on('seeked', (data) => {
         state.currentTime = (data as { seconds: number }).seconds
@@ -110,20 +104,7 @@ export function createVimeoAdapter(videoEl: HTMLVideoElement, options: EmbedAdap
     hasPlayer: () => !!player,
     play: () => void player?.play().catch(() => {}),
     pause: () => void player?.pause().catch(() => {}),
-    /** Implemented but not advertised as a feature, matching the original video.js Tech. */
-    rate: ({ emitter }) => ({
-      playbackRate: () => playbackRate,
-      setPlaybackRate: (rate) => {
-        playbackRate = rate
-        void player?.setPlaybackRate(rate).catch(() => {})
-        emitter.trigger('ratechange')
-      },
-    }),
-    setCurrentTime: ({ emitter }, seconds) => {
-      void player?.setCurrentTime(seconds).catch(() => {})
-      emitter.trigger('timeupdate')
-      emitter.trigger('seeking')
-    },
+    seekToSdk: (seconds) => void player?.setCurrentTime(seconds).catch(() => {}),
     volumeToSdk: (vol) => void player?.setVolume(vol).catch(() => {}),
     /** The SDK's UI lags its own mute state - schedule a late volumechange so consumers catch up. */
     muteToSdk: ({ emitter, schedule }, muted) => {

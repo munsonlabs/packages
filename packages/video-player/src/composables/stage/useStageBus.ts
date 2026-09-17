@@ -1,11 +1,10 @@
 import { onMounted, onBeforeUnmount } from 'vue'
-import { WIN_VIDEO_SELECT, WIN_VIDEO_TOGGLE, WIN_VIDEO_STATE } from '@/constants'
-import type { VideoSelectDetail, VideoToggleDetail, VideoStateDetail } from '@/types/player'
+import { WIN_VIDEO_SELECT, WIN_VIDEO_TOGGLE } from '@/constants'
+import type { VideoSelectDetail, VideoToggleDetail } from '@/types/player'
 
 interface StageBusEvents {
   [WIN_VIDEO_SELECT]: VideoSelectDetail
   [WIN_VIDEO_TOGGLE]: VideoToggleDetail
-  [WIN_VIDEO_STATE]: VideoStateDetail
 }
 
 export function dispatchStageEvent<K extends keyof StageBusEvents>(name: K, detail: StageBusEvents[K]): void {

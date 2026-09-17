@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, reactive, toRef, provide, watch, nextTick } from 'vue'
+import { ref, computed, reactive, toRef, provide, inject, watch, nextTick } from 'vue'
 import { usePlayer } from '@/composables/player/usePlayer'
 import { useKeyboardShortcuts } from '@/composables/player/useKeyboardShortcuts'
 import { useHud } from '@/composables/overlay/useHud'
-import { useForwardedPlayer } from '@/composables/useForwardedPlayer'
-import { PlayerKey, HudKey, ActionKey, PlaylistKey } from '@/composables/player/playerContext'
+import { exposePlayerSurface } from '@/composables/player/playerSurface'
+import { PlayerKey, HudKey, ActionKey, PlaylistKey, NO_PLAYLIST } from '@/composables/player/playerContext'
 import PlayerOverlay from '@/components/overlay/PlayerOverlay.vue'
 import AdOverlay from '@/components/overlay/AdOverlay.vue'
 import PlayButton from '@/components/controls/PlayButton.vue'
@@ -17,47 +17,26 @@ import { DEFAULT_ASPECT_RATIO } from '@/constants'
 import '@/elements/ppbtn.css'
 import '@/styles/pinnedCorner.css'
 
-const props = withDefaults(
-  defineProps<
-    PlayerProps & {
-      hasPlaylist?: boolean
-      hasNext?: boolean
-      hasPrevious?: boolean
-      autoAdvance?: boolean
-    }
-  >(),
-  {
-    title: '',
-    adTagUrl: '',
-    poster: '',
-    autoplay: false,
-    muted: undefined,
-    aspectRatio: DEFAULT_ASPECT_RATIO,
-    tracks: () => [],
-    nativeUi: false,
-    payload: () => ({}),
-    autoStage: false,
-    lazy: false,
-    action: null,
-    disableTapCapture: false,
-    disableKeyboardShortcuts: false,
-    controls: true,
-    playInView: false,
-    loop: false,
-    preload: undefined,
-    hasPlaylist: false,
-    hasNext: false,
-    hasPrevious: false,
-    autoAdvance: false,
-  },
-)
+const props = withDefaults(defineProps<PlayerProps>(), {
+  title: '',
+  adTagUrl: '',
+  poster: '',
+  autoplay: false,
+  muted: undefined,
+  aspectRatio: DEFAULT_ASPECT_RATIO,
+  tracks: () => [],
+  nativeUi: false,
+  payload: () => ({}),
+  action: null,
+  disableTapCapture: false,
+  disableKeyboardShortcuts: false,
+  controls: true,
+  playInView: false,
+  loop: false,
+  preload: undefined,
+})
 
-const emit = defineEmits<{
-  'state-change': [event: StateChangeEvent]
-  'play-next': []
-  'play-previous': []
-  'toggle-auto-advance': []
-}>()
+const emit = defineEmits<{ 'state-change': [event: StateChangeEvent] }>()
 
 const videoEl = ref(null)
 
@@ -95,18 +74,7 @@ function handleFocusOut(e: FocusEvent): void {
 provide(PlayerKey, player)
 provide(HudKey, hud)
 provide(ActionKey, toRef(props, 'action'))
-provide(
-  PlaylistKey,
-  reactive({
-    hasPlaylist: computed(() => props.hasPlaylist),
-    hasNext: computed(() => props.hasNext),
-    hasPrevious: computed(() => props.hasPrevious),
-    autoAdvance: computed(() => props.autoAdvance),
-    playNext: () => emit('play-next'),
-    playPrevious: () => emit('play-previous'),
-    toggleAutoAdvance: () => emit('toggle-auto-advance'),
-  }),
-)
+provide(PlaylistKey, inject(PlaylistKey, NO_PLAYLIST))
 
 const shellAspectRatio = computed(() => parseAspectRatio(props.aspectRatio))
 const isPortrait = computed(() => shellAspectRatio.value.isPortrait)
@@ -128,10 +96,7 @@ function onTapCapture(): void {
   player.fire('tap')
 }
 
-/** Curated, not `defineExpose(player)` - `player` carries internal-only helpers (`fmt`/`fire`) that shouldn't be public. */
-const { playerRef, forwarded } = useForwardedPlayer()
-playerRef.value = player
-defineExpose(forwarded)
+defineExpose(exposePlayerSurface(player))
 </script>
 
 <template>

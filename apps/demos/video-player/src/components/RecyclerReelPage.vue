@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { VideoPlayer, PlayButton, MuteButton, Scrubber, Buffering } from '@munsonlabs/video-player'
-import type { StateChangeEvent, VideoEntry } from '@munsonlabs/video-player'
+import type { PlayerHandle, StateChangeEvent, VideoEntry } from '@munsonlabs/video-player'
 import { videos } from '../data/demoVideos'
 import { useDemoSettings } from '../composables/useDemoSettings'
 import { useEventLog } from '../composables/useEventLog'
@@ -9,14 +9,6 @@ import { useEventLog } from '../composables/useEventLog'
 defineEmits<{ back: [] }>()
 
 /** Same forwarded shape as VideoPlayer's/VideoCard's template-ref API - see useForwardedPlayer. */
-interface PlayerHandle {
-  togglePlay(): void
-  toggleMute(): void
-  isPlaying: boolean
-  isMuted: boolean
-  isBuffering: boolean
-}
-
 const { webComponents } = useDemoSettings()
 const { addLog } = useEventLog()
 

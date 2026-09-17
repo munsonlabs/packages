@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { VideoPlayer } from '@munsonlabs/video-player'
-import type { StateChangeEvent } from '@munsonlabs/video-player'
+import type { PlayerHandle, StateChangeEvent } from '@munsonlabs/video-player'
 import { useDemoSettings } from '../composables/useDemoSettings'
 import { useEventLog } from '../composables/useEventLog'
 
@@ -11,21 +11,6 @@ const video = {
   src: 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8',
   poster: 'https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg',
   // playInView: true,
-}
-
-/**
- * What VideoPlayer's template-ref API (or a bridged custom-element instance, which exposes the
- * same members) looks like from this panel's perspective.
- */
-interface PlayerHandle {
-  togglePlay(): void
-  /** Percentage (0-100) of total duration, not absolute seconds - matches the player's own scrubber. */
-  seek(percent: number): void
-  toggleMute(): void
-  isPlaying: boolean
-  isMuted: boolean
-  current: number
-  total: number
 }
 
 const { webComponents } = useDemoSettings()

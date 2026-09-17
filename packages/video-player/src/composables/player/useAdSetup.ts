@@ -1,4 +1,4 @@
-import type { Ref } from 'vue'
+import type { PlayerState } from '@/composables/player/playerState'
 import type { AdController } from '@/adapters/ads/ads'
 import { pauseOthers } from '@/composables/registries/playerRegistry'
 import { onVisibilityOrBlur } from '@/composables/registries/documentEventRegistry'
@@ -6,12 +6,7 @@ import type { PlaybackAdapter } from '@/types/playback'
 import type { HeaderBiddingConfig, StateChangeEvent, StateChangeType } from '@/types/player'
 import { isIOS } from '@/utils/platform'
 
-export interface UseAdSetupRefs {
-  isAdPlaying: Ref<boolean>
-  isAdPaused: Ref<boolean>
-  isAdMuted: Ref<boolean>
-  adRemainingTime: Ref<number>
-}
+export type UseAdSetupRefs = Pick<PlayerState, 'isAdPlaying' | 'isAdPaused' | 'isAdMuted' | 'adRemainingTime'>
 
 export interface UseAdSetupDeps {
   fire: (type: StateChangeType, extras?: Partial<StateChangeEvent>) => void

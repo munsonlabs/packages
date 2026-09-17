@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { WIN_VIDEO_SELECT, WIN_VIDEO_STATE, DEFAULT_ASPECT_RATIO } from '@/constants'
-import { dispatchStageEvent, useStageEvent } from '@/composables/stage/useStageBus'
+import { WIN_VIDEO_SELECT, DEFAULT_ASPECT_RATIO } from '@/constants'
+import { dispatchStageEvent } from '@/composables/stage/useStageBus'
+import { stageState } from '@/composables/registries/stageRegistry'
 import { observeViewportPriority } from '@/composables/player/viewportObserver'
-import type { VideoSelectDetail } from '@/types/player'
+import type { VideoEntry } from '@/types/player'
 import { parseAspectRatio } from '@/utils/aspectRatio'
 import { resolveGestureMuted } from '@/utils/audioPreference'
 import PlayPauseIcon from '@/components/overlay/PlayPauseIcon.vue'
 import '@/elements/ppbtn.css'
 
-const props = withDefaults(defineProps<VideoSelectDetail>(), {
+const props = withDefaults(defineProps<VideoEntry>(), {
   poster: '',
   title: '',
   aspectRatio: DEFAULT_ASPECT_RATIO,
@@ -31,15 +32,10 @@ const shellAspect = computed(() => shellAspectRatio.value.cssRatio)
 const shellEl = ref<HTMLElement | null>(null)
 let unobserve: (() => void) | null = null
 
-const isActive = ref(false)
-const isPlaying = ref(false)
+const isActive = computed(() => stageState.currentSrc === props.src)
+const isPlaying = computed(() => isActive.value && stageState.isPlaying)
 
 const label = computed(() => (isActive.value && isPlaying.value ? 'Pause' : 'Play'))
-
-useStageEvent(WIN_VIDEO_STATE, (detail) => {
-  isActive.value = detail.currentSrc === props.src
-  isPlaying.value = isActive.value && detail.isPlaying
-})
 
 function dispatchSelect(fromGesture: boolean, autoplay?: boolean, muted?: boolean): void {
   dispatchStageEvent(WIN_VIDEO_SELECT, {

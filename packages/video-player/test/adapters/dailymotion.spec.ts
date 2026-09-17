@@ -12,7 +12,6 @@ const DEFAULT_SRC = 'https://www.dailymotion.com/video/x84sh87'
 // `player.trigger(e.VIDEO_PLAY)` in the adapter source and `player.trigger('VIDEO_PLAY')` in
 // tests referring to the same thing without importing the adapter's own local `e` alias.
 const DM_EVENTS: Record<string, string> = {
-  PLAYER_CRITICALPATHREADY: 'PLAYER_CRITICALPATHREADY',
   VIDEO_PLAY: 'VIDEO_PLAY',
   VIDEO_PLAYING: 'VIDEO_PLAYING',
   VIDEO_PAUSE: 'VIDEO_PAUSE',
@@ -173,17 +172,12 @@ describe('event wiring', () => {
     expect(durationchange).toHaveBeenCalledOnce()
   })
 
-  it('tracks seeking/seeked via VIDEO_SEEKSTART/VIDEO_SEEKEND', async () => {
+  it('tracks seeked via VIDEO_SEEKEND', async () => {
     const { adapter } = await createAdapter()
     const player = resolvePlayer()
     await flush()
-    const seeking = vi.fn()
     const seeked = vi.fn()
-    adapter.on('seeking', seeking)
     adapter.on('seeked', seeked)
-
-    player.trigger('VIDEO_SEEKSTART')
-    expect(seeking).toHaveBeenCalledOnce()
 
     player.trigger('VIDEO_SEEKEND', { videoTime: 30 })
     expect(adapter.currentTime()).toBe(30)
@@ -199,18 +193,6 @@ describe('event wiring', () => {
 
     expect(adapter.volume()).toBe(0.3)
     expect(adapter.muted()).toBe(true)
-  })
-
-  it('emits posterchange with the largest available thumbnail once the critical path is ready', async () => {
-    const { adapter } = await createAdapter()
-    const player = resolvePlayer()
-    await flush()
-    const posterchange = vi.fn()
-    adapter.on('posterchange', posterchange)
-
-    player.trigger('PLAYER_CRITICALPATHREADY', { videoThumbnails: { '240': 'small.jpg', '1080': 'big.jpg' } })
-
-    expect(posterchange).toHaveBeenCalledWith('big.jpg')
   })
 
   it('fires adstart/adend and treats an ad as playing', async () => {

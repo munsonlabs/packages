@@ -7,9 +7,9 @@ import { WIN_VIDEO_SELECT } from '@/constants'
 import { resolveGestureMuted } from '@/utils/audioPreference'
 import VideoPlaceholder from '@/components/VideoPlaceholder.vue'
 import VideoPlayer from '@/components/VideoPlayer.vue'
-import type { StateChangeEvent, VideoSelectDetail } from '@/types/player'
+import type { StateChangeEvent, VideoEntry } from '@/types/player'
 
-const props = withDefaults(defineProps<VideoSelectDetail>(), {
+const props = withDefaults(defineProps<VideoEntry>(), {
   lazy: true,
   action: null,
   muted: undefined,

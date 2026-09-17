@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { fmtTime } from '@/utils/time'
 import { computed } from 'vue'
 import { PlayerKey, injectStrict } from '@/composables/player/playerContext'
 import { IconVolumeOn, IconVolumeMute, IconPlay, IconPause } from '@/components/icons'
 
 const player = injectStrict(PlayerKey)
 
-const countdown = computed(() => (player.adRemainingTime > 0 ? player.fmt(player.adRemainingTime) : ''))
+const countdown = computed(() => (player.adRemainingTime > 0 ? fmtTime(player.adRemainingTime) : ''))
 </script>
 
 <template>

@@ -95,7 +95,7 @@ export async function mountPlayer(
   const screen = await render(Host, { props: { entry, extra: props } })
   const video = screen.container.querySelector<HTMLVideoElement>('video.mlv-video')
   if (!video || !captured.player) throw new Error('VideoPlayer did not mount a <video> / expose its handle')
-  if (awaitMetadata) await waitFor(() => video.duration > 0, 'video metadata to load')
+  if (awaitMetadata) await waitFor(() => captured.player!.isLoaded, 'the player to report loaded')
 
   return {
     screen,

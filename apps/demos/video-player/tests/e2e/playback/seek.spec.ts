@@ -29,6 +29,19 @@ describe('seek', () => {
     await waitFor(() => video.currentTime > CLIP_DURATION * 0.1 + 0.2, 'playback to keep advancing after the seek')
   })
 
+  it('seekTo(seconds) lands on that time and clamps past the end', async () => {
+    const { video, player, sink } = await mountPlayer(catalogue.plain)
+    await sink.next('play')
+
+    player.seekTo(2)
+    const seeked = await sink.next('seeked')
+    expect(seeked.currentTime).toBeCloseTo(2, 0)
+
+    player.seekTo(999)
+    await sink.next('seeked', 1)
+    expect(video.currentTime).toBeCloseTo(CLIP_DURATION, 0)
+  })
+
   it('seeking while paused stays paused', async () => {
     const { video, player, sink } = await mountPlayer(catalogue.plain)
     await sink.next('play')

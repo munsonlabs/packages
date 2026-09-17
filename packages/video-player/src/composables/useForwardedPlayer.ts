@@ -1,63 +1,11 @@
 import { shallowRef, computed } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
 import type { PlayerContext } from '@/composables/player/playerContext'
+import { PLAYER_METHOD_KEYS, PLAYER_STATE_KEYS } from '@/composables/player/playerSurface'
+import type { PlayerMethodKey, PlayerStateKey } from '@/composables/player/playerSurface'
 
-/** The curated public surface every player-shaped exposure shares - one source of truth instead of three hand-maintained lists. Excludes `fmt`/`fire`, internal-only helpers. */
-const METHOD_KEYS = [
-  'retry',
-  'togglePlay',
-  'seek',
-  'toggleMute',
-  'setVolume',
-  'toggleFullscreen',
-  'markFullscreenPending',
-  'toggleLoop',
-  'toggleAdMute',
-  'setPlaybackRate',
-  'setCaptionTrack',
-  'setQuality',
-  'togglePip',
-] as const
-
-const STATE_KEYS = [
-  'isPlaying',
-  'hasEnded',
-  'isReady',
-  'isAdPlaying',
-  'isAdPaused',
-  'isAdMuted',
-  'adRemainingTime',
-  'isLive',
-  'isBuffering',
-  'current',
-  'total',
-  'vol',
-  'isMuted',
-  'isAudible',
-  'isLooping',
-  'currentPlaybackRate',
-  'hasStarted',
-  'isError',
-  'errorMessage',
-  'progress',
-  'bufferedDisplay',
-  'isFullscreen',
-  'isFullscreenPending',
-  'supportsPlaybackRate',
-  'supportsCaptions',
-  'captionTracks',
-  'activeCaptionIndex',
-  'supportsQuality',
-  'qualityLevels',
-  'currentQualityIndex',
-  'isAutoQuality',
-  'supportsPip',
-  'isPipActive',
-  'isNativeUi',
-] as const
-
-export type MethodKey = (typeof METHOD_KEYS)[number]
-type StateKey = (typeof STATE_KEYS)[number]
+export type MethodKey = PlayerMethodKey
+type StateKey = PlayerStateKey
 
 /** Promise<void>, not void - every forwarded method goes through `guard` first, which may itself be async. */
 export type ForwardedPlayer = { [K in MethodKey]: (...args: Parameters<PlayerContext[K]>) => Promise<void> } & {
@@ -82,14 +30,14 @@ export function useForwardedPlayer(guard: (key: MethodKey) => boolean | Promise<
   const playerRef = shallowRef<PlayerContext | null>(null)
   const forwarded: Record<string, unknown> = {}
 
-  for (const key of METHOD_KEYS) {
+  for (const key of PLAYER_METHOD_KEYS) {
     forwarded[key] = async (...args: unknown[]) => {
       if (!(await guard(key))) return
-      ;(playerRef.value?.[key] as ((...a: unknown[]) => void) | undefined)?.(...args)
+      await (playerRef.value?.[key] as ((...a: unknown[]) => unknown) | undefined)?.(...args)
     }
   }
 
-  for (const key of STATE_KEYS) {
+  for (const key of PLAYER_STATE_KEYS) {
     forwarded[key] = computed(() => playerRef.value?.[key])
   }
 

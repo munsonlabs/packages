@@ -6,11 +6,11 @@ import {
   spawnIosFullscreenOverlay,
   createTimerScheduler,
   enterFullscreenWithIosFallback,
-  exitEmbedFullscreen,
   EMBED_UNSUPPORTED_FEATURES,
 } from '@/adapters/embeds/embedShared'
 import type { EmbedAdapterOptions } from '@/adapters/embeds/embedShared'
 import type { PlaybackAdapter, MediaErrorLike } from '@/types/playback'
+import { exitFullscreen } from '@/utils/platform'
 import { YOUTUBE_TIMEUPDATE_POLL_MS, MUTE_VOLUMECHANGE_SYNC_DELAY_MS, MVP_YOUTUBE_CLASS } from '@/constants'
 
 interface ParsedUrl {
@@ -169,8 +169,6 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
 
     switch (state) {
       case -1:
-        emitter.trigger('loadstart')
-        emitter.trigger('loadedmetadata')
         emitter.trigger('durationchange')
         emitter.trigger('ratechange')
         break
@@ -218,7 +216,6 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
       fs: 1,
       autoplay: 0,
       playsinline: 1,
-      ...options.customVars,
     }
 
     activeVideoId = url.videoId
@@ -347,7 +344,6 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
 
       ytPlayer.seekTo(seconds, true)
       emitter.trigger('timeupdate')
-      emitter.trigger('seeking')
       seek.active = true
 
       if (YT && lastState === YT.PlayerState.PAUSED && seek.timeBefore !== seconds) {
@@ -406,7 +402,7 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
     supportsPlaybackRate: () => hasPlaybackRateFeature,
     ...EMBED_UNSUPPORTED_FEATURES,
     enterFullscreen,
-    exitFullscreen: exitEmbedFullscreen,
+    exitFullscreen,
     on: emitter.on,
     off: emitter.off,
     dispose: () => {

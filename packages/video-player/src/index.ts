@@ -17,7 +17,7 @@ import PlaybackRateButton from '@/components/controls/PlaybackRateButton.vue'
 import VolumeSlider from '@/components/controls/VolumeSlider.vue'
 import TimeDisplay from '@/components/controls/TimeDisplay.vue'
 import Transcript from '@/components/controls/Transcript.vue'
-import { getPlatform, registerPlatform, registerMatcher, registerEmbedAdapter, registerSourceResolver } from '@/adapters/index'
+import { resolvePlatform, registerPlatform } from '@/adapters/index'
 
 const VideoPlayerPlugin: Plugin = {
   install(app: App) {
@@ -62,11 +62,8 @@ export {
   TimeDisplay,
   Transcript,
   VideoPlayerPlugin,
-  getPlatform,
+  resolvePlatform,
   registerPlatform,
-  registerMatcher,
-  registerEmbedAdapter,
-  registerSourceResolver,
 }
 export * from '@/types/player'
 /** Types only - the injection keys themselves are internal DI plumbing, unusable externally. */

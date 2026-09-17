@@ -1,4 +1,6 @@
-import type { CaptionTrackInfo, QualityLevelInfo } from '@/types/playback'
+import type { UnwrapNestedRefs } from 'vue'
+import type { UsePlayerReturn } from '@/composables/player/usePlayer'
+import type { PlayerMethodKey, PlayerStateKey } from '@/composables/player/playerSurface'
 
 export type BuiltinAction = 'mute' | 'loop' | 'autoplay'
 
@@ -11,6 +13,7 @@ export interface CustomAction {
 export type PlayerAction = BuiltinAction | CustomAction
 
 export type StateChangeType =
+  | 'loaded'
   | 'play'
   | 'pause'
   | 'ended'
@@ -93,8 +96,6 @@ export interface PlayerProps {
   volume?: number
   playbackRate?: number
   nativeUi?: boolean
-  autoStage?: boolean
-  lazy?: boolean
   /** A raw JSON string is also accepted, since a custom element attribute like `payload='{"a":1}'` otherwise arrives as a literal string, not an object. */
   payload?: Record<string, unknown> | string
   action?: PlayerAction | null
@@ -117,16 +118,16 @@ export type PinCorner = 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left
 /** The native `<video preload>` values. */
 export type PreloadMode = 'none' | 'metadata' | 'auto'
 
-export interface VideoStateDetail {
-  currentSrc: string | null
-  isPlaying: boolean
-}
-
 export interface VideoToggleDetail {
   src: string
 }
 
-export type VideoEntry = PlayerProps
+export interface VideoEntry extends PlayerProps {
+  /** VideoCard only: show the placeholder until clicked (default true). */
+  lazy?: boolean
+  /** VideoCard/VideoPlaceholder only: send this entry to the stage on mount. */
+  autoStage?: boolean
+}
 
 /** Same shape as `VideoEntry` plus `fromGesture` - explicitly whether a real user gesture triggered this, distinct from `autoplay`. */
 export interface VideoSelectDetail extends VideoEntry {
@@ -142,48 +143,5 @@ export interface TranscriptCue {
   text: string
 }
 
-/** The curated subset a headless control needs - narrow so any player-shaped ref satisfies it structurally, without importing usePlayer. */
-export interface PlayerHandle {
-  isPlaying: boolean
-  togglePlay(): void
-  hasEnded: boolean
-  isError: boolean
-  /** Re-attempts loading the current source after an error. */
-  retry(): void
-  isMuted: boolean
-  toggleMute(): void
-  /** False whenever muted OR volume is dragged to 0 without hitting mute - the single "should this look/sound silent" read. */
-  isAudible: boolean
-  isFullscreen: boolean
-  toggleFullscreen(): void
-  current: number
-  total: number
-  /** Percentage (0-100) of total duration, not absolute seconds. */
-  seek(percent: number): void
-  /** Percentage (0-100) buffered ahead - at least as far as `progress`, for a scrubber's buffered-fill display. */
-  bufferedDisplay: number
-  isBuffering: boolean
-  isLive: boolean
-  /** 0-1. */
-  vol: number
-  /** 0-1. */
-  setVolume(vol: number): void
-  isLooping: boolean
-  toggleLoop(): void
-  supportsPip: boolean
-  isPipActive: boolean
-  togglePip(): void
-  supportsCaptions: boolean
-  captionTracks: CaptionTrackInfo[]
-  activeCaptionIndex: number | null
-  setCaptionTrack(index: number | null): void
-  supportsQuality: boolean
-  qualityLevels: QualityLevelInfo[]
-  currentQualityIndex: number | null
-  isAutoQuality: boolean
-  setQuality(index: number | null): void
-  supportsPlaybackRate: boolean
-  /** Named `currentPlaybackRate`, not `playbackRate` - see `UsePlayerReturn`'s doc comment on the same field for why. */
-  currentPlaybackRate: number
-  setPlaybackRate(rate: number): void
-}
+/** What a template ref (or custom element) to VideoPlayer/VideoCard/VideoStage exposes, and what a headless control receives as `player`. */
+export type PlayerHandle = Pick<UnwrapNestedRefs<UsePlayerReturn>, PlayerMethodKey | PlayerStateKey>

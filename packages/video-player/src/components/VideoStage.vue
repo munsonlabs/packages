@@ -1,25 +1,26 @@
 <script setup lang="ts">
-import { ref, computed, toRef, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, computed, reactive, toRef, provide, onMounted, onBeforeUnmount, watch } from 'vue'
 import VideoPlayer from '@/components/VideoPlayer.vue'
 import PinnedControls from '@/components/pinned/PinnedControls.vue'
 import { IconPlay } from '@/components/icons'
-import { registerStage, unregisterStage, isStageTucked } from '@/composables/registries/stageRegistry'
+import { registerStage, unregisterStage, isStageTucked, stageState } from '@/composables/registries/stageRegistry'
+import { PlaylistKey } from '@/composables/player/playerContext'
 import { usePinnedReservedSpace } from '@/composables/player/usePinnedReservedSpace'
 import { scrollIntoCenter } from '@/utils/scrollIntoCenter'
 import { dispatchStageEvent, useStageEvent } from '@/composables/stage/useStageBus'
 import { useForwardedPlayer } from '@/composables/useForwardedPlayer'
 import { usePlaylist } from '@/composables/stage/usePlaylist'
-import { WIN_VIDEO_SELECT, WIN_VIDEO_TOGGLE, WIN_VIDEO_STATE, DEFAULT_ASPECT_RATIO } from '@/constants'
+import { WIN_VIDEO_SELECT, WIN_VIDEO_TOGGLE, DEFAULT_ASPECT_RATIO } from '@/constants'
 import { parseAspectRatio } from '@/utils/aspectRatio'
 import { getAutoAdvance, saveAutoAdvance } from '@/utils/autoAdvancePreference'
 import { resolveGestureMuted } from '@/utils/audioPreference'
 import { runFlipTransition } from '@/utils/flipTransition'
-import type { StateChangeEvent, VideoEntry, VideoSelectDetail, VideoToggleDetail } from '@/types/player'
+import type { PlayerProps, StateChangeEvent, VideoEntry, VideoSelectDetail, VideoToggleDetail, PinCorner } from '@/types/player'
 import '@/styles/pinnedCorner.css'
 
 const props = withDefaults(
   defineProps<{
-    pin?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left' | 'full-width'
+    pin?: PinCorner | 'full-width'
     playlist?: VideoEntry[]
   }>(),
   { pin: 'bottom-right' },
@@ -110,8 +111,15 @@ function dismiss(): void {
 }
 
 function dispatchState(): void {
-  dispatchStageEvent(WIN_VIDEO_STATE, { currentSrc: current.value?.src ?? null, isPlaying: isPlaying.value })
+  stageState.currentSrc = current.value?.src ?? null
+  stageState.isPlaying = isPlaying.value
 }
+
+/** Everything on the selected entry that is a VideoPlayer prop - not the card-only fields or the event flag. */
+const playerProps = computed<PlayerProps>(() => {
+  const { fromGesture: _g, lazy: _l, autoStage: _a, ...rest } = current.value ?? { src: '' }
+  return rest
+})
 
 function onVideoSelect(detail: VideoSelectDetail): void {
   /**
@@ -180,6 +188,21 @@ function onStateChange(e: StateChangeEvent): void {
   emit('state-change', e)
 }
 
+provide(
+  PlaylistKey,
+  reactive({
+    hasPlaylist,
+    hasNext,
+    hasPrevious,
+    autoAdvance,
+    playNext: () => playNext(),
+    playPrevious: () => playPrevious(),
+    toggleAutoAdvance: () => {
+      autoAdvance.value = !autoAdvance.value
+    },
+  }),
+)
+
 useStageEvent(WIN_VIDEO_SELECT, onVideoSelect)
 useStageEvent(WIN_VIDEO_TOGGLE, onVideoToggle)
 
@@ -188,6 +211,8 @@ onMounted(registerStage)
 onBeforeUnmount(() => {
   unregisterStage()
   intersectionObserver?.disconnect()
+  stageState.currentSrc = null
+  stageState.isPlaying = false
 })
 
 defineExpose({ playNext, playPrevious, hasNext, hasPrevious, ...forwarded })
@@ -206,20 +231,7 @@ defineExpose({ playNext, playPrevious, hasNext, hasPrevious, ...forwarded })
     >
       <PinnedControls v-if="isPinned" @scroll-to="scrollToStage" @dismiss="dismiss" />
 
-      <VideoPlayer
-        v-if="current && playerMounted"
-        ref="playerRef"
-        :key="current.src"
-        v-bind="current"
-        :has-playlist="hasPlaylist"
-        :has-next="hasNext"
-        :has-previous="hasPrevious"
-        :auto-advance="autoAdvance"
-        @state-change="onStateChange"
-        @play-next="playNext"
-        @play-previous="playPrevious"
-        @toggle-auto-advance="autoAdvance = !autoAdvance"
-      />
+      <VideoPlayer v-if="current && playerMounted" ref="playerRef" :key="current.src" v-bind="playerProps" @state-change="onStateChange" />
 
       <div v-else class="stage__idle" :style="{ aspectRatio: idleAspect }" @click="onIdleClick">
         <img v-if="current?.poster" :src="current.poster" class="stage__idle-poster" />

@@ -4,7 +4,7 @@ import VideoStage from '@/components/VideoStage.vue'
 import VideoPlaceholder from '@/components/VideoPlaceholder.vue'
 import VideoCard from '@/components/VideoCard.vue'
 import HideMarker from '@/components/HideMarker.vue'
-import { registerPlatform, registerMatcher, registerEmbedAdapter, registerSourceResolver } from '@/adapters/index'
+import { registerPlatform, resolvePlatform } from '@/adapters/index'
 
 /** Shadow DOM is not an option - embed SDKs mount by resolving a plain element ID via document.getElementById, which can't see into one. */
 const VideoPlayerElement = defineCustomElement(VideoPlayer, { shadowRoot: false })
@@ -39,6 +39,6 @@ if (!deferred) defineElements()
 export { VideoPlayerElement, VideoStageElement, VideoPlaceholderElement, VideoCardElement, HideMarkerElement }
 
 /** Each `/element*` bundle is its own independent build - registering here only affects players created from this bundle. */
-export { registerPlatform, registerMatcher, registerEmbedAdapter, registerSourceResolver }
+export { registerPlatform, resolvePlatform }
 export type { PlatformConfig, Matcher, EmbedAdapterFactory, SourceResolver, ResolvedSource, PlaybackAdapter, MediaErrorLike } from '@/types/playback'
 export type { EmbedAdapterOptions } from '@/adapters/embeds/embedShared'

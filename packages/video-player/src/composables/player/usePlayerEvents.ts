@@ -1,40 +1,12 @@
-import type { Ref } from 'vue'
 import { pauseOthers } from '@/composables/registries/playerRegistry'
-import type { PlaybackAdapter, CaptionTrackInfo, QualityLevelInfo } from '@/types/playback'
+import type { PlaybackAdapter } from '@/types/playback'
+import type { PlayerState } from '@/composables/player/playerState'
 import type { UseFullscreenReturn } from '@/composables/player/useFullscreen'
 import type { UseBufferingReturn } from '@/composables/player/useBuffering'
 import type { UseQuartileEventsReturn } from '@/composables/player/useQuartileEvents'
 import type { UsePositionMemoryReturn } from '@/composables/player/usePositionMemory'
 import type { StateChangeEvent, StateChangeType } from '@/types/player'
 import { TIMEUPDATE_FIRE_INTERVAL_MS } from '@/constants'
-
-export interface UsePlayerEventsRefs {
-  isPlaying: Ref<boolean>
-  hasEnded: Ref<boolean>
-  isReady: Ref<boolean>
-  isAdPlaying: Ref<boolean>
-  isLive: Ref<boolean>
-  current: Ref<number>
-  total: Ref<number>
-  buffered: Ref<number>
-  vol: Ref<number>
-  isMuted: Ref<boolean>
-  isLooping: Ref<boolean>
-  playbackRate: Ref<number>
-  supportsPlaybackRate: Ref<boolean>
-  supportsCaptions: Ref<boolean>
-  captionTracks: Ref<CaptionTrackInfo[]>
-  activeCaptionIndex: Ref<number | null>
-  supportsQuality: Ref<boolean>
-  qualityLevels: Ref<QualityLevelInfo[]>
-  currentQualityIndex: Ref<number | null>
-  isAutoQuality: Ref<boolean>
-  supportsPip: Ref<boolean>
-  isPipActive: Ref<boolean>
-  hasStarted: Ref<boolean>
-  isError: Ref<boolean>
-  errorMessage: Ref<string>
-}
 
 export interface UsePlayerEventsDeps {
   fire: (type: StateChangeType, extras?: Partial<StateChangeEvent>) => void
@@ -49,7 +21,7 @@ export interface UsePlayerEventsReturn {
   attachPlayerEvents: (player: PlaybackAdapter) => void
 }
 
-export function usePlayerEvents(refs: UsePlayerEventsRefs, deps: UsePlayerEventsDeps): UsePlayerEventsReturn {
+export function usePlayerEvents(state: PlayerState, deps: UsePlayerEventsDeps): UsePlayerEventsReturn {
   const {
     isPlaying,
     hasEnded,
@@ -62,7 +34,7 @@ export function usePlayerEvents(refs: UsePlayerEventsRefs, deps: UsePlayerEvents
     vol,
     isMuted,
     isLooping,
-    playbackRate,
+    currentPlaybackRate: playbackRate,
     supportsPlaybackRate,
     supportsCaptions,
     captionTracks,
@@ -76,7 +48,7 @@ export function usePlayerEvents(refs: UsePlayerEventsRefs, deps: UsePlayerEvents
     hasStarted,
     isError,
     errorMessage,
-  } = refs
+  } = state
   const { fire, pauseThisPlayer, positionMemory, quartiles, buffering, fullscreen } = deps
 
   /** Embed SDKs only know supportsPlaybackRate after their own async ready callback, so it's re-read on every timeupdate. */

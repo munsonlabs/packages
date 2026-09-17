@@ -30,7 +30,6 @@ const NATIVE_EVENTS = [
   'progress',
   'volumechange',
   'ratechange',
-  'seeking',
   'seeked',
   'waiting',
   'playing',

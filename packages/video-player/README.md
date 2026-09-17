@@ -109,9 +109,9 @@ import { VideoStage, HideMarker } from '@munsonlabs/video-player'
 | `autoplay`          | `boolean`      | `false`  | Autoplay on mount, see [Autoplay, mute & volume](#autoplay-mute--volume)                                                                                                                                        |
 | `muted`             | `boolean`      | -        | Force a starting mute state - if unset, follows the shared audio preference, see [Autoplay, mute & volume](#autoplay-mute--volume)                                                                              |
 | `volume`            | `number`       | -        | Force a starting volume (0-1) - if unset, follows the shared audio preference, see [Autoplay, mute & volume](#autoplay-mute--volume)                                                                            |
-| `lazy`              | `boolean`      | `true`\* | Show placeholder until clicked                                                                                                                                                                                  |
+| `lazy`              | `boolean`      | `true`   | `VideoCard` only: show the placeholder until clicked                                                                                                                                                            |
 | `nativeUi`          | `boolean`      | `false`  | Use the platform's native controls (YouTube, Vimeo, Dailymotion only)                                                                                                                                           |
-| `autoStage`         | `boolean`      | `false`  | Immediately send this video to the stage on mount                                                                                                                                                               |
+| `autoStage`         | `boolean`      | `false`  | `VideoCard` only: send this video to the stage on mount                                                                                                                                                         |
 | `playbackRate`      | `number`       | `1`      | Initial playback rate                                                                                                                                                                                           |
 | `loop`              | `boolean`      | `false`  | Start with looping on - reactive, so flipping it later is the same as calling `toggleLoop()`                                                                                                                    |
 | `preload`           | `PreloadMode`  | -        | `'none' \| 'metadata' \| 'auto'` - the native `<video preload>` attribute. `'none'` defers loading for MP4 and HLS alike (hls.js is held back until the first play), not DASH; other values leave HLS as normal |
@@ -125,8 +125,6 @@ import { VideoStage, HideMarker } from '@munsonlabs/video-player'
 | `controls`          | `boolean`      | `true`   | Set `false` to render a bare `<video>` with no built-in HUD - drive playback with your own UI instead, see [Headless Controls](#headless-controls)                                                              |
 | `playInView`        | `boolean`      | `false`  | Auto-play once at least half the player is visible, auto-pause once it isn't - e.g. for a scroll-snap feed, see [Autoplay, mute & volume](#autoplay-mute--volume)                                               |
 | `pin`               | `PinCorner`    | -        | Pins the player to this screen corner once it scrolls out of view while playing, instead of auto-pausing - see [Pinning a single player](#pinning-a-single-player)                                              |
-
-\* `lazy` only has an effect on `VideoCard` (default `true`), which is what actually implements the placeholder-until-clicked behaviour. `VideoPlayer` accepts the prop for type compatibility but defaults to `false` and never reads it: using `<VideoPlayer>` directly always mounts the real player immediately, regardless of `lazy`.
 
 ### Autoplay, mute & volume
 
@@ -221,6 +219,20 @@ Or, `<label for>`-style, skip the ref and point at an element id instead:
 
 `player` and `for` are both optional - if both are given, `player` wins. Each button's own CSS uses `:where()` (zero specificity), so a single class you add always wins, and most expose their state via a scoped slot for full custom markup (e.g. `PlayButton`'s `#default="{ isPlaying }"`). See [Web Component Usage](#web-component-usage) for using these as raw custom elements (`<ml-controls-play-button>` etc.) outside Vue.
 
+### The player handle
+
+A template ref on `VideoPlayer`/`VideoCard`/`VideoStage` (or the `player` injected into a headless control) exposes the `PlayerHandle` type. The commonly used part:
+
+| Member                                             | Notes                                                                                        |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `play()` / `pause()` / `togglePlay()`              | `play()` returns a promise that resolves once playing and rejects on an autoplay block/error |
+| `replay()`                                         | Seeks to 0 and plays; what the HUD button does after `ended`                                 |
+| `seekTo(seconds)` / `seek(percent)`                | Seconds for transcripts, chapters, deep links; percent for scrubbers                         |
+| `isLoaded` / `isReady` / `isPlaying`               | `isLoaded` means the duration is known; `isReady` only means the adapter is attached         |
+| `hasEnded` / `isError` / `retry()`                 | `retry()` reloads the current source after an error                                          |
+| `current` / `total` / `isLive`                     | Seconds                                                                                      |
+| `isMuted` / `vol` / `toggleMute()` / `setVolume()` | Volume is 0-1                                                                                |
+
 ### Transcript
 
 `Transcript` renders a clickable transcript for the linked player: pass `cues` as `{ time, end?, text }[]` (times in seconds), clicking a cue seeks to its timestamp (starting playback first if paused), and the cue at the playhead is highlighted and kept scrolled into view:
@@ -259,7 +271,7 @@ defineExpose(forwarded)
 </template>
 ```
 
-`useForwardedPlayer` owns the ref itself - bind `playerRef` on the wrapped `VideoPlayer`, and spread (or pass) `forwarded` into your own `defineExpose`, so callers holding a ref to your wrapper get the same imperative API `VideoPlayer` exposes. Pass a `guard` callback to intercept method calls before they reach the underlying player.
+`useForwardedPlayer` owns the ref itself - bind `playerRef` on the wrapped `VideoPlayer`, and spread (or pass) `forwarded` into your own `defineExpose`, so callers holding a ref to your wrapper get the same `PlayerHandle` API `VideoPlayer` exposes (methods return promises there, since the optional `guard` callback that runs before each call may be async).
 
 Because it's wired up via `defineExpose`, this works the same way whether your wrapper is used as a Vue component (a template ref) or as a custom element ([Web Component Usage](#web-component-usage)) - Vue copies `defineExpose`d properties onto the element itself.
 
@@ -304,6 +316,7 @@ Emitted by `VideoCard`, `VideoPlayer`, and `VideoStage`. Every event includes `c
 
 | Event                            | When it fires                                                                                        | Extra fields                                               |
 | -------------------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `loaded`                         | Duration is known (or the stream is detected as live); `isLoaded` flips true                         | —                                                          |
 | `play`                           | Playback starts or resumes                                                                           | —                                                          |
 | `pause`                          | Playback pauses                                                                                      | —                                                          |
 | `ended`                          | Playback reaches the end                                                                             | —                                                          |
@@ -660,8 +673,9 @@ player.addEventListener('state-change', (e) => {
 
 ```js
 const player = document.querySelector('ml-video-card')
-player.togglePlay()
-console.log(player.isPlaying)
+await player.play() // resolves once playing, rejects on an autoplay block or media error
+player.seekTo(30)
+console.log(player.isPlaying, player.isLoaded)
 ```
 
 ### Registering a platform from a web component

@@ -12,19 +12,32 @@ describe('play / pause', () => {
     expect(player.hasEnded).toBe(false)
   })
 
-  it('togglePlay pauses and resumes the real <video>', async () => {
+  it('pause() and play() drive the real <video>, and play() resolves once playing', async () => {
+    const { video, player, sink } = await mountPlayer(catalogue.plain)
+    await sink.next('play')
+
+    player.pause()
+    await sink.next('pause')
+    expect(video.paused).toBe(true)
+    expect(player.isPlaying).toBe(false)
+
+    await player.play()
+    expect(video.paused).toBe(false)
+    expect(player.isPlaying).toBe(true)
+    expect(sink.of('play')).toHaveLength(2)
+  })
+
+  it('togglePlay flips between the two', async () => {
     const { video, player, sink } = await mountPlayer(catalogue.plain)
     await sink.next('play')
 
     player.togglePlay()
     await sink.next('pause')
     expect(video.paused).toBe(true)
-    expect(player.isPlaying).toBe(false)
 
     player.togglePlay()
     await sink.next('play', 1)
     expect(video.paused).toBe(false)
-    expect(player.isPlaying).toBe(true)
   })
 
   it('does not start on its own without autoplay', async () => {
@@ -38,12 +51,11 @@ describe('play / pause', () => {
   })
 
   it('an unmuted clip plays after a user gesture', async () => {
-    const { video, player, sink, activate } = await mountPlayer(catalogue.plain, { muted: false })
+    const { video, activate, player } = await mountPlayer(catalogue.plain, { muted: false })
 
     await activate()
-    player.togglePlay()
+    await player.play()
 
-    await sink.next('play')
     expect(video.paused).toBe(false)
     expect(video.muted).toBe(false)
   })

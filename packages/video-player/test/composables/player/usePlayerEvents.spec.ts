@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vite-plus/test'
 import { ref } from 'vue'
 import type { Ref } from 'vue'
 import { usePlayerEvents } from '@/composables/player/usePlayerEvents'
+import { createPlayerState } from '@/composables/player/playerState'
 import { createEmitter } from '@/composables/player/emitter'
 import type { PlaybackAdapter, CaptionTrackInfo, QualityLevelInfo, MediaErrorLike } from '@/types/playback'
 
@@ -61,35 +62,7 @@ function makeFakeAdapter(
   return { adapter, emitter }
 }
 
-function makeRefs() {
-  return {
-    isPlaying: ref(false),
-    hasEnded: ref(false),
-    isReady: ref(false),
-    isAdPlaying: ref(false),
-    isLive: ref(false),
-    current: ref(0),
-    total: ref(0),
-    buffered: ref(0),
-    vol: ref(1),
-    isMuted: ref(false),
-    isLooping: ref(false),
-    playbackRate: ref(1),
-    supportsPlaybackRate: ref(false),
-    supportsCaptions: ref(false),
-    captionTracks: ref<CaptionTrackInfo[]>([]),
-    activeCaptionIndex: ref<number | null>(null),
-    supportsQuality: ref(false),
-    qualityLevels: ref<QualityLevelInfo[]>([]),
-    currentQualityIndex: ref<number | null>(null),
-    isAutoQuality: ref(true),
-    supportsPip: ref(false),
-    isPipActive: ref(false),
-    hasStarted: ref(false),
-    isError: ref(false),
-    errorMessage: ref(''),
-  }
-}
+const makeRefs = () => createPlayerState({ src: 'https://example.com/a.mp4' })
 
 function makeDeps() {
   return {
@@ -102,7 +75,6 @@ function makeDeps() {
       isFullscreen: ref(false),
       isFullscreenPending: ref(false),
       toggleFullscreen: vi.fn(),
-      markFullscreenPending: vi.fn(),
       attachPlayerEvents: vi.fn(),
     },
   }

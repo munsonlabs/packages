@@ -11,7 +11,7 @@ export const PlayerKey: InjectionKey<PlayerContext> = Symbol('player')
 export const HudKey: InjectionKey<HudContext> = Symbol('hud')
 export const ActionKey: InjectionKey<Ref<PlayerAction | null | undefined>> = Symbol('action')
 
-/** Bridges VideoStage's playlist state to its controls - always provided by VideoPlayer, false/no-op when there's no playlist. */
+/** Provided by VideoStage for the HUD's playlist controls; VideoPlayer falls back to NO_PLAYLIST. */
 export interface PlaylistContext {
   hasPlaylist: boolean
   hasNext: boolean
@@ -22,6 +22,16 @@ export interface PlaylistContext {
   toggleAutoAdvance: () => void
 }
 export const PlaylistKey: InjectionKey<PlaylistContext> = Symbol('playlist')
+
+export const NO_PLAYLIST: PlaylistContext = {
+  hasPlaylist: false,
+  hasNext: false,
+  hasPrevious: false,
+  autoAdvance: false,
+  playNext: () => {},
+  playPrevious: () => {},
+  toggleAutoAdvance: () => {},
+}
 
 export function injectStrict<T>(key: InjectionKey<T>): T {
   const value = inject(key)

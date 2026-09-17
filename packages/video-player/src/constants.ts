@@ -3,7 +3,6 @@ import type { AudioPreference } from '@/types/playback'
 
 export const WIN_VIDEO_SELECT = 'video-select'
 export const WIN_VIDEO_TOGGLE = 'video-toggle'
-export const WIN_VIDEO_STATE = 'video-state'
 
 export const MVP_FULLSCREEN_PENDING = 'fullscreen-pending'
 export const MVP_FULLSCREEN_PENDING_DONE = 'fullscreen-pending-done'

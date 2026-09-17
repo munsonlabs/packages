@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from 'vite-plus/test'
 import { ref } from 'vue'
 import { usePlayerControls } from '@/composables/player/usePlayerControls'
+import { createPlayerState } from '@/composables/player/playerState'
+import type { UseAdSetupReturn } from '@/composables/player/useAdSetup'
 import type { PlaybackAdapter } from '@/types/playback'
 
 function makeAdapter(overrides: Partial<PlaybackAdapter> = {}): PlaybackAdapter {
@@ -12,13 +14,15 @@ function makeAdapter(overrides: Partial<PlaybackAdapter> = {}): PlaybackAdapter 
   } as unknown as PlaybackAdapter
 }
 
-function setup(adapter: PlaybackAdapter | null, isPlaying = ref(false)) {
-  const isReady = ref(true)
-  const total = ref(100)
-  const isLooping = ref(false)
-  const playbackRate = ref(1)
-  const controls = usePlayerControls(() => adapter, isReady, total, isLooping, playbackRate, isPlaying)
-  return { controls, isPlaying }
+const noAds = { isAdPlaying: () => false, isAdPaused: () => false, pauseAd: vi.fn(), resumeAd: vi.fn() } as unknown as UseAdSetupReturn
+
+function setup(adapter: PlaybackAdapter | null, isPlaying = ref(false), isReady = ref(true)) {
+  const state = createPlayerState({ src: 'https://example.com/a.mp4' })
+  state.isPlaying = isPlaying
+  state.isReady = isReady
+  state.total.value = 100
+  const controls = usePlayerControls(state, () => adapter, noAds, vi.fn())
+  return { controls, isPlaying, state }
 }
 
 describe('togglePlay', () => {
@@ -54,8 +58,7 @@ describe('togglePlay', () => {
 
   it('does nothing when the player is not ready', () => {
     const adapter = makeAdapter()
-    const isReady = ref(false)
-    const controls = usePlayerControls(() => adapter, isReady, ref(100), ref(false), ref(1), ref(false))
+    const { controls } = setup(adapter, ref(false), ref(false))
     controls.togglePlay()
     expect(adapter.play).not.toHaveBeenCalled()
     expect(adapter.pause).not.toHaveBeenCalled()

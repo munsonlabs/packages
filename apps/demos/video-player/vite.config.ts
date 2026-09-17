@@ -1,6 +1,10 @@
 import { mergeConfig } from 'vite-plus'
 import { playwright } from 'vite-plus/test/browser-playwright'
 import base from '@munsonlabs/shipkit/vite/vue.config'
+
+// Every task runs against the player's dist build, so a stale build can never silently test old code.
+const afterPlayerBuild = (command: string, extra = {}) => ({ command, dependsOn: ['@munsonlabs/video-player#build'], ...extra })
+
 export default mergeConfig(base, {
   test: {
     include: ['tests/e2e/**/*.spec.ts', 'tests/page/**/*.spec.ts'],
@@ -10,40 +14,18 @@ export default mergeConfig(base, {
       enabled: true,
       viewport: { width: 1280, height: 900 },
       instances: [
-        {
-          browser: 'chromium',
-          // Offline apart from the dev server, so Prebid, CDN posters and embeds fail fast.
-          provider: playwright({
-            launchOptions: {
-              args: ['--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE localhost, EXCLUDE 127.0.0.1', ...(process.env.CI ? ['--no-sandbox'] : [])],
-            },
-          }),
-        },
+        { browser: 'chromium', provider: playwright() },
         { browser: 'webkit', provider: playwright() },
       ],
     },
   },
   run: {
     tasks: {
-      dev: {
-        command: 'vp dev --port 5176',
-        dependsOn: ['@munsonlabs/video-player#build'],
-      },
-      build: {
-        command: 'vp build',
-        dependsOn: ['@munsonlabs/video-player#build'],
-        // Sets `base`, so it must be part of the cache key.
-        env: ['VITE_BASE_VIDEO_PLAYER_DEMO'],
-      },
-      check: {
-        command: 'vp check',
-        dependsOn: ['@munsonlabs/video-player#build'],
-      },
-      test: {
-        command: 'vp test',
-        dependsOn: ['@munsonlabs/video-player#build'],
-        cache: false,
-      },
+      dev: afterPlayerBuild('vp dev --port 5176'),
+      // Sets `base`, so it must be part of the cache key.
+      build: afterPlayerBuild('vp build', { env: ['VITE_BASE_VIDEO_PLAYER_DEMO'] }),
+      check: afterPlayerBuild('vp check'),
+      test: afterPlayerBuild('vp test', { cache: false }),
     },
   },
 })

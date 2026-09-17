@@ -2,7 +2,6 @@ import type { HeaderBiddingConfig } from '@/types/player'
 
 const DEFAULT_TIMEOUT_MS = 1000
 
-/** Runs a Prebid.js auction against the consumer's own `window.pbjs` and returns the winning ad tag URL, falling back to `fallbackAdTagUrl` on any failure so a bidding hiccup never blocks ad playback. */
 export function resolveHeaderBiddingAdTagUrl(config: HeaderBiddingConfig, fallbackAdTagUrl: string): Promise<string> {
   const pbjs = window.pbjs
   if (!pbjs) return Promise.resolve(fallbackAdTagUrl)

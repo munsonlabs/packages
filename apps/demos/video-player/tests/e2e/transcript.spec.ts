@@ -14,7 +14,6 @@ describe('TranscriptPanel', () => {
     const screen = await render(TranscriptPanel, { props: { video: catalogue.plain, cues: CUES } })
 
     const video = screen.container.querySelector<HTMLVideoElement>('video.mlv-video')!
-    // Transcript's onCueClick only seeks once `player.total > 0`.
     await waitFor(() => video.duration > 0, 'video metadata to load')
 
     // A locator-driven click carries a genuine user gesture; a raw DOM `element.click()` does

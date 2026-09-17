@@ -4,28 +4,17 @@ import type { PlayerContext } from '@/composables/player/playerContext'
 import { PLAYER_METHOD_KEYS, PLAYER_STATE_KEYS } from '@/composables/player/playerSurface'
 import type { PlayerMethodKey, PlayerStateKey } from '@/composables/player/playerSurface'
 
-export type MethodKey = PlayerMethodKey
-type StateKey = PlayerStateKey
-
 /** Promise<void>, not void - every forwarded method goes through `guard` first, which may itself be async. */
-export type ForwardedPlayer = { [K in MethodKey]: (...args: Parameters<PlayerContext[K]>) => Promise<void> } & {
-  [K in StateKey]: ComputedRef<PlayerContext[K]>
+export type ForwardedPlayer = { [K in PlayerMethodKey]: (...args: Parameters<PlayerContext[K]>) => Promise<void> } & {
+  [K in PlayerStateKey]: ComputedRef<PlayerContext[K]>
 }
 
 export interface UseForwardedPlayerReturn {
-  /** Bind this as the template ref on the wrapped `VideoPlayer` (`ref="playerRef"`). */
   playerRef: Ref<PlayerContext | null>
-  /** Spread into (or pass directly to) the wrapper component's own `defineExpose`. */
   forwarded: ForwardedPlayer
 }
 
-/**
- * Curated forward of a template-ref'd VideoPlayer's controls/state for a wrapper's own
- * `defineExpose`. `guard` runs before every method call - return `false` to swallow it, or
- * perform a side effect before returning `true`. Owns the ref itself so the wrapper's public
- * surface never sees the raw player ref.
- */
-export function useForwardedPlayer(guard: (key: MethodKey) => boolean | Promise<boolean> = () => true): UseForwardedPlayerReturn {
+export function useForwardedPlayer(guard: (key: PlayerMethodKey) => boolean | Promise<boolean> = () => true): UseForwardedPlayerReturn {
   /** shallowRef, not ref - PlayerContext's fields are already unwrapped, so there's no nested-Ref unwrapping to redo. */
   const playerRef = shallowRef<PlayerContext | null>(null)
   const forwarded: Record<string, unknown> = {}

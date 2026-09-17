@@ -15,22 +15,15 @@ export interface MountedAdapter {
   needsReveal: boolean
 }
 
-/** Both terminal, not errors to retry - `unsupported` means no registered embed factory, `aborted` means the component unmounted before resolving. */
 export type MountResult = { status: 'mounted'; mounted: MountedAdapter } | { status: 'unsupported' } | { status: 'aborted' }
 
-/**
- * Autoplay-ish playback with no user gesture must start muted - a hard browser policy, not a
- * preference - unless a real gesture has already unmuted something this session
- * (hasUnmutedThisSession). Re-run at actual playback time, not just at mount, since that state
- * can change while a playInView player sits mounted-but-paused.
- */
+/** Gesture-less autoplay must start muted (browser policy) unless a gesture already unmuted something this session. */
 export function resolveInitialMuted(explicitMuted: boolean | undefined, isAutoplayish: boolean): boolean {
   if (explicitMuted !== undefined) return explicitMuted
   if (isAutoplayish && !hasUnmutedThisSession()) return true
   return getAudioPreference().muted
 }
 
-/** No browser-policy constraint applies to volume, so this is unconditional - always the stored preference unless the consumer set `volume` explicitly. */
 export function resolveInitialVolume(props: PlayerProps): number {
   return props.volume ?? getAudioPreference().volume
 }

@@ -1,10 +1,5 @@
 export {}
 
-/**
- * Minimal shape of the global `pbjs` object — deliberately not the full Prebid.js API surface.
- * The consumer owns loading/configuring their own Prebid build (see adapters/ads/prebid.ts for why),
- * so this only declares what we actually call against it.
- */
 declare global {
   interface Window {
     pbjs?: PrebidGlobal

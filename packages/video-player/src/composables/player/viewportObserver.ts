@@ -7,7 +7,6 @@ interface SharedObserver {
 
 const shells = new WeakMap<Element, SharedObserver>()
 
-/** Covers both useAutoPauseOffscreen's 0.1 and useAutoPlayInView's 0.5 boundary in one observer. */
 const THRESHOLDS = [0.1, 0.5]
 
 function getSharedObserver(shell: Element): SharedObserver {
@@ -23,17 +22,7 @@ function getSharedObserver(shell: Element): SharedObserver {
   return shared
 }
 
-/**
- * useAutoPauseOffscreen and useAutoPlayInView both watch the same `.player__shell` element -
- * sharing one IntersectionObserver per shell (fanning entries out to every registered callback)
- * avoids two observers independently re-running intersection math for the same element. Callbacks
- * read `entry.intersectionRatio` themselves rather than `isIntersecting`, since one shared
- * observer now covers two distinct threshold boundaries at once.
- *
- * Callers gating on `isFullscreen`/`isFullscreenPending`: a fullscreen request can report a
- * spurious non-intersecting entry while it's in flight - `isFullscreenPending` (see
- * useFullscreen.ts) covers that gap.
- */
+/** Callbacks read `intersectionRatio`: one observer serves both the 0.1 and 0.5 thresholds. */
 export function observeViewport(shell: Element, callback: ViewportCallback): () => void {
   const shared = getSharedObserver(shell)
   shared.callbacks.add(callback)

@@ -22,7 +22,6 @@ function createDocumentEventFanout(register: (fire: () => void) => () => void): 
   }
 }
 
-/** One real listener pair on `document`, fanned out to every registered player - avoids N redundant listeners. */
 export const onDocumentFullscreenChange = createDocumentEventFanout((fire) => {
   document.addEventListener('fullscreenchange', fire)
   document.addEventListener('webkitfullscreenchange', fire)
@@ -32,7 +31,6 @@ export const onDocumentFullscreenChange = createDocumentEventFanout((fire) => {
   }
 })
 
-/** Same reasoning as onDocumentFullscreenChange above. */
 export const onVisibilityOrBlur = createDocumentEventFanout((fire) => {
   document.addEventListener('visibilitychange', fire)
   window.addEventListener('blur', fire)

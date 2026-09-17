@@ -8,14 +8,9 @@ export interface UsePinnedReservedSpaceReturn {
 }
 
 /**
- * Reserves a pinned box's last in-flow size on its wrapper once it detaches to `position: fixed`,
- * so the page doesn't collapse underneath it. Scales the reserved height by how much the
- * WRAPPER's own width has changed since the snapshot, not the box's width - VideoPlayer's
- * `.player` has a `max-width` and can be narrower than its wrapper, so scaling by the box's width
- * previously over-reserved space on wide layouts, growing the page enough to flip the wrapper's
- * intersection ratio back across the pin threshold and cause an infinite pin/unpin flicker.
- *
- * Shared by VideoStage (stage-wrapper/stage) and VideoPlayer's pin (player-wrapper/player).
+ * Reserves a pinned box's last in-flow height on its wrapper so the page does not collapse under it. Scaled by the
+ * WRAPPER's width change, not the box's: the box has a max-width, and scaling by it over-reserved on wide layouts
+ * enough to flip the intersection ratio back over the pin threshold and flicker forever.
  */
 export function usePinnedReservedSpace(
   wrapperEl: Ref<HTMLElement | null>,

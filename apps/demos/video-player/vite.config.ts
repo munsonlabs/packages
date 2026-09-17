@@ -44,13 +44,11 @@ export default mergeConfig(base, {
         cache: false,
       },
       'test-page': {
-        // Full-page Playwright run against the dev server; see playwright.config.ts.
         command: 'playwright test',
         dependsOn: ['@munsonlabs/video-player#build'],
         cache: false,
       },
       'test-perf': {
-        // Tap-to-play timing harness; see playwright.perf.config.ts and tests/perf/.
         command: 'playwright test --config playwright.perf.config.ts',
         dependsOn: ['@munsonlabs/video-player#build'],
         cache: false,

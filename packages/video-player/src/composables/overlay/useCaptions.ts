@@ -5,7 +5,6 @@ export interface UseCaptionsReturn {
   currentCaptionLabel: () => string
 }
 
-/** Cycles Off → track 1 → track 2 → ... → Off. A plain factory, safe to call fresh on every read/click. */
 export function useCaptions(player: PlayerHandle): UseCaptionsReturn {
   function cycleCaptionTrack(): void {
     const tracks = player.captionTracks

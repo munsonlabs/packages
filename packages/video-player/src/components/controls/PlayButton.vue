@@ -6,7 +6,6 @@ import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/contr
 const props = defineProps<ResolvedPlayerProps>()
 const player = useResolvedPlayer(toRef(props, 'player'), toRef(props, 'for'))
 
-/** Single source of the error/ended/playing priority ladder, shared by the label and the icon. */
 const status = computed<'error' | 'ended' | 'playing' | 'idle'>(() => {
   if (player.value?.isError) return 'error'
   if (player.value?.hasEnded) return 'ended'
@@ -27,7 +26,6 @@ const label = computed(() => {
   }
 })
 
-/** Re-attempts loading on error, replays from an ended state, otherwise toggles play/pause. */
 function onClick(): void {
   const p = player.value
   if (!p) return

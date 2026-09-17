@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import { createYoutubeAdapter } from '@/adapters/embeds/youtube'
-import type { EmbedAdapterOptions } from '@/adapters/embeds/embedShared'
+import type { EmbedAdapterOptions } from '@/types/playback'
 import { flush } from '@test/helpers'
 
 vi.mock('@/utils/loadScript', () => ({ loadScript: vi.fn(() => Promise.resolve()) }))
@@ -269,7 +269,6 @@ describe('dispose', () => {
     adapter.dispose()
 
     expect(player.destroyed).toBe(true)
-    // Neither timer should fire post-dispose without throwing.
     vi.advanceTimersByTime(1000)
   })
 })

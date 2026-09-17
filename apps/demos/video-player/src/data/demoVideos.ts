@@ -1,6 +1,5 @@
 import type { VideoEntry } from '@munsonlabs/video-player'
 
-// Google's official IMA sample ad tags (developers.google.com/interactive-media-ads/docs/sdks/html5/client-side/tags)
 const AD_VAST =
   'https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator='
 const AD_SKIP =
@@ -47,30 +46,21 @@ export const videos: VideoEntry[] = [
     poster: 'https://m.media-amazon.com/images/S/pv-target-images/fb7afef01282cdc2d846b2343f9f3d7a785b7133729776f1aa0da6501a2e1f7b.jpg',
   },
   {
-    // Apple's official HLS test stream — exercises the hls.js path in non-Safari browsers and
-    // native HLS in Safari, since none of the other entries above are adaptive streams.
     title: 'HLS test stream (bipbop)',
     src: 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8',
     poster: 'https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg',
   },
   {
-    // Akamai's public live HLS test stream — actually live (infinite duration), exercising the
-    // player's isLive path (live badge, hidden seek bar, suppressed position-memory/quartiles).
     title: 'Live HLS test stream (Akamai)',
     src: 'https://hls-harbor-livepush.akamaized.net/live_cdn/nsqIStpj8PaG-Ev/emcQJ0pGpremocy/index.m3u8',
     poster: 'https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg',
   },
   {
-    // Akamai's public MPEG-DASH test stream (dash.js's own reference demo asset) — exercises the
-    // dash.js path (adaptive bitrate + quality switching over a .mpd manifest).
     title: 'DASH test stream (bbb_30fps)',
     src: 'https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd',
     poster: 'https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg',
   },
   {
-    // Proves out the registerMatcher/registerEmbedAdapter extensibility API (see
-    // src/adapters/cloudflareAdapter.ts) - Cloudflare Stream isn't a platform the library itself
-    // knows about. A public, no-signup Cloudflare Stream demo video.
     title: 'Cloudflare Stream (third-party adapter demo)',
     src: 'https://customer-f33zs165nr7gyfy4.cloudflarestream.com/6b9e68b07dfee8cc2d116e4c51d6a957/iframe',
     poster: 'https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg',
@@ -80,10 +70,7 @@ export const videos: VideoEntry[] = [
 const BBB_URL = 'https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4'
 const BBB_POSTER = 'https://m.media-amazon.com/images/S/pv-target-images/fb7afef01282cdc2d846b2343f9f3d7a785b7133729776f1aa0da6501a2e1f7b.jpg'
 
-// Every entry plays the same underlying file — the URL fragment is never sent in the actual
-// request (browsers strip it before fetching), it's just here so each entry has a distinct
-// src for the demo's identity-sensitive bits (save-button state, event-log title lookup,
-// the "click again toggles play" check).
+// Browsers strip the URL fragment before fetching; it only gives each entry a distinct src.
 const adVideo = (fragment: string, title: string, adTagUrl: string): VideoEntry => ({
   title,
   src: `${BBB_URL}#${fragment}`,
@@ -91,7 +78,6 @@ const adVideo = (fragment: string, title: string, adTagUrl: string): VideoEntry 
   adTagUrl,
 })
 
-// Prebid's own documented test config for video instream (AppNexus placement 13232361).
 const headerBiddingAdUnit = {
   code: 'video-instream-demo',
   mediaTypes: {
@@ -114,7 +100,6 @@ export const adVideos: VideoEntry[] = [
 export const prebidVideos: VideoEntry[] = [
   {
     ...adVideo('header-bidding', 'Header bidding (Prebid.js test auction)', AD_VAST),
-    // sample_ct=linear selects which sample creative this shared demo ad unit serves.
     headerBidding: {
       adUnit: headerBiddingAdUnit,
       params: { iu: '/21775744923/external/single_ad_samples', cust_params: 'sample_ct=linear' },
@@ -135,15 +120,9 @@ export const captionVideos: VideoEntry[] = [
   },
 ]
 
-// Same URL as the "HLS test stream (bipbop)" entry in Videos above — its manifest genuinely
-// declares 8 resolution variants (480p through 1080p), which hls.js/Safari expose automatically
-// with no extra props needed at all, same "auto-detected" shape as HLS-embedded captions.
 export const qualityVideos: VideoEntry[] = [
   {
     title: 'HLS test stream (bipbop) — adaptive bitrate',
-    // The #quality fragment is stripped before the actual request (same trick as adVideo above)
-    // — it only exists so the event log can tell this card's plays apart from the Videos panel's
-    // otherwise-identical entry for the same underlying stream.
     src: 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8#quality',
   },
 ]

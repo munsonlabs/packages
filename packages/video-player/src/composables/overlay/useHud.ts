@@ -42,11 +42,13 @@ export function useHud(isPlaying: Ref<boolean>, isFullscreen: Ref<boolean>): Use
   function pauseHide(): void {
     clearTimeout(timer ?? undefined)
   }
+
   function openControls(): void {
     isOpen.value = true
     showHUD.value = true
     scheduleHide()
   }
+
   /**
    * In fullscreen, `popupVisible` (see useOverlayVisibility) tracks `showHUD` rather than `isOpen` - there's no
    * separate collapsed-HUD fallback there, so closing has to drop `showHUD` too or the popup just stays up.

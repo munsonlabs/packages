@@ -5,7 +5,6 @@ import { observeViewportPriority } from '@/composables/player/viewportObserver'
 import { getShellEl } from '@/adapters/embeds/embedShared'
 import { resolveInitialMuted } from '@/composables/player/useAdapterMount'
 
-/** Opt-in via playInView, unlike useAutoPauseOffscreen which always runs; uses observeViewportPriority so only the last of several simultaneously-visible players actually plays. */
 export function useAutoPlayInView(
   videoEl: Ref<HTMLVideoElement | null>,
   getPlayer: () => PlaybackAdapter | null,

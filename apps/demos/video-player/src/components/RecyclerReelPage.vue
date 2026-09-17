@@ -8,7 +8,6 @@ import { useEventLog } from '../composables/useEventLog'
 
 defineEmits<{ back: [] }>()
 
-/** Same forwarded shape as VideoPlayer's/VideoCard's template-ref API - see useForwardedPlayer. */
 const { webComponents } = useDemoSettings()
 const { addLog } = useEventLog()
 
@@ -18,9 +17,7 @@ const currentIndex = ref(0)
 const reelEl = ref<HTMLElement | null>(null)
 const playerRefs = ref<(PlayerHandle | null)[]>([null, null, null])
 
-// Carries the mute choice across slides — each newly-recycled slot mounts a fresh VideoPlayer
-// with no memory of the last one, so without this every new video would revert to the muted
-// autoplay default regardless of what the viewer picked on the previous one.
+// Each recycled slot mounts a fresh player, so the mute choice has to be carried across explicitly.
 const globalMuted = ref(true)
 watch(
   () => playerRefs.value[1]?.isMuted,
@@ -38,9 +35,6 @@ const boundaryMessage = ref<string | null>(null)
 let boundaryTimer: ReturnType<typeof setTimeout> | null = null
 let bounceTimer: ReturnType<typeof setTimeout> | null = null
 
-// Only 3 physical slots (prev/current/next) ever exist in the DOM - as the user scrolls past one,
-// its slot's video is reassigned to whatever comes next and the scroll position is silently reset
-// back to center, rather than mounting all of ALL_VIDEOS.length players up front.
 const slotVideos = computed<(VideoEntry | null)[]>(() => [
   ALL_VIDEOS[currentIndex.value - 1] ?? null,
   ALL_VIDEOS[currentIndex.value] ?? null,
@@ -68,14 +62,7 @@ function showBoundaryMessage(message: string): void {
   }, 1600)
 }
 
-/**
- * A smooth (not instant) scroll back specifically for the "can't go further" case - unlike
- * centerScroll()'s instant jump (which exists to hide a slot's content actually swapping), there's
- * nothing to hide here, so an animated bounce reads as a deliberate "no further" response rather
- * than an unexplained snap. Smooth scrolling has no cross-browser synchronous "finished" callback,
- * so a fixed delay covering the typical animation duration is simpler than juggling a 'scrollend'
- * listener just for this.
- */
+/** Smooth on purpose - the instant jump in centerScroll() exists to hide a slot swap, and there is none here. */
 function bounceBack(): void {
   if (!reelEl.value) return
   recycling = true

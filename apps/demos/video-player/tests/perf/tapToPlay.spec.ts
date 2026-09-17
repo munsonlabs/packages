@@ -8,9 +8,7 @@ const MEDIA_URL = `http://127.0.0.1:${PERF_PORT}${PERF_MEDIA_PATH}`
 const RUNS = Number(process.env.PERF_RUNS ?? 7)
 
 interface Sample {
-  /** Gesture (click, capture phase) to the stage <video>'s first `playing` event. */
   tapToPlaying: number
-  /** Media requests the page had already issued before the tap - non-zero would mean something is prefetching. */
   mediaRequestsBeforeTap: number
   mediaRequestsAfterTap: number
   afterTapTransferBytes: number[]
@@ -22,7 +20,6 @@ async function measureOnce(page: Page): Promise<Sample> {
   const playButton = page.getByRole('button', { name: 'Play' })
   await expect(playButton).toBeVisible()
 
-  // A viewer sees the card before tapping it - give the page the same settle time.
   await page.waitForTimeout(1000)
 
   await page.evaluate((mediaPath) => {
@@ -50,7 +47,6 @@ async function measureOnce(page: Page): Promise<Sample> {
       tapToPlaying: w.__perf.playing - w.__perf.tap,
       mediaRequestsBeforeTap: w.__perf.before,
       mediaRequestsAfterTap: after.length,
-      /** 0 transferSize on a request means the browser served it from cache (the media server sends Timing-Allow-Origin). */
       afterTapTransferBytes: after.map((e) => e.transferSize),
       afterTapDurationsMs: after.map((e) => Math.round(e.duration)),
     }
@@ -103,11 +99,6 @@ async function measureScenario(browser: Browser, scenario: string): Promise<Summ
   }
 }
 
-/**
- * The package's own share of tap-to-play for a plain mp4: everything from the gesture to the
- * stage video's first `playing`, with one media round trip of PERF_LATENCY_MS in the way. A jump
- * here that isn't a jump in serverLatencyMs is a regression in the mount path.
- */
 test('stable mp4: card tap -> stage playing', async ({ browser }) => {
   const result = await measureScenario(browser, 'card tap -> stage playing (stable mp4)')
 
@@ -118,6 +109,5 @@ test('stable mp4: card tap -> stage playing', async ({ browser }) => {
   writeFileSync('test-results/perf/tap-to-play.json', JSON.stringify(result, null, 2))
   test.info().annotations.push({ type: 'perf', description: JSON.stringify(row) })
 
-  // Not a budget, only a hang guard - the numbers themselves are the deliverable.
   expect(result.medianMs).toBeLessThan(5000)
 })

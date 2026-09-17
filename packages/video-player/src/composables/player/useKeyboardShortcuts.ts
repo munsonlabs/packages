@@ -5,7 +5,6 @@ export interface UseKeyboardShortcutsReturn {
   onKeydown: (e: KeyboardEvent) => void
 }
 
-/** These consume every key for their own native purpose (typing) - shortcuts never fire while one of these has focus. */
 const TEXT_ENTRY_SELECTOR = 'input:not([type="range"]), textarea, select, [contenteditable="true"]'
 /** A range input (Scrubber/VolumeSlider) only actually consumes arrow/Home/End keys itself - m/f/c/digits/Space have no native effect there and should still fire. */
 const RANGE_INPUT_SELECTOR = 'input[type="range"]'
@@ -13,7 +12,6 @@ const RANGE_INPUT_KEYS = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDo
 /** A plain button/link only conflicts with us on Space/Enter (its own activation keys) - every other shortcut should still fire while e.g. FullscreenButton has focus. */
 const ACTIVATION_SELECTOR = 'button, a[href]'
 
-/** Space/k play-pause, arrows seek/volume, m mute, f fullscreen, c captions, 0-9 percent-jump, Home/End - scoped to the player shell so multiple players on a page (e.g. ShortsSidebar) don't fight over one listener. */
 export function useKeyboardShortcuts(player: PlayerContext, hud: HudContext): UseKeyboardShortcutsReturn {
   function clamp(val: number, min: number, max: number): number {
     return Math.min(max, Math.max(min, val))

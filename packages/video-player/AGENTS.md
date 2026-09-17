@@ -31,7 +31,7 @@ import type {
   HeaderBiddingConfig,
   CaptionTrackDef,
   ForwardedPlayer,
-  MethodKey,
+  PlayerMethodKey,
   UseForwardedPlayerReturn,
 } from '@munsonlabs/video-player'
 import '@munsonlabs/video-player/style'

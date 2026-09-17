@@ -3,17 +3,9 @@ import type { Plugin } from 'vite-plus'
 
 export const PERF_MEDIA_PATH = '/__perf/media/clip.mp4'
 
-/** Per-request server delay, standing in for the round trip a real CDN adds to every range request. */
 export const PERF_LATENCY_MS = Number(process.env.PERF_LATENCY_MS ?? 80)
 
-/**
- * Dev-server middleware that serves the flower.mp4 fixture with real HTTP range support and an
- * artificial per-request delay. The perf harness (tests/perf) points the player at it via
- * 127.0.0.1 rather than localhost so it is a genuinely different origin from the page - every
- * request then pays the delay, so the media round trip is a visible, fixed part of the result.
- * `route.fulfill` (used by tests/page) can't do this: it answers instantly and never touches a
- * socket.
- */
+/** Serves the fixture from 127.0.0.1 (a second origin) with range support and a per-request delay, so the media round trip is a real, fixed part of the measurement. */
 export function perfMediaServer(fixturePath: string): Plugin {
   return {
     name: 'perf-media-server',

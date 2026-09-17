@@ -11,15 +11,9 @@ const props = defineProps<{ isPlaying: boolean }>()
 const wrapperEl = ref<HTMLElement | null>(null)
 const boxEl = ref<HTMLElement | null>(null)
 
-/**
- * Observes `wrapperEl`, not the pinned box itself - the box moves to a fixed screen corner once
- * pinned, so watching it directly would report "back in view" the instant it pins, unpin it, snap
- * back, re-pin, and repeat forever. `wrapperEl` never moves regardless of pin state, exactly like
- * VideoStage observes its own stage-wrapper rather than the pinned `.stage`.
- */
+/** Observes the in-flow wrapper, never the pinned box - see usePinOnScrollOut. */
 const { isPinned: decidedPinned, unpin } = usePinOnScrollOut(wrapperEl, toRef(props, 'isPlaying'), ref(true))
 
-/** Wrapped in a FLIP transition (same as VideoStage's minify) so the inline-to-fixed-corner jump animates instead of cutting instantly. */
 const isPinned = ref(decidedPinned.value)
 watch(decidedPinned, (val) => {
   void runFlipTransition(boxEl.value, () => {

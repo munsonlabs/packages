@@ -57,6 +57,7 @@ function MediaPlayer(): { create: () => FakeDashInstance } {
     },
   }
 }
+
 MediaPlayer.events = DashEvents
 
 vi.mock('dashjs', () => ({ MediaPlayer }))
@@ -107,10 +108,6 @@ describe('native adapter — quality (dash.js)', () => {
     expect(adapter.getCurrentQuality()).toBe(null)
   })
 
-  // Regression test: setQualityFor's `replace` argument must be true. Without it, dash.js only
-  // applies the new quality to segments requested after whatever it's already pre-buffered —
-  // which on a fast connection can be far ahead of the playhead — so a manual quality switch
-  // silently appears to do nothing until the existing buffer plays out.
   it('setQuality(index) calls setQualityFor with replace:true so the switch takes effect immediately', async () => {
     const videoEl = document.createElement('video')
     const adapter = createNativeAdapter(videoEl, { src: 'stream.mpd', type: 'application/dash+xml' })

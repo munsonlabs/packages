@@ -5,12 +5,10 @@ import type { PlayerHandle, StateChangeEvent } from '@munsonlabs/video-player'
 import { useDemoSettings } from '../composables/useDemoSettings'
 import { useEventLog } from '../composables/useEventLog'
 
-// Same HLS asset as the "HLS test stream (bipbop)" entry in demoVideos.ts.
 const video = {
   title: 'HLS test stream (bipbop) — custom controls',
   src: 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8',
   poster: 'https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg',
-  // playInView: true,
 }
 
 const { webComponents } = useDemoSettings()

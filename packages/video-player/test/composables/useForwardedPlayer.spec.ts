@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vite-plus/test'
 import { useForwardedPlayer } from '@/composables/useForwardedPlayer'
-import type { MethodKey } from '@/composables/useForwardedPlayer'
+import type { PlayerMethodKey } from '@/composables/player/playerSurface'
 import type { PlayerContext } from '@/composables/player/playerContext'
 
 function makePlayer(overrides: Partial<PlayerContext> = {}): PlayerContext {
@@ -79,7 +79,7 @@ describe('guard', () => {
   it('can run a side effect (e.g. mounting a lazy placeholder) before letting the call through', async () => {
     const player = makePlayer()
     const sideEffect = vi.fn()
-    const guard = vi.fn((key: MethodKey) => {
+    const guard = vi.fn((key: PlayerMethodKey) => {
       sideEffect(key)
       return true
     })

@@ -113,7 +113,6 @@ describe('openControls / closeControls', () => {
     expect(showHUD.value).toBe(true)
   })
 
-  /** In fullscreen, popupVisible tracks showHUD rather than isOpen (see useOverlayVisibility) - closeControls has to drop showHUD too, or the popup has nothing telling it to go away. */
   it('closeControls also hides showHUD immediately in fullscreen', () => {
     const { showHUD, openControls, closeControls } = setup(false, true)
     openControls()
@@ -128,7 +127,6 @@ describe('openControls / closeControls', () => {
     expect(showHUD.value).toBe(true)
   })
 
-  /** An explicit "close controls" action should make everything go away, not just the popup - leaving the collapsed HUD to reappear a moment later would read as the close not having worked. */
   it('closeControls(true) hides showHUD immediately outside fullscreen too', () => {
     const { showHUD, openControls, closeControls } = setup(false, false)
     openControls()

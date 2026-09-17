@@ -38,7 +38,14 @@ if (!deferred) defineElements()
 
 export { VideoPlayerElement, VideoStageElement, VideoPlaceholderElement, VideoCardElement, HideMarkerElement }
 
-/** Each `/element*` bundle is its own independent build - registering here only affects players created from this bundle. */
 export { registerPlatform, resolvePlatform }
-export type { PlatformConfig, Matcher, EmbedAdapterFactory, SourceResolver, ResolvedSource, PlaybackAdapter, MediaErrorLike } from '@/types/playback'
-export type { EmbedAdapterOptions } from '@/adapters/embeds/embedShared'
+export type {
+  PlatformConfig,
+  Matcher,
+  EmbedAdapterFactory,
+  SourceResolver,
+  ResolvedSource,
+  PlaybackAdapter,
+  MediaErrorLike,
+  EmbedAdapterOptions,
+} from '@/types/playback'

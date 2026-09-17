@@ -18,7 +18,6 @@ interface BuiltinActionDef {
   onClick: (player: PlayerContext, playlist: PlaylistContext) => void
 }
 
-/** One definition per BuiltinAction - the single place label/active/click are decided, instead of three parallel if-chains kept in sync by hand. */
 const BUILTIN_ACTIONS: Record<BuiltinAction, BuiltinActionDef> = {
   mute: {
     label: (player) => (player.isMuted ? 'Unmute' : 'Mute'),

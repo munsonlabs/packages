@@ -102,7 +102,6 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
     hls.on(HlsEvents.LEVEL_SWITCHED, forwardEvent('qualitychange'))
     hls.on(HlsEvents.ERROR, (_event, data) => {
       if (!data.fatal || disposed || pendingHlsSrc !== src) return
-      /** hls.js's own recommended fatal-error recovery, falling back to a normal player error for anything else. */
       switch (data.type) {
         case HlsErrorTypes.NETWORK_ERROR:
           hls?.startLoad()

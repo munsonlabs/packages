@@ -30,7 +30,6 @@ export function usePositionMemory(videoUrl: string, getPlayer: () => PlaybackAda
     clearPosition(videoUrl)
   }
 
-  /** Shared listener (see documentEventRegistry.ts) - `blur` firing too is harmless since save() is idempotent. */
   const unregister = onVisibilityOrBlur(() => {
     if (document.visibilityState === 'hidden') save(getPlayer())
   })

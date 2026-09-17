@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { registerPauseHandler, pauseOthers } from '@/composables/registries/playerRegistry'
 
-// playerRegistry is a module-level Set — unregister everything between tests
 const cleanups: Array<() => void> = []
 
 beforeEach(() => {

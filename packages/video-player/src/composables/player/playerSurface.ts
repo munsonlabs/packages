@@ -61,7 +61,6 @@ export const PLAYER_STATE_KEYS = [
 export type PlayerMethodKey = (typeof PLAYER_METHOD_KEYS)[number]
 export type PlayerStateKey = (typeof PLAYER_STATE_KEYS)[number]
 
-/** The public view of a player for defineExpose: live state via getters, methods bound to the player. */
 export function exposePlayerSurface(player: PlayerContext): PlayerHandle {
   const surface: Record<string, unknown> = {}
   for (const key of PLAYER_METHOD_KEYS) surface[key] = (...args: unknown[]) => (player[key] as (...a: unknown[]) => unknown)(...args)

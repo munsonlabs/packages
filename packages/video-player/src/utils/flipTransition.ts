@@ -6,12 +6,6 @@ const pendingCleanup = new WeakMap<HTMLElement, () => void>()
 
 const FLIP_Z_INDEX = 2147483647
 
-/**
- * Classic FLIP (First, Last, Invert, Play): measures `el`'s rect before and after `mutate()`,
- * then animates the delta via `transform` alone - makes a non-animatable layout jump (position,
- * top/left, width) look like a smooth move, in every browser. Resolves once the animation
- * actually finishes, so a caller can chain onto the end of it.
- */
 export async function runFlipTransition(el: HTMLElement | null, mutate: () => void): Promise<void> {
   if (!el) {
     mutate()

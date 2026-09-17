@@ -3,12 +3,6 @@ import { defineComponent, h, ref, computed, nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import { exposePlayerOnElement } from '@/composables/exposePlayerOnElement'
 
-/**
- * Mounts a real component that `expose()`s a computed state field plus a method, mirroring what
- * VideoPlayer/VideoCard/VideoStage actually give a template ref - a plain hand-built object with a
- * raw `computed()` on it (bypassing Vue's own exposed-proxy auto-unwrapping) doesn't accurately
- * simulate real usage, so this goes through the real mechanism instead.
- */
 function mountExposingPlayer() {
   const current = ref(0)
   const Child = defineComponent({
@@ -18,6 +12,7 @@ function mountExposingPlayer() {
       return () => h('div')
     },
   })
+
   const childRef = ref<Record<string, unknown> | null>(null)
   const Parent = defineComponent({ setup: () => () => h(Child, { ref: childRef }) })
   mount(Parent)

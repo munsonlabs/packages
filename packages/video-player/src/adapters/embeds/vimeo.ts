@@ -1,5 +1,5 @@
 import { createStatefulEmbedAdapter } from '@/adapters/embeds/embedShared'
-import type { EmbedAdapterOptions } from '@/adapters/embeds/embedShared'
+import type { EmbedAdapterOptions } from '@/types/playback'
 import { loadScript } from '@/utils/loadScript'
 import type { PlaybackAdapter } from '@/types/playback'
 import { MUTE_VOLUMECHANGE_SYNC_DELAY_MS, MVP_VIMEO_CLASS, VIMEO_SDK_URL } from '@/constants'
@@ -65,14 +65,17 @@ export function createVimeoAdapter(videoEl: HTMLVideoElement, options: EmbedAdap
         emitter.trigger('play')
         emitter.trigger('playing')
       })
+
       player.on('pause', () => {
         state.paused = true
         emitter.trigger('pause')
       })
+
       player.on('ended', () => {
         state.paused = true
         emitter.trigger('ended')
       })
+
       let durationSet = false
       player.on('timeupdate', (data) => {
         const { seconds, duration: dur } = data as { seconds: number; duration: number }
@@ -84,21 +87,25 @@ export function createVimeoAdapter(videoEl: HTMLVideoElement, options: EmbedAdap
           emitter.trigger('durationchange')
         }
       })
+
       player.on('loaded', () => {
         durationSet = false
         emitter.trigger('durationchange')
       })
+
       player.on('seeked', (data) => {
         state.currentTime = (data as { seconds: number }).seconds
         emitter.trigger('seeked')
         emitter.trigger('timeupdate')
       })
+
       player.on('bufferstart', () => emitter.trigger('waiting'))
       player.on('bufferend', () => emitter.trigger('canplay'))
       player.on('volumechange', (data) => {
         state.volume = (data as { volume: number }).volume
         emitter.trigger('volumechange')
       })
+
       player.on('error', () => emitter.trigger('error'))
     },
     hasPlayer: () => !!player,

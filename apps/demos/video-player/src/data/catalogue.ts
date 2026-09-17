@@ -2,7 +2,7 @@ import type { VideoEntry } from '@munsonlabs/video-player'
 
 export const CLIP_URL = '/media/flower.mp4'
 export const CLIP_DURATION = 5.055
-export const POSTER_URL = '/media/poster.svg'
+export const POSTER_URL = '/media/poster.jpg'
 export const MISSING_URL = '/media/missing.mp4'
 export const HLS_URL = '/media/hls/flower.m3u8'
 

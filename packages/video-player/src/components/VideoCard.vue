@@ -20,7 +20,6 @@ const emit = defineEmits<{ 'state-change': [event: StateChangeEvent] }>()
 
 const activated = ref(false)
 
-/** Set only by a real click - lets that path mount per the stored audio preference instead of the autoplay-implies-muted rule. */
 const userActivated = ref(false)
 
 function onPlaceholderClick(): void {
@@ -28,7 +27,6 @@ function onPlaceholderClick(): void {
   activated.value = true
 }
 
-/** Mounts the real player, then waits a tick so `playerRef` is live before the caller's method runs. */
 async function ensureMounted(): Promise<void> {
   if (activated.value) return
   activated.value = true

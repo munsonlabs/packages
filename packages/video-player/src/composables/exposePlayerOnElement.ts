@@ -1,4 +1,3 @@
-/** Mirrors a mounted player's exposed API onto a DOM element as live getters, so non-Vue code (e.g. an `ml-controls-*` element via `for="id"`) can drive it. */
 export function exposePlayerOnElement(el: Element, player: object | null | undefined): void {
   if (!player) return
   for (const key of Object.keys(player)) {

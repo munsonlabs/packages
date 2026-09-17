@@ -14,19 +14,10 @@ const EXT_LANG: Record<string, string> = {
   '.sh': 'sh',
 }
 
-/** Matches `<<< path/to/file` lines (but not `<<<tree`). */
 const INCLUDE_RE = /^<<<(?!tree\b)\s+(.+)$/gm
 
-/** Matches `<<<tree path/to/dir [default-file]` lines. */
 const TREE_RE = /^<<<tree\s+(\S+)(?:\s+(\S+))?$/gm
 
-/**
- * Matches JSDoc section comments of the form:
- *   /**
- *    * @section Title
- *    * Optional description.
- *    *\/
- */
 const SECTION_RE = /\/\*\*\s*\n\s*\*\s*@section\s+(.+?)\n([\s\S]*?)\*\//g
 
 function parseDescription(raw: string): string {
@@ -88,7 +79,6 @@ function sortFiles(files: string[]): string[] {
     const aDepth = a.split('/').length
     const bDepth = b.split('/').length
     if (aDepth !== bDepth) return aDepth - bDepth
-    // Within same depth: index files first, then alphabetical
     const aIsIndex = basename(a).startsWith('index')
     const bIsIndex = basename(b).startsWith('index')
     if (aIsIndex && !bIsIndex) return -1
@@ -97,15 +87,7 @@ function sortFiles(files: string[]): string[] {
   })
 }
 
-/**
- * Resolves an include path relative to the repo root and insists it exists with exactly the
- * casing written in the markdown. macOS resolves `components/shorts` to `components/Shorts`
- * and the page looks fine locally; the Linux CI runner does not, and the page shipped with a
- * "Directory not found" comment where the code should be.
- *
- * Nuxt Content catches a throwing hook and drops the page with a warning, which would let the
- * build succeed with the page missing - so the exit code is set as well, to fail the generate.
- */
+/** Insists on the exact casing written in the markdown: macOS resolves case-insensitively and the Linux CI build would then fail. */
 function fail(message: string): never {
   console.error(`[fileInclude] ${message}`)
   process.exitCode = 1
@@ -151,10 +133,8 @@ export function fileIncludeHook(ctx: { file?: { body?: string; id?: string } }) 
   if (!file) return
   if (!file.body || !file.id?.endsWith('.md')) return
 
-  // Process <<<tree directives first (they produce multi-file code-tree blocks)
   file.body = file.body.replace(TREE_RE, (_, dirPath: string, defaultFile?: string) => dirToCodeTree(resolveInclude(dirPath), defaultFile))
 
-  // Process single-file <<< includes
   file.body = file.body.replace(INCLUDE_RE, (_, filePath: string) => {
     const abs = resolveInclude(filePath)
     return fileToMarkdown(readFileSync(abs, 'utf-8'), EXT_LANG[extname(abs)] ?? '')

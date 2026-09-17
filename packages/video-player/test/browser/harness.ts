@@ -46,11 +46,9 @@ export interface MountedPlayer {
 }
 
 export interface MountOptions {
-  /** Default true. Set false for sources that never load metadata (preload="none", a broken URL). */
   awaitMetadata?: boolean
 }
 
-/** Muted autoplay by default so tests only pay for activate() when they need sound. */
 export async function mountPlayer(
   entry: VideoEntry,
   props: Partial<VideoEntry> = { autoplay: true, muted: true },

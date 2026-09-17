@@ -82,7 +82,6 @@ export interface CaptionTrackDef {
 
 export interface PlayerProps {
   src: string
-  /** Shown on the placeholder and used as the player's accessible name. */
   label?: string
   poster?: string
   aspectRatio?: string
@@ -129,9 +128,7 @@ export interface VideoSelectDetail extends VideoEntry {
 }
 
 export interface TranscriptCue {
-  /** Start time in seconds. */
   time: number
-  /** Optional end time in seconds - between it and the next cue's start, no cue is highlighted. */
   end?: number
   text: string
 }

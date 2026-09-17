@@ -42,7 +42,6 @@ describe('togglePlay', () => {
     expect(adapter.play).not.toHaveBeenCalled()
   })
 
-  /** The raw `.paused` flips before play()'s promise settles; branching on it would pause() mid-flight. */
   it('does not call pause() while a play() is in flight but isPlaying has not caught up yet', () => {
     const adapter = makeAdapter({ paused: () => false })
     const { controls } = setup(adapter, ref(false))

@@ -39,7 +39,6 @@ const YOUTUBE_API_URL = 'https://www.youtube.com/iframe_api'
 let readyApi: YTNamespace | null = null
 let apiLoading: Promise<YTNamespace> | null = null
 
-/** A failed load rejects every waiting adapter and clears the in-flight promise, so a Retry starts a fresh attempt. */
 function ensureApiLoaded(): Promise<YTNamespace> {
   if (readyApi) return Promise.resolve(readyApi)
   if (!apiLoading) {

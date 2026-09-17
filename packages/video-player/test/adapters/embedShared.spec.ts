@@ -29,7 +29,6 @@ describe('spawnIosFullscreenOverlay', () => {
     expect(document.body.contains(overlay)).toBe(true)
   })
 
-  /** Regression: onReady must only signal, not tear the overlay down. */
   it('finish() can still run after reveal() — the overlay is removed once, by finish, not reveal', () => {
     const emitter = createEmitter()
     const { overlay, reveal, finish } = spawnIosFullscreenOverlay(emitter)

@@ -114,7 +114,6 @@ const playerProps = computed<PlayerProps>(() => {
 })
 
 function onVideoSelect(detail: VideoSelectDetail): void {
-  /** A repeated autoStage announcement for the already-selected entry is not a gesture; only a real click toggles. */
   if (current.value?.src === detail.src && playerMounted.value) {
     if (detail.fromGesture) playerRef.value?.togglePlay()
     return
@@ -135,7 +134,6 @@ function onVideoToggle(detail: VideoToggleDetail): void {
   playerRef.value?.togglePlay()
 }
 
-/** Playlist skips carry the outgoing player's live mute/volume forward (feed convention), not the shared preference; resolveGestureMuted is only the fallback when nothing is mounted. */
 function playEntry(entry: VideoEntry | null, fromGesture: boolean): void {
   if (!entry) return
   onVideoSelect({

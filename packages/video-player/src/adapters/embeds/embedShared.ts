@@ -58,7 +58,6 @@ function excludeIframeFromTabOrder(wrapper: HTMLDivElement): void {
   observer.observe(wrapper, { childList: true, subtree: true })
 }
 
-/** Wrapper starts hidden so the embed SDK's own transient loading chrome never flashes through - the `<video>`'s poster shows instead until revealEmbed() swaps them. */
 export function createEmbedMount(videoEl: HTMLVideoElement, cssClass: string, nativeUi?: boolean): EmbedMount {
   videoEl.parentElement?.classList.add(cssClass)
 
@@ -128,7 +127,6 @@ export function createTimerScheduler(): TimerScheduler {
   }
 }
 
-/** Off-screen host for an iOS clone player's mount point; `reveal` (clone ready) and `finish` (teardown) are separate so the overlay isn't removed before native fullscreen engages. */
 export function spawnIosFullscreenOverlay(emitter: Emitter): {
   overlay: HTMLDivElement
   reveal: () => void

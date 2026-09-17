@@ -72,7 +72,6 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
   let hls: Hls | null = null
   let dash: MediaPlayerClass | null = null
   let disposed = false
-  /** Guards against a slow dynamic import resolving after a newer setSrc() call superseded it. */
   let pendingHlsSrc: string | null = null
   let pendingDashSrc: string | null = null
   /** hls.js fetches segments as soon as it attaches unless told otherwise - `preload: 'none'` holds it back until play(). */

@@ -7,8 +7,6 @@ function storedBool(key: string, fallback = false): boolean {
 
 export function usePersisted(key: string, fallback = false) {
   const val = ref(storedBool(key, fallback))
-  // Watching rather than persisting only from toggle() covers v-model bindings too (e.g.
-  // VideoStage's built-in "Auto" button flips this directly via v-model:auto-advance).
   watch(val, (v) => localStorage.setItem(key, String(v)))
   function toggle() {
     val.value = !val.value

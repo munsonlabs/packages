@@ -1,12 +1,4 @@
 <script setup lang="ts">
-/**
- * A live `controls="false"` player driven entirely by the headless control primitives, plus a
- * Transcript - the two claims on the extensibility and controls pages that a static code block
- * can't actually show working.
- *
- * Everything is loaded dynamically inside onMounted for the same reason as PlayerExample: the
- * docs are prerendered by `nuxt generate`, and the player is browser-only.
- */
 import type { Component } from 'vue'
 
 const player = ref(null)

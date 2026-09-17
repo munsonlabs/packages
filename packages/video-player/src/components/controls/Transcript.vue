@@ -8,7 +8,6 @@ import type { TranscriptCue } from '@/types/player'
 
 const props = defineProps<
   ResolvedPlayerProps & {
-    /** A raw JSON string is also accepted, since a custom element attribute like `cues='[...]'` otherwise arrives as a literal string, not an array. */
     cues?: TranscriptCue[] | string
   }
 >()
@@ -24,7 +23,6 @@ const parsedCues = computed<TranscriptCue[]>(() => {
   }
 })
 
-/** The last cue at or before the playhead - or none while the playhead sits in a gap past a cue's explicit `end`. */
 const activeIndex = computed<number | null>(() => {
   const current = player.value?.current ?? 0
   const cues = parsedCues.value
@@ -40,7 +38,6 @@ const activeIndex = computed<number | null>(() => {
 const listEl = ref<HTMLElement | null>(null)
 const hovering = ref(false)
 
-/** Before the duration is known the click still starts playback, which also mounts a lazy card. */
 function onCueClick(cue: TranscriptCue): void {
   const p = player.value
   if (!p) return
@@ -48,7 +45,6 @@ function onCueClick(cue: TranscriptCue): void {
   void p.play().catch(() => {})
 }
 
-/** Never auto-scrolls while the pointer is over the list. `?.` covers test DOMs without scrollIntoView. */
 watch(activeIndex, async (index) => {
   if (index === null || hovering.value) return
   await nextTick()
@@ -59,7 +55,6 @@ const canSpeak = typeof window !== 'undefined' && 'speechSynthesis' in window
 const speechEnabled = ref(false)
 const mutedForSpeech = ref(false)
 
-/** Mutes the player while reading; only restores it on disable if this toggle was what muted it. */
 function toggleSpeech(): void {
   if (!canSpeak) return
   speechEnabled.value = !speechEnabled.value
@@ -86,7 +81,6 @@ watch(activeIndex, (index) => {
   window.speechSynthesis.speak(utterance)
 })
 
-/** If the player gets unmuted from elsewhere (e.g. `MuteButton`) while readout is on, stop talking over it rather than compete with now-audible video. */
 watch(
   () => player.value?.isMuted,
   (isMuted) => {

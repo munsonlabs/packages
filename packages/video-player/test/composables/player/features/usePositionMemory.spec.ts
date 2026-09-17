@@ -69,7 +69,6 @@ describe('save', () => {
     wrapper.unmount()
   })
 
-  /** Saving after 'ended' would undo the clear() the ended handler already did. */
   it('skips saving once the video has ended', () => {
     const { result, wrapper } = withSetup(() => usePositionMemory(URL, () => null, ref(true)))
     const adapter = makeAdapter(37)

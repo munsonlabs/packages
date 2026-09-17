@@ -43,7 +43,6 @@ export function usePlayer(
     state
   const getPlayer = (): PlaybackAdapter | null => adapter
 
-  /** `payload` arrives as a JSON string from a custom-element attribute. */
   const payload = computed<Record<string, unknown>>(() => {
     if (typeof props.payload !== 'string') return props.payload ?? {}
     try {

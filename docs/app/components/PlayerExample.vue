@@ -1,20 +1,6 @@
 <script setup lang="ts">
-/**
- * Renders a live example against the workspace build of @munsonlabs/video-player - the source in
- * this repo, not a published release, so an example can never document behaviour the code in the
- * same commit doesn't have.
- *
- * Client-only and dynamically imported for two separate reasons: `nuxt generate` prerenders every
- * page, and the player reaches for window/hls.js/IMA, so it can neither be evaluated nor rendered
- * on the server.
- *
- * VideoPlayerDemo.vue is the deliberate counterpart: it loads the *published* npm bundle from a
- * CDN, the only thing that exercises the packaging itself (the tarball, the /element bundle, the
- * Vue feature flags, the lazy chunks/ directory).
- */
 import type { Component } from 'vue'
 
-// Attrs are forwarded to the player, not to the <figure> wrapper.
 defineOptions({ inheritAttrs: false })
 
 const props = withDefaults(

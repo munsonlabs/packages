@@ -21,7 +21,6 @@ export function useAutoPlayInView(
     unobserve = observeViewportPriority(shell, () => {
       const player = getPlayer()
       if (!player || !player.paused() || isFullscreen.value || isFullscreenPending.value) return
-      /** Re-resolved here, not just at mount - the stored preference can change while this sat paused. */
       player.setMuted(resolveInitialMuted(explicitMuted, true))
       void player.play().catch(() => {})
     })

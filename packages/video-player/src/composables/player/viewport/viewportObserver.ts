@@ -22,7 +22,6 @@ function getSharedObserver(shell: Element): SharedObserver {
   return shared
 }
 
-/** Callbacks read `intersectionRatio`: one observer serves both the 0.1 and 0.5 thresholds. */
 export function observeViewport(shell: Element, callback: ViewportCallback): () => void {
   const shared = getSharedObserver(shell)
   shared.callbacks.add(callback)

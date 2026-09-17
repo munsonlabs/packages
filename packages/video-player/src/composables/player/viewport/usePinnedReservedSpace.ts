@@ -3,7 +3,6 @@ import type { Ref, ComputedRef } from 'vue'
 
 export interface UsePinnedReservedSpaceReturn {
   wrapperStyle: ComputedRef<{ height?: string }>
-  /** Forces the reservation to clear immediately, rather than waiting for the isPinned watcher's next tick - VideoStage's dismiss() wants this synchronous. */
   clear: () => void
 }
 

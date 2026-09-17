@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vite-plus/test'
 import { createNativeAdapter } from '@/adapters/native'
 
-/** jsdom has no PiP API, so this covers the unsupported branch only. */
 describe('native adapter — Picture-in-Picture (jsdom has no real PiP API)', () => {
   it('supportsPip reports false when the browser has no PiP support', () => {
     const videoEl = document.createElement('video')

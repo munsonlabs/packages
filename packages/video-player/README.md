@@ -20,7 +20,7 @@ import '@munsonlabs/video-player/style'
 
 <template>
   <VideoCard
-    title="Big Buck Bunny"
+    label="Big Buck Bunny"
     src="https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4"
     poster="https://storage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"
   />
@@ -103,7 +103,7 @@ import { VideoStage, HideMarker } from '@munsonlabs/video-player'
 | Prop                | Type           | Default  | Description                                                                                                                                                                                                     |
 | ------------------- | -------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src`               | `string`       | -        | **Required.** The video URL or platform-specific URI (the platform is auto-detected from its shape, see [Platform URLs](#platform-urls))                                                                        |
-| `title`             | `string`       | `''`     | Video title                                                                                                                                                                                                     |
+| `label`             | `string`       | `''`     | Video label, shown on the placeholder and used as the player's accessible name                                                                                                                                  |
 | `poster`            | `string`       | `''`     | Poster image URL                                                                                                                                                                                                |
 | `aspectRatio`       | `string`       | `'16:9'` | e.g. `'16:9'`, `'9:16'`, `'4:3'`                                                                                                                                                                                |
 | `autoplay`          | `boolean`      | `false`  | Autoplay on mount, see [Autoplay, mute & volume](#autoplay-mute--volume)                                                                                                                                        |
@@ -550,7 +550,7 @@ Three bundles are available: pick exactly one, since importing more than one dou
 
 <ml-video-card
   src="https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4"
-  title="Big Buck Bunny"
+  label="Big Buck Bunny"
   poster="https://storage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg"
 ></ml-video-card>
 ```

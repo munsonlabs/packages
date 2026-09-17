@@ -7,7 +7,7 @@ import type { PlaybackAdapter } from '@/types/playback'
 
 function makeAdapter(overrides: Partial<PlaybackAdapter> = {}): PlaybackAdapter {
   return {
-    play: vi.fn(),
+    play: vi.fn(() => Promise.resolve()),
     pause: vi.fn(),
     paused: () => false,
     ...overrides,

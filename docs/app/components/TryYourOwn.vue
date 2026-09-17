@@ -117,7 +117,7 @@ function submit(): void {
     return
   }
 
-  const entry: Entry = { src: src.value.trim(), title: title.value.trim() || src.value.trim() }
+  const entry: Entry = { src: src.value.trim(), label: title.value.trim() || src.value.trim() }
   if (poster.value.trim()) entry.poster = poster.value.trim()
   if (adTagUrl.value.trim()) entry.adTagUrl = adTagUrl.value.trim()
 

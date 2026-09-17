@@ -6,7 +6,7 @@ import { useDemoSettings } from '../composables/useDemoSettings'
 import { useEventLog } from '../composables/useEventLog'
 
 const DEFAULT_VIDEO: VideoEntry = {
-  title: 'Big Buck Bunny — transcript',
+  label: 'Big Buck Bunny — transcript',
   src: 'https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4',
   poster: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg',
 }

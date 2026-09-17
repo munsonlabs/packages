@@ -6,7 +6,7 @@ import { useDemoSettings } from '../composables/useDemoSettings'
 import { useEventLog } from '../composables/useEventLog'
 
 const video = {
-  title: 'HLS test stream (bipbop) — custom controls',
+  label: 'HLS test stream (bipbop) — custom controls',
   src: 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8',
   poster: 'https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg',
 }

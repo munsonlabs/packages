@@ -18,7 +18,7 @@ import '@/elements/ppbtn.css'
 import '@/styles/pinnedCorner.css'
 
 const props = withDefaults(defineProps<PlayerProps>(), {
-  title: '',
+  label: '',
   adTagUrl: '',
   poster: '',
   autoplay: false,
@@ -118,7 +118,7 @@ defineExpose(exposePlayerSurface(player))
           :class="{ 'player__shell--portrait': isPortrait }"
           :style="{ aspectRatio: shellAspect }"
           role="group"
-          :aria-label="title || 'Video player'"
+          :aria-label="label || 'Video player'"
           :tabindex="disableKeyboardShortcuts ? undefined : 0"
           @mousemove="hud.onMouseMove()"
           @contextmenu.capture.prevent

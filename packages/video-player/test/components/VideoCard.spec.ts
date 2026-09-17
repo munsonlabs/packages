@@ -14,7 +14,7 @@ vi.mock('@/components/VideoPlayer.vue', () => ({
 
 const { default: VideoCard } = await import('@/components/VideoCard.vue')
 
-const BASE = { src: 'https://www.youtube.com/watch?v=abc', title: 'Test video', lazy: false }
+const BASE = { src: 'https://www.youtube.com/watch?v=abc', label: 'Test video', lazy: false }
 
 beforeEach(() => {
   mockHasStage.value = false

@@ -25,7 +25,7 @@ function makeFakeAdapter(
   const emitter = createEmitter()
   const adapter: PlaybackAdapter = {
     el: document.createElement('div'),
-    play: vi.fn(),
+    play: vi.fn(() => Promise.resolve()),
     pause: vi.fn(),
     paused: () => true,
     currentTime: () => currentTime.value,

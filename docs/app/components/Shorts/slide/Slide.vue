@@ -27,7 +27,7 @@ function onState(e: { type?: string } | CustomEvent): void {
       :ref="setHandle"
       :src="short.src"
       :poster="short.poster"
-      :title="short.title"
+      :label="short.title"
       :lazy="false"
       loop
       preload="auto"

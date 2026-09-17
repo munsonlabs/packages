@@ -149,7 +149,7 @@ function onStateChange(e: StateChangeEvent | CustomEvent): void {
             @state-change="onStateChange"
           />
 
-          <p class="reel-page__title">{{ video.title }}</p>
+          <p class="reel-page__title">{{ video.label }}</p>
 
           <div class="reel-page__corner">
             <Buffering :player="playerRefs[slot]" class="reel-page__icon-btn reel-page__icon-btn--buffering" />

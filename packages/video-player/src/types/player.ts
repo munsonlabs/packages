@@ -82,7 +82,8 @@ export interface CaptionTrackDef {
 
 export interface PlayerProps {
   src: string
-  title?: string
+  /** Shown on the placeholder and used as the player's accessible name. */
+  label?: string
   poster?: string
   aspectRatio?: string
   adTagUrl?: string

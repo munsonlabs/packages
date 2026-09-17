@@ -19,9 +19,9 @@ function onStateChange(e: StateChangeEvent): void {
       <code>src/data/catalogue.ts</code>.
     </p>
     <div class="playlist__grid">
-      <div v-for="video in variations" :key="video.src" class="video-card variation" :data-variation="video.title">
+      <div v-for="video in variations" :key="video.src" class="video-card variation" :data-variation="video.label">
         <VideoCard v-bind="video" @state-change="onStateChange" />
-        <p class="variation__label">{{ video.title }}</p>
+        <p class="variation__label">{{ video.label }}</p>
       </div>
     </div>
   </section>

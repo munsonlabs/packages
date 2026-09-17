@@ -66,7 +66,7 @@ export function usePlayerControls(
 
       player.on('playing', onPlaying)
       player.on('error', onError)
-      Promise.resolve(player.play()).catch((err: unknown) => {
+      player.play().catch((err: unknown) => {
         settle()
         reject(err)
       })
@@ -97,7 +97,7 @@ export function usePlayerControls(
     const player = getPlayer()
     if (!player || !isReady.value) return
     if (isPlaying.value) player.pause()
-    else void Promise.resolve(player.play()).catch(() => {})
+    else void player.play().catch(() => {})
   }
 
   function seek(percent: number): void {

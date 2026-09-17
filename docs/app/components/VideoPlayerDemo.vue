@@ -63,7 +63,7 @@ onMounted(async () => {
         :lazy="false"
         :action="'mute'"
         :poster="props.poster"
-        :title="props.title"
+        :label="props.title"
         :ad-tag-url="props.adTagUrl"
       />
       <p v-else-if="state === 'error'" class="video-player-demo__status">Could not load <code>@munsonlabs/video-player</code> from unpkg.</p>

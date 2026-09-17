@@ -19,49 +19,49 @@ const AD_VMAP_SKIP_POD =
 
 export const videos: VideoEntry[] = [
   {
-    title: ' Oh my gah!',
+    label: ' Oh my gah!',
     src: 'https://www.youtube.com/watch?v=UnktCDi-BVs',
     poster: 'https://img.youtube.com/vi/UnktCDi-BVs/0.jpg',
   },
   {
-    title: 'Stranger than Heaven',
+    label: 'Stranger than Heaven',
     src: 'https://www.youtube.com/shorts/OkPttXeT8WY?si=YJTdQ1WqlJi9wVCG',
     poster: 'https://img.youtube.com/vi/OkPttXeT8WY/0.jpg',
     aspectRatio: '9:16',
   },
   {
-    title: 'Dailymotion demo video',
+    label: 'Dailymotion demo video',
     src: 'https://www.dailymotion.com/video/x84sh87',
     poster: 'https://www.dailymotion.com/thumbnail/video/x84sh87',
   },
   {
-    title: 'Tears of Steel',
+    label: 'Tears of Steel',
     src: 'https://vimeo.com/347119375',
     poster: 'https://vumbnail.com/347119375.jpg',
   },
   {
-    title: 'Big Buck Bunny',
+    label: 'Big Buck Bunny',
     src: 'https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4',
     adTagUrl: AD_VAST,
     poster: 'https://m.media-amazon.com/images/S/pv-target-images/fb7afef01282cdc2d846b2343f9f3d7a785b7133729776f1aa0da6501a2e1f7b.jpg',
   },
   {
-    title: 'HLS test stream (bipbop)',
+    label: 'HLS test stream (bipbop)',
     src: 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8',
     poster: 'https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg',
   },
   {
-    title: 'Live HLS test stream (Akamai)',
+    label: 'Live HLS test stream (Akamai)',
     src: 'https://hls-harbor-livepush.akamaized.net/live_cdn/nsqIStpj8PaG-Ev/emcQJ0pGpremocy/index.m3u8',
     poster: 'https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg',
   },
   {
-    title: 'DASH test stream (bbb_30fps)',
+    label: 'DASH test stream (bbb_30fps)',
     src: 'https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd',
     poster: 'https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg',
   },
   {
-    title: 'Cloudflare Stream (third-party adapter demo)',
+    label: 'Cloudflare Stream (third-party adapter demo)',
     src: 'https://customer-f33zs165nr7gyfy4.cloudflarestream.com/6b9e68b07dfee8cc2d116e4c51d6a957/iframe',
     poster: 'https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg',
   },
@@ -71,8 +71,8 @@ const BBB_URL = 'https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4'
 const BBB_POSTER = 'https://m.media-amazon.com/images/S/pv-target-images/fb7afef01282cdc2d846b2343f9f3d7a785b7133729776f1aa0da6501a2e1f7b.jpg'
 
 // Browsers strip the URL fragment before fetching; it only gives each entry a distinct src.
-const adVideo = (fragment: string, title: string, adTagUrl: string): VideoEntry => ({
-  title,
+const adVideo = (fragment: string, label: string, adTagUrl: string): VideoEntry => ({
+  label,
   src: `${BBB_URL}#${fragment}`,
   poster: BBB_POSTER,
   adTagUrl,
@@ -110,7 +110,7 @@ export const prebidVideos: VideoEntry[] = [
 
 export const captionVideos: VideoEntry[] = [
   {
-    title: 'Big Buck Bunny (English + French captions)',
+    label: 'Big Buck Bunny (English + French captions)',
     src: `${BBB_URL}#captions`,
     poster: BBB_POSTER,
     tracks: [
@@ -122,7 +122,7 @@ export const captionVideos: VideoEntry[] = [
 
 export const qualityVideos: VideoEntry[] = [
   {
-    title: 'HLS test stream (bipbop) — adaptive bitrate',
+    label: 'HLS test stream (bipbop) — adaptive bitrate',
     src: 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8#quality',
   },
 ]

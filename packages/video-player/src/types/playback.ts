@@ -25,7 +25,7 @@ export interface AudioPreference {
 
 export interface PlaybackAdapter {
   readonly el: HTMLElement
-  play(): void | Promise<void>
+  play(): Promise<void>
   pause(): void
   paused(): boolean
   currentTime(): number

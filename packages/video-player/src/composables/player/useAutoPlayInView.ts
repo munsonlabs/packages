@@ -23,7 +23,7 @@ export function useAutoPlayInView(
       if (!player || !player.paused() || isFullscreen.value || isFullscreenPending.value) return
       /** Re-resolved here, not just at mount - the stored preference can change while this sat paused. */
       player.setMuted(resolveInitialMuted(explicitMuted, true))
-      void Promise.resolve(player.play()).catch(() => {})
+      void player.play().catch(() => {})
     })
   })
 

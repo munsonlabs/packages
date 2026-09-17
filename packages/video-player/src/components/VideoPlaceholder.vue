@@ -12,7 +12,7 @@ import '@/elements/ppbtn.css'
 
 const props = withDefaults(defineProps<VideoEntry>(), {
   poster: '',
-  title: '',
+  label: '',
   aspectRatio: DEFAULT_ASPECT_RATIO,
   adTagUrl: '',
   nativeUi: false,
@@ -75,7 +75,7 @@ onBeforeUnmount(() => unobserve?.())
       :style="{ aspectRatio: shellAspect }"
       @click="handleClick"
     >
-      <img v-if="poster" class="placeholder__poster" :src="poster" :alt="title" />
+      <img v-if="poster" class="placeholder__poster" :src="poster" :alt="label" />
       <div class="placeholder__scrim" />
 
       <div class="placeholder__btn-wrap">
@@ -84,8 +84,8 @@ onBeforeUnmount(() => unobserve?.())
         </button>
       </div>
 
-      <div v-if="title" class="placeholder__footer">
-        <p class="placeholder__title">{{ title }}</p>
+      <div v-if="label" class="placeholder__footer">
+        <p class="placeholder__title">{{ label }}</p>
       </div>
     </div>
   </div>

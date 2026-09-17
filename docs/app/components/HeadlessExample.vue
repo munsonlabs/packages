@@ -46,7 +46,7 @@ onMounted(async () => {
           :is="parts.VideoPlayer"
           ref="player"
           src="https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4"
-          title="Big Buck Bunny"
+          label="Big Buck Bunny"
           :controls="false"
         />
 

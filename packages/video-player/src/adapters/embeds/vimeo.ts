@@ -109,7 +109,7 @@ export function createVimeoAdapter(videoEl: HTMLVideoElement, options: EmbedAdap
       player.on('error', () => emitter.trigger('error'))
     },
     hasPlayer: () => !!player,
-    play: () => void player?.play().catch(() => {}),
+    play: () => player?.play(),
     pause: () => void player?.pause().catch(() => {}),
     seekToSdk: (seconds) => void player?.setCurrentTime(seconds).catch(() => {}),
     volumeToSdk: (vol) => void player?.setVolume(vol).catch(() => {}),

@@ -74,7 +74,7 @@ describe('loop prop', () => {
     const { player, props } = setup({ loop: true })
     player.toggleLoop()
     expect(player.isLooping.value).toBe(false)
-    props.title = 'nudge'
+    props.label = 'nudge'
     await nextTick()
     expect(player.isLooping.value).toBe(false)
   })

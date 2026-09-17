@@ -182,7 +182,7 @@ export interface StatefulEmbedImpl {
   /** Must not reject - catch failures into `state.errorState` + `emitter.trigger('error')` instead. */
   connect: (core: StatefulEmbedCore) => Promise<void> | void
   hasPlayer: () => boolean
-  play: () => void
+  play: () => void | Promise<void>
   pause: () => void
   seekToSdk: (seconds: number) => void
   volumeToSdk: (vol: number) => void
@@ -243,8 +243,9 @@ export function createStatefulEmbedAdapter(videoEl: HTMLVideoElement, options: E
   return {
     el: wrapper,
     play: () => {
-      if (impl.hasPlayer()) impl.play()
-      else state.playQueued = true
+      if (impl.hasPlayer()) return Promise.resolve(impl.play())
+      state.playQueued = true
+      return Promise.resolve()
     },
     pause: () => impl.pause(),
     paused: () => state.paused,

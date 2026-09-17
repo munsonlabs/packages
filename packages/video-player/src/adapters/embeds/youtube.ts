@@ -108,8 +108,8 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
     ytPlayer?.cueVideoById({ videoId: id })
   }
 
-  function play(): void {
-    if (!url.videoId) return
+  function play(): Promise<void> {
+    if (!url.videoId) return Promise.resolve()
     seek.wasPaused = false
 
     if (playerReady) {
@@ -123,6 +123,7 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
       emitter.trigger('waiting')
       playOnReady = true
     }
+    return Promise.resolve()
   }
 
   function onSeeked(): void {
@@ -142,7 +143,7 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
     if (options.muted) ytPlayer?.mute()
     if (options.volume !== undefined) ytPlayer?.setVolume(options.volume * 100)
 
-    if (playOnReady) play()
+    if (playOnReady) void play()
     else if (cueOnReady && url.videoId) {
       cueVideoById(url.videoId)
       activeVideoId = url.videoId
@@ -253,7 +254,7 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
   connect()
 
   if (options.autoplay) {
-    if (playerReady) play()
+    if (playerReady) void play()
     else playOnReady = true
   } else if (url.videoId) {
     cueOnReady = true

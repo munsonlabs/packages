@@ -5,7 +5,7 @@ import type { StateChangeEvent, TranscriptCue, VideoEntry } from '@munsonlabs/vi
 import { useEventLog } from '../composables/useEventLog'
 
 const DEFAULT_VIDEO: VideoEntry = {
-  title: 'Big Buck Bunny — exposed to a third-party control',
+  label: 'Big Buck Bunny — exposed to a third-party control',
   src: 'https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4',
   poster: 'https://storage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg',
 }

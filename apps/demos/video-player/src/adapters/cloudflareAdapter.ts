@@ -97,7 +97,7 @@ function createCloudflareAdapter(videoEl: HTMLVideoElement, options: EmbedAdapte
 
   return {
     el: wrapper,
-    play: () => player?.play(),
+    play: () => player?.play() ?? Promise.resolve(),
     pause: () => player?.pause(),
     paused: () => player?.paused ?? true,
     currentTime: () => player?.currentTime ?? 0,

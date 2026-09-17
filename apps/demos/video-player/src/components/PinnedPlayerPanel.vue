@@ -5,7 +5,7 @@ import { useEventLog } from '../composables/useEventLog'
 import { catalogue } from '../data/catalogue'
 
 const { addLog } = useEventLog()
-const demoVideo = { ...catalogue.pinned, title: 'Flower' }
+const demoVideo = { ...catalogue.pinned, label: 'Flower' }
 
 function onStateChange(e: StateChangeEvent): void {
   addLog(e)

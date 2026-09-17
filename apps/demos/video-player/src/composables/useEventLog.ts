@@ -17,7 +17,7 @@ const log = ref<LogEntry[]>([])
 
 function addLog(e: LoggableEvent): void {
   const title =
-    [...videos, ...adVideos, ...prebidVideos, ...captionVideos, ...qualityVideos, ...variations, ...playlist].find((v) => v.src === e.src)?.title ??
+    [...videos, ...adVideos, ...prebidVideos, ...captionVideos, ...qualityVideos, ...variations, ...playlist].find((v) => v.src === e.src)?.label ??
     e.src.split('/').pop() ??
     '—'
   log.value.unshift({

@@ -216,7 +216,7 @@ defineExpose({ playNext, playPrevious, hasNext, hasPrevious, ...forwarded })
             <div class="stage__idle-btn">
               <IconPlay />
             </div>
-            <p class="stage__idle-title">{{ current.title }}</p>
+            <p class="stage__idle-title">{{ current.label }}</p>
           </template>
           <p v-else class="stage__idle-empty">Select a video to play</p>
         </div>

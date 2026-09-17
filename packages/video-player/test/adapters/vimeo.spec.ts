@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import { createVimeoAdapter } from '@/adapters/embeds/vimeo'
 import type { EmbedAdapterOptions } from '@/adapters/embeds/embedShared'
+import { loadScript } from '@/utils/loadScript'
 
 vi.mock('@/utils/loadScript', () => ({ loadScript: vi.fn(() => Promise.resolve()) }))
 
@@ -236,5 +237,77 @@ describe('dispose', () => {
 
     expect(player.destroy).toHaveBeenCalledOnce()
     vi.advanceTimersByTime(1000)
+  })
+})
+
+describe('SDK load failure', () => {
+  it('surfaces a rejected player.js load as an error event with a message (instead of hanging)', async () => {
+    vi.mocked(loadScript).mockRejectedValueOnce(new Error('Failed to load script: player.js'))
+    const videoEl = document.createElement('video')
+    document.body.appendChild(videoEl)
+    const adapter = createVimeoAdapter(videoEl, { src: 'https://vimeo.com/347119375' })
+    const error = vi.fn()
+    adapter.on('error', error)
+
+    await flush(4)
+
+    expect(error).toHaveBeenCalledOnce()
+    expect(adapter.error()).toEqual({ code: 4, message: 'Failed to load script: player.js' })
+    expect(players).toHaveLength(0)
+  })
+
+  it('does not fire error on an adapter disposed before the load failed', async () => {
+    vi.mocked(loadScript).mockRejectedValueOnce(new Error('offline'))
+    const videoEl = document.createElement('video')
+    document.body.appendChild(videoEl)
+    const adapter = createVimeoAdapter(videoEl, { src: 'https://vimeo.com/347119375' })
+    const error = vi.fn()
+    adapter.on('error', error)
+    adapter.dispose()
+
+    await flush(4)
+
+    expect(error).not.toHaveBeenCalled()
+  })
+
+  it('errors when the script loads but never defines window.Vimeo', async () => {
+    delete window.Vimeo
+    const videoEl = document.createElement('video')
+    document.body.appendChild(videoEl)
+    const adapter = createVimeoAdapter(videoEl, { src: 'https://vimeo.com/347119375' })
+    const error = vi.fn()
+    adapter.on('error', error)
+
+    await flush(4)
+
+    expect(error).toHaveBeenCalledOnce()
+    expect(adapter.error()?.message).toMatch(/failed to load/i)
+  })
+
+  it('setSrc() after a failed load (Retry) clears the error and re-runs the SDK connect', async () => {
+    vi.mocked(loadScript).mockClear()
+    vi.mocked(loadScript).mockRejectedValueOnce(new Error('offline'))
+    const videoEl = document.createElement('video')
+    document.body.appendChild(videoEl)
+    const adapter = createVimeoAdapter(videoEl, { src: 'https://vimeo.com/347119375' })
+    await flush(4)
+    expect(adapter.error()).not.toBeNull()
+    expect(players).toHaveLength(0)
+
+    adapter.setSrc('https://vimeo.com/347119375')
+    await flush(4)
+
+    expect(loadScript).toHaveBeenCalledTimes(2)
+    expect(adapter.error()).toBeNull()
+    expect(players).toHaveLength(1)
+  })
+
+  it('setSrc() is a no-op while a player is connected and healthy', async () => {
+    const { adapter } = await createAdapter()
+    expect(players).toHaveLength(1)
+    adapter.setSrc('https://vimeo.com/999')
+    await flush(4)
+    expect(players).toHaveLength(1)
+    expect(players[0].destroyed).toBe(false)
   })
 })

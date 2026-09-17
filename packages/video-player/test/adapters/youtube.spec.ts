@@ -122,13 +122,17 @@ afterEach(() => {
   delete window.YT
 })
 
+async function flush(times = 5): Promise<void> {
+  for (let i = 0; i < times; i++) await Promise.resolve()
+}
+
 async function createAdapter(src = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', options: Partial<EmbedAdapterOptions> = {}) {
   const videoEl = document.createElement('video')
   document.body.appendChild(videoEl)
   const adapter = createYoutubeAdapter(videoEl, { src, ...options })
-  // Flushes ensureApiLoaded()'s loadScript().then() microtask (a no-op if a prior test already
-  // reached isApiReady, since initYtPlayer then runs synchronously inside createYoutubeAdapter).
-  await Promise.resolve()
+  // Flushes ensureApiLoaded()'s promise chain (a no-op if a prior test already reached the
+  // ready API, since initYtPlayer then runs synchronously inside createYoutubeAdapter).
+  await flush()
   const player = players[players.length - 1]
   return { adapter, player, videoEl }
 }

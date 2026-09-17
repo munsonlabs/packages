@@ -19,8 +19,20 @@ export function createVimeoAdapter(videoEl: HTMLVideoElement, options: EmbedAdap
       const videoId = parseVideoId(options.src)
       if (!videoId) return
 
-      await loadScript(VIMEO_SDK_URL, 'vimeo')
-      if (isDisposed() || !window.Vimeo) return
+      try {
+        await loadScript(VIMEO_SDK_URL, 'vimeo')
+      } catch (err) {
+        if (isDisposed()) return
+        state.errorState = { code: 4, message: err instanceof Error ? err.message : 'The Vimeo player failed to load.' }
+        emitter.trigger('error')
+        return
+      }
+      if (isDisposed()) return
+      if (!window.Vimeo) {
+        state.errorState = { code: 4, message: 'The Vimeo player failed to load.' }
+        emitter.trigger('error')
+        return
+      }
 
       const playerOptions: VimeoPlayerOptions = {
         id: Number(videoId),

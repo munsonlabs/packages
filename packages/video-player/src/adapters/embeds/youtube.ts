@@ -34,24 +34,42 @@ function parseUrl(url: string): ParsedUrl {
   return result
 }
 
-let isApiReady = false
-let isApiLoading = false
-const apiReadyQueue: Array<() => void> = []
+const YOUTUBE_API_URL = 'https://www.youtube.com/iframe_api'
 
-function ensureApiLoaded(): void {
-  if (isApiLoading) return
-  isApiLoading = true
-  void loadScript('https://www.youtube.com/iframe_api').then(() => {
-    window.YT?.ready(() => {
-      isApiReady = true
-      apiReadyQueue.forEach((init) => init())
-      apiReadyQueue.length = 0
+/** Set once the IFrame API has signalled ready - lets later adapters initialise synchronously. */
+let readyApi: YTNamespace | null = null
+let apiLoading: Promise<YTNamespace> | null = null
+
+/**
+ * Loads the IFrame API once, shared across every YouTube adapter on the page. A failed load
+ * rejects for every adapter waiting on it and clears the in-flight promise, so the next adapter
+ * (or a Retry) starts a fresh attempt rather than hanging on a load that already failed.
+ */
+function ensureApiLoaded(): Promise<YTNamespace> {
+  if (readyApi) return Promise.resolve(readyApi)
+  if (!apiLoading) {
+    apiLoading = loadScript(YOUTUBE_API_URL).then(
+      () =>
+        new Promise<YTNamespace>((resolve, reject) => {
+          const YT = window.YT
+          if (!YT) {
+            reject(new Error('The YouTube player failed to load.'))
+            return
+          }
+          YT.ready(() => {
+            readyApi = YT
+            resolve(YT)
+          })
+        }),
+    )
+    apiLoading.catch(() => {
+      apiLoading = null
     })
-  })
+  }
+  return apiLoading
 }
 
 export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAdapterOptions): PlaybackAdapter {
-  ensureApiLoaded()
   const emitter = createEmitter()
   const { techId, wrapper } = createEmbedMount(videoEl, MVP_YOUTUBE_CLASS, options.nativeUi)
 
@@ -64,6 +82,9 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
   let lastState: number | null = null
   let adWasPlaying = false
   let errorNumber: number | null = null
+  /** The IFrame API script itself failed to load - terminal for this adapter, unlike a per-video `onError`. */
+  let loadError: MediaErrorLike | null = null
+  let disposed = false
   let hasPlaybackRateFeature = false
   const { schedule, clearAll: clearTimers } = createTimerScheduler()
   let startInterval: ReturnType<typeof setInterval> | null = null
@@ -220,8 +241,24 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
     })
   }
 
-  if (isApiReady) initYtPlayer()
-  else apiReadyQueue.push(initYtPlayer)
+  function connect(): void {
+    if (readyApi) {
+      initYtPlayer()
+      return
+    }
+    ensureApiLoaded().then(
+      () => {
+        if (!disposed) initYtPlayer()
+      },
+      (err: unknown) => {
+        if (disposed) return
+        loadError = { code: 4, message: err instanceof Error ? err.message : 'The YouTube player failed to load.' }
+        emitter.trigger('error')
+      },
+    )
+  }
+
+  connect()
 
   if (options.autoplay) {
     if (playerReady) play()
@@ -345,12 +382,20 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
       if (!playerReady || !ytPlayer?.getVideoLoadedFraction) return 0
       return ytPlayer.getVideoLoadedFraction() * ytPlayer.getDuration()
     },
-    error: (): MediaErrorLike | null => (errorNumber !== null ? { code: errorNumber, message: 'This video could not be played.' } : null),
+    error: (): MediaErrorLike | null =>
+      loadError ?? (errorNumber !== null ? { code: errorNumber, message: 'This video could not be played.' } : null),
     setSrc: (src) => {
       const newUrl = parseUrl(src)
       url.videoId = newUrl.videoId
       url.listId = newUrl.listId
       if (!url.videoId) return
+      /** Retry after the IFrame API itself failed to load - start the whole connect over. */
+      if (loadError) {
+        loadError = null
+        if (!options.autoplay) cueOnReady = true
+        connect()
+        return
+      }
       if (playerReady) {
         loadVideoById(url.videoId)
         activeVideoId = url.videoId
@@ -365,6 +410,7 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
     on: emitter.on,
     off: emitter.off,
     dispose: () => {
+      disposed = true
       clearTimers()
       if (startInterval) clearInterval(startInterval)
       if (seek.catchUpInterval) clearInterval(seek.catchUpInterval)
@@ -373,9 +419,6 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
           ytPlayer.stopVideo()
           ytPlayer.destroy()
         } catch {}
-      } else {
-        const idx = apiReadyQueue.indexOf(initYtPlayer)
-        if (idx !== -1) apiReadyQueue.splice(idx, 1)
       }
       ytPlayer = null
       teardownEmbedMount(videoEl, wrapper, MVP_YOUTUBE_CLASS)

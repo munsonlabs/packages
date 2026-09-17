@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import { createDailymotionAdapter } from '@/adapters/embeds/dailymotion'
 import type { EmbedAdapterOptions } from '@/adapters/embeds/embedShared'
+import { loadScript } from '@/utils/loadScript'
 
 vi.mock('@/utils/loadScript', () => ({ loadScript: vi.fn(() => Promise.resolve()) }))
 
@@ -289,5 +290,25 @@ describe('dispose', () => {
     adapter.dispose()
 
     expect(player.destroyed).toBe(true)
+  })
+})
+
+describe('SDK load failure', () => {
+  it('setSrc() after a failed load (Retry) clears the error and re-runs the SDK connect', async () => {
+    vi.mocked(loadScript).mockClear()
+    vi.mocked(loadScript).mockRejectedValueOnce(new Error('offline'))
+    const videoEl = document.createElement('video')
+    document.body.appendChild(videoEl)
+    const adapter = createDailymotionAdapter(videoEl, { src: DEFAULT_SRC })
+    await flush()
+    expect(adapter.error()?.message).toBe('offline')
+    expect(window.dailymotion?.createPlayer).not.toHaveBeenCalled()
+
+    adapter.setSrc(DEFAULT_SRC)
+    await flush()
+
+    expect(loadScript).toHaveBeenCalledTimes(2)
+    expect(adapter.error()).toBeNull()
+    expect(window.dailymotion?.createPlayer).toHaveBeenCalledOnce()
   })
 })

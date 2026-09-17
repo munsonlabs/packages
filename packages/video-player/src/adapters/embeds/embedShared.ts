@@ -298,7 +298,14 @@ export function createStatefulEmbedAdapter(videoEl: HTMLVideoElement, options: E
     ...(impl.rate ? impl.rate(core) : { playbackRate: () => 1, setPlaybackRate: () => {} }),
     bufferedEnd: () => state.currentTime,
     error: (): MediaErrorLike | null => state.errorState,
-    setSrc: () => {},
+    /** Only meaningful as a Retry after a failed connect (usePlayer.retry() routes through here) - a live player keeps its source. Mutates `options.src` because each impl's connect() closes over that same object. */
+    setSrc: (src) => {
+      if (impl.hasPlayer() && !state.errorState) return
+      options.src = src
+      state.errorState = null
+      impl.destroyPlayer()
+      void impl.connect(core)
+    },
     supportsPlaybackRate: () => false,
     ...EMBED_UNSUPPORTED_FEATURES,
     enterFullscreen,

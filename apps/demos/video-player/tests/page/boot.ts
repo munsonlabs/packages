@@ -1,6 +1,4 @@
 export async function bootApp(): Promise<void> {
-  // Chromium runs offline (resolver flag), so the panels that mount CDN clips log playback errors for the page's whole life.
-  console.error = () => {}
   document.body.innerHTML = '<div id="app"></div>'
   await import('../../src/main.ts')
   await waitFor(() => [...document.querySelectorAll('h1')].some((h) => h.textContent?.trim() === 'Showcase'), 'the app to boot')

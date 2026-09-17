@@ -34,8 +34,7 @@ The player's own real-browser tests live with the package in `packages/video-pla
 development loop is in that package's `AGENTS.md` under "Adding a browser test". Both suites play
 the committed fixture clip there (`flower.mp4`, MDN's CC0 sample, plus an HLS remux of it); the
 demo's `public/media` is a symlink to it. `vp test --browser.name=chromium` (or `webkit`) narrows a
-run to one engine. Chromium runs offline apart from the dev server via a resolver flag; WebKit has
-no equivalent, so its run has the network open. Install the browsers once with
+run to one engine. Install the browsers once with
 `npx playwright install chromium webkit`. CI runs Chromium on Linux and WebKit on macOS, since
 Linux WebKit has no H.264 decoder. A tap-to-play timing harness used to live in the demo; see git
 history around `9623955` if start-time measurement is needed again.

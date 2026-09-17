@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vite-plus/test'
+import { describe, it, expect, vi } from 'vite-plus/test'
 import { defineComponent, h } from 'vue'
 import { render } from 'vitest-browser-vue'
 import '@munsonlabs/video-player/element'
@@ -52,6 +52,7 @@ describe('custom elements', () => {
   })
 
   it('ml-video-player: a broken source reports an error and Retry re-attempts', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     const { el, screen, sink } = await mountElement('ml-video-player', { ...catalogue.broken, muted: true })
     await sink.next('error')
     expect(el.isError).toBe(true)

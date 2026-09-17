@@ -140,7 +140,7 @@ export function usePlayerEvents(state: PlayerState, deps: UsePlayerEventsDeps): 
       buffering.reset()
       if (isLooping.value) {
         player.setCurrentTime(0)
-        void player.play()
+        void Promise.resolve(player.play()).catch(() => {})
         return
       }
       if (total.value) current.value = total.value

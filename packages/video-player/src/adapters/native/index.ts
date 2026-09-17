@@ -86,7 +86,7 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
     /** A misconfigured import map can resolve to something that isn't the real module - fall back to native playback. */
     if (typeof HlsCtor?.isSupported !== 'function' || !HlsCtor.isSupported()) {
       videoEl.src = src
-      if (options.autoplay) void videoEl.play()
+      if (options.autoplay) void videoEl.play().catch(() => {})
       return
     }
     /** Live detection in usePlayerEvents depends on duration() === Infinity, matching Safari's native HLS. */
@@ -94,7 +94,7 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
     hlsLoadStarted = !deferHlsLoad
     hls.loadSource(src)
     hls.attachMedia(videoEl)
-    if (options.autoplay) void videoEl.play()
+    if (options.autoplay) void videoEl.play().catch(() => {})
 
     const HlsEvents = HlsCtor.Events
     const HlsErrorTypes = HlsCtor.ErrorTypes
@@ -162,7 +162,7 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
       return
     }
     videoEl.src = src
-    if (options.autoplay) void videoEl.play()
+    if (options.autoplay) void videoEl.play().catch(() => {})
   }
 
   const forwardEvent = (name: string) => () => emitter.trigger(name)

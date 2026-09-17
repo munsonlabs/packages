@@ -40,12 +40,28 @@ jobs:
           nuxt: 'false'
       - run: vp run -r check
 
+  # Chromium on Linux, WebKit on macOS: Linux WebKit has no H.264/AAC decoders, so the
+  # media tests can only run against the Apple media stack.
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            browser: chromium
+          - os: macos-latest
+            browser: webkit
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
         with:
           nuxt: 'false'
-          playwright: 'true'
-      - run: vp run -r test
+          playwright: ${{ matrix.browser }}
+      # Unit tests have no browser dependency, so only the Linux entry runs everything.
+      # The flag is ignored by the jsdom suites and narrows the browser suite to this entry's engine.
+      - if: matrix.browser == 'chromium'
+        run: vp run -r test -- --browser.name=chromium
+      - if: matrix.browser != 'chromium'
+        run: vp run test -- --browser.name=webkit
+        working-directory: apps/demos/video-player

@@ -25,15 +25,16 @@ npm run test     # run tests
 A Vue showcase app for `@munsonlabs/video-player`. From that directory:
 
 ```bash
-npm run dev        # dev server on :5176
-npm run test:e2e   # component tests, real Chromium via Vitest browser mode
-npm run test:page  # full-page Playwright tests against the dev server
-npm test           # both
+vp run dev     # dev server on :5176
+vp run test    # component and full-page tests in Vitest browser mode, in Chromium and WebKit
 ```
 
-Both suites are offline: they play a committed fixture clip (`tests/fixtures/flower.mp4`, MDN's CC0
-sample) and the page tests abort every other cross-origin request. Playwright's Chromium needs to
-be installed once (`npx playwright install chromium`).
+`vp test --browser.name=chromium` (or `webkit`) narrows it to one engine. The suites are offline:
+they play a committed fixture clip (`public/media/flower.mp4`, MDN's CC0 sample, plus an HLS remux
+of it) and abort every other cross-origin request. Install the browsers once with
+`npx playwright install chromium webkit`. CI runs Chromium on Linux and WebKit on macOS, since
+Linux WebKit has no H.264 decoder. A tap-to-play timing harness used to live under `tests/perf`;
+see git history around `9623955` if start-time measurement is needed again.
 
 ## Releasing
 

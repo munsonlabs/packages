@@ -5,7 +5,6 @@ export interface UseQualityReturn {
   currentQualityLabel: () => string
 }
 
-/** Cycles Auto → highest → ... → lowest → Auto. Levels come sorted ascending by height, so cycling down from Auto starts at the end. */
 export function useQuality(player: PlayerHandle): UseQualityReturn {
   function cycleQuality(): void {
     const levels = player.qualityLevels

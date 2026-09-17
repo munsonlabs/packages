@@ -69,11 +69,7 @@ describe('save', () => {
     wrapper.unmount()
   })
 
-  /**
-   * Otherwise an unmount (or tab-hide) right after 'ended' would re-save the near-the-end
-   * position here, silently undoing the clear() the 'ended' handler already did - see the
-   * comment on save() itself.
-   */
+  /** Saving after 'ended' would undo the clear() the ended handler already did. */
   it('skips saving once the video has ended', () => {
     const { result, wrapper } = withSetup(() => usePositionMemory(URL, () => null, ref(true)))
     const adapter = makeAdapter(37)

@@ -1,13 +1,7 @@
 import { defineConfig } from '@playwright/test'
 
-// Its own port for the same reason playwright.config.ts uses 5199: never test a stray server.
 export const PERF_PORT = 5198
 
-/**
- * Tap-to-play timing harness - see tests/perf/tapToPlay.spec.ts. Separate from the functional
- * page suite so it can run serially, with retries off and a fixed viewport, and so `npm run
- * test:perf` is one command. Numbers are printed and written to test-results/perf/.
- */
 export default defineConfig({
   testDir: 'tests/perf',
   timeout: 120_000,
@@ -35,7 +29,6 @@ export default defineConfig({
     url: `http://localhost:${PERF_PORT}`,
     reuseExistingServer: false,
     timeout: 120_000,
-    // PERF_DEBUG=1 also surfaces the media server's per-request range log (tests/perf/mediaServer.ts).
     stdout: process.env.PERF_DEBUG ? 'pipe' : 'ignore',
   },
 })

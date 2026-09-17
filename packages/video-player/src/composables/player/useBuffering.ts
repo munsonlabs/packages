@@ -28,6 +28,7 @@ export function useBuffering(fire: (type: StateChangeType) => void): UseBufferin
         fire('bufferstart')
       }, BUFFERING_SPINNER_DELAY_MS)
     })
+
     player.on('playing', reset)
     player.on('canplay', reset)
   }

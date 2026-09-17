@@ -2,7 +2,7 @@ import { MVP_FULLSCREEN_PENDING, MVP_FULLSCREEN_PENDING_DONE, MVP_TECH_CLASS } f
 import { isIOS, requestFullscreen, exitFullscreen as exitDocFullscreen } from '@/utils/platform'
 import { createEmitter } from '@/composables/player/emitter'
 import type { Emitter } from '@/composables/player/emitter'
-import type { PlaybackAdapter, MediaErrorLike } from '@/types/playback'
+import type { PlaybackAdapter, MediaErrorLike, EmbedAdapterOptions } from '@/types/playback'
 
 type EmbedUnsupportedFeatures = Pick<
   PlaybackAdapter,
@@ -20,7 +20,6 @@ type EmbedUnsupportedFeatures = Pick<
   | 'togglePip'
 >
 
-/** None of the embed techs (YouTube, Vimeo, Dailymotion) expose captions, quality selection, or PiP through their SDKs. */
 export const EMBED_UNSUPPORTED_FEATURES: EmbedUnsupportedFeatures = {
   supportsCaptions: () => false,
   getCaptionTracks: () => [],
@@ -36,15 +35,6 @@ export const EMBED_UNSUPPORTED_FEATURES: EmbedUnsupportedFeatures = {
   togglePip: () => {},
 }
 
-export interface EmbedAdapterOptions {
-  src: string
-  poster?: string
-  autoplay?: boolean
-  muted?: boolean
-  volume?: number
-  nativeUi?: boolean
-}
-
 let mountCounter = 0
 
 export interface EmbedMount {
@@ -52,7 +42,7 @@ export interface EmbedMount {
   wrapper: HTMLDivElement
 }
 
-/** YouTube replaces its target element with the iframe itself; Vimeo/Dailymotion insert one as a descendant instead - watching the wrapper (which persists either way) covers both shapes. Self-disconnects once found, since none of the three SDKs replace the iframe node again after that. */
+/** YouTube replaces the target element with its iframe, Vimeo/Dailymotion insert one inside it - so watch the wrapper. */
 function excludeIframeFromTabOrder(wrapper: HTMLDivElement): void {
   const existing = wrapper.querySelector('iframe')
   if (existing) {
@@ -121,7 +111,6 @@ export interface TimerScheduler {
   clearAll: () => void
 }
 
-/** Tracks setTimeout ids so an adapter can clear all of them together on dispose. */
 export function createTimerScheduler(): TimerScheduler {
   const timers = new Set<ReturnType<typeof setTimeout>>()
   return {
@@ -156,6 +145,7 @@ export function spawnIosFullscreenOverlay(emitter: Emitter): {
     if (done) return
     emitter.trigger(MVP_FULLSCREEN_PENDING_DONE)
   }
+
   function finish(onTeardown?: () => void): void {
     if (done) return
     done = true
@@ -167,29 +157,23 @@ export function spawnIosFullscreenOverlay(emitter: Emitter): {
   return { overlay, reveal, finish }
 }
 
-/** Mirrored playback state both stateful embeds keep, since the SDKs don't expose queryable getters for everything. */
 export interface EmbedMirrorState {
   currentTime: number
   duration: number
   volume: number
   muted: boolean
   paused: boolean
-  /** A play()/autoplay request landed before the SDK player existed; consumed via consumeQueuedPlay(). */
   playQueued: boolean
   errorState: MediaErrorLike | null
 }
 
-/** What connect() and the overridable impl callbacks get to work with. */
 export interface StatefulEmbedCore {
   techId: string
   wrapper: HTMLDivElement
   emitter: Emitter
   state: EmbedMirrorState
-  /** Tracked setTimeout - cleared together on dispose, same contract as createTimerScheduler. */
   schedule: TimerScheduler['schedule']
-  /** False once dispose() has run - async connect steps re-check after every await. */
   isDisposed: () => boolean
-  /** Runs `play` iff a play()/autoplay request was queued while the SDK player was still connecting. */
   consumeQueuedPlay: (play: () => void) => void
 }
 
@@ -208,7 +192,6 @@ export interface StatefulEmbedImpl {
   destroyPlayer: () => void
 }
 
-/** Shared skeleton for Vimeo and Dailymotion - the two "stateful" embed SDKs that need mirrored playback state and queued play() requests, unlike YouTube's event-driven IFrame API. */
 export function createStatefulEmbedAdapter(videoEl: HTMLVideoElement, options: EmbedAdapterOptions, impl: StatefulEmbedImpl): PlaybackAdapter {
   const emitter = createEmitter()
   const { techId, wrapper } = createEmbedMount(videoEl, impl.cssClass, options.nativeUi)

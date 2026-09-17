@@ -16,7 +16,7 @@ function makePlayer(overrides: Partial<PlayerHandle> = {}): PlayerHandle {
     total: 100,
     isPlaying: true,
     seek: vi.fn(),
-    togglePlay: vi.fn(),
+    play: vi.fn(() => Promise.resolve()),
     ...overrides,
   }) as unknown as PlayerHandle
 }
@@ -42,12 +42,12 @@ describe('Transcript — rendering', () => {
 })
 
 describe('Transcript — clicking a cue', () => {
-  it('seeks to the cue as a percentage of total', async () => {
+  it('seeks to the cue as a percentage of total and plays', async () => {
     const player = makePlayer()
     const wrapper = mount(Transcript, { props: { player, cues: CUES } })
     await wrapper.findAll('.mlv-transcript__cue')[1].trigger('click')
     expect(player.seek).toHaveBeenCalledWith(10)
-    expect(player.togglePlay).not.toHaveBeenCalled()
+    expect(player.play).toHaveBeenCalled()
   })
 
   it('also starts playback when paused', async () => {
@@ -55,7 +55,7 @@ describe('Transcript — clicking a cue', () => {
     const wrapper = mount(Transcript, { props: { player, cues: CUES } })
     await wrapper.findAll('.mlv-transcript__cue')[1].trigger('click')
     expect(player.seek).toHaveBeenCalledWith(10)
-    expect(player.togglePlay).toHaveBeenCalled()
+    expect(player.play).toHaveBeenCalled()
   })
 
   it('only starts playback while duration is still unknown', async () => {
@@ -63,7 +63,7 @@ describe('Transcript — clicking a cue', () => {
     const wrapper = mount(Transcript, { props: { player, cues: CUES } })
     await wrapper.findAll('.mlv-transcript__cue')[1].trigger('click')
     expect(player.seek).not.toHaveBeenCalled()
-    expect(player.togglePlay).toHaveBeenCalled()
+    expect(player.play).toHaveBeenCalled()
   })
 })
 

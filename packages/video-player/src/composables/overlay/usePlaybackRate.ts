@@ -6,7 +6,6 @@ export interface UsePlaybackRateReturn {
   fmtRate: (rate: number) => string
 }
 
-/** A plain factory (no Vue reactivity inside) — shared as-is by the public PlaybackRateButton control and internally by MoreMenu. */
 export function usePlaybackRate(player: PlayerHandle): UsePlaybackRateReturn {
   function cycleRate(): void {
     const idx = PLAYBACK_RATES.indexOf(player.currentPlaybackRate)

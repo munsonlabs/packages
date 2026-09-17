@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import { createVimeoAdapter } from '@/adapters/embeds/vimeo'
-import type { EmbedAdapterOptions } from '@/adapters/embeds/embedShared'
+import type { EmbedAdapterOptions } from '@/types/playback'
 import { loadScript } from '@/utils/loadScript'
 import { createDeferred, flush } from '@test/helpers'
 

@@ -4,12 +4,7 @@ import { defineConfig } from '@playwright/test'
 // that port - e.g. a sibling checkout's dev server - would be tested instead of this one.
 const PORT = 5199
 
-/**
- * Full-page tests against the real demo app (index.html -> main.ts -> App.vue), as opposed to
- * the component-level suite under tests/e2e, which vitest runs in browser mode. Only this layer
- * can catch the app failing to boot, or panels interfering through the module-scoped singletons
- * (useEventLog, the stage registry, usePopover) that component tests mount in isolation.
- */
+/** Full-page tests: the only layer that catches the app failing to boot or panels interfering through module-scoped singletons. */
 export default defineConfig({
   testDir: 'tests/page',
   timeout: 30_000,

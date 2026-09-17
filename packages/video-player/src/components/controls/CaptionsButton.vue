@@ -7,7 +7,6 @@ import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/contr
 const props = defineProps<ResolvedPlayerProps>()
 const player = useResolvedPlayer(toRef(props, 'player'), toRef(props, 'for'))
 
-/** See useCaptions.ts for why calling it fresh here (rather than once at setup) is safe. */
 const captions = computed(() => (player.value ? useCaptions(player.value) : null))
 const currentLabel = computed(() => captions.value?.currentCaptionLabel() ?? 'Off')
 

@@ -25,7 +25,6 @@ export const HLS_MIME_TYPE = 'application/x-mpegURL'
 export const DASH_MIME_TYPE = 'application/dash+xml'
 export const MP4_MIME_TYPE = 'video/mp4'
 
-/** Preferred order when picking among multiple <source> candidates of the same video. */
 export const SOURCE_TYPE_PRIORITY = [HLS_MIME_TYPE, MP4_MIME_TYPE]
 
 export const PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 2]
@@ -38,10 +37,8 @@ export const HUD_SUPPRESS_MOUSE_LEAVE_MS = 400
 
 export const BUFFERING_SPINNER_DELAY_MS = 500
 
-/** Below this rendered width, ControlsPopup switches to its compact row (see useElementCompact). */
 export const COMPACT_CONTROLS_WIDTH_PX = 250
 
-/** Shared by useAutoPauseOffscreen and usePinOnScrollOut - the ratio below which a player counts as "offscreen enough" to react to (pause it, or pin it instead of pausing). */
 export const PAUSE_BELOW_RATIO = 0.1
 
 export const SEEK_CATCH_UP_TOLERANCE_S = 1
@@ -60,7 +57,6 @@ export const POSITION_MIN_SAVE_TIME_S = 5
 
 export const YOUTUBE_TIMEUPDATE_POLL_MS = 250
 
-/** How often the public `timeupdate` state-change event fires - throttled well below the underlying adapter's own tick rate, since this goes out over the wire to non-Vue consumers (e.g. a raw custom element) who'd otherwise get flooded. */
 export const TIMEUPDATE_FIRE_INTERVAL_MS = 250
 
 export const MUTE_VOLUMECHANGE_SYNC_DELAY_MS = 50

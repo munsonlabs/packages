@@ -22,7 +22,6 @@ export function useFullscreen(getPlayer: () => PlaybackAdapter | null): UseFulls
     isFullscreenPending.value = false
   }
 
-  /** Marks entering-fullscreen as pending itself, so any caller gets the pending-spinner behavior for free. */
   function toggleFullscreen(): void {
     const player = getPlayer()
     if (!player) return
@@ -39,13 +38,16 @@ export function useFullscreen(getPlayer: () => PlaybackAdapter | null): UseFulls
     player.on(MVP_FULLSCREEN_PENDING, () => {
       isFullscreenPending.value = true
     })
+
     player.on(MVP_FULLSCREEN_PENDING_DONE, () => {
       isFullscreenPending.value = false
     })
+
     player.on('nativefullscreenenter', () => {
       isFullscreen.value = true
       isFullscreenPending.value = false
     })
+
     player.on('nativefullscreenexit', () => {
       isFullscreen.value = false
       isFullscreenPending.value = false
@@ -55,6 +57,7 @@ export function useFullscreen(getPlayer: () => PlaybackAdapter | null): UseFulls
   onMounted(() => {
     unregisterDocListener = onDocumentFullscreenChange(onDocFullscreenChange)
   })
+
   onBeforeUnmount(() => {
     unregisterDocListener?.()
   })

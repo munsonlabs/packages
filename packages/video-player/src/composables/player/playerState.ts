@@ -27,7 +27,6 @@ export function createPlayerState(props: PlayerProps) {
     bufferedDisplay: computed(() => Math.max(buffered.value, progress.value)),
     vol,
     isMuted,
-    /** Volume dragged to 0 without hitting mute looks and sounds identical to muted. */
     isAudible: computed(() => !isMuted.value && vol.value > 0),
     isLooping: ref(!!props.loop),
     /** Not `playbackRate`: on a custom element the prop's own DOM property would shadow an exposed field of the same name. Same for `isNativeUi`. */

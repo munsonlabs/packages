@@ -86,7 +86,6 @@ describe('preload - hls.js', () => {
     expect(hls.startLoad).toHaveBeenCalledOnce()
     expect(video.play).toHaveBeenCalledOnce()
 
-    // A second play() (e.g. after a pause) must not restart loading from scratch.
     void adapter.play()
     expect(hls.startLoad).toHaveBeenCalledOnce()
   })

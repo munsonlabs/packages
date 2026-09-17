@@ -48,7 +48,7 @@ export function useScrubber(player: Ref<PlayerHandle | null | undefined>): UseSc
     if (!p?.total) return
     if (!dragging.value) {
       wasPlaying = p.isPlaying
-      if (p.isPlaying) p.togglePlay()
+      p.pause()
       dragging.value = true
     }
     cancelCatchUp()
@@ -64,7 +64,7 @@ export function useScrubber(player: Ref<PlayerHandle | null | undefined>): UseSc
     const val = Number((e.target as HTMLInputElement).value)
     previewPercent.value = val
     p.seek(val)
-    if (wasPlaying) p.togglePlay()
+    if (wasPlaying) void p.play().catch(() => {})
     cancelCatchUp()
     catchUpTimer = setTimeout(clearPreview, SEEK_CATCH_UP_TIMEOUT_MS)
   }
@@ -79,7 +79,7 @@ export function useScrubber(player: Ref<PlayerHandle | null | undefined>): UseSc
     const val = Number((e.target as HTMLInputElement).value)
     previewPercent.value = val
     p.seek(val)
-    if (wasPlaying) p.togglePlay()
+    if (wasPlaying) void p.play().catch(() => {})
     cancelCatchUp()
     catchUpTimer = setTimeout(clearPreview, SEEK_CATCH_UP_TIMEOUT_MS)
   }

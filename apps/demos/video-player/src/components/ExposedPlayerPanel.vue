@@ -4,7 +4,6 @@ import { VideoPlayer, exposePlayerOnElement } from '@munsonlabs/video-player'
 import type { StateChangeEvent, TranscriptCue, VideoEntry } from '@munsonlabs/video-player'
 import { useEventLog } from '../composables/useEventLog'
 
-// Big Buck Bunny (CC-BY, Blender Foundation) - long enough for the transcript to actually scroll.
 const DEFAULT_VIDEO: VideoEntry = {
   title: 'Big Buck Bunny — exposed to a third-party control',
   src: 'https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4',
@@ -23,7 +22,6 @@ const DEFAULT_CUES: TranscriptCue[] = [
   { time: 555, text: 'Peace returns to the meadow.' },
 ]
 
-// Overridable so tests can point the panel at a local fixture instead of the CDN-hosted clip.
 const props = defineProps<{ video?: VideoEntry; cues?: TranscriptCue[] }>()
 const video = computed(() => props.video ?? DEFAULT_VIDEO)
 const cues = computed(() => props.cues ?? DEFAULT_CUES)
@@ -35,16 +33,10 @@ const wrapperEl = ref<HTMLElement | null>(null)
 const transcriptSlot = ref<HTMLElement | null>(null)
 
 onMounted(() => {
-  // This is the whole trick: the transcript element below has no idea VideoPlayer is a Vue
-  // component - it only ever sees wrapperEl, which now happens to carry the real player's API.
+  // The transcript element only ever sees wrapperEl, which now carries the real player's API.
   exposePlayerOnElement(wrapperEl.value!, playerRef.value)
 
-  /**
-   * Built with plain DOM APIs, not Vue template syntax, deliberately - this is standing in for a
-   * genuinely independent third party's own script, which wouldn't have Vue rendering it at all.
-   * `.cues` is a real property assignment (an array), not a stringified HTML attribute - the same
-   * distinction that makes `player`/`for` work the way they do everywhere else in this package.
-   */
+  /** Plain DOM APIs on purpose: this stands in for an independent third-party script. */
   const transcript = document.createElement('ml-controls-transcript')
   transcript.setAttribute('for', 'exposed-player')
   ;(transcript as unknown as { cues: unknown }).cues = cues.value

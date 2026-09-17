@@ -82,11 +82,10 @@ const shellAspect = computed(() => shellAspectRatio.value.cssRatio)
 
 const videoHidden = computed(() => !props.poster && !player.isReady)
 
-/** `pin` is a static per-usage prop, so only players that opt in pay for PinnablePlayerShell's wrapper/observer; everyone else gets the zero-cost PlainPlayerShell. */
 const shell = computed(() => (props.pin ? PinnablePlayerShell : PlainPlayerShell))
 
 function onPinDismiss(unpin: () => void): void {
-  if (player.isPlaying) player.togglePlay()
+  player.pause()
   unpin()
 }
 

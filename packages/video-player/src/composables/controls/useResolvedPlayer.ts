@@ -2,7 +2,6 @@ import { computed } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
 import type { PlayerHandle } from '@/types/player'
 
-/** Shared by every headless control (PlayButton, Scrubber, MuteButton, ...) - one definition instead of the same two fields declared independently in each. */
 export interface ResolvedPlayerProps {
   player?: PlayerHandle | null
   for?: string

@@ -36,7 +36,6 @@ const current = ref<VideoSelectDetail | null>(null)
 const playerMounted = ref(false)
 const isPlaying = ref(false)
 
-/** Piggybacks on the same state-change stream as controlsopen/controlsclose, rather than a separate event. */
 function fireStageChange(type: 'stageopen' | 'stageclose'): void {
   emit('state-change', { type, currentTime: 0, duration: 0, src: current.value?.src ?? '' })
 }
@@ -59,12 +58,7 @@ const { wrapperStyle, clear: clearReservedSize } = usePinnedReservedSpace(wrappe
 
 let intersectionObserver: IntersectionObserver | null = null
 
-/**
- * Deliberately its own dedicated IntersectionObserver, not the shared observeViewport registry -
- * that registry's thresholds ([0.1, 0.5]) fire far later than 0.98 does, which would leave enough
- * scroll distance for the inner player's own useAutoPauseOffscreen (threshold 0.1) to pause it
- * before this ever gets the chance to pin it safely on-screen first.
- */
+/** Own observer at 0.98, not the shared [0.1, 0.5] registry: the inner player's auto-pause (0.1) would fire before a later threshold could pin it. */
 function setupObservers(): void {
   intersectionObserver?.disconnect()
   if (!wrapperEl.value) return
@@ -86,7 +80,6 @@ function setupObservers(): void {
 
 watch(wrapperEl, setupObservers)
 
-/** Resuming the current (already-selected) entry from idle - always a real click (onIdleClick) or a documented play/pause action (onVideoToggle), so resolveGestureMuted defaults to treating it as a gesture. */
 function resumeCurrent(): void {
   if (!current.value) return
   current.value = { ...current.value, autoplay: true, muted: resolveGestureMuted(current.value.muted) }
@@ -115,20 +108,13 @@ function dispatchState(): void {
   stageState.isPlaying = isPlaying.value
 }
 
-/** Everything on the selected entry that is a VideoPlayer prop - not the card-only fields or the event flag. */
 const playerProps = computed<PlayerProps>(() => {
   const { fromGesture: _g, lazy: _l, autoStage: _a, ...rest } = current.value ?? { src: '' }
   return rest
 })
 
 function onVideoSelect(detail: VideoSelectDetail): void {
-  /**
-   * Only toggles for a real gesture (see VideoSelectDetail.fromGesture's own doc comment) - a
-   * second, harmless autoStage announcement for the same already-selected video (e.g. from a
-   * second VideoCard rendering the same entry elsewhere on the page) is never gesture-driven, so
-   * it's a no-op here instead of being mistaken for the user re-clicking an already-playing video
-   * and silently starting playback nobody asked for.
-   */
+  /** A repeated autoStage announcement for the already-selected entry is not a gesture; only a real click toggles. */
   if (current.value?.src === detail.src && playerMounted.value) {
     if (detail.fromGesture) playerRef.value?.togglePlay()
     return
@@ -149,18 +135,7 @@ function onVideoToggle(detail: VideoToggleDetail): void {
   playerRef.value?.togglePlay()
 }
 
-/**
- * Auto-advance/skip switches to a brand-new <video> element (:key="current.src" below forces
- * a full remount, not a src swap) - carries the *current*, outgoing player's own live mute/volume
- * over to it, rather than the globally shared audioPreference (see utils/audioPreference.ts). This
- * is the feed convention (TikTok/Reels-style), not the single-video convention: within one
- * continuous playlist, audio state should stick to what's already playing - if the current video
- * is muted, "next" shouldn't spontaneously turn sound on just because nothing's ever been
- * explicitly saved globally, and vice versa. `resolveGestureMuted` is only the fallback for the
- * (rare) case nothing is currently mounted to carry from - there `fromGesture` still distinguishes
- * a real "skip" click (exempt from the autoplay-with-sound policy) from an automatic
- * ended-triggered auto-advance (not exempt).
- */
+/** Playlist skips carry the outgoing player's live mute/volume forward (feed convention), not the shared preference; resolveGestureMuted is only the fallback when nothing is mounted. */
 function playEntry(entry: VideoEntry | null, fromGesture: boolean): void {
   if (!entry) return
   onVideoSelect({

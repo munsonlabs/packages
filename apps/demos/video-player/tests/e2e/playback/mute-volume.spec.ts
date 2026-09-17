@@ -48,7 +48,6 @@ describe('mute / volume', () => {
     expect(player.vol).toBeCloseTo(0.4, 5)
     expect(player.isAudible).toBe(true)
 
-    // Volume 0 is treated as a mute (usePlayerControls.setVolume), so the mute button reflects it.
     player.setVolume(0)
     await sink.next('volumechange', 2)
     expect(video.volume).toBe(0)

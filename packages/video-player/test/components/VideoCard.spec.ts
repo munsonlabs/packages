@@ -2,11 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { ref, defineComponent } from 'vue'
 import { mount } from '@vue/test-utils'
 
-// Control hasStage reactively across tests
 const mockHasStage = ref(false)
 vi.mock('@/composables/registries/stageRegistry', () => ({ hasStage: mockHasStage }))
 
-// Stub child components to avoid their full initialisation
 vi.mock('@/components/VideoPlaceholder.vue', () => ({
   default: defineComponent({ name: 'VideoPlaceholder', props: { src: String }, template: '<div data-testid="placeholder" />' }),
 }))

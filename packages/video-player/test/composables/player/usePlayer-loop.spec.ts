@@ -74,7 +74,6 @@ describe('loop prop', () => {
     const { player, props } = setup({ loop: true })
     player.toggleLoop()
     expect(player.isLooping.value).toBe(false)
-    // An unchanged prop must not snap the state back.
     props.title = 'nudge'
     await nextTick()
     expect(player.isLooping.value).toBe(false)

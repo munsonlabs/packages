@@ -5,7 +5,6 @@ import { observeViewport } from '@/composables/player/viewportObserver'
 import { getShellEl } from '@/adapters/embeds/embedShared'
 import { PAUSE_BELOW_RATIO } from '@/constants'
 
-/** Pauses the player once offscreen; skips while `pinWhenOutOfView` is true, since that feature pins it instead. */
 export function useAutoPauseOffscreen(
   videoEl: Ref<HTMLVideoElement | null>,
   getPlayer: () => PlaybackAdapter | null,

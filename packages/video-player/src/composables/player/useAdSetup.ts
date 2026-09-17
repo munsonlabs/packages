@@ -14,7 +14,6 @@ export interface UseAdSetupDeps {
 }
 
 export interface UseAdSetupReturn {
-  /** No-op if adTagUrl and headerBidding are both empty, or videoEl has no parent yet. */
   attach: (videoEl: HTMLVideoElement, adapter: PlaybackAdapter, adTagUrl: string, headerBidding?: HeaderBiddingConfig) => Promise<void>
   isAdPlaying: () => boolean
   isAdPaused: () => boolean
@@ -24,12 +23,6 @@ export interface UseAdSetupReturn {
   dispose: () => void
 }
 
-/**
- * Owns wiring an IMA ad break to a native adapter: the header-bidding auction (fire-and-forget),
- * the AdController, and its callbacks. The ad/header-bidding code itself (ads.ts, prebid.ts) is
- * dynamically imported inside attach() rather than statically here, so a player with no
- * adTagUrl/headerBidding never downloads it.
- */
 export function useAdSetup(refs: UseAdSetupRefs, deps: UseAdSetupDeps): UseAdSetupReturn {
   const { isAdPlaying, isAdPaused, isAdMuted, adRemainingTime } = refs
   const { fire, pauseThisPlayer } = deps
@@ -41,12 +34,7 @@ export function useAdSetup(refs: UseAdSetupRefs, deps: UseAdSetupDeps): UseAdSet
   async function attach(videoEl: HTMLVideoElement, adapter: PlaybackAdapter, adTagUrl: string, headerBidding?: HeaderBiddingConfig): Promise<void> {
     if (!(adTagUrl || headerBidding) || !videoEl.parentElement) return
 
-    /**
-     * Registered before the dynamic import below, not after: a play that happens while ads.ts is
-     * still downloading must not be missed, since it may be the only 'play' this session gets.
-     * Replayed once adController actually exists, same reasoning for a header-bidding win that
-     * resolves first.
-     */
+    /** Registered before the import so a play during the download isn't missed; replayed once adController exists. */
     let playedBeforeReady = false
     adapter.on('play', () => {
       if (adController) adController.requestAdsOnFirstPlay()
@@ -72,10 +60,12 @@ export function useAdSetup(refs: UseAdSetupRefs, deps: UseAdSetupDeps): UseAdSet
         adController.pauseAd()
       }
     }
+
     const unregisterDocListener = onVisibilityOrBlur(pauseAdIfHidden)
     const onPipChange = (): void => {
       if (!adapter.isPipActive()) pauseAdIfHidden()
     }
+
     adapter.on('pipchange', onPipChange)
     removeVisibilityListener = () => {
       unregisterDocListener()

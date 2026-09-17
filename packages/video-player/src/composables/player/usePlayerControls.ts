@@ -9,7 +9,6 @@ export interface UsePlayerControlsReturn {
   pause: () => void
   replay: () => Promise<void>
   togglePlay: () => void
-  /** Percentage (0-100) of the duration. */
   seek: (percent: number) => void
   seekTo: (seconds: number) => void
   toggleMute: () => void
@@ -54,14 +53,17 @@ export function usePlayerControls(
         player.off('playing', onPlaying)
         player.off('error', onError)
       }
+
       const onPlaying = () => {
         settle()
         resolve()
       }
+
       const onError = () => {
         settle()
         reject(new Error(errorMessage.value || 'Playback failed'))
       }
+
       player.on('playing', onPlaying)
       player.on('error', onError)
       Promise.resolve(player.play()).catch((err: unknown) => {

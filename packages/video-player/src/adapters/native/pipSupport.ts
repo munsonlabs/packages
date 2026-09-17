@@ -5,7 +5,6 @@ export interface PipSupport {
   dispose(): void
 }
 
-/** onChange fires for both our own togglePip() and the user closing the browser's floating PiP window directly. */
 export function createPipSupport(videoEl: HTMLVideoElement, onChange: () => void): PipSupport {
   const forwarders = [
     ['enterpictureinpicture', onChange],

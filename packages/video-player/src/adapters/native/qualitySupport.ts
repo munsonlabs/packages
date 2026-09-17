@@ -8,7 +8,6 @@ export interface QualitySupport {
   setQuality(index: number | null): void
 }
 
-/** Normalizes hls.js and dash.js's differently-shaped quality APIs to a common surface. */
 export interface QualityEngineAdapter {
   levels(): QualityLevelInfo[]
   isAuto(): boolean
@@ -27,7 +26,6 @@ function toResolutionLadder(levels: QualityLevelInfo[]): QualityLevelInfo[] {
   return [...byHeight.values()].sort((a, b) => a.height - b.height)
 }
 
-/** getEngine() returns null for plain `<video>` sources and Safari's native HLS path, since neither has variant levels to expose. */
 export function createQualitySupport(getEngine: () => QualityEngineAdapter | null): QualitySupport {
   function getQualityLevels(): QualityLevelInfo[] {
     return toResolutionLadder(getEngine()?.levels() ?? [])

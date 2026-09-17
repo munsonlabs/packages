@@ -36,7 +36,6 @@ async function ensureMounted(): Promise<void> {
 }
 
 const { playerRef, forwarded } = useForwardedPlayer(async (key) => {
-  /** hasStage mode plays through VideoStage, not this instance. */
   if (hasStage.value) {
     if (key === 'togglePlay')
       dispatchStageEvent(WIN_VIDEO_SELECT, { ...props, fromGesture: true, autoplay: true, muted: resolveGestureMuted(props.muted) })

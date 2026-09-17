@@ -23,8 +23,6 @@ describe('loop', () => {
 
     player.seek(90)
     await sink.next('seeked')
-    // Let it run through the end. The loop is implemented in the player (reset + play), so the
-    // element must genuinely wrap and a second `play` must be reported.
     await waitFor(() => video.currentTime < CLIP_DURATION * 0.5, 'the playhead to wrap back to the start')
 
     await sink.next('play', 1)

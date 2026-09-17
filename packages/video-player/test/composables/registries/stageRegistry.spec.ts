@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach } from 'vite-plus/test'
 import { hasStage, registerStage, unregisterStage, stageState } from '@/composables/registries/stageRegistry'
 
 beforeEach(() => {
-  // Drain the registry back to zero between tests
   while (hasStage.value) unregisterStage()
 })
 

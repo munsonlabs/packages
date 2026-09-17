@@ -15,7 +15,6 @@ const props = defineProps<
 
 const player = useResolvedPlayer(toRef(props, 'player'), toRef(props, 'for'))
 
-/** See the `cues` prop's doc comment for why a string needs parsing here. */
 const parsedCues = computed<TranscriptCue[]>(() => {
   if (typeof props.cues !== 'string') return props.cues ?? []
   try {
@@ -41,23 +40,15 @@ const activeIndex = computed<number | null>(() => {
 const listEl = ref<HTMLElement | null>(null)
 const hovering = ref(false)
 
-/**
- * `seek` takes a percentage of `total`, so a cue can only be jumped to once the duration is
- * known. Before that (a lazy `VideoCard`, a mounted-but-unstarted player) the click still starts
- * playback - which is also what mounts/loads the player, so a follow-up click can land.
- */
+/** Before the duration is known the click still starts playback, which also mounts a lazy card. */
 function onCueClick(cue: TranscriptCue): void {
   const p = player.value
   if (!p) return
   if (p.total > 0) p.seek((cue.time / p.total) * 100)
-  if (!p.isPlaying) p.togglePlay()
+  void p.play().catch(() => {})
 }
 
-/**
- * Keeps the active cue in view as playback progresses, but never while the pointer is over the
- * list - fighting the user's own scrolling is worse than falling behind. The `?.` on
- * scrollIntoView also covers test DOMs that don't implement it.
- */
+/** Never auto-scrolls while the pointer is over the list. `?.` covers test DOMs without scrollIntoView. */
 watch(activeIndex, async (index) => {
   if (index === null || hovering.value) return
   await nextTick()
@@ -68,11 +59,7 @@ const canSpeak = typeof window !== 'undefined' && 'speechSynthesis' in window
 const speechEnabled = ref(false)
 const mutedForSpeech = ref(false)
 
-/**
- * Toggles spoken readout of the active cue via the Web Speech API. Mutes the player while
- * enabled so the two audio sources don't overlap, and only restores it on disable if this toggle
- * was the one that muted it - a mute the consumer set separately is left alone.
- */
+/** Mutes the player while reading; only restores it on disable if this toggle was what muted it. */
 function toggleSpeech(): void {
   if (!canSpeak) return
   speechEnabled.value = !speechEnabled.value

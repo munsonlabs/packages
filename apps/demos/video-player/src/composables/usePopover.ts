@@ -1,6 +1,5 @@
 import { computed, ref } from 'vue'
 
-// Module-scoped so opening one popover (Events, Settings, ...) closes any other that's open.
 const activeId = ref<string | null>(null)
 
 export function usePopover(id: string) {

@@ -1,12 +1,7 @@
 import { describe, it, expect } from 'vite-plus/test'
 import { createNativeAdapter } from '@/adapters/native'
 
-/**
- * jsdom doesn't implement the Picture-in-Picture API at all (document.pictureInPictureEnabled is
- * undefined, not a real boolean) — this documents that supportsPip() correctly falls back to
- * false there, same as a real browser without PiP support, rather than throwing or reporting a
- * false positive. Actually entering/exiting PiP isn't testable in this environment.
- */
+/** jsdom has no PiP API, so this covers the unsupported branch only. */
 describe('native adapter — Picture-in-Picture (jsdom has no real PiP API)', () => {
   it('supportsPip reports false when the browser has no PiP support', () => {
     const videoEl = document.createElement('video')

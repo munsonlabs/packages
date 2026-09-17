@@ -66,14 +66,14 @@ export {
   registerPlatform,
 }
 export * from '@/types/player'
-/** Types only - the injection keys themselves are internal DI plumbing, unusable externally. */
 export type { PlayerContext, HudContext, PlaylistContext } from '@/composables/player/playerContext'
 export { useScrubber } from '@/composables/controls/useScrubber'
 export { useCaptions } from '@/composables/overlay/useCaptions'
 export { useQuality } from '@/composables/overlay/useQuality'
 export { usePlaybackRate } from '@/composables/overlay/usePlaybackRate'
 export { useForwardedPlayer } from '@/composables/useForwardedPlayer'
-export type { ForwardedPlayer, MethodKey, UseForwardedPlayerReturn } from '@/composables/useForwardedPlayer'
+export type { ForwardedPlayer, UseForwardedPlayerReturn } from '@/composables/useForwardedPlayer'
+export type { PlayerMethodKey, PlayerStateKey } from '@/composables/player/playerSurface'
 export { exposePlayerOnElement } from '@/composables/exposePlayerOnElement'
 export type {
   CaptionTrackInfo,
@@ -85,6 +85,6 @@ export type {
   EmbedAdapterFactory,
   SourceResolver,
   ResolvedSource,
+  EmbedAdapterOptions,
 } from '@/types/playback'
-export type { EmbedAdapterOptions } from '@/adapters/embeds/embedShared'
 export default VideoPlayerPlugin

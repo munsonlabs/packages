@@ -117,7 +117,6 @@ export function usePlayer(
     attachPlayerEvents(mounted.adapter)
   }
 
-  /** Embeds mount hidden behind the poster until playback starts; native adapters set needsReveal false. */
   watch(hasStarted, (started) => {
     if (!started || !needsReveal || !videoEl.value || !adapter) return
     revealEmbed(videoEl.value, adapter.el as HTMLDivElement)

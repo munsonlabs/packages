@@ -8,10 +8,7 @@ interface PrebidLogEntry {
 
 const MAX_ENTRIES = 200
 
-// Module-scoped: patch console.* once, at module-eval time (before Vue mounts and well before the
-// async Prebid script downloads), so nothing it logs during setConfig/addAdUnits/requestBids slips
-// past us. Prebid never exposes its debug output through an API — setConfig({ debug: true }) only
-// routes it through console.log/console.info, prefixed with a "%cPrebid.js:" format string.
+// Patched at module-eval time so nothing Prebid logs during setConfig/requestBids slips past; Prebid only exposes debug output via console.
 const prebidLogs = ref<PrebidLogEntry[]>([])
 
 function safeStringify(value: unknown): string {
@@ -23,7 +20,6 @@ function safeStringify(value: unknown): string {
   }
 }
 
-/** Strips the %c format directives Prebid uses for console styling, and the CSS-string args that go with them. */
 function formatArgs(args: unknown[]): string {
   const [first, ...rest] = args
   if (typeof first === 'string' && first.includes('%c')) {
@@ -57,14 +53,7 @@ console.info = patch('info')
 console.warn = patch('warn')
 console.error = patch('error')
 
-/*
- * Prebid's own debug output tells you about the auction (bids received, timings) but never says
- * outright whether the ad that's about to play actually reflects a winning bid. The package's
- * resolveHeaderBiddingAdTagUrl() (adapters/ads/prebid.ts) decides that by calling
- * pbjs.adServers.gam.buildVideoUrl() — it returns a real URL on a fill, null/undefined on no fill.
- * Wrapping that one function (once Prebid's queue confirms the module is loaded) gives a single,
- * unambiguous line instead of making you infer the outcome from the auction logs.
- */
+/** Prebid never says outright whether the winning bid rendered; this infers it from the ad tag URL. */
 function reportResolution(url: string | null | undefined): void {
   console.info(
     url ? `Prebid.js: header bidding filled — resolved ad tag: ${url}` : 'Prebid.js: header bidding did not fill — falling back to the plain ad tag.',

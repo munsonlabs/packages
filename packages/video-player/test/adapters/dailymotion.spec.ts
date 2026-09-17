@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import { createDailymotionAdapter } from '@/adapters/embeds/dailymotion'
-import type { EmbedAdapterOptions } from '@/adapters/embeds/embedShared'
+import type { EmbedAdapterOptions } from '@/types/playback'
 import { loadScript } from '@/utils/loadScript'
 import { createDeferred, flush } from '@test/helpers'
 
@@ -8,9 +8,6 @@ vi.mock('@/utils/loadScript', () => ({ loadScript: vi.fn(() => Promise.resolve()
 
 const DEFAULT_SRC = 'https://www.dailymotion.com/video/x84sh87'
 
-// Real Dailymotion SDK event constants are self-named strings - mirroring that here keeps
-// `player.trigger(e.VIDEO_PLAY)` in the adapter source and `player.trigger('VIDEO_PLAY')` in
-// tests referring to the same thing without importing the adapter's own local `e` alias.
 const DM_EVENTS: Record<string, string> = {
   VIDEO_PLAY: 'VIDEO_PLAY',
   VIDEO_PLAYING: 'VIDEO_PLAYING',
@@ -59,7 +56,6 @@ function installFakeDailymotion(): void {
   }
 }
 
-/** Resolves the pending createPlayer() call with a fresh fake player instance. */
 function resolvePlayer(): FakeDailymotionPlayer {
   const player = new FakeDailymotionPlayer()
   createPlayerDeferred.resolve(player)
@@ -140,7 +136,6 @@ describe('event wiring', () => {
     player.trigger('VIDEO_PLAY')
     expect(player.pause).toHaveBeenCalledOnce()
 
-    // Only the first unrequested VIDEO_PLAY gets paused back out.
     player.trigger('VIDEO_PLAY')
     expect(player.pause).toHaveBeenCalledOnce()
     void adapter

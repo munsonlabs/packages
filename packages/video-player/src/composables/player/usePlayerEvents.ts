@@ -65,10 +65,10 @@ export function usePlayerEvents(state: PlayerState, deps: UsePlayerEventsDeps): 
       activeCaptionIndex.value = active
       if (hasStarted.value) fire('captionchange', { captionIndex: active })
     }
+
     refreshCaptionTracks()
     player.on('captionschange', refreshCaptionTracks)
 
-    /** Unlike captions, hls.js's 'qualitychange' fires reliably enough that no timeupdate fallback is needed. */
     function refreshQuality(): void {
       qualityLevels.value = player.getQualityLevels()
       supportsQuality.value = qualityLevels.value.length > 0
@@ -79,10 +79,10 @@ export function usePlayerEvents(state: PlayerState, deps: UsePlayerEventsDeps): 
       isAutoQuality.value = newAuto
       if (changed && hasStarted.value) fire('qualitychange', { qualityIndex: newAuto ? null : newIndex })
     }
+
     refreshQuality()
     player.on('qualitychange', refreshQuality)
 
-    /** Real, reliable DOM events - no timeupdate fallback needed here either. */
     function refreshPip(): void {
       supportsPip.value = player.supportsPip()
       const active = player.isPipActive()
@@ -90,16 +90,11 @@ export function usePlayerEvents(state: PlayerState, deps: UsePlayerEventsDeps): 
       isPipActive.value = active
       if (hasStarted.value) fire('pipchange', { isPipActive: active })
     }
+
     refreshPip()
     player.on('pipchange', refreshPip)
 
-    /**
-     * HLS live streams report an infinite duration - surface as isLive instead of a length.
-     * Guarded on isAdPlaying: on iOS, IMA plays the ad creative through this same <video> element
-     * (see the PiP-exit comment above for why) rather than a separate one, so its real
-     * duration/timeupdate events fire for the ad's own timeline while it's playing - without this,
-     * the content's total would get briefly overwritten with the ad's duration.
-     */
+    /** Infinity means live. Skipped while an ad plays: on iOS IMA plays the creative through this same <video>, so its duration/timeupdate would overwrite the content's. */
     const updateDuration = () => {
       if (isAdPlaying.value) return
       const d = player.duration()
@@ -111,16 +106,17 @@ export function usePlayerEvents(state: PlayerState, deps: UsePlayerEventsDeps): 
       if (d && d > 0 && isFinite(d)) total.value = d
     }
 
-    /** Embed techs trigger these for their own platform-native ads; native <video>'s IMA ads are wired separately in usePlayer.ts. */
     player.on('adstart', () => {
       pauseOthers(pauseThisPlayer)
       isAdPlaying.value = true
       fire('adstart')
     })
+
     player.on('adend', () => {
       isAdPlaying.value = false
       fire('adend')
     })
+
     player.on('play', () => {
       pauseOthers(pauseThisPlayer)
       hasStarted.value = true
@@ -130,11 +126,13 @@ export function usePlayerEvents(state: PlayerState, deps: UsePlayerEventsDeps): 
       if (!isLive.value) positionMemory.restoreOnce(player)
       fire('play')
     })
+
     player.on('pause', () => {
       isPlaying.value = false
       if (!isLive.value) positionMemory.save(player)
       fire('pause')
     })
+
     player.on('ended', () => {
       isPlaying.value = false
       quartiles.reset()
@@ -150,9 +148,11 @@ export function usePlayerEvents(state: PlayerState, deps: UsePlayerEventsDeps): 
       positionMemory.clear()
       fire('ended')
     })
+
     player.on('seeked', () => {
       fire('seeked')
     })
+
     player.on('error', () => {
       const err = player.error()
       errorMessage.value = err?.message || 'This video could not be played.'
@@ -161,8 +161,8 @@ export function usePlayerEvents(state: PlayerState, deps: UsePlayerEventsDeps): 
       console.error('Video playback error:', errorMessage.value)
       fire('error', { error: err })
     })
+
     let lastTimeUpdateFire = 0
-    /** Same iOS shared-<video>-element reasoning as updateDuration above - this timeline is the ad's, not the content's, while an ad is playing. */
     player.on('timeupdate', () => {
       if (hasEnded.value || isAdPlaying.value) return
       current.value = player.currentTime() ?? 0
@@ -174,29 +174,29 @@ export function usePlayerEvents(state: PlayerState, deps: UsePlayerEventsDeps): 
         activeCaptionIndex.value = active
         if (hasStarted.value) fire('captionchange', { captionIndex: active })
       }
-      /** Quartiles (25/50/75%) aren't meaningful against a live stream's ever-moving edge. */
       if (!isLive.value) quartiles.checkQuartiles()
 
-      /** For non-Vue consumers (a raw custom element), throttled well below the adapter's own tick rate. */
       const now = Date.now()
       if (hasStarted.value && now - lastTimeUpdateFire >= TIMEUPDATE_FIRE_INTERVAL_MS) {
         lastTimeUpdateFire = now
         fire('timeupdate')
       }
     })
+
     player.on('durationchange', updateDuration)
-    /** Same iOS shared-<video>-element reasoning as updateDuration above - this is the ad's buffered range, not the content's, while an ad is playing. */
     player.on('progress', () => {
       if (isAdPlaying.value) return
       const d = player.duration()
       buffered.value = d ? (player.bufferedEnd() / d) * 100 : 0
     })
+
     player.on('volumechange', () => {
       const muted = player.muted()
       vol.value = player.volume() ?? 1
       isMuted.value = muted ?? false
       if (hasStarted.value) fire('volumechange', { isMuted: muted })
     })
+
     player.on('ratechange', () => {
       const rate = player.playbackRate() ?? 1
       playbackRate.value = rate

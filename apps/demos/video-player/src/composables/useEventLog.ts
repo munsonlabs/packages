@@ -11,10 +11,8 @@ interface LogEntry {
   src: string
 }
 
-/** Accepts real player events plus demo-only types like 'save'/'unsave' from the custom action. */
 type LoggableEvent = Omit<StateChangeEvent, 'type'> & { type: string }
 
-// Module-scoped so every component that calls useEventLog() shares the same log.
 const log = ref<LogEntry[]>([])
 
 function addLog(e: LoggableEvent): void {

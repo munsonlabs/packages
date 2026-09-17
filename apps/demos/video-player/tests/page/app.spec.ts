@@ -35,7 +35,6 @@ test('with the stage on (default), a card plays through the VideoStage, which pi
 
   const card = page.locator('[data-variation="Plain clip"]')
   await card.scrollIntoViewIfNeeded()
-  // With a VideoStage on the page a card's click is dispatched to the stage instead of mounting inline.
   await card.getByRole('button', { name: 'Play' }).click()
   await expect(card.locator('video.mlv-video')).toHaveCount(0)
 

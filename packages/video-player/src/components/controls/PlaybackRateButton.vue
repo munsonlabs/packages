@@ -7,7 +7,6 @@ import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/contr
 const props = defineProps<ResolvedPlayerProps>()
 const player = useResolvedPlayer(toRef(props, 'player'), toRef(props, 'for'))
 
-/** See usePlaybackRate.ts for why calling it fresh here (rather than once at setup) is safe. */
 const rate = computed(() => (player.value ? usePlaybackRate(player.value) : null))
 const currentLabel = computed(() => (rate.value ? rate.value.fmtRate(player.value!.currentPlaybackRate) : '1×'))
 

@@ -1,5 +1,5 @@
 import { createStatefulEmbedAdapter } from '@/adapters/embeds/embedShared'
-import type { EmbedAdapterOptions } from '@/adapters/embeds/embedShared'
+import type { EmbedAdapterOptions } from '@/types/playback'
 import { loadScript } from '@/utils/loadScript'
 import type { PlaybackAdapter } from '@/types/playback'
 import { MVP_DAILYMOTION_CLASS } from '@/constants'
@@ -50,15 +50,18 @@ export function createDailymotionAdapter(videoEl: HTMLVideoElement, options: Emb
             player.pause()
           }
         })
+
         player.on(e.VIDEO_PLAYING, () => {
           state.paused = false
           emitter.trigger('play')
           emitter.trigger('playing')
         })
+
         player.on(e.VIDEO_PAUSE, () => {
           state.paused = true
           emitter.trigger('pause')
         })
+
         if (e.VIDEO_BUFFERING) player.on(e.VIDEO_BUFFERING, () => emitter.trigger('waiting'))
         player.on(e.VIDEO_END, () => {
           state.paused = true
@@ -70,6 +73,7 @@ export function createDailymotionAdapter(videoEl: HTMLVideoElement, options: Emb
           state.duration = data.videoDuration ?? state.duration
           emitter.trigger('timeupdate')
         })
+
         player.on(e.VIDEO_DURATIONCHANGE, (data: { videoDuration?: number }) => {
           state.duration = data.videoDuration ?? state.duration
           emitter.trigger('durationchange')

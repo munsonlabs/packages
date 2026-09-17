@@ -3,19 +3,14 @@ import { ref, type Component } from 'vue'
 import Rail from '../rail/Rail.vue'
 import type { Short } from '../data/shorts'
 import { AUDIBLE, MUTED, PLAY } from '../icons'
-
-interface Handle {
-  togglePlay(): void
-  isPlaying: boolean
-  hasStarted: boolean
-}
+import type { PlayerHandle } from '@munsonlabs/video-player'
 
 defineProps<{ short: Short; parts: Record<string, Component> }>()
 
-const handle = ref<Handle | null>(null)
+const handle = ref<PlayerHandle | null>(null)
 
 function setHandle(el: unknown): void {
-  handle.value = el as Handle | null
+  handle.value = el as PlayerHandle | null
 }
 
 /** `tap` fires from the tap-to-reveal overlay even with controls={false}. */

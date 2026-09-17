@@ -1,16 +1,6 @@
 import { registerPlatform } from '@munsonlabs/video-player'
 import type { PlaybackAdapter, EmbedAdapterOptions } from '@munsonlabs/video-player'
 
-/**
- * Proves out @munsonlabs/video-player's extensibility API from outside the package - everything
- * here uses only what's publicly exported (registerPlatform, the PlaybackAdapter/
- * EmbedAdapterOptions types), the same surface any third party would have. Not feature-complete
- * (no captions, no quality switching, no iOS fullscreen clone) - just enough to demonstrate a real
- * embed SDK being wired in. Cloudflare Stream's player object mirrors HTMLMediaElement closely
- * (currentTime/duration/volume/muted as plain properties, standard event names), so this adapter
- * is mostly a thin pass-through rather than a translation layer like the YouTube/Twitch ones need.
- */
-
 declare global {
   interface Window {
     Stream?: (iframe: HTMLIFrameElement) => CloudflareStreamPlayer
@@ -60,9 +50,7 @@ function ensureApiLoaded(): Promise<void> {
   return apiPromise
 }
 
-// Cloudflare's own docs list only these as real events (see cloudflareAdapter research) - no
-// settable playbackRate, no `stalled`/`suspend`/`abort` mapping needed since usePlayerEvents.ts
-// never listens for them.
+// Cloudflare exposes no settable playbackRate and only these events.
 const FORWARDED_EVENTS = ['play', 'pause', 'ended', 'timeupdate', 'volumechange', 'durationchange', 'canplay', 'seeked', 'progress'] as const
 
 function createCloudflareAdapter(videoEl: HTMLVideoElement, options: EmbedAdapterOptions): PlaybackAdapter {
@@ -82,10 +70,7 @@ function createCloudflareAdapter(videoEl: HTMLVideoElement, options: EmbedAdapte
   iframe.allow = 'accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;'
   iframe.style.cssText = 'width:100%;height:100%;border:none'
   if (parsed) {
-    // Cloudflare only supports autoplay baked into the iframe's own query string, not a later
-    // play() call from the Player object - unlike Twitch/YouTube there's no "queue a real play()
-    // once ready" option, so autoplay has to mute (same "mutes automatically" convention every
-    // other autoplay path in this package already follows) to have any chance of actually running.
+    // Cloudflare only honours autoplay via the iframe query string, so it has to be muted to run at all.
     const params = new URLSearchParams({
       controls: String(!!options.nativeUi),
       muted: String(options.muted ?? options.autoplay ?? false),
@@ -106,7 +91,6 @@ function createCloudflareAdapter(videoEl: HTMLVideoElement, options: EmbedAdapte
 
     FORWARDED_EVENTS.forEach((event) => player?.addEventListener(event, () => trigger(event)))
     player.addEventListener('error', () => trigger('error'))
-    // Cloudflare's ad-insertion events - only fire when the src carries an `ad-url` VAST tag.
     player.addEventListener('stream-adstart', () => trigger('adstart'))
     player.addEventListener('stream-adend', () => trigger('adend'))
   })

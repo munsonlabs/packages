@@ -8,7 +8,7 @@ import {
   enterFullscreenWithIosFallback,
   EMBED_UNSUPPORTED_FEATURES,
 } from '@/adapters/embeds/embedShared'
-import type { EmbedAdapterOptions } from '@/adapters/embeds/embedShared'
+import type { EmbedAdapterOptions } from '@/types/playback'
 import type { PlaybackAdapter, MediaErrorLike } from '@/types/playback'
 import { exitFullscreen } from '@/utils/platform'
 import { YOUTUBE_TIMEUPDATE_POLL_MS, MUTE_VOLUMECHANGE_SYNC_DELAY_MS, MVP_YOUTUBE_CLASS } from '@/constants'
@@ -36,15 +36,10 @@ function parseUrl(url: string): ParsedUrl {
 
 const YOUTUBE_API_URL = 'https://www.youtube.com/iframe_api'
 
-/** Set once the IFrame API has signalled ready - lets later adapters initialise synchronously. */
 let readyApi: YTNamespace | null = null
 let apiLoading: Promise<YTNamespace> | null = null
 
-/**
- * Loads the IFrame API once, shared across every YouTube adapter on the page. A failed load
- * rejects for every adapter waiting on it and clears the in-flight promise, so the next adapter
- * (or a Retry) starts a fresh attempt rather than hanging on a load that already failed.
- */
+/** A failed load rejects every waiting adapter and clears the in-flight promise, so a Retry starts a fresh attempt. */
 function ensureApiLoaded(): Promise<YTNamespace> {
   if (readyApi) return Promise.resolve(readyApi)
   if (!apiLoading) {
@@ -82,7 +77,6 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
   let lastState: number | null = null
   let adWasPlaying = false
   let errorNumber: number | null = null
-  /** The IFrame API script itself failed to load - terminal for this adapter, unlike a per-video `onError`. */
   let loadError: MediaErrorLike | null = null
   let disposed = false
   let hasPlaybackRateFeature = false
@@ -109,6 +103,7 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
   function loadVideoById(id: string): void {
     ytPlayer?.loadVideoById({ videoId: id })
   }
+
   function cueVideoById(id: string): void {
     ytPlayer?.cueVideoById({ videoId: id })
   }
@@ -385,7 +380,6 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
       url.videoId = newUrl.videoId
       url.listId = newUrl.listId
       if (!url.videoId) return
-      /** Retry after the IFrame API itself failed to load - start the whole connect over. */
       if (loadError) {
         loadError = null
         if (!options.autoplay) cueOnReady = true

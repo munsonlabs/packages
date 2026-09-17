@@ -1,4 +1,3 @@
-/** Pure playlist-position logic for VideoStage's optional `playlist` prop, kept separate so it's testable without mounting VideoStage's DOM setup. */
 import { computed } from 'vue'
 import type { Ref, ComputedRef } from 'vue'
 import type { VideoEntry, VideoSelectDetail } from '@/types/player'

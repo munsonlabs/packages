@@ -29,12 +29,7 @@ describe('spawnIosFullscreenOverlay', () => {
     expect(document.body.contains(overlay)).toBe(true)
   })
 
-  /**
-   * Regression test: onReady previously called finish() (which both signals "no longer pending"
-   * AND tears down/removes the overlay) instead of a dedicated reveal step — removing the
-   * overlay, and the clone player's own mount point inside it, the instant it became ready,
-   * before anything was ever shown, and permanently blocking the real teardown afterwards.
-   */
+  /** Regression: onReady must only signal, not tear the overlay down. */
   it('finish() can still run after reveal() — the overlay is removed once, by finish, not reveal', () => {
     const emitter = createEmitter()
     const { overlay, reveal, finish } = spawnIosFullscreenOverlay(emitter)

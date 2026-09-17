@@ -113,7 +113,6 @@ export interface MountedCard {
   clickPlaceholder: () => Promise<void>
 }
 
-/** A lazy VideoCard with no stage on the page: placeholder first, real player on click or in-view activation. */
 export async function mountCard(entry: VideoEntry): Promise<MountedCard> {
   const sink = new EventSink()
   const Host = defineComponent({

@@ -11,7 +11,6 @@ export const PlayerKey: InjectionKey<PlayerContext> = Symbol('player')
 export const HudKey: InjectionKey<HudContext> = Symbol('hud')
 export const ActionKey: InjectionKey<Ref<PlayerAction | null | undefined>> = Symbol('action')
 
-/** Provided by VideoStage for the HUD's playlist controls; VideoPlayer falls back to NO_PLAYLIST. */
 export interface PlaylistContext {
   hasPlaylist: boolean
   hasNext: boolean

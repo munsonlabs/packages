@@ -1,4 +1,4 @@
-import { useEventLog } from '../../src/composables/useEventLog'
+import { useEventLog } from '../../../src/composables/useEventLog'
 
 export const CUES = [
   { time: 0, text: 'Cue one - opening frame.' },

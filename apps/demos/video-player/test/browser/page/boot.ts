@@ -1,6 +1,6 @@
 export async function bootApp(): Promise<void> {
   document.body.innerHTML = '<div id="app"></div>'
-  await import('../../src/main.ts')
+  await import('../../../src/main.ts')
   await waitFor(() => [...document.querySelectorAll('h1')].some((h) => h.textContent?.trim() === 'Showcase'), 'the app to boot')
 }
 

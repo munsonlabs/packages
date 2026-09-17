@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vite-plus/test'
-import { catalogue } from '../../../src/data/catalogue'
-import { mountPlayer, waitFor } from '../harness'
+import { catalogue } from '@test/browser/catalogue'
+import { mountPlayer, waitFor } from '@test/browser/harness'
 
 function showingIndex(video: HTMLVideoElement): number | null {
   for (let i = 0; i < video.textTracks.length; i++) if (video.textTracks[i].mode === 'showing') return i

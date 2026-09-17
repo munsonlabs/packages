@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vite-plus/test'
 import { ref } from 'vue'
-import { useQuartileEvents } from '@/composables/player/useQuartileEvents'
+import { useQuartileEvents } from '@/composables/player/features/useQuartileEvents'
 
 describe('checkQuartiles', () => {
   it('does nothing when total is 0', () => {

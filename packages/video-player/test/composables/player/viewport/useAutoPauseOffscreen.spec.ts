@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { ref } from 'vue'
 import { withSetup } from '@test/composables/withSetup'
-import { useAutoPauseOffscreen } from '@/composables/player/useAutoPauseOffscreen'
+import { useAutoPauseOffscreen } from '@/composables/player/viewport/useAutoPauseOffscreen'
 import type { PlaybackAdapter } from '@/types/playback'
 import { mockIntersectionObserver } from '@test/helpers'
 

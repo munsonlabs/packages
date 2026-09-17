@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import { withSetup } from '@test/composables/withSetup'
-import { useBuffering, type UseBufferingReturn } from '@/composables/player/useBuffering'
+import { useBuffering, type UseBufferingReturn } from '@/composables/player/features/useBuffering'
 import { createEmitter } from '@/composables/player/emitter'
 import type { PlaybackAdapter } from '@/types/playback'
 import type { StateChangeType } from '@/types/player'

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vite-plus/test'
-import { catalogue } from '../../../src/data/catalogue'
-import { mountPlayer } from '../harness'
+import { catalogue } from '@test/browser/catalogue'
+import { mountPlayer } from '@test/browser/harness'
 
 describe('mute / volume', () => {
   it('starts muted when asked to, and toggleMute unmutes the real <video>', async () => {

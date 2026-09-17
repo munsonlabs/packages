@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vite-plus/test'
 import { withSetup } from '@test/composables/withSetup'
-import { useFullscreen } from '@/composables/player/useFullscreen'
+import { useFullscreen } from '@/composables/player/features/useFullscreen'
 import { createEmitter } from '@/composables/player/emitter'
 import type { PlaybackAdapter } from '@/types/playback'
 

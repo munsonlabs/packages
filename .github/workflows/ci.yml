@@ -1,9 +1,7 @@
 name: CI
 
 on:
-  # main is covered by Release, which calls this workflow, and the Version
-  # Packages branch by its pull_request run — without the ignores both would
-  # run twice on every push.
+  # main runs through Release (which calls this workflow) and the Version Packages branch through pull_request.
   push:
     branches-ignore: [main, changeset-release/**]
   pull_request:
@@ -21,9 +19,6 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
       - run: vp run -r build
-
-      # Release consumes this in its version/publish jobs; branch and PR runs
-      # have no use for it, so they skip the upload.
       - if: inputs.upload-dist
         uses: actions/upload-artifact@v7
         with:
@@ -40,28 +35,24 @@ jobs:
           nuxt: 'false'
       - run: vp run -r check
 
-  # Chromium on Linux, WebKit on macOS: Linux WebKit has no H.264/AAC decoders, so the
-  # media tests can only run against the Apple media stack.
   test:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            browser: chromium
-          - os: macos-latest
-            browser: webkit
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
         with:
           nuxt: 'false'
-          playwright: ${{ matrix.browser }}
-      # Unit tests have no browser dependency, so only the Linux entry runs everything.
-      # The flag is ignored by the jsdom suites and narrows the browser suite to this entry's engine.
-      - if: matrix.browser == 'chromium'
-        run: vp run -r test -- --browser.name=chromium
-      - if: matrix.browser != 'chromium'
-        run: vp run test -- --browser.name=webkit
-        working-directory: apps/demos/video-player
+          playwright: chromium
+      - run: vp run -r test -- --browser.name=chromium
+
+  # Linux WebKit has no H.264/AAC decoders, so the Safari-engine run needs macOS; main only, which release goes through.
+  test-webkit:
+    if: github.ref == 'refs/heads/main'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+        with:
+          nuxt: 'false'
+          playwright: webkit
+      - run: vp run -r test -- --browser.name=webkit

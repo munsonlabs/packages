@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vite-plus/test'
-import { catalogue, CLIP_DURATION } from '../../../src/data/catalogue'
-import { mountPlayer, waitFor } from '../harness'
+import { catalogue, CLIP_DURATION } from '@test/browser/catalogue'
+import { mountPlayer, waitFor } from '@test/browser/harness'
 
 describe('loop', () => {
   it('toggleLoop reports `loopchange` and flips isLooping', async () => {

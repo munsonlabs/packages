@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vite-plus/test'
 import { ref } from 'vue'
 import { withSetup } from '@test/composables/withSetup'
-import { usePinOnScrollOut } from '@/composables/player/usePinOnScrollOut'
+import { usePinOnScrollOut } from '@/composables/player/viewport/usePinOnScrollOut'
 import { mockIntersectionObserver } from '@test/helpers'
 
 let io: ReturnType<typeof mockIntersectionObserver>

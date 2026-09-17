@@ -7,5 +7,6 @@ const setupFiles = existsSync(setupFile) ? ['tests/setup.ts'] : []
 export const test = {
   environment: 'happy-dom',
   globals: true,
+  execArgv: ['--no-experimental-webstorage'],
   ...(setupFiles.length ? { setupFiles } : {}),
 }

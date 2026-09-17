@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vite-plus/test'
-import { catalogue, POSTER_URL, CLIP_DURATION } from '../../src/data/catalogue'
-import { mountPlayer, mountCard, waitFor } from './harness'
+import { catalogue, POSTER_URL, CLIP_DURATION } from '@test/browser/catalogue'
+import { mountPlayer, mountCard, waitFor } from '@test/browser/harness'
 
 describe('variations', () => {
   it('poster: shown on the element before playback starts', async () => {

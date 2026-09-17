@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { ref } from 'vue'
-import { useAdSetup } from '@/composables/player/useAdSetup'
+import { useAdSetup } from '@/composables/player/features/useAdSetup'
 import type { AdCallbacks, AdController } from '@/adapters/ads/ads'
 import type { PlaybackAdapter } from '@/types/playback'
 
@@ -168,6 +168,7 @@ describe('ad callbacks', () => {
   })
 
   it('clears ad state on error without throwing', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     const { refs } = await setup()
     capturedCallbacks?.onAdStart()
 

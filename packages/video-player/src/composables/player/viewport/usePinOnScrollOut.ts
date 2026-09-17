@@ -1,7 +1,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { Ref } from 'vue'
 import { isStageTucked } from '@/composables/registries/stageRegistry'
-import { observeViewport } from '@/composables/player/viewportObserver'
+import { observeViewport } from '@/composables/player/viewport/viewportObserver'
 import { PAUSE_BELOW_RATIO } from '@/constants'
 
 export interface UsePinOnScrollOutReturn {

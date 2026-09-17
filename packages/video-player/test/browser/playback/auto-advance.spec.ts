@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vite-plus/test'
-import { playlist } from '../../../src/data/catalogue'
-import { mountStage, waitFor } from '../harness'
+import { playlist } from '@test/browser/catalogue'
+import { mountStage, waitFor } from '@test/browser/harness'
 
 const [first, second] = playlist
 

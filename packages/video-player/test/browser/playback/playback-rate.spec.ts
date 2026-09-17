@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vite-plus/test'
-import { catalogue } from '../../../src/data/catalogue'
-import { mountPlayer, waitFor } from '../harness'
+import { catalogue } from '@test/browser/catalogue'
+import { mountPlayer, waitFor } from '@test/browser/harness'
 
 describe('playback rate', () => {
   it('setPlaybackRate changes the element rate and reports `ratechange`', async () => {

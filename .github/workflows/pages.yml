@@ -1,8 +1,6 @@
 name: Deploy to GitHub Pages
 
 on:
-  # Only rebuild the site when something that ends up in it changed. Anything
-  # missed here can still be deployed by hand via the workflow_dispatch below.
   push:
     branches: [main]
     paths:
@@ -29,11 +27,7 @@ concurrency:
 
 jobs:
   build:
-    # Merging the Version Packages PR touches package.json/CHANGELOG/lockfile,
-    # which match the paths above, but nothing on the site changes until the
-    # packages are actually on npm. Release dispatches this workflow once they
-    # are, so the push itself is skipped. `contains`, not `startsWith`: a merge
-    # commit prefixes the title with "Merge pull request …".
+    # The version commit changes nothing on the site until the packages are on npm; Release dispatches this then.
     if: "!contains(github.event.head_commit.message, 'chore(release): version packages')"
     runs-on: ubuntu-latest
     steps:
@@ -44,15 +38,8 @@ jobs:
       - uses: actions/configure-pages@v6
         id: pages
 
-      # Every app under apps/demos is built and published at /demo/<dir>/, so
-      # adding one needs no change here. shipkit's getPackageBase() reads
-      # VITE_BASE_<PACKAGE NAME>, mangled as below, to set each Vite `base`;
-      # exporting them all up front lets one pass build the lot, since each
-      # package only ever reads its own.
-      #
-      # A new demo must declare that variable in its own build task's `env`
-      # (see apps/demos/video-player/vite.config.ts) or vp will serve a cached
-      # root-relative build in place of the sub-path one, silently.
+      # Each demo is served at /demo/<dir>/; shipkit's getPackageBase() reads VITE_BASE_<PACKAGE NAME> for its Vite `base`.
+      # A new demo must list that variable in its build task's `env`, or vp serves a cached root-relative build.
       - name: Build demos
         run: |
           for dir in apps/demos/*/; do
@@ -65,9 +52,7 @@ jobs:
         env:
           REPO: ${{ github.event.repository.name }}
 
-      # `generate`, not `build` — static prerender, no nitro server or better-sqlite3 at runtime.
-      # Run through vp rather than `npm run generate` so the task's own dependsOn builds
-      # @munsonlabs/video-player first - the docs render live examples against its dist output.
+      # Static prerender via vp, so the task's dependsOn builds the player first.
       - name: Generate docs
         run: vp run --filter docs generate
         env:
@@ -82,13 +67,13 @@ jobs:
             cp -r "$dir/dist" "$target"
             echo "published $target"
           done
-          # Nuxt emits _nuxt/, _payload.json and _og/, which Jekyll would drop.
+          # Jekyll would drop Nuxt's _nuxt/ and _payload.json.
           touch docs/.output/public/.nojekyll
 
       - uses: actions/upload-pages-artifact@v5
         with:
           path: docs/.output/public
-          # v4+ excludes dotfiles by default, which would drop .nojekyll.
+          # v4+ drops dotfiles by default, including .nojekyll.
           include-hidden-files: true
 
   deploy:

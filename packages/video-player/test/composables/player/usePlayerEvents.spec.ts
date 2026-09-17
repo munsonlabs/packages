@@ -239,6 +239,7 @@ describe('usePlayerEvents — ad playback through the same <video> element (iOS 
 
 describe('usePlayerEvents — playback error', () => {
   it('sets isError/errorMessage/isReady and fires the error state-change event', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     const refs = makeRefs()
     const deps = makeDeps()
     const { attachPlayerEvents } = usePlayerEvents(refs, deps)
@@ -255,6 +256,7 @@ describe('usePlayerEvents — playback error', () => {
   })
 
   it('falls back to a generic message when the adapter reports no error detail', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     const refs = makeRefs()
     const { attachPlayerEvents } = usePlayerEvents(refs, makeDeps())
     const { adapter, emitter } = makeFakeAdapter(ref(120))

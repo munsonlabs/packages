@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vite-plus/test'
-import { useKeyboardShortcuts } from '@/composables/player/useKeyboardShortcuts'
+import { useKeyboardShortcuts } from '@/composables/player/features/useKeyboardShortcuts'
 import type { PlayerContext, HudContext } from '@/composables/player/playerContext'
 
 function makePlayer(overrides: Partial<PlayerContext> = {}): PlayerContext {

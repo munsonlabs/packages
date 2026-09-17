@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from 'vite-plus/test'
 import { defineComponent, h } from 'vue'
 import { render } from 'vitest-browser-vue'
-import '@munsonlabs/video-player/element'
-import type { PlayerHandle, StateChangeEvent } from '@munsonlabs/video-player'
-import { catalogue, playlist } from '../../src/data/catalogue'
-import { EventSink, waitFor } from './harness'
+import '@/elements/index'
+import type { PlayerHandle, StateChangeEvent } from '@/index'
+import { catalogue, playlist } from '@test/browser/catalogue'
+import { EventSink, waitFor } from '@test/browser/harness'
 
 type PlayerElement = HTMLElement & PlayerHandle
 

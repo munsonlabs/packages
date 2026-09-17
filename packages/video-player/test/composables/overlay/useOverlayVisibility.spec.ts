@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vite-plus/test'
 import { reactive, ref } from 'vue'
 import { useOverlayVisibility, useElementCompact } from '@/composables/overlay/useOverlayVisibility'
 import type { PlayerContext, HudContext } from '@/composables/player/playerContext'
+import { withSetup } from '@test/composables/withSetup'
 
 class MockResizeObserver {
   static instances: MockResizeObserver[] = []
@@ -90,17 +91,17 @@ describe('useElementCompact', () => {
   })
 
   it('is not compact before an element is observed', () => {
-    expect(useElementCompact(ref(null), 250).value).toBe(false)
+    expect(withSetup(() => useElementCompact(ref(null), 250)).result.value).toBe(false)
   })
 
   it('goes compact once the observed element narrows past the threshold', () => {
-    const compact = useElementCompact(ref(document.createElement('div')), 250)
+    const { result: compact } = withSetup(() => useElementCompact(ref(document.createElement('div')), 250))
     MockResizeObserver.instances[0].trigger(200)
     expect(compact.value).toBe(true)
   })
 
   it('stays full-width at or above the threshold', () => {
-    const compact = useElementCompact(ref(document.createElement('div')), 250)
+    const { result: compact } = withSetup(() => useElementCompact(ref(document.createElement('div')), 250))
     MockResizeObserver.instances[0].trigger(250)
     expect(compact.value).toBe(false)
   })

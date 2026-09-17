@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vite-plus/test'
-import { catalogue, CLIP_DURATION } from '../../../src/data/catalogue'
-import { mountPlayer, waitFor } from '../harness'
+import { catalogue, CLIP_DURATION } from '@test/browser/catalogue'
+import { mountPlayer, waitFor } from '@test/browser/harness'
 
 describe('seek', () => {
   it('seek(percent) moves the playhead and emits `seeked` at the new time', async () => {

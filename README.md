@@ -26,15 +26,19 @@ A Vue showcase app for `@munsonlabs/video-player`. From that directory:
 
 ```bash
 vp run dev     # dev server on :5176
-vp run test    # component and full-page tests in Vitest browser mode, in Chromium and WebKit
+vp run test    # boots the real app and drives its panels in Vitest browser mode, in Chromium and WebKit
 ```
 
-`vp test --browser.name=chromium` (or `webkit`) narrows it to one engine. The suites are offline:
-they play a committed fixture clip (`public/media/flower.mp4`, MDN's CC0 sample, plus an HLS remux
-of it) and abort every other cross-origin request. Install the browsers once with
+The player's own real-browser tests live with the package in `packages/video-player/test/browser`
+(a second vitest project beside the jsdom unit suite, run by the same `vp test`); the per-test
+development loop is in that package's `AGENTS.md` under "Adding a browser test". Both suites play
+the committed fixture clip there (`flower.mp4`, MDN's CC0 sample, plus an HLS remux of it); the
+demo's `public/media` is a symlink to it. `vp test --browser.name=chromium` (or `webkit`) narrows a
+run to one engine. Chromium runs offline apart from the dev server via a resolver flag; WebKit has
+no equivalent, so its run has the network open. Install the browsers once with
 `npx playwright install chromium webkit`. CI runs Chromium on Linux and WebKit on macOS, since
-Linux WebKit has no H.264 decoder. A tap-to-play timing harness used to live under `tests/perf`;
-see git history around `9623955` if start-time measurement is needed again.
+Linux WebKit has no H.264 decoder. A tap-to-play timing harness used to live in the demo; see git
+history around `9623955` if start-time measurement is needed again.
 
 ## Releasing
 

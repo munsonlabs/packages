@@ -11,7 +11,6 @@ const props = defineProps<{ isPlaying: boolean }>()
 const wrapperEl = ref<HTMLElement | null>(null)
 const boxEl = ref<HTMLElement | null>(null)
 
-/** Observes the in-flow wrapper, never the pinned box - see usePinOnScrollOut. */
 const { isPinned: decidedPinned, unpin } = usePinOnScrollOut(wrapperEl, toRef(props, 'isPlaying'), ref(true))
 
 const isPinned = ref(decidedPinned.value)

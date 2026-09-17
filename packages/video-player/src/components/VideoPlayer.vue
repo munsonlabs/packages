@@ -89,7 +89,6 @@ function onPinDismiss(unpin: () => void): void {
   unpin()
 }
 
-/** Decoupled from `controls` on purpose - keeps clicks off an embed's own iframe UI even with a custom HUD. */
 function onTapCapture(): void {
   hud.onVideoTap()
   player.fire('tap')

@@ -46,7 +46,6 @@ function dispatchSelect(fromGesture: boolean, autoplay?: boolean, muted?: boolea
   })
 }
 
-/** A real click is exempt from the autoplay-with-sound restriction, so it respects the stored audio preference instead of forcing muted. */
 function handleClick(): void {
   dispatchSelect(true, true, resolveGestureMuted(props.muted))
 }
@@ -54,7 +53,6 @@ function handleClick(): void {
 onMounted(() => {
   if (props.autoStage) dispatchSelect(false)
 
-  /** Observes here since `lazy` keeps VideoPlayer (and its own playInView observer) unmounted until 'enter-view'. */
   if (props.playInView && shellEl.value) {
     unobserve = observeViewportPriority(shellEl.value, () => emit('enter-view'))
   }

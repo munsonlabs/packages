@@ -12,7 +12,6 @@ export interface UseScrubberReturn {
   onTouchEnd: (e: TouchEvent) => void
 }
 
-/** Drag-to-seek for a native range input - `previewPercent` stays pinned to the seek target after release too, since `player.current` lags behind until the next 'timeupdate'. */
 export function useScrubber(player: Ref<PlayerHandle | null | undefined>): UseScrubberReturn {
   const dragging = ref(false)
   const previewPercent = ref<number | null>(null)

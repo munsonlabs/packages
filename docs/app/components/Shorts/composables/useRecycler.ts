@@ -4,17 +4,12 @@ const SETTLE_MS = 120
 const BOUNCE_MS = 450
 
 export interface UseRecyclerReturn<T> {
-  /** Always three entries: prev, current, next. A null is the empty slot at either end of the feed. */
   slots: Ref<(T | null)[]>
   index: Ref<number>
   onScroll: () => void
   go: (delta: number) => void
 }
 
-/**
- * Holds the current entry in the middle of a three-slide scroller and resets `scrollTop` back to
- * it after each swipe, so the DOM never grows with the feed.
- */
 export function useRecycler<T>(scroller: Ref<HTMLElement | null>, items: T[]): UseRecyclerReturn<T> {
   const index = ref(0)
   const slots = computed(() => [items[index.value - 1] ?? null, items[index.value] ?? null, items[index.value + 1] ?? null])
@@ -80,7 +75,6 @@ export function useRecycler<T>(scroller: Ref<HTMLElement | null>, items: T[]): U
     el.scrollTo({ top: (1 + delta) * slideHeight, behavior: 'smooth' })
   }
 
-  // The scroller only exists once the feed's dynamic import resolves, so attach when the ref appears.
   watch(scroller, (el) => {
     ro?.disconnect()
     if (!el) return

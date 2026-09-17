@@ -53,7 +53,6 @@ console.info = patch('info')
 console.warn = patch('warn')
 console.error = patch('error')
 
-/** Prebid never says outright whether the winning bid rendered; this infers it from the ad tag URL. */
 function reportResolution(url: string | null | undefined): void {
   console.info(
     url ? `Prebid.js: header bidding filled — resolved ad tag: ${url}` : 'Prebid.js: header bidding did not fill — falling back to the plain ad tag.',

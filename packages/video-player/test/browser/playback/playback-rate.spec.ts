@@ -28,7 +28,6 @@ describe('playback rate', () => {
     await waitFor(() => video.currentTime - start >= 1, 'one second of media to elapse')
     const elapsedMs = performance.now() - wall
 
-    // 1s of media at 2x should take ~500ms of wall clock; a wide band, since headless timing is coarse.
     expect(elapsedMs).toBeLessThan(900)
   })
 

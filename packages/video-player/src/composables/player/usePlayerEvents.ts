@@ -122,7 +122,6 @@ export function usePlayerEvents(state: PlayerState, deps: UsePlayerEventsDeps): 
       hasStarted.value = true
       isPlaying.value = true
       hasEnded.value = false
-      /** A live stream's "position" is a moving edge, not a resumable point — restoring/saving one doesn't mean anything. */
       if (!isLive.value) positionMemory.restoreOnce(player)
       fire('play')
     })

@@ -13,7 +13,6 @@ function setHandle(el: unknown): void {
   handle.value = el as PlayerHandle | null
 }
 
-/** `tap` fires from the tap-to-reveal overlay even with controls={false}. */
 function onState(e: { type?: string } | CustomEvent): void {
   const detail = e instanceof CustomEvent ? e.detail?.[0] : e
   if (detail?.type === 'tap') handle.value?.togglePlay()

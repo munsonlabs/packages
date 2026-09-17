@@ -33,10 +33,8 @@ const wrapperEl = ref<HTMLElement | null>(null)
 const transcriptSlot = ref<HTMLElement | null>(null)
 
 onMounted(() => {
-  // The transcript element only ever sees wrapperEl, which now carries the real player's API.
   exposePlayerOnElement(wrapperEl.value!, playerRef.value)
 
-  /** Plain DOM APIs on purpose: this stands in for an independent third-party script. */
   const transcript = document.createElement('ml-controls-transcript')
   transcript.setAttribute('for', 'exposed-player')
   ;(transcript as unknown as { cues: unknown }).cues = cues.value

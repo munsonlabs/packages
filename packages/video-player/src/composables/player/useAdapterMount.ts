@@ -11,7 +11,6 @@ export interface MountedAdapter {
   adapter: PlaybackAdapter
   currentSrc: { src: string; type?: string }
   nativeUi?: boolean
-  /** Only embed adapters mount a hidden placeholder that needs revealing once playback starts - see embedShared.createEmbedMount. */
   needsReveal: boolean
 }
 

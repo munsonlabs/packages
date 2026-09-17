@@ -1,4 +1,3 @@
-/** Boots the real demo the way index.html does: an #app host, then main.ts. One boot per test file, since vitest keeps one page per file. */
 export async function bootApp(): Promise<void> {
   // Chromium runs offline (resolver flag), so the panels that mount CDN clips log playback errors for the page's whole life.
   console.error = () => {}

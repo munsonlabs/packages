@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vite-plus/test'
 import { render } from 'vitest-browser-vue'
-// Registers the ml-controls-* elements, as the demo's main.ts does.
 import '@munsonlabs/video-player/element'
 import ExposedPlayerPanel from '../../src/components/ExposedPlayerPanel.vue'
 import { useEventLog } from '../../src/composables/useEventLog'

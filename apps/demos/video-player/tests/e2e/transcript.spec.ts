@@ -43,8 +43,6 @@ describe('TranscriptPanel', () => {
 
     await waitFor(() => cueTwo.element().getAttribute('aria-current') === 'true', 'cue two to become active')
 
-    // Past cue two's `end`, nothing should be highlighted - the gap is deliberate. Polled, since
-    // the player's `current` trails the raw <video> clock by up to one `timeupdate` tick.
     await waitFor(() => video.currentTime >= 2.2, 'playhead to pass the cue gap')
     await waitFor(() => screen.container.querySelector('[aria-current="true"]') === null, 'the highlight to clear in the gap')
   })

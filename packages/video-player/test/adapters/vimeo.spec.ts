@@ -168,8 +168,6 @@ describe('event wiring', () => {
     player.trigger('timeupdate', { seconds: 1, duration: 120 })
     expect(durationchange).toHaveBeenCalledOnce()
 
-    // 'loaded' itself fires durationchange once (a fresh load, new metadata) and re-arms the
-    // durationSet gate, so the very next timeupdate carrying a duration fires it again too.
     player.trigger('loaded')
     expect(durationchange).toHaveBeenCalledTimes(2)
 

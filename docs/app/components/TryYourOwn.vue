@@ -1,22 +1,10 @@
 <script setup lang="ts">
-/**
- * A live "paste your own URL" playground, ported from the demo app's CustomVideoPanel.
- *
- * Deliberately not a straight copy: the demo's styling is keyed to its own theme variables
- * (--accent, --border, --text-dim) which don't exist here, and its webComponents/nativeUi/
- * event-log toggles are demo-app concerns. This keeps the form logic and drops the rest,
- * styling against the --ui-* tokens so it tracks the docs theme in light and dark.
- *
- * Client-only and dynamically imported for the same reason as PlayerExample: the docs are
- * prerendered by `nuxt generate`, and the player is browser-only.
- */
 import type { Component } from 'vue'
 
 type Entry = Record<string, unknown>
 
 const STORAGE_KEY = 'mlv-docs:try-your-own'
 
-// Google's official IMA sample tags, same ones the demo and the ads page use.
 const AD_PRESETS = [
   {
     label: 'VAST - linear pre-roll',

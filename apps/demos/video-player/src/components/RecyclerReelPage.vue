@@ -17,7 +17,6 @@ const currentIndex = ref(0)
 const reelEl = ref<HTMLElement | null>(null)
 const playerRefs = ref<(PlayerHandle | null)[]>([null, null, null])
 
-// Each recycled slot mounts a fresh player, so the mute choice has to be carried across explicitly.
 const globalMuted = ref(true)
 watch(
   () => playerRefs.value[1]?.isMuted,
@@ -62,7 +61,6 @@ function showBoundaryMessage(message: string): void {
   }, 1600)
 }
 
-/** Smooth on purpose - the instant jump in centerScroll() exists to hide a slot swap, and there is none here. */
 function bounceBack(): void {
   if (!reelEl.value) return
   recycling = true

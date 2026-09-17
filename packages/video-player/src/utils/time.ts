@@ -1,4 +1,3 @@
-/** `round: true` rounds to the nearest second instead of truncating - used for a scrub preview, where snapping to the nearer label reads better than always truncating down. */
 export function fmtTime(s: number, round = false): string {
   if (!s || isNaN(s)) return '0:00'
   const total = round ? Math.round(s) : Math.floor(s)

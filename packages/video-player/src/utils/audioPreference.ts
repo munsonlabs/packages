@@ -35,7 +35,6 @@ export function saveAndTrackAudioPreference(pref: AudioPreference): void {
   if (!pref.muted) recordUnmuteGesture()
 }
 
-/** A real gesture is exempt from the autoplay-with-sound policy, so it follows the stored preference; `fromGesture: false` leaves it to resolveInitialMuted. */
 export function resolveGestureMuted(explicitMuted: boolean | undefined, fromGesture = true): boolean | undefined {
   if (explicitMuted !== undefined) return explicitMuted
   if (!fromGesture) return undefined

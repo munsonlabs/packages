@@ -42,7 +42,6 @@ function extractAdTagUrl(config: {
   return null
 }
 
-/** Cached by accountId/playerId_embed, not overrideKey - a caller-supplied policy key doesn't change what the public config returns. */
 const fetchPlayerConfig = createCachedResolver<
   [accountId: string, playerId: string, embed: string, overrideKey?: string],
   { policyKey: string; adTagUrl: string | null }

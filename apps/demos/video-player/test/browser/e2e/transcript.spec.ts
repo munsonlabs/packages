@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vite-plus/test'
 import { render } from 'vitest-browser-vue'
-import TranscriptPanel from '../../src/components/TranscriptPanel.vue'
-import { useEventLog } from '../../src/composables/useEventLog'
-import { catalogue } from '../../src/data/catalogue'
+import TranscriptPanel from '../../../src/components/TranscriptPanel.vue'
+import { useEventLog } from '../../../src/composables/useEventLog'
+import { catalogue } from '../../../src/data/catalogue'
 import { CUES, waitFor, waitForLogged, loggedTime } from './harness'
 
 beforeEach(() => {

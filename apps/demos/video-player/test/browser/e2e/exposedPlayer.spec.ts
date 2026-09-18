@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vite-plus/test'
 import { render } from 'vitest-browser-vue'
 import '@munsonlabs/video-player/element'
-import ExposedPlayerPanel from '../../src/components/ExposedPlayerPanel.vue'
-import { useEventLog } from '../../src/composables/useEventLog'
-import { catalogue } from '../../src/data/catalogue'
+import ExposedPlayerPanel from '../../../src/components/ExposedPlayerPanel.vue'
+import { useEventLog } from '../../../src/composables/useEventLog'
+import { catalogue } from '../../../src/data/catalogue'
 import { CUES, waitFor, waitForLogged, loggedTime } from './harness'
 
 beforeEach(() => {

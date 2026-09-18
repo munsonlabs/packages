@@ -1,10 +1,16 @@
 <template>
-  <div class="flex items-center gap-2.5">
-    <span
-      class="grid size-7 place-items-center rounded-lg bg-primary text-inverted shadow-[0_0_0_1px_var(--ui-primary),0_4px_16px_-6px_var(--ui-primary)]"
-    >
-      <UIcon name="i-lucide-gallery-thumbnails" class="size-4" />
-    </span>
+  <div class="flex items-center gap-2">
+    <!-- Same squiggle as public/favicon.svg. -->
+    <svg viewBox="0 0 32 32" class="size-7 text-primary" aria-hidden="true">
+      <path
+        d="M18.6 5.3 C19.9 6.6 25.8 10.1 26.5 13.3 C27.2 16.5 25.0 22.1 23.0 24.3 C20.9 26.5 17.0 27.3 14.2 26.7 C11.4 26.1 7.6 22.6 6.2 20.6 C4.7 18.6 4.7 17.0 5.5 14.7 C6.3 12.4 8.8 8.2 11.1 6.8 C13.4 5.4 17.0 4.8 19.4 6.2 C21.9 7.6 25.3 12.5 26.0 15.1 C26.7 17.7 25.1 20.2 23.6 21.6 C22.0 23.1 18.8 24.3 16.7 23.9 C14.7 23.5 12.0 21.0 11.3 19.4 C10.7 17.8 12.3 15.2 13.0 14.3 C13.6 13.4 14.6 14.2 15.2 14.2 C15.9 14.2 15.9 13.9 16.7 14.0 C17.4 14.2 19.2 14.9 19.7 15.1"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.6"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
     <span class="text-base font-semibold tracking-tight">munson<span class="text-primary">labs</span></span>
   </div>
 </template>

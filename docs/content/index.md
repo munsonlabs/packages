@@ -27,6 +27,17 @@ to: /shipkit/introduction
 
 Shared build tooling - CLI, vite configs, and deployment.
 ::
+
+::card
+---
+
+title: Contributors
+icon: i-lucide:users
+to: /contributors
+---
+
+The people behind these packages.
+::
 :::
 
 #headline

@@ -17,6 +17,10 @@ export default defineNuxtConfig({
   hooks: {
     'content:file:beforeParse': fileIncludeHook,
   },
+  components: [
+    { path: '~/components/player', pathPrefix: false },
+    { path: '~/components', pathPrefix: true, ignore: ['player/**'] },
+  ],
   extends: ['docus'],
   css: ['~/assets/css/main.css'],
 

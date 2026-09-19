@@ -1,17 +1,21 @@
 .shorts__frame {
   position: relative;
-  height: 100%;
+  width: min(calc(100cqi - 3.25rem), 56.25cqb);
+  height: auto;
   aspect-ratio: 9 / 16;
   border-radius: 12px;
   overflow: hidden;
   background: #000;
-  /* The package caps players at 800px by default; a Short is height-led. */
   --mlv-max-width: none;
 }
 
 .shorts__frame :deep(.player),
 .shorts__frame :deep(video) {
   height: 100%;
+}
+
+.shorts__frame :deep(.player__shell--portrait) {
+  max-height: none !important;
 }
 
 .shorts__spinner,

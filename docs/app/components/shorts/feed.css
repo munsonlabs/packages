@@ -13,9 +13,6 @@
   border-radius: var(--ui-radius, 8px);
 }
 
-/* The resizable element. `overflow` has to be non-visible for `resize` to apply, and
-   `container-type` makes the stage's own width queryable, so the rail's layout responds to the
-   drag handle rather than to the viewport. Unsupported on iOS Safari - a desktop affordance. */
 .shorts__stage {
   position: relative;
   display: flex;
@@ -26,19 +23,18 @@
   max-height: 90vh;
   min-width: 400px;
   max-width: 100%;
-  /* Stays centred as the drag handle narrows it - `resize` writes an explicit width, which
-     would otherwise leave the stage pinned to the left. */
   margin: 0 auto;
   padding: 1rem;
   overflow: hidden;
   resize: both;
-  container-type: inline-size;
+  container-type: size;
   background: #0f0f0f;
   border: 1px solid var(--ui-border);
   border-radius: 14px;
 }
 
 .shorts__scroller {
+  min-width: 0;
   height: 100%;
   overflow-y: auto;
   scroll-snap-type: y mandatory;
@@ -49,21 +45,28 @@
   display: none;
 }
 
-/* 100% rather than a repeated length: a slide shorter than the scroller never reaches
-   playInView's 0.5 threshold, so nothing autoplays. This keeps them equal by construction.
-   fit-content is what lets the rail overlay: once it goes absolute the slide collapses to the
-   frame's width, so the rail's `right` lands on the video's edge rather than the scroller's. */
 .shorts__slide {
   position: relative;
   height: 100%;
   width: fit-content;
   margin-inline: auto;
   scroll-snap-align: start;
-  /* One short per fling: without this a fast wheel or swipe sails past several snap points. */
   scroll-snap-stop: always;
   display: flex;
   align-items: flex-end;
   gap: 0.75rem;
+}
+
+.shorts__stage:fullscreen {
+  width: 100vw !important;
+  height: 100dvh !important;
+  min-width: 0;
+  min-height: 0;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  resize: none;
+  border-radius: 0;
 }
 
 .shorts__nav {
@@ -95,7 +98,6 @@
 }
 
 @media (max-width: 720px) {
-  /* Swipe replaces the arrows, and there's no resize handle to drag on touch. */
   .shorts__stage {
     height: 28rem;
     padding: 0.5rem;

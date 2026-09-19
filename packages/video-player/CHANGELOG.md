@@ -1,5 +1,13 @@
 # @munsonlabs/video-player
 
+## 0.2.6
+
+### Patch Changes
+
+- b6d5583: The HUD and controls draw their icons through `@munsonlabs/sigil` as the `mlv` library, so a page can replace any of them at runtime with `override('mlv-play', svg)` or swap the whole set by registering its own `mlv` library, without forking the player.
+- Updated dependencies [6ef37f1]
+  - @munsonlabs/sigil@0.0.1
+
 ## 0.2.5
 
 ### Patch Changes

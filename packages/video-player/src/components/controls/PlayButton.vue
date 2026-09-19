@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, toRef } from 'vue'
-import { IconPlay, IconPause, IconReplay } from '@/components/icons'
+import Icon from '@/components/Icon.vue'
 import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/controls/useResolvedPlayer'
 
 const props = defineProps<ResolvedPlayerProps>()
@@ -37,9 +37,9 @@ function onClick(): void {
 <template>
   <button type="button" class="mlv-play-button" :aria-label="label" @click="onClick">
     <slot :is-playing="player?.isPlaying ?? false" :has-ended="player?.hasEnded ?? false" :is-error="player?.isError ?? false">
-      <IconReplay v-if="status === 'error' || status === 'ended'" />
-      <IconPause v-else-if="status === 'playing'" />
-      <IconPlay v-else />
+      <Icon name="replay" v-if="status === 'error' || status === 'ended'" />
+      <Icon name="pause" v-else-if="status === 'playing'" />
+      <Icon name="play" v-else />
     </slot>
   </button>
 </template>
@@ -59,7 +59,7 @@ function onClick(): void {
   outline-offset: 2px;
 }
 
-:where(.mlv-play-button svg) {
+:where(.mlv-play-button :deep(svg)) {
   width: 1em;
   height: 1em;
 }

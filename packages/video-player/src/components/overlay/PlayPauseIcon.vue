@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IconPlay, IconPause, IconReplay } from '@/components/icons'
+import Icon from '@/components/Icon.vue'
 
 withDefaults(defineProps<{ isPlaying: boolean; hasEnded?: boolean }>(), {
   hasEnded: false,
@@ -7,7 +7,7 @@ withDefaults(defineProps<{ isPlaying: boolean; hasEnded?: boolean }>(), {
 </script>
 
 <template>
-  <IconPause v-if="isPlaying" />
-  <IconReplay v-else-if="hasEnded" />
-  <IconPlay v-else />
+  <Icon name="pause" v-if="isPlaying" />
+  <Icon name="replay" v-else-if="hasEnded" />
+  <Icon name="play" v-else />
 </template>

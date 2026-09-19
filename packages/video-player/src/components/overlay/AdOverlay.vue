@@ -2,7 +2,7 @@
 import { fmtTime } from '@/utils/time'
 import { computed } from 'vue'
 import { PlayerKey, injectStrict } from '@/composables/player/playerContext'
-import { IconVolumeOn, IconVolumeMute, IconPlay, IconPause } from '@/components/icons'
+import Icon from '@/components/Icon.vue'
 
 const player = injectStrict(PlayerKey)
 
@@ -18,13 +18,13 @@ const countdown = computed(() => (player.adRemainingTime > 0 ? fmtTime(player.ad
       </div>
 
       <button class="ad-overlay__btn" :aria-label="player.isAdPaused ? 'Resume ad' : 'Pause ad'" @click="player.togglePlay()">
-        <IconPlay v-if="player.isAdPaused" />
-        <IconPause v-else />
+        <Icon name="play" v-if="player.isAdPaused" />
+        <Icon name="pause" v-else />
       </button>
 
       <button class="ad-overlay__btn" :aria-label="player.isAdMuted ? 'Unmute ad' : 'Mute ad'" @click="player.toggleAdMute()">
-        <IconVolumeMute v-if="player.isAdMuted" />
-        <IconVolumeOn v-else />
+        <Icon name="volume-mute" v-if="player.isAdMuted" />
+        <Icon name="volume-on" v-else />
       </button>
     </div>
   </div>
@@ -86,7 +86,7 @@ const countdown = computed(() => (player.adRemainingTime > 0 ? fmtTime(player.ad
 .ad-overlay__btn:hover {
   background: rgba(0, 0, 0, 0.8);
 }
-.ad-overlay__btn svg {
+.ad-overlay__btn :deep(svg) {
   width: 11px;
   height: 11px;
 }

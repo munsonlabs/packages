@@ -29,7 +29,7 @@ const player = useResolvedPlayer(toRef(props, 'player'), toRef(props, 'for'))
   outline-offset: 2px;
 }
 
-:where(.mlv-mute-button svg) {
+:where(.mlv-mute-button :deep(svg)) {
   width: 1em;
   height: 1em;
 }

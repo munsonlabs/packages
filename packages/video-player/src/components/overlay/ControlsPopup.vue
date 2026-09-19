@@ -15,7 +15,7 @@ import VolumePanel from '@/components/overlay/VolumePanel.vue'
 import VolumeIcon from '@/components/overlay/VolumeIcon.vue'
 import MoreMenu from '@/components/overlay/MoreMenu.vue'
 import Spinner from '@/components/Spinner.vue'
-import { IconSkipNext, IconMore } from '@/components/icons'
+import Icon from '@/components/Icon.vue'
 import '@/elements/ppbtn.css'
 
 const player = injectStrict(PlayerKey)
@@ -133,7 +133,7 @@ function onMoreClick(): void {
           <TimeDisplay :player="player" class="controls__time-display" />
 
           <button v-if="playlist.hasNext" class="controls__btn controls__btn--next" aria-label="Play next" @click="playlist.playNext()">
-            <IconSkipNext />
+            <Icon name="skip-next" />
           </button>
 
           <button
@@ -154,7 +154,7 @@ function onMoreClick(): void {
             :aria-expanded="showMore"
             @click="onMoreClick"
           >
-            <IconMore />
+            <Icon name="more" />
           </button>
 
           <PipButton :player="player" class="controls__btn controls__btn--pip" />

@@ -2,7 +2,7 @@
 import { PlayerKey, HudKey, injectStrict } from '@/composables/player/playerContext'
 import VolumeIcon from '@/components/overlay/VolumeIcon.vue'
 import VolumeSlider from '@/components/controls/VolumeSlider.vue'
-import { IconBack } from '@/components/icons'
+import Icon from '@/components/Icon.vue'
 
 defineEmits<{ back: [] }>()
 
@@ -13,7 +13,7 @@ const hud = injectStrict(HudKey)
 <template>
   <div class="controls__vol-header">
     <button class="controls__btn" aria-label="Back" @click="$emit('back')">
-      <IconBack />
+      <Icon name="back" />
     </button>
     <span class="controls__vol-label">Volume</span>
     <button class="controls__btn" :aria-label="player.isMuted ? 'Unmute' : 'Mute'" @click="player.toggleMute()">

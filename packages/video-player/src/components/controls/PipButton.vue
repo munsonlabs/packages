@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { toRef } from 'vue'
-import { IconPip } from '@/components/icons'
+import Icon from '@/components/Icon.vue'
 import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/controls/useResolvedPlayer'
 
 const props = defineProps<ResolvedPlayerProps>()
@@ -18,7 +18,7 @@ const player = useResolvedPlayer(toRef(props, 'player'), toRef(props, 'for'))
     @click="player?.togglePip()"
   >
     <slot :is-pip-active="player?.isPipActive ?? false">
-      <IconPip />
+      <Icon name="pip" />
     </slot>
   </button>
 </template>
@@ -42,7 +42,7 @@ const player = useResolvedPlayer(toRef(props, 'player'), toRef(props, 'for'))
   opacity: 1;
 }
 
-:where(.mlv-pip-button svg) {
+:where(.mlv-pip-button :deep(svg)) {
   width: 1em;
   height: 1em;
 }

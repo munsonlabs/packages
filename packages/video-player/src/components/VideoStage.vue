@@ -2,7 +2,7 @@
 import { ref, computed, reactive, toRef, provide, onMounted, onBeforeUnmount, watch } from 'vue'
 import VideoPlayer from '@/components/VideoPlayer.vue'
 import PinnedControls from '@/components/pinned/PinnedControls.vue'
-import { IconPlay } from '@/components/icons'
+import Icon from '@/components/Icon.vue'
 import { registerStage, unregisterStage, isStageTucked, stageState } from '@/composables/registries/stageRegistry'
 import { PlaylistKey } from '@/composables/player/playerContext'
 import { usePinnedReservedSpace } from '@/composables/player/viewport/usePinnedReservedSpace'
@@ -212,7 +212,7 @@ defineExpose({ playNext, playPrevious, hasNext, hasPrevious, ...forwarded })
         <div class="stage__idle-body">
           <template v-if="current">
             <div class="stage__idle-btn">
-              <IconPlay />
+              <Icon name="play" />
             </div>
             <p class="stage__idle-title">{{ current.label }}</p>
           </template>
@@ -325,7 +325,7 @@ defineExpose({ playNext, playPrevious, hasNext, hasPrevious, ...forwarded })
   background: rgba(0, 0, 0, 0.8);
 }
 
-.stage__idle-btn svg {
+.stage__idle-btn :deep(svg) {
   width: 32px;
   height: 32px;
 }

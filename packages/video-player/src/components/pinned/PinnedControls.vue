@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { IconClose, IconExpand } from '@/components/icons'
+import Icon from '@/components/Icon.vue'
 
 defineEmits<{ 'scroll-to': []; dismiss: [] }>()
 </script>
 
 <template>
   <button class="pinned-controls__scroll-to" aria-label="Scroll to player" @click.stop="$emit('scroll-to')">
-    <IconExpand />
+    <Icon name="expand" />
   </button>
 
   <button class="pinned-controls__dismiss" aria-label="Close" @click.stop="$emit('dismiss')">
-    <IconClose />
+    <Icon name="close" />
   </button>
 </template>
 
@@ -39,8 +39,8 @@ defineEmits<{ 'scroll-to': []; dismiss: [] }>()
   background: rgba(0, 0, 0, 0.85);
 }
 
-.pinned-controls__dismiss svg,
-.pinned-controls__scroll-to svg {
+.pinned-controls__dismiss :deep(svg),
+.pinned-controls__scroll-to :deep(svg) {
   width: 14px;
   height: 14px;
 }

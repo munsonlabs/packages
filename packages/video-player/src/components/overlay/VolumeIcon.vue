@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { IconVolumeOn, IconVolumeMute } from '@/components/icons'
+import Icon from '@/components/Icon.vue'
 
 defineProps<{ isAudible: boolean }>()
 </script>
 
 <template>
-  <IconVolumeOn v-if="isAudible" />
-  <IconVolumeMute v-else />
+  <Icon name="volume-on" v-if="isAudible" />
+  <Icon name="volume-mute" v-else />
 </template>

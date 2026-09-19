@@ -2,8 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, ref, toRef, watch } from 'vue'
 import { fmtTime } from '@/utils/time'
 import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/controls/useResolvedPlayer'
-import IconVolumeOn from '@/components/icons/IconVolumeOn.vue'
-import IconVolumeMute from '@/components/icons/IconVolumeMute.vue'
+import Icon from '@/components/Icon.vue'
 import type { TranscriptCue } from '@/types/player'
 
 const props = defineProps<
@@ -106,8 +105,8 @@ onBeforeUnmount(() => {
     :aria-pressed="speechEnabled"
     @click="toggleSpeech"
   >
-    <IconVolumeOn v-if="speechEnabled" />
-    <IconVolumeMute v-else />
+    <Icon name="volume-on" v-if="speechEnabled" />
+    <Icon name="volume-mute" v-else />
   </button>
   <ol ref="listEl" class="mlv-transcript" @pointerenter="hovering = true" @pointerleave="hovering = false">
     <li v-for="(cue, index) in parsedCues" :key="`${cue.time}-${index}`" class="mlv-transcript__item">
@@ -197,7 +196,7 @@ onBeforeUnmount(() => {
   color: var(--mlv-btn-color, inherit);
 }
 
-:where(.mlv-transcript__speech-toggle svg) {
+:where(.mlv-transcript__speech-toggle :deep(svg)) {
   width: 1.1em;
   height: 1.1em;
 }

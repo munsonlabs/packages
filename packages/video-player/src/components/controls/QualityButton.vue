@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, toRef } from 'vue'
-import { IconQuality } from '@/components/icons'
+import Icon from '@/components/Icon.vue'
 import { useQuality } from '@/composables/overlay/useQuality'
 import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/controls/useResolvedPlayer'
 
@@ -30,7 +30,7 @@ function cycle(): void {
       :current-index="player?.currentQualityIndex ?? null"
       :is-auto="player?.isAutoQuality ?? true"
     >
-      <IconQuality />
+      <Icon name="quality" />
     </slot>
   </button>
 </template>
@@ -54,7 +54,7 @@ function cycle(): void {
   opacity: 1;
 }
 
-:where(.mlv-quality-button svg) {
+:where(.mlv-quality-button :deep(svg)) {
   width: 1em;
   height: 1em;
 }

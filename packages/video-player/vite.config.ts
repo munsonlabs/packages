@@ -6,7 +6,9 @@ function elementEntry(name: string, cssFileName?: string) {
   return {
     ...basePack,
     outDir: 'dist/elements',
-    deps: { neverBundle: ['vue'], alwaysBundle: [/\.css$/, '@vimeo/player'] },
+    // sigil rides inside the element bundles so their only bare imports stay vue, hls.js and dashjs; a host
+    // page's own copy of sigil still shares the registry with this one through globalThis.
+    deps: { neverBundle: ['vue'], alwaysBundle: [/\.css$/, '@vimeo/player', /^@munsonlabs\/sigil/] },
     entry: { [name]: `src/elements/${name}.ts` },
     ...(cssFileName ? { css: { ...basePack.css, fileName: cssFileName } } : {}),
   }

@@ -5,7 +5,7 @@ import { usePlayerAction } from '@/composables/overlay/usePlayerAction'
 import PlayButton from '@/components/controls/PlayButton.vue'
 import Buffering from '@/components/controls/Buffering.vue'
 import VolumeIcon from '@/components/overlay/VolumeIcon.vue'
-import { IconLoop, IconControls, IconSkipNext } from '@/components/icons'
+import Icon from '@/components/Icon.vue'
 import '@/elements/ppbtn.css'
 
 const player = injectStrict(PlayerKey)
@@ -29,8 +29,8 @@ const { currentAction, isCustom, customAction, builtinLabel, builtinActive, onBu
         @click.stop="onBuiltinClick"
       >
         <VolumeIcon v-if="currentAction === 'mute'" :is-audible="player.isAudible" />
-        <IconLoop v-else-if="currentAction === 'loop'" />
-        <IconSkipNext v-else />
+        <Icon name="loop" v-else-if="currentAction === 'loop'" />
+        <Icon name="skip-next" v-else />
       </button>
 
       <button
@@ -51,7 +51,7 @@ const { currentAction, isCustom, customAction, builtinLabel, builtinActive, onBu
     </div>
 
     <button v-if="!hud.isOpen && !player.isFullscreen" class="hud__btn" aria-label="Show controls" tabindex="-1" @click.stop="hud.openControls">
-      <IconControls />
+      <Icon name="controls" />
     </button>
   </div>
 </template>
@@ -99,7 +99,7 @@ const { currentAction, isCustom, customAction, builtinLabel, builtinActive, onBu
     transform 0.15s;
 }
 
-.hud__btn svg {
+.hud__btn :deep(svg) {
   width: clamp(16px, 6cqw, 18px);
   height: clamp(16px, 6cqw, 18px);
 }

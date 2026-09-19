@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { toRef } from 'vue'
-import { IconFullscreenEnter, IconFullscreenExit } from '@/components/icons'
+import Icon from '@/components/Icon.vue'
 import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/controls/useResolvedPlayer'
 
 const props = defineProps<ResolvedPlayerProps>()
@@ -15,8 +15,8 @@ const player = useResolvedPlayer(toRef(props, 'player'), toRef(props, 'for'))
     @click="player?.toggleFullscreen()"
   >
     <slot :is-fullscreen="player?.isFullscreen ?? false">
-      <IconFullscreenExit v-if="player?.isFullscreen" />
-      <IconFullscreenEnter v-else />
+      <Icon name="fullscreen-exit" v-if="player?.isFullscreen" />
+      <Icon name="fullscreen-enter" v-else />
     </slot>
   </button>
 </template>
@@ -35,7 +35,7 @@ const player = useResolvedPlayer(toRef(props, 'player'), toRef(props, 'for'))
   outline-offset: 2px;
 }
 
-:where(.mlv-fullscreen-button svg) {
+:where(.mlv-fullscreen-button :deep(svg)) {
   width: 1em;
   height: 1em;
 }

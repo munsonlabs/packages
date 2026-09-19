@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, toRef } from 'vue'
-import { IconCaptions } from '@/components/icons'
+import Icon from '@/components/Icon.vue'
 import { useCaptions } from '@/composables/overlay/useCaptions'
 import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/controls/useResolvedPlayer'
 
@@ -25,7 +25,7 @@ function cycle(): void {
     @click="cycle"
   >
     <slot :current-label="currentLabel" :tracks="player?.captionTracks ?? []" :active-index="player?.activeCaptionIndex ?? null">
-      <IconCaptions />
+      <Icon name="captions" />
     </slot>
   </button>
 </template>
@@ -49,7 +49,7 @@ function cycle(): void {
   opacity: 1;
 }
 
-:where(.mlv-captions-button svg) {
+:where(.mlv-captions-button :deep(svg)) {
   width: 1em;
   height: 1em;
 }

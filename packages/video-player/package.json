@@ -58,6 +58,9 @@
     "test": "vp test",
     "test:watch": "vp test --watch"
   },
+  "dependencies": {
+    "@munsonlabs/sigil": "*"
+  },
   "devDependencies": {
     "@munsonlabs/shipkit": "*",
     "@vitest/browser-playwright": "4.1.11",

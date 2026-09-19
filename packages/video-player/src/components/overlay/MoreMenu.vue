@@ -3,7 +3,7 @@ import { PlayerKey, PlaylistKey, HudKey, injectStrict } from '@/composables/play
 import { usePlaybackRate } from '@/composables/overlay/usePlaybackRate'
 import { useCaptions } from '@/composables/overlay/useCaptions'
 import { useQuality } from '@/composables/overlay/useQuality'
-import { IconBack, IconCaptions, IconLoop, IconQuality, IconSkipNext, IconPip, IconVolumeOn, IconVolumeMute } from '@/components/icons'
+import Icon from '@/components/Icon.vue'
 import MoreMenuRow from '@/components/overlay/MoreMenuRow.vue'
 import type { CustomAction } from '@/types/player'
 
@@ -26,7 +26,7 @@ const { cycleQuality, currentQualityLabel } = useQuality(player)
 <template>
   <div class="controls__more-header">
     <button class="controls__btn" aria-label="Back" @click="$emit('back')">
-      <IconBack />
+      <Icon name="back" />
     </button>
     <span class="controls__more-label">More</span>
   </div>
@@ -37,7 +37,7 @@ const { cycleQuality, currentQualityLabel } = useQuality(player)
     <MoreMenuRow
       label="Loop"
       aria-label="Toggle loop"
-      :icon="IconLoop"
+      icon="loop"
       :active="player.isLooping"
       :value="player.isLooping ? 'On' : 'Off'"
       @click="player.toggleLoop()"
@@ -46,7 +46,7 @@ const { cycleQuality, currentQualityLabel } = useQuality(player)
     <MoreMenuRow
       v-if="player.supportsCaptions"
       label="Captions"
-      :icon="IconCaptions"
+      icon="captions"
       :active="player.activeCaptionIndex !== null"
       :value="currentCaptionLabel()"
       @click="cycleCaptionTrack"
@@ -55,7 +55,7 @@ const { cycleQuality, currentQualityLabel } = useQuality(player)
     <MoreMenuRow
       v-if="player.supportsQuality"
       label="Quality"
-      :icon="IconQuality"
+      icon="quality"
       :active="!player.isAutoQuality"
       :value="currentQualityLabel()"
       @click="cycleQuality"
@@ -65,7 +65,7 @@ const { cycleQuality, currentQualityLabel } = useQuality(player)
       v-if="playlist.hasPlaylist"
       label="Autoplay next"
       aria-label="Toggle autoplay next"
-      :icon="IconSkipNext"
+      icon="skip-next"
       :active="playlist.autoAdvance"
       :value="playlist.autoAdvance ? 'On' : 'Off'"
       @click="playlist.toggleAutoAdvance()"
@@ -75,18 +75,18 @@ const { cycleQuality, currentQualityLabel } = useQuality(player)
       v-if="compact && player.supportsPip"
       label="Picture-in-picture"
       aria-label="Toggle picture-in-picture"
-      :icon="IconPip"
+      icon="pip"
       :active="player.isPipActive"
       @click="player.togglePip()"
     />
 
-    <MoreMenuRow v-if="compact && playlist.hasNext" label="Play next" aria-label="Play next" :icon="IconSkipNext" @click="playlist.playNext()" />
+    <MoreMenuRow v-if="compact && playlist.hasNext" label="Play next" aria-label="Play next" icon="skip-next" @click="playlist.playNext()" />
 
     <MoreMenuRow
       v-if="compact"
       label="Mute"
       aria-label="Toggle mute"
-      :icon="player.isAudible ? IconVolumeOn : IconVolumeMute"
+      :icon="player.isAudible ? 'volume-on' : 'volume-mute'"
       :active="!player.isAudible"
       @click="player.toggleMute()"
     />

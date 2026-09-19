@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { Component } from 'vue'
+import Icon from '@/components/Icon.vue'
 
 withDefaults(
   defineProps<{
     label: string
     ariaLabel?: string
-    icon?: Component
+    icon?: string
     iconHtml?: string
     active?: boolean
     value?: string
@@ -19,7 +19,7 @@ defineEmits<{ click: [] }>()
 <template>
   <button class="controls__more-row" :class="{ 'controls__more-row--active': active }" :aria-label="ariaLabel || label" @click="$emit('click')">
     <span v-if="icon || iconHtml" class="controls__more-row-label">
-      <component :is="icon" v-if="icon" class="controls__more-row-icon" />
+      <Icon v-if="icon" :name="icon" class="controls__more-row-icon" />
       <span v-else class="controls__more-row-icon" v-html="iconHtml" />
       {{ label }}
     </span>
@@ -55,7 +55,8 @@ defineEmits<{ click: [] }>()
   gap: 8px;
 }
 
-.controls__more-row-icon {
+.controls__more-row-icon,
+.controls__more-row-icon :deep(svg) {
   width: 16px;
   height: 16px;
   flex-shrink: 0;

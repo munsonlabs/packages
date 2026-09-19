@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { toRef } from 'vue'
-import { IconLoop } from '@/components/icons'
+import Icon from '@/components/Icon.vue'
 import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/controls/useResolvedPlayer'
 
 const props = defineProps<ResolvedPlayerProps>()
@@ -17,7 +17,7 @@ const player = useResolvedPlayer(toRef(props, 'player'), toRef(props, 'for'))
     @click="player?.toggleLoop()"
   >
     <slot :is-looping="player?.isLooping ?? false">
-      <IconLoop />
+      <Icon name="loop" />
     </slot>
   </button>
 </template>
@@ -41,7 +41,7 @@ const player = useResolvedPlayer(toRef(props, 'player'), toRef(props, 'for'))
   opacity: 1;
 }
 
-:where(.mlv-loop-button svg) {
+:where(.mlv-loop-button :deep(svg)) {
   width: 1em;
   height: 1em;
 }

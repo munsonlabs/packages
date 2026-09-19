@@ -1,6 +1,6 @@
 ---
 title: Ads & monetisation
-description: IMA (VAST/VMAP) ads, Prebid.js header bidding, ad macro params, and ad behaviour.
+description: IMA (VAST/VMAP) ads, ad macro params, and header bidding.
 navigation:
   icon: i-lucide:megaphone
 ---
@@ -42,45 +42,6 @@ The same endpoint serves **VMAP** (`output=vmap`) for pre/mid/post-roll schedule
 
 While an ad plays, an overlay shows an "Ad" badge with a countdown, a pause/resume button, and a mute button for the **ad creative's own audio** - independent of the content video's volume, in both directions.
 
-## Header bidding (Prebid.js)
-
-`headerBidding` runs a Prebid auction _before_ the ad and falls back to the plain tag on no-fill. The auction is never awaited - it can't block mounting, playback, or controls - and every failure mode (no `window.pbjs`, timeout, no bid, `buildVideoUrl()` throwing) fails open:
-
-```vue
-<VideoCard
-  src="https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4"
-  ad-tag-url="https://pubads.g.doubleclick.net/gampad/ads?..."
-  :header-bidding="{
-    adUnit: {
-      code: 'video-instream-demo',
-      mediaTypes: {
-        video: {
-          context: 'instream',
-          playerSize: [640, 480],
-          mimes: ['video/mp4'],
-          protocols: [1, 2, 3, 4, 5, 6, 7, 8],
-          playbackmethod: [2],
-          skip: 1,
-        },
-      },
-      bids: [{ bidder: 'appnexus', params: { placementId: 13232361 } }],
-    },
-    params: { iu: '/21775744923/external/single_ad_samples' },
-    timeoutMs: 2000,
-  }"
-/>
-```
-
-| Key         | Purpose                                                                             |
-| ----------- | ----------------------------------------------------------------------------------- |
-| `adUnit`    | A standard Prebid video ad unit - the same object you'd pass to `pbjs.addAdUnits()` |
-| `params`    | Passed through to `buildVideoUrl()` (GAM ad tag params)                             |
-| `timeoutMs` | Bounds the auction, and this step's fail-open timeout. Defaults to `1000`           |
-
-::warning
-Always keep a plain `adTagUrl` as the fallback - never rely on `headerBidding` alone.
-:: Verify with `pbjs.getBidResponsesForAdUnitCode('your-ad-unit-code')`.
-
 ## Ad macros & auto-discovered tags
 
 A Brightcove source auto-discovers its own ad tag when you don't pass `adTagUrl`, and those tags are usually macro _templates_ (`...&iu={adUnit}&vid={referenceId}`). `adMacroParams` fills `{macro}` tokens in whichever tag ends up in use, prop-supplied or discovered:
@@ -90,10 +51,3 @@ A Brightcove source auto-discovers its own ad tag when you don't pass `adTagUrl`
 ```
 
 Name each key after the macro it fills (`vid={referenceId}` → key `referenceId`, not `vid`). A key with no matching macro is a no-op.
-
-## Ad behaviour
-
-- **Pauses when unattended** - on tab hide or window blur, also checked up front so a mid-roll starting on a backgrounded tab is caught. It doesn't auto-resume; the point is not to burn an impression on nobody.
-- **Exits Picture-in-Picture** if active - skipped on iOS, where the ad renders into the same `<video>` PiP is already mirroring.
-- **Keeps the timeline on the content.** `timeupdate`/`durationchange`/`progress` are ignored while an ad is active, so `current`/`total`/`bufferedDisplay` - and a `Scrubber` or `Transcript` built on them - stay on the content's position throughout.
-- **Restores the source after iOS post-rolls.** IMA may leave the `<video>` pointing at the ad creative, so "Replay" would replay the ad; the player restores the saved source and clears the browser's ended flag so the normal replay flow works.

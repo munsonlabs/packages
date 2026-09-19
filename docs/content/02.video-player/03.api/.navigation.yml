@@ -1,3 +1,4 @@
 title: API Reference
 navigation:
   icon: i-lucide:book-marked
+  defaultOpen: false

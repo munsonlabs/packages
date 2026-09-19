@@ -1,3 +1,4 @@
 title: Features
 navigation:
   icon: i-lucide:layers
+  defaultOpen: false

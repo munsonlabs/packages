@@ -1,6 +1,6 @@
 ---
 title: Methods & state
-description: The imperative API and reactive state on a template ref, plus forwarding, useForwardedPlayer, and exposePlayerOnElement.
+description: The imperative API and reactive state on a template ref.
 navigation:
   icon: i-lucide:square-function
 ---
@@ -72,52 +72,3 @@ This is the `PlayerHandle` interface - a headless control's `player` prop accept
 
 - **`VideoCard`** may still be showing its lazy placeholder - any control method mounts the real player first. With a `VideoStage` on the page the card hands playback off entirely: `togglePlay()` selects/toggles this video on the stage, and everything else is a no-op.
 - **`VideoStage`** adds `playNext()`, `playPrevious()`, `hasNext`, and `hasPrevious` when `playlist` is set. It can't auto-mount without a video selected, so control methods before that are a no-op.
-
-## `useForwardedPlayer`
-
-Build your own wrapper the same way `VideoCard` does - a curated forward of a wrapped `VideoPlayer`'s handle, so consumers of your component get the identical API:
-
-```vue
-<script setup>
-import { VideoPlayer, useForwardedPlayer } from '@munsonlabs/video-player'
-const { playerRef, forwarded } = useForwardedPlayer()
-defineExpose(forwarded)
-</script>
-
-<template>
-  <VideoPlayer ref="playerRef" v-bind="$attrs" />
-</template>
-```
-
-It owns the ref - bind `playerRef` on the wrapped player and pass `forwarded` to `defineExpose`. A `guard` callback intercepts a call before it reaches the player: return `false` to swallow it, or run a side effect (mounting a lazy placeholder, say) before returning `true`.
-
-## `exposePlayerOnElement`
-
-Copies a plain Vue player's handle onto a real DOM element, so code with no access to your Vue app - a third party's script, `<ml-controls-*>` elements from a separate bundle - can read and call it like a genuine custom element:
-
-```vue
-<script setup>
-import { ref, onMounted } from 'vue'
-import { VideoPlayer, exposePlayerOnElement } from '@munsonlabs/video-player'
-
-const playerRef = ref(null)
-const wrapperEl = ref(null)
-onMounted(() => exposePlayerOnElement(wrapperEl.value, playerRef.value))
-</script>
-
-<template>
-  <div id="my-player" ref="wrapperEl">
-    <VideoPlayer ref="playerRef" src="..." />
-  </div>
-</template>
-```
-
-```html
-<!-- a separate script/bundle, no Vue involved -->
-<script type="module">
-  import '@munsonlabs/video-player/element/controls'
-</script>
-<ml-controls-transcript for="my-player" cues='[{"time":0,"text":"..."}]'></ml-controls-transcript>
-```
-
-State is copied as live getters, not snapshots, so `el.current` keeps tracking the real player. The element needn't be the player's root - any element works. This is unrelated to the `/element` bundles: you're still rendering a plain Vue player, just making it reachable from outside.

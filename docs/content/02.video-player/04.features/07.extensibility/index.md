@@ -1,6 +1,6 @@
 ---
-title: Extensibility & theming
-description: Custom HUDs, custom actions, composables, forwarding, and CSS-variable theming - the surfaces you build on without forking.
+title: Extensibility
+description: Custom HUDs, custom actions, composables, and wrapping/exposing a player - the surfaces you build on without forking.
 navigation:
   icon: i-lucide:puzzle
 ---
@@ -59,20 +59,5 @@ The logic behind the built-in controls is exported, so a custom control can reus
 
 ## Wrapping and exposing a player
 
-- [`useForwardedPlayer`](/video-player/api/methods#useforwardedplayer) forwards a wrapped `VideoPlayer`'s full handle through your own component's `defineExpose`, with an optional `guard` to intercept calls.
-- [`exposePlayerOnElement`](/video-player/api/methods#exposeplayeronelement) copies that handle onto a DOM element, so a third party's script or a separately-bundled `<ml-controls-*>` element can drive a plain Vue player.
-
-## Theming
-
-Override the [CSS variables](/video-player/api/controls#themeable-css-variables) on any ancestor of the player - the player's own width cap, popup width and alignment, button colours, corner radius, accent:
-
-```css
-.my-video-wrapper {
-  --mlv-btn-bg: #e11d48;
-  --mlv-btn-color: #fff;
-  --mlv-controls-width: min(600px, calc(100% - 32px));
-  --mlv-max-width: none; /* fill the container instead of capping at 800px */
-}
-```
-
-Every control's own CSS uses `:where()` (zero specificity), so a single class of yours always wins - no `!important`, no forking. Outside fullscreen the controls bar opens on "show controls" and stays until dismissed; in fullscreen it auto-shows on activity and hides after inactivity.
+- [`useForwardedPlayer`](/video-player/api/methods/wrapping#useforwardedplayer) forwards a wrapped `VideoPlayer`'s full handle through your own component's `defineExpose`, with an optional `guard` to intercept calls.
+- [`exposePlayerOnElement`](/video-player/api/methods/wrapping#exposeplayeronelement) copies that handle onto a DOM element, so a third party's script or a separately-bundled `<ml-controls-*>` element can drive a plain Vue player.

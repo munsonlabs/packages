@@ -4,10 +4,11 @@ Public npm packages published under the `@munsonlabs` scope.
 
 ## Packages
 
-| Package                                             | Description                                        |
-| --------------------------------------------------- | -------------------------------------------------- |
-| [`@munsonlabs/video-player`](packages/video-player) | Standalone Vue 3 video player                      |
-| [`@munsonlabs/shipkit`](packages/shipkit)           | Shared build tooling (`shipkit` CLI, vite configs) |
+| Package                                             | Description                                              |
+| --------------------------------------------------- | -------------------------------------------------------- |
+| [`@munsonlabs/video-player`](packages/video-player) | Standalone Vue 3 video player                            |
+| [`@munsonlabs/sigil`](packages/sigil)               | Framework-free icon registry with a `<ml-sigil>` element |
+| [`@munsonlabs/shipkit`](packages/shipkit)           | Shared build tooling (`shipkit` CLI, vite configs)       |
 
 ## Development
 

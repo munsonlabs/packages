@@ -1,0 +1,5 @@
+export { createSigil, sigil, register, unregister, override, use, getIcon, getIconSync, subscribe, clear } from './registry/index'
+export type { Sigil } from './registry/index'
+export { watchIcon } from './watch'
+export { cached } from './sources/cached'
+export type * from './types/index'

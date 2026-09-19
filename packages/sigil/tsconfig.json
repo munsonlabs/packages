@@ -1,0 +1,11 @@
+{
+  "extends": "@munsonlabs/shipkit/tsconfig/lib",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"],
+      "@test/*": ["./test/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

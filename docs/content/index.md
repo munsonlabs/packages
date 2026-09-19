@@ -20,6 +20,17 @@ Standalone Vue 3 video player - native/HLS/DASH, embeds, IMA ads, and Prebid hea
 ::card
 ---
 
+title: Sigil
+icon: i-lucide:shapes
+to: /sigil/getting-started/introduction
+---
+
+Framework-free icon registry with a `<ml-sigil>` element - describe an SVG library or icon font, render by name, swap at runtime.
+::
+
+::card
+---
+
 title: Shipkit
 icon: i-lucide:terminal
 to: /shipkit/introduction

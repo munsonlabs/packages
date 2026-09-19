@@ -1,0 +1,5 @@
+title: Integrations
+navigation:
+  icon: i-lucide:plug
+  defaultOpen: false
+  collapsible: true

@@ -12,15 +12,15 @@ export default defineConfig({
       // this build - which made the ordering work by accident. Declared here so it doesn't.
       dev: {
         command: 'nuxt dev',
-        dependsOn: ['@munsonlabs/video-player#build'],
+        dependsOn: ['@munsonlabs/video-player#build', '@munsonlabs/sigil#build'],
       },
       build: {
         command: 'nuxt build',
-        dependsOn: ['@munsonlabs/video-player#build'],
+        dependsOn: ['@munsonlabs/video-player#build', '@munsonlabs/sigil#build'],
       },
       generate: {
         command: 'nuxt generate',
-        dependsOn: ['@munsonlabs/video-player#build'],
+        dependsOn: ['@munsonlabs/video-player#build', '@munsonlabs/sigil#build'],
         // Both are baked into the generated output (base path, canonical URLs), so they have to
         // be fingerprinted - otherwise a cached root-relative build gets restored over a
         // sub-path one, the same trap apps/demos/video-player documents for VITE_BASE_*.

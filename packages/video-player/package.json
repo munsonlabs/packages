@@ -1,6 +1,6 @@
 {
   "name": "@munsonlabs/video-player",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "license": "MIT",
   "files": [
     "dist"

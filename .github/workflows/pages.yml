@@ -1,18 +1,7 @@
 name: Deploy to GitHub Pages
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'docs/**'
-      - 'apps/demos/video-player/**'
-      - 'packages/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'vite.config.ts'
-      - '.node-version'
-      - '.github/workflows/pages.yml'
-      - '.github/actions/**'
+  # Deploys happen post-release (changeset) or on demand
   workflow_dispatch:
 
 permissions:
@@ -27,8 +16,6 @@ concurrency:
 
 jobs:
   build:
-    # The version commit changes nothing on the site until the packages are on npm; Release dispatches this then.
-    if: "!contains(github.event.head_commit.message, 'chore(release): version packages')"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -38,8 +25,6 @@ jobs:
       - uses: actions/configure-pages@v6
         id: pages
 
-      # Each demo is served at /demo/<dir>/; shipkit's getPackageBase() reads VITE_BASE_<PACKAGE NAME> for its Vite `base`.
-      # A new demo must list that variable in its build task's `env`, or vp serves a cached root-relative build.
       - name: Build demos
         run: |
           for dir in apps/demos/*/; do
@@ -52,7 +37,6 @@ jobs:
         env:
           REPO: ${{ github.event.repository.name }}
 
-      # Static prerender via vp, so the task's dependsOn builds the player first.
       - name: Generate docs
         run: vp run --filter docs generate
         env:
@@ -73,7 +57,6 @@ jobs:
       - uses: actions/upload-pages-artifact@v5
         with:
           path: docs/.output/public
-          # v4+ drops dotfiles by default, including .nojekyll.
           include-hidden-files: true
 
   deploy:

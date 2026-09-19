@@ -54,8 +54,6 @@
     "clean": "rm -rf dist",
     "lint": "vp lint",
     "fmt": "vp fmt",
-    "check": "vp check",
-    "test": "vp test",
     "test:watch": "vp test --watch"
   },
   "dependencies": {

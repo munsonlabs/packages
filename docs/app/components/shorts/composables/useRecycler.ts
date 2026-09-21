@@ -2,17 +2,20 @@ import { computed, ref, nextTick, watch, onBeforeUnmount, type Ref } from 'vue'
 
 const SETTLE_MS = 120
 const BOUNCE_MS = 450
+/** Ask for the next page this many slides before running out, so it lands before the viewer gets there. */
+const LOAD_AHEAD = 2
 
 export interface UseRecyclerReturn<T> {
   slots: Ref<(T | null)[]>
   index: Ref<number>
   onScroll: () => void
   go: (delta: number) => void
+  reset: () => void
 }
 
-export function useRecycler<T>(scroller: Ref<HTMLElement | null>, items: T[]): UseRecyclerReturn<T> {
+export function useRecycler<T>(scroller: Ref<HTMLElement | null>, items: Ref<T[]>, loadMore: () => void): UseRecyclerReturn<T> {
   const index = ref(0)
-  const slots = computed(() => [items[index.value - 1] ?? null, items[index.value] ?? null, items[index.value + 1] ?? null])
+  const slots = computed(() => [items.value[index.value - 1] ?? null, items.value[index.value] ?? null, items.value[index.value + 1] ?? null])
 
   let slideHeight = 0
   // Set around every programmatic scroll, so the resets below don't read as a swipe and recycle again.
@@ -53,7 +56,7 @@ export function useRecycler<T>(scroller: Ref<HTMLElement | null>, items: T[]): U
     if (landed === 1) return
 
     const next = index.value + (landed - 1)
-    if (next < 0 || next >= items.length) return centre(true)
+    if (next < 0 || next >= items.value.length) return centre(true)
 
     index.value = next
     await nextTick()
@@ -69,10 +72,19 @@ export function useRecycler<T>(scroller: Ref<HTMLElement | null>, items: T[]): U
   function go(delta: number): void {
     const el = scroller.value
     if (!el || !slideHeight) return
-    if (index.value + delta < 0 || index.value + delta >= items.length) return
+    if (index.value + delta < 0 || index.value + delta >= items.value.length) return
     // Scroll the container itself rather than scrollIntoView, which walks every scrollable
     // ancestor and would drag the surrounding page along with it.
     el.scrollTo({ top: (1 + delta) * slideHeight, behavior: 'smooth' })
+  }
+
+  function loadAhead(): void {
+    if (index.value >= items.value.length - LOAD_AHEAD) loadMore()
+  }
+
+  function reset(): void {
+    index.value = 0
+    centre(false)
   }
 
   watch(scroller, (el) => {
@@ -80,7 +92,10 @@ export function useRecycler<T>(scroller: Ref<HTMLElement | null>, items: T[]): U
     if (!el) return
     ro = new ResizeObserver(measure)
     ro.observe(el)
+    loadAhead()
   })
+
+  watch([index, () => items.value.length], loadAhead)
 
   onBeforeUnmount(() => {
     ro?.disconnect()
@@ -88,5 +103,5 @@ export function useRecycler<T>(scroller: Ref<HTMLElement | null>, items: T[]): U
     if (bounceTimer) clearTimeout(bounceTimer)
   })
 
-  return { slots, index, onScroll, go }
+  return { slots, index, onScroll, go, reset }
 }

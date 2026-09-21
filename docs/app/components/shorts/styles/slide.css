@@ -36,6 +36,32 @@
   z-index: 4;
 }
 
+/* Above the play overlay (3) so a hold fast-forwards, below the buttons, meta and scrubber (5-6) so they stay clickable. */
+.shorts__edgehold {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 22%;
+  z-index: 4;
+  touch-action: none;
+}
+
+.shorts__badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 7;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.65);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  pointer-events: none;
+}
+
 .shorts__spinner-ring {
   width: 2.5rem;
   height: 2.5rem;
@@ -52,15 +78,27 @@
 }
 
 .shorts__bigplay :deep(svg) {
+  width: 34px;
+  height: 34px;
   filter: drop-shadow(0 2px 6px rgb(0 0 0 / 0.6));
   opacity: 0.92;
 }
 
-.shorts__mute {
+/* Above everything the eye button toggles (max 5), and above the scrubber (6) by source order. */
+.shorts__topbuttons {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
-  z-index: 5;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.shorts__mute,
+.shorts__captions,
+.shorts__clear {
   display: grid;
   place-items: center;
   width: 2.25rem;
@@ -70,6 +108,25 @@
   background: rgb(0 0 0 / 0.55);
   color: #fff;
   cursor: pointer;
+}
+
+.shorts__mute :deep(svg),
+.shorts__clear :deep(svg) {
+  width: 20px;
+  height: 20px;
+}
+
+.shorts__captions {
+  opacity: 0.6;
+}
+
+.shorts__captions--active {
+  opacity: 1;
+}
+
+.shorts__captions :deep(svg) {
+  width: 18px;
+  height: 18px;
 }
 
 .shorts__meta {
@@ -119,6 +176,35 @@
   cursor: pointer;
 }
 
+.shorts__live {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: 0.25rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: #e11d48;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.shorts__live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff;
+  animation: shorts-live-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes shorts-live-pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
 .shorts__title {
   margin: 0;
   font-size: 0.8rem;
@@ -157,9 +243,15 @@
     overflow: hidden;
   }
 
-  .shorts__mute {
+  .shorts__topbuttons {
     top: 0.5rem;
     right: 0.5rem;
+    gap: 0.4rem;
+  }
+
+  .shorts__mute,
+  .shorts__captions,
+  .shorts__clear {
     width: 2rem;
     height: 2rem;
   }
@@ -170,8 +262,7 @@
   }
 }
 
-/* The wrapper is Scrubber's root, and is position:relative itself - pinning the input instead
-   would resolve against a zero-height box below the full-height .player, clipped by the frame. */
+/* Scrubber's root wrapper is position:relative; pinning the input instead would resolve against a zero-height box. */
 .shorts__frame :deep(.mlv-scrubber-wrap) {
   position: absolute;
   left: 0;
@@ -180,8 +271,7 @@
   z-index: 6;
 }
 
-/* One square bar, edge to edge: played, buffered and remaining are three stops of a single
-   gradient rather than a track plus a thumb. `--p` and `--b` are set inline by Scrubber. */
+/* One bar, three gradient stops: played, buffered, remaining. `--p` and `--b` are set inline by Scrubber. */
 .shorts__frame :deep(.mlv-scrubber) {
   display: block;
   width: 100%;

@@ -1,27 +1,53 @@
-export const PLAY = 'M8 5v14l11-7z'
+import { ref } from 'vue'
 
-export const MUTED = [
-  'M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z',
-  'M4.27 3 3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25L19 19.27 20.27 18 4.27 3z',
-]
+const files = import.meta.glob<string>('./*.svg', { query: '?raw', import: 'default', eager: true })
 
-export const AUDIBLE =
-  'M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'
+export const SHORTS_ICONS: Record<string, string> = Object.fromEntries(Object.entries(files).map(([path, svg]) => [path.slice(2, -4), svg]))
 
-export const THUMB =
-  'M1 21h4V9H1v12zm22-11a2 2 0 0 0-2-2h-6.31l.95-4.57.03-.32a1.5 1.5 0 0 0-.44-1.06L14.17 1 7.59 7.59A2 2 0 0 0 7 9v10a2 2 0 0 0 2 2h9a2 2 0 0 0 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z'
+const LUCIDE_NAMES: Record<string, string> = {
+  play: 'play',
+  'volume-on': 'volume-2',
+  'volume-mute': 'volume-x',
+  'thumb-up': 'thumbs-up',
+  'thumb-down': 'thumbs-down',
+  comment: 'message-circle',
+  share: 'share-2',
+  quality: 'sliders-horizontal',
+  'chevron-up': 'chevron-up',
+  'chevron-down': 'chevron-down',
+  refresh: 'refresh-cw',
+  'fullscreen-enter': 'maximize',
+  'fullscreen-exit': 'minimize',
+  eye: 'eye',
+  'eye-off': 'eye-off',
+  captions: 'captions',
+  palette: 'palette',
+}
 
-export const COMMENT = 'M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z'
+export const lucideIcons = ref(false)
 
-export const SHARE =
-  'M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 1 0-3-3c0 .24.04.47.09.7L8.04 9.81A3 3 0 1 0 6 15c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65a2.92 2.92 0 1 0 2.92-2.92z'
+export async function toggleIconSet(): Promise<void> {
+  const { register } = await import('@munsonlabs/sigil')
+  lucideIcons.value = !lucideIcons.value
+  void register(
+    'shorts',
+    lucideIcons.value
+      ? {
+          resolver: (name) => `https://cdn.jsdelivr.net/npm/lucide-static@1.46.0/icons/${LUCIDE_NAMES[name] ?? name}.svg`,
+          mutator: (svg) => {
+            svg.removeAttribute('width')
+            svg.removeAttribute('height')
+          },
+        }
+      : { icons: SHORTS_ICONS },
+  )
+}
 
-export const MORE = 'M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm0 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z'
+let pending: Promise<void> | undefined
 
-export const CHEVRON_UP = 'M7.41 15.41 12 10.83l4.59 4.58L18 14l-6-6-6 6z'
-
-export const CHEVRON_DOWN = 'M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z'
-
-export const FULLSCREEN_ENTER = 'M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z'
-
-export const FULLSCREEN_EXIT = 'M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z'
+export function registerShortsIcons(): Promise<void> {
+  pending ??= import('@munsonlabs/sigil').then(({ register }) => {
+    void register('shorts', { icons: SHORTS_ICONS })
+  })
+  return pending
+}

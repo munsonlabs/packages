@@ -9,14 +9,13 @@ export interface UsePlayerControlsReturn {
   pause: () => void
   replay: () => Promise<void>
   togglePlay: () => void
-  seek: (percent: number) => void
-  seekTo: (seconds: number) => void
+  seek: (seconds: number) => void
   toggleMute: () => void
   setVolume: (vol: number) => void
   toggleLoop: () => void
   setPlaybackRate: (rate: number) => void
   setCaptionTrack: (index: number | null) => void
-  setQuality: (index: number | null) => void
+  setQuality: (height: number | null) => void
   togglePip: () => void
 }
 
@@ -31,11 +30,11 @@ export function usePlayerControls(
     isReady,
     hasEnded,
     hasStarted,
-    total,
+    duration: total,
     isLooping,
     currentPlaybackRate,
     activeCaptionIndex,
-    currentQualityIndex,
+    currentQualityHeight,
     isAutoQuality,
     qualityLevels,
     errorMessage,
@@ -101,11 +100,8 @@ export function usePlayerControls(
     else void player.play().catch(() => {})
   }
 
-  function seek(percent: number): void {
-    getPlayer()?.setCurrentTime(total.value * (percent / 100))
-  }
-
-  function seekTo(seconds: number): void {
+  /** Seconds, like every other time in this API - the percentage form it used to take is the scrubber's unit, not a player's. */
+  function seek(seconds: number): void {
     const max = total.value || Infinity
     getPlayer()?.setCurrentTime(Math.min(Math.max(seconds, 0), max))
   }
@@ -141,22 +137,29 @@ export function usePlayerControls(
   }
 
   function setCaptionTrack(index: number | null): void {
-    getPlayer()?.setCaptionTrack(index)
+    getPlayer()?.captions?.select(index)
     activeCaptionIndex.value = index
     if (hasStarted.value) fire('captionchange', { captionIndex: index })
   }
 
-  function setQuality(index: number | null): void {
-    getPlayer()?.setQuality(index)
-    currentQualityIndex.value = index
-    isAutoQuality.value = index === null
-    if (hasStarted.value)
-      fire('qualitychange', { qualityIndex: index, qualityHeight: qualityLevels.value.find((q) => q.index === index)?.height ?? null })
+  /** Heights are the public unit for quality - they are stable, meaningful (the 720 in 720p) and, since the ladder keeps one variant per height, unique. The engine's own index stays inside the adapter. */
+  function setQuality(height: number | null): void {
+    const level = height === null ? null : nearestLevel(height)
+    getPlayer()?.quality?.select(level?.index ?? null)
+    currentQualityHeight.value = level?.height ?? null
+    isAutoQuality.value = level === null
+    if (hasStarted.value) fire('qualitychange', { qualityHeight: level?.height ?? null })
+  }
+
+  function nearestLevel(height: number) {
+    const levels = qualityLevels.value
+    if (!levels.length) return null
+    return levels.reduce((best, level) => (Math.abs(level.height - height) < Math.abs(best.height - height) ? level : best))
   }
 
   function togglePip(): void {
-    getPlayer()?.togglePip()
+    getPlayer()?.pip?.toggle()
   }
 
-  return { play, pause, replay, togglePlay, seek, seekTo, toggleMute, setVolume, toggleLoop, setPlaybackRate, setCaptionTrack, setQuality, togglePip }
+  return { play, pause, replay, togglePlay, seek, toggleMute, setVolume, toggleLoop, setPlaybackRate, setCaptionTrack, setQuality, togglePip }
 }

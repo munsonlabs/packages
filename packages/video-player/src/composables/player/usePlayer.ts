@@ -1,7 +1,6 @@
 import { computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import type { Ref } from 'vue'
 import { resolvePlatform } from '@/adapters/index'
-import { revealEmbed } from '@/adapters/embeds/embedShared'
 import { registerPauseHandler } from '@/composables/registries/playerRegistry'
 import { createPlayerState, type PlayerState } from '@/composables/player/playerState'
 import { useFullscreen } from '@/composables/player/features/useFullscreen'
@@ -35,12 +34,23 @@ export function usePlayer(
 ): UsePlayerReturn {
   let adapter: PlaybackAdapter | null = null
   let unregister: (() => void) | null = null
-  let currentSrcObj: { src: string; type?: string } | null = null
-  let needsReveal = false
 
   const state = createPlayerState(props)
-  const { isReady, isLoaded, isLive, current, total, isMuted, vol, currentPlaybackRate, hasEnded, hasStarted, isError, errorMessage, isNativeUi } =
-    state
+  const {
+    isReady,
+    isLoaded,
+    isLive,
+    currentTime: current,
+    duration: total,
+    isMuted,
+    volume: vol,
+    currentPlaybackRate,
+    hasEnded,
+    hasStarted,
+    isError,
+    errorMessage,
+    isNativeUi,
+  } = state
   const getPlayer = (): PlaybackAdapter | null => adapter
 
   const payload = computed<Record<string, unknown>>(() => {
@@ -65,12 +75,12 @@ export function usePlayer(
   const { attachPlayerEvents } = usePlayerEvents(state, { fire, pauseThisPlayer: controls.pause, positionMemory, quartiles, buffering, fullscreen })
 
   function retry(): void {
-    if (!adapter || !currentSrcObj) return
+    if (!adapter) return
     isError.value = false
     errorMessage.value = ''
     isLoaded.value = false
     total.value = 0
-    adapter.setSrc(currentSrcObj.src, currentSrcObj.type)
+    adapter.retry()
   }
 
   watch([total, isLive], ([duration, live]) => {
@@ -99,15 +109,13 @@ export function usePlayer(
   )
   watch(
     () => [props.quality, state.qualityLevels.value.length] as const,
-    ([height]) => {
-      const levels = state.qualityLevels.value
-      if (height === undefined || !levels.length) return
+    ([height, levelCount]) => {
+      if (height === undefined || !levelCount) return
       if (height === null) {
         if (!state.isAutoQuality.value) controls.setQuality(null)
         return
       }
-      const nearest = levels.reduce((best, q) => (Math.abs(q.height - height) < Math.abs(best.height - height) ? q : best))
-      if (state.isAutoQuality.value || state.currentQualityIndex.value !== nearest.index) controls.setQuality(nearest.index)
+      controls.setQuality(height)
     },
   )
 
@@ -122,16 +130,15 @@ export function usePlayer(
 
   function finalizeAdapter(mounted: MountedAdapter): void {
     adapter = mounted.adapter
-    currentSrcObj = mounted.currentSrc
-    needsReveal = mounted.needsReveal
     if (mounted.nativeUi !== undefined) isNativeUi.value = mounted.nativeUi
     unregister = registerPauseHandler(controls.pause)
     attachPlayerEvents(mounted.adapter)
   }
 
+  /** Embeds hide the placeholder <video> behind their iframe until playback really starts; native playback has no reveal to do. */
   watch(hasStarted, (started) => {
-    if (!started || !needsReveal || !videoEl.value || !adapter) return
-    revealEmbed(videoEl.value, adapter.el as HTMLDivElement)
+    if (!started || !videoEl.value) return
+    adapter?.reveal?.(videoEl.value)
   })
 
   onMounted(async () => {

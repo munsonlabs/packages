@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { toRef } from 'vue'
 import Icon from '@/components/Icon.vue'
 import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/controls/useResolvedPlayer'
 
 const props = defineProps<ResolvedPlayerProps>()
-const player = useResolvedPlayer(toRef(props, 'player'), toRef(props, 'for'))
+const player = useResolvedPlayer(props)
 </script>
 
 <template>

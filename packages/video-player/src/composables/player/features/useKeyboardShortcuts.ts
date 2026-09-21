@@ -18,13 +18,17 @@ export function useKeyboardShortcuts(player: PlayerContext, hud: HudContext): Us
   }
 
   function seekBy(deltaSeconds: number): void {
-    if (!player.total) return
-    const target = clamp(player.current + deltaSeconds, 0, player.total)
-    player.seek((target / player.total) * 100)
+    if (!player.duration) return
+    player.seek(clamp(player.currentTime + deltaSeconds, 0, player.duration))
+  }
+
+  function seekToFraction(fraction: number): void {
+    if (!player.duration) return
+    player.seek(player.duration * fraction)
   }
 
   function adjustVolume(delta: number): void {
-    player.setVolume(clamp(player.vol + delta, 0, 1))
+    player.setVolume(clamp(player.volume + delta, 0, 1))
   }
 
   function toggleCaptions(): void {
@@ -72,15 +76,15 @@ export function useKeyboardShortcuts(player: PlayerContext, hud: HudContext): Us
         break
       case 'Home':
         e.preventDefault()
-        player.seek(0)
+        seekToFraction(0)
         break
       case 'End':
         e.preventDefault()
-        player.seek(100)
+        seekToFraction(1)
         break
       default:
         if (!/^[0-9]$/.test(e.key)) return
-        player.seek(Number(e.key) * 10)
+        seekToFraction(Number(e.key) / 10)
     }
 
     hud.onMouseMove()

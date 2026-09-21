@@ -28,9 +28,9 @@ describe('custom elements', () => {
     expect(video()?.paused).toBe(false)
     expect(sink.has('play')).toBe(true)
 
-    el.seekTo(2)
+    el.seek(2)
     await sink.next('seeked')
-    expect(el.current).toBeGreaterThanOrEqual(1.9)
+    expect(el.currentTime).toBeGreaterThanOrEqual(1.9)
     el.pause()
     await sink.next('pause')
     expect(video()?.paused).toBe(true)

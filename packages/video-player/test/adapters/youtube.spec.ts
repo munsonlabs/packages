@@ -248,12 +248,12 @@ describe('setMuted', () => {
   })
 })
 
-describe('setSrc', () => {
+describe('load', () => {
   it('loads the new video immediately once the player is already ready', async () => {
     const { adapter, player } = await createAdapter()
     player.events.onReady?.({ target: player })
 
-    adapter.setSrc('https://www.youtube.com/watch?v=aaaaaaaaaaa')
+    adapter.load('https://www.youtube.com/watch?v=aaaaaaaaaaa')
 
     expect(player.loadedVideoId).toBe('aaaaaaaaaaa')
   })

@@ -16,7 +16,7 @@ import { VideoPlayer, PlayButton, MuteButton, Scrubber } from '@munsonlabs/video
 
 const itemRef = ref(null)
 function seekBy(seconds) {
-  itemRef.value?.seekTo((itemRef.value.current ?? 0) + seconds)
+  itemRef.value?.seek((itemRef.value.current ?? 0) + seconds)
 }
 </script>
 
@@ -50,12 +50,12 @@ Import `@munsonlabs/video-player/style/controls` instead of the full `/style` to
 
 The logic behind the built-in controls is exported, so a custom control can reuse it rather than reimplement it:
 
-| Composable                | Returns                                                                                                                                   |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `useScrubber(playerRef)`  | `{ scrubbing, displayPercent, previewSeconds, onInput, onChange, onTouchEnd }` - the full pause-on-drag, preview, commit-on-release dance |
-| `useCaptions(player)`     | `{ cycleCaptionTrack, currentCaptionLabel }`                                                                                              |
-| `useQuality(player)`      | `{ cycleQuality, currentQualityLabel }`                                                                                                   |
-| `usePlaybackRate(player)` | `{ cycleRate, fmtRate }`                                                                                                                  |
+| Composable                                                | Returns                                                                                                                                   |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `useScrubber(playerRef)`                                  | `{ scrubbing, displayPercent, previewSeconds, onInput, onChange, onTouchEnd }` - the full pause-on-drag, preview, commit-on-release dance |
+| `cycleCaptionTrack(player)` / `captionTrackLabel(player)` | Step through the tracks and back to off, and the active track's label                                                                     |
+| `cycleQuality(player)` / `qualityLabel(player)`           | Step down the ladder and back to Auto, and the selected level's label                                                                     |
+| `cyclePlaybackRate(player)` / `playbackRateLabel(rate)`   | Step through the rates, and format one for display                                                                                        |
 
 ## Wrapping and exposing a player
 

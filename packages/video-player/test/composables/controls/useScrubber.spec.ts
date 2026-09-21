@@ -5,8 +5,8 @@ import type { PlayerHandle } from '@/types/player'
 
 function makePlayer(overrides: Partial<PlayerHandle> = {}) {
   return {
-    total: 100,
-    current: 0,
+    duration: 100,
+    currentTime: 0,
     isPlaying: true,
     bufferedDisplay: 0,
     seek: vi.fn(),

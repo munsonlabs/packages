@@ -20,7 +20,7 @@ function setup(adapter: PlaybackAdapter | null, isPlaying = ref(false), isReady 
   const state = createPlayerState({ src: 'https://example.com/a.mp4' })
   state.isPlaying = isPlaying
   state.isReady = isReady
-  state.total.value = 100
+  state.duration.value = 100
   const controls = usePlayerControls(state, () => adapter, noAds, vi.fn())
   return { controls, isPlaying, state }
 }

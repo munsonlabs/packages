@@ -23,7 +23,6 @@ const hud = injectStrict(HudKey)
 
   <div class="controls__vol-body">
     <VolumeSlider
-      :player="player"
       class="controls__vol-slider"
       @mousedown="hud.pauseHide()"
       @mouseup="hud.scheduleHide()"

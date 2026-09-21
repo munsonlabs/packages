@@ -71,7 +71,7 @@ describe('SDK load failure', () => {
     expect(adapter.error()?.message).toMatch(/failed to load/i)
   })
 
-  it('reports one failed load to every waiting adapter; setSrc() (Retry) then re-runs the connect from scratch', async () => {
+  it('reports one failed load to every waiting adapter; retry() then re-runs the connect from scratch', async () => {
     vi.mocked(loadScript).mockClear()
     vi.mocked(loadScript).mockRejectedValueOnce(new Error('offline'))
 
@@ -83,7 +83,7 @@ describe('SDK load failure', () => {
     expect(loadScript).toHaveBeenCalledTimes(1)
     expect(created).toBe(0)
 
-    a.adapter.setSrc('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+    a.adapter.retry()
     await flush(5)
 
     expect(loadScript).toHaveBeenCalledTimes(2)

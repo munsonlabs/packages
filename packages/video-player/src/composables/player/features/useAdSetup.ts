@@ -61,7 +61,7 @@ export function useAdSetup(refs: UseAdSetupRefs, deps: UseAdSetupDeps): UseAdSet
     })
 
     function exitPipForAd(): void {
-      if (!isIOS() && adapter.isPipActive()) void document.exitPictureInPicture()
+      if (!isIOS() && adapter.pip?.isActive()) void document.exitPictureInPicture()
     }
 
     function pauseAdIfHidden(): void {
@@ -72,7 +72,7 @@ export function useAdSetup(refs: UseAdSetupRefs, deps: UseAdSetupDeps): UseAdSet
 
     const unregisterDocListener = onVisibilityOrBlur(pauseAdIfHidden)
     const onPipChange = (): void => {
-      if (!adapter.isPipActive()) pauseAdIfHidden()
+      if (!adapter.pip?.isActive()) pauseAdIfHidden()
     }
 
     adapter.on('pipchange', onPipChange)

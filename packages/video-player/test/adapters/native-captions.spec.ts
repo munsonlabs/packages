@@ -10,8 +10,8 @@ function makeAdapter() {
 describe('native adapter — captions', () => {
   it('reports no captions support with no text tracks', () => {
     const { adapter } = makeAdapter()
-    expect(adapter.supportsCaptions()).toBe(false)
-    expect(adapter.getCaptionTracks()).toEqual([])
+    expect(adapter.captions!.tracks().length > 0).toBe(false)
+    expect(adapter.captions!.tracks()).toEqual([])
   })
 
   it('lists caption/subtitle tracks and ignores other kinds (e.g. chapters)', () => {
@@ -20,8 +20,8 @@ describe('native adapter — captions', () => {
     videoEl.addTextTrack('subtitles', 'French', 'fr')
     videoEl.addTextTrack('chapters', 'Chapters', 'en')
 
-    expect(adapter.supportsCaptions()).toBe(true)
-    expect(adapter.getCaptionTracks()).toEqual([
+    expect(adapter.captions!.tracks().length > 0).toBe(true)
+    expect(adapter.captions!.tracks()).toEqual([
       { index: 0, label: 'English', language: 'en' },
       { index: 1, label: 'French', language: 'fr' },
     ])
@@ -32,7 +32,7 @@ describe('native adapter — captions', () => {
     videoEl.addTextTrack('captions', '', 'de')
     videoEl.addTextTrack('captions', '', '')
 
-    expect(adapter.getCaptionTracks()).toEqual([
+    expect(adapter.captions!.tracks()).toEqual([
       { index: 0, label: 'de', language: 'de' },
       { index: 1, label: 'Track 2', language: '' },
     ])
@@ -49,7 +49,7 @@ describe('native adapter — captions', () => {
     videoEl.addTextTrack('captions', 'English', 'en')
     videoEl.addTextTrack('subtitles', 'French', 'fr')
 
-    adapter.setCaptionTrack(1)
+    adapter.captions!.select(1)
 
     expect(videoEl.textTracks[0].mode).not.toBe('showing')
     expect(videoEl.textTracks[1].mode).toBe('showing')
@@ -59,7 +59,7 @@ describe('native adapter — captions', () => {
     const { videoEl, adapter } = makeAdapter()
     videoEl.addTextTrack('captions', 'English', 'en')
 
-    adapter.setCaptionTrack(null)
+    adapter.captions!.select(null)
 
     expect(videoEl.textTracks[0].mode).not.toBe('showing')
   })
@@ -68,7 +68,7 @@ describe('native adapter — captions', () => {
     const { videoEl, adapter } = makeAdapter()
     videoEl.addTextTrack('captions', 'English', 'en')
 
-    expect(adapter.getActiveCaptionTrack()).toBe(null)
+    expect(adapter.captions!.active()).toBe(null)
   })
 
   it('getActiveCaptionTrack finds a track the browser set to showing on its own (e.g. a <track default>), not just ones set via setCaptionTrack', () => {
@@ -77,7 +77,7 @@ describe('native adapter — captions', () => {
     const frenchTrack = videoEl.addTextTrack('subtitles', 'French', 'fr')
     frenchTrack.mode = 'showing'
 
-    expect(adapter.getActiveCaptionTrack()).toBe(1)
+    expect(adapter.captions!.active()).toBe(1)
   })
 
   it('getActiveCaptionTrack reflects setCaptionTrack too', () => {
@@ -85,8 +85,8 @@ describe('native adapter — captions', () => {
     videoEl.addTextTrack('captions', 'English', 'en')
     videoEl.addTextTrack('subtitles', 'French', 'fr')
 
-    adapter.setCaptionTrack(1)
+    adapter.captions!.select(1)
 
-    expect(adapter.getActiveCaptionTrack()).toBe(1)
+    expect(adapter.captions!.active()).toBe(1)
   })
 })

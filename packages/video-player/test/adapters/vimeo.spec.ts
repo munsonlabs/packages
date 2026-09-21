@@ -269,7 +269,7 @@ describe('SDK load failure', () => {
     expect(adapter.error()?.message).toMatch(/failed to load/i)
   })
 
-  it('setSrc() after a failed load (Retry) clears the error and re-runs the SDK connect', async () => {
+  it('load() after a failed load (Retry) clears the error and re-runs the SDK connect', async () => {
     vi.mocked(loadScript).mockClear()
     vi.mocked(loadScript).mockRejectedValueOnce(new Error('offline'))
     const videoEl = document.createElement('video')
@@ -279,7 +279,7 @@ describe('SDK load failure', () => {
     expect(adapter.error()).not.toBeNull()
     expect(players).toHaveLength(0)
 
-    adapter.setSrc('https://vimeo.com/347119375')
+    adapter.load('https://vimeo.com/347119375')
     await flush(4)
 
     expect(loadScript).toHaveBeenCalledTimes(2)
@@ -287,13 +287,16 @@ describe('SDK load failure', () => {
     expect(players).toHaveLength(1)
   })
 
-  it('setSrc() is a no-op while a player is connected and healthy', async () => {
+  it('load() swaps the source on a healthy player by reconnecting to it', async () => {
     const { adapter } = await createAdapter()
     expect(players).toHaveLength(1)
-    adapter.setSrc('https://vimeo.com/999')
+
+    adapter.load('https://vimeo.com/999')
     await flush(4)
-    expect(players).toHaveLength(1)
-    expect(players[0].destroyed).toBe(false)
+
+    expect(players[0].destroyed).toBe(true)
+    expect(players).toHaveLength(2)
+    expect(players[1].options.id).toBe(999)
   })
 })
 
@@ -324,7 +327,7 @@ describe('runtime SDK errors', () => {
     await flush()
     player.trigger('error', { message: 'nope' })
 
-    adapter.setSrc('https://vimeo.com/347119375')
+    adapter.load('https://vimeo.com/347119375')
     await flush()
 
     expect(player.destroy).toHaveBeenCalled()

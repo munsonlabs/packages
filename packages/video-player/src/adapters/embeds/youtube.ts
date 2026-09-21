@@ -1,12 +1,12 @@
 import { createEmitter } from '@/composables/player/emitter'
 import { loadScript } from '@/utils/loadScript'
 import {
+  revealEmbed,
   createEmbedMount,
   teardownEmbedMount,
   spawnIosFullscreenOverlay,
   createTimerScheduler,
   enterFullscreenWithIosFallback,
-  EMBED_UNSUPPORTED_FEATURES,
 } from '@/adapters/embeds/embedShared'
 import type { EmbedAdapterOptions } from '@/types/playback'
 import type { PlaybackAdapter, MediaErrorLike } from '@/types/playback'
@@ -260,6 +260,23 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
     cueOnReady = true
   }
 
+  /** Shared by load and retry: a failed load has no player to swap a video into, so it reconnects instead. */
+  function applyCurrentVideo(): void {
+    if (!url.videoId) return
+    if (loadError) {
+      loadError = null
+      if (!options.autoplay) cueOnReady = true
+      connect()
+      return
+    }
+    if (playerReady) {
+      loadVideoById(url.videoId)
+      activeVideoId = url.videoId
+      return
+    }
+    cueOnReady = true
+  }
+
   function spawnIosFullscreen(): void {
     if (!ytPlayer) return
     closeIosFullscreen?.()
@@ -380,26 +397,16 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
     },
     error: (): MediaErrorLike | null =>
       loadError ?? (errorNumber !== null ? { code: errorNumber, message: 'This video could not be played.' } : null),
-    setSrc: (src) => {
+    reveal: (el) => revealEmbed(el, wrapper),
+    load: (src) => {
       const newUrl = parseUrl(src)
       url.videoId = newUrl.videoId
       url.listId = newUrl.listId
       if (!url.videoId) return
-      if (loadError) {
-        loadError = null
-        if (!options.autoplay) cueOnReady = true
-        connect()
-        return
-      }
-      if (playerReady) {
-        loadVideoById(url.videoId)
-        activeVideoId = url.videoId
-      } else {
-        cueOnReady = true
-      }
+      applyCurrentVideo()
     },
+    retry: applyCurrentVideo,
     supportsPlaybackRate: () => hasPlaybackRateFeature,
-    ...EMBED_UNSUPPORTED_FEATURES,
     enterFullscreen,
     exitFullscreen,
     on: emitter.on,

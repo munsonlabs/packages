@@ -116,7 +116,6 @@ function onMoreClick(): void {
       <template v-else>
         <Scrubber
           v-if="!player.isLive"
-          :player="player"
           class="controls__seek"
           @mousedown="hud.pauseHide()"
           @mouseup="hud.scheduleHide()"
@@ -126,11 +125,11 @@ function onMoreClick(): void {
 
         <div class="controls__row">
           <div class="controls__play-wrap">
-            <Buffering :player="player" />
-            <PlayButton v-if="!player.isBuffering" :player="player" class="ppbtn ppbtn--sm" />
+            <Buffering />
+            <PlayButton v-if="!player.isBuffering" class="ppbtn ppbtn--sm" />
           </div>
 
-          <TimeDisplay :player="player" class="controls__time-display" />
+          <TimeDisplay class="controls__time-display" />
 
           <button v-if="playlist.hasNext" class="controls__btn controls__btn--next" aria-label="Play next" @click="playlist.playNext()">
             <Icon name="skip-next" />
@@ -157,11 +156,11 @@ function onMoreClick(): void {
             <Icon name="more" />
           </button>
 
-          <PipButton :player="player" class="controls__btn controls__btn--pip" />
+          <PipButton class="controls__btn controls__btn--pip" />
 
           <div class="controls__fs-wrap">
             <Spinner v-if="player.isFullscreenPending" />
-            <FullscreenButton v-else :player="player" class="controls__btn" />
+            <FullscreenButton v-else class="controls__btn" />
           </div>
         </div>
       </template>

@@ -28,10 +28,10 @@ export function usePlayerEvents(state: PlayerState, deps: UsePlayerEventsDeps): 
     isReady,
     isAdPlaying,
     isLive,
-    current,
-    total,
+    currentTime: current,
+    duration: total,
     buffered,
-    vol,
+    volume: vol,
     isMuted,
     isLooping,
     currentPlaybackRate: playbackRate,
@@ -41,7 +41,7 @@ export function usePlayerEvents(state: PlayerState, deps: UsePlayerEventsDeps): 
     activeCaptionIndex,
     supportsQuality,
     qualityLevels,
-    currentQualityIndex,
+    currentQualityHeight,
     isAutoQuality,
     supportsPip,
     isPipActive,
@@ -58,9 +58,9 @@ export function usePlayerEvents(state: PlayerState, deps: UsePlayerEventsDeps): 
 
     /** Re-run on 'captionschange' since HLS subtitle renditions only appear once the manifest parses; hasStarted-gated so mount-time detection isn't reported as a "change". */
     function refreshCaptionTracks(): void {
-      captionTracks.value = player.getCaptionTracks()
+      captionTracks.value = player.captions?.tracks() ?? []
       supportsCaptions.value = captionTracks.value.length > 0
-      const active = player.getActiveCaptionTrack()
+      const active = player.captions?.active() ?? null
       if (active === activeCaptionIndex.value) return
       activeCaptionIndex.value = active
       if (hasStarted.value) fire('captionchange', { captionIndex: active })
@@ -70,25 +70,23 @@ export function usePlayerEvents(state: PlayerState, deps: UsePlayerEventsDeps): 
     player.on('captionschange', refreshCaptionTracks)
 
     function refreshQuality(): void {
-      qualityLevels.value = player.getQualityLevels()
+      qualityLevels.value = player.quality?.levels() ?? []
       supportsQuality.value = qualityLevels.value.length > 0
-      const newIndex = player.getCurrentQuality()
-      const newAuto = player.isAutoQuality()
-      const changed = newIndex !== currentQualityIndex.value || newAuto !== isAutoQuality.value
-      currentQualityIndex.value = newIndex
+      const newIndex = player.quality?.current() ?? null
+      const newAuto = player.quality?.isAuto() ?? true
+      const newHeight = newAuto ? null : (qualityLevels.value.find((q) => q.index === newIndex)?.height ?? null)
+      const changed = newHeight !== currentQualityHeight.value || newAuto !== isAutoQuality.value
+      currentQualityHeight.value = newHeight
       isAutoQuality.value = newAuto
-      if (changed && hasStarted.value) {
-        const level = newAuto ? undefined : qualityLevels.value.find((q) => q.index === newIndex)
-        fire('qualitychange', { qualityIndex: newAuto ? null : newIndex, qualityHeight: level?.height ?? null })
-      }
+      if (changed && hasStarted.value) fire('qualitychange', { qualityHeight: newHeight })
     }
 
     refreshQuality()
     player.on('qualitychange', refreshQuality)
 
     function refreshPip(): void {
-      supportsPip.value = player.supportsPip()
-      const active = player.isPipActive()
+      supportsPip.value = player.pip?.isSupported() ?? false
+      const active = player.pip?.isActive() ?? false
       if (active === isPipActive.value) return
       isPipActive.value = active
       if (hasStarted.value) fire('pipchange', { isPipActive: active })
@@ -171,7 +169,7 @@ export function usePlayerEvents(state: PlayerState, deps: UsePlayerEventsDeps): 
       if (!total.value) updateDuration()
       if (!supportsPlaybackRate.value) supportsPlaybackRate.value = player.supportsPlaybackRate()
       /** No cross-browser event fires when a TextTrack's own mode changes, so re-read here too. */
-      const active = player.getActiveCaptionTrack()
+      const active = player.captions?.active() ?? null
       if (activeCaptionIndex.value !== active) {
         activeCaptionIndex.value = active
         if (hasStarted.value) fire('captionchange', { captionIndex: active })

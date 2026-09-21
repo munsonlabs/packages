@@ -39,20 +39,25 @@ function makeFakeAdapter(
     setPlaybackRate: vi.fn(),
     bufferedEnd: () => bufferedEnd.value,
     error: () => errorValue.value,
-    setSrc: vi.fn(),
+    load: vi.fn(),
+    retry: vi.fn(),
     supportsPlaybackRate: () => true,
-    supportsCaptions: () => captionTracks.value.length > 0,
-    getCaptionTracks: () => captionTracks.value,
-    setCaptionTrack: vi.fn(),
-    getActiveCaptionTrack: () => activeCaptionTrack.value,
-    supportsQuality: () => quality.levels.value.length > 0,
-    getQualityLevels: () => quality.levels.value,
-    getCurrentQuality: () => quality.currentIndex.value,
-    isAutoQuality: () => quality.isAuto.value,
-    setQuality: vi.fn(),
-    supportsPip: () => pip.supported.value,
-    isPipActive: () => pip.active.value,
-    togglePip: vi.fn(),
+    captions: {
+      tracks: () => captionTracks.value,
+      active: () => activeCaptionTrack.value,
+      select: vi.fn(),
+    },
+    quality: {
+      levels: () => quality.levels.value,
+      current: () => quality.currentIndex.value,
+      isAuto: () => quality.isAuto.value,
+      select: vi.fn(),
+    },
+    pip: {
+      isSupported: () => pip.supported.value,
+      isActive: () => pip.active.value,
+      toggle: vi.fn(),
+    },
     enterFullscreen: vi.fn(),
     exitFullscreen: vi.fn(),
     on: emitter.on,
@@ -91,7 +96,7 @@ describe('usePlayerEvents — live stream detection', () => {
     emitter.trigger('durationchange')
 
     expect(refs.isLive.value).toBe(true)
-    expect(refs.total.value).toBe(0)
+    expect(refs.duration.value).toBe(0)
   })
 
   it('clears isLive once a finite duration is reported', () => {
@@ -108,7 +113,7 @@ describe('usePlayerEvents — live stream detection', () => {
     emitter.trigger('durationchange')
 
     expect(refs.isLive.value).toBe(false)
-    expect(refs.total.value).toBe(120)
+    expect(refs.duration.value).toBe(120)
   })
 
   it('skips quartile checks on timeupdate while live', () => {
@@ -169,13 +174,13 @@ describe('usePlayerEvents — ad playback through the same <video> element (iOS 
 
     attachPlayerEvents(adapter)
     emitter.trigger('timeupdate')
-    expect(refs.current.value).toBe(45)
+    expect(refs.currentTime.value).toBe(45)
 
     refs.isAdPlaying.value = true
     currentTime.value = 3 // the ad creative's own position, reusing the content's <video> element on iOS
     emitter.trigger('timeupdate')
 
-    expect(refs.current.value).toBe(45)
+    expect(refs.currentTime.value).toBe(45)
   })
 
   it('resumes tracking current as soon as the ad ends', () => {
@@ -187,18 +192,18 @@ describe('usePlayerEvents — ad playback through the same <video> element (iOS 
 
     attachPlayerEvents(adapter)
     emitter.trigger('timeupdate')
-    expect(refs.current.value).toBe(45)
+    expect(refs.currentTime.value).toBe(45)
 
     refs.isAdPlaying.value = true
     currentTime.value = 3
     emitter.trigger('timeupdate')
-    expect(refs.current.value).toBe(45)
+    expect(refs.currentTime.value).toBe(45)
 
     refs.isAdPlaying.value = false
     currentTime.value = 46
     emitter.trigger('timeupdate')
 
-    expect(refs.current.value).toBe(46)
+    expect(refs.currentTime.value).toBe(46)
   })
 
   it("ignores durationchange while an ad is playing, instead of overwriting total with the ad creative's own duration", () => {
@@ -209,13 +214,13 @@ describe('usePlayerEvents — ad playback through the same <video> element (iOS 
 
     attachPlayerEvents(adapter)
     emitter.trigger('durationchange')
-    expect(refs.total.value).toBe(120)
+    expect(refs.duration.value).toBe(120)
 
     refs.isAdPlaying.value = true
     duration.value = 15 // the ad creative's own duration
     emitter.trigger('durationchange')
 
-    expect(refs.total.value).toBe(120)
+    expect(refs.duration.value).toBe(120)
   })
 
   it("ignores progress (buffered) while an ad is playing, instead of overwriting it with the ad creative's own buffered range", () => {
@@ -373,7 +378,7 @@ describe('usePlayerEvents — quality', () => {
     expect(refs.supportsQuality.value).toBe(true)
     expect(refs.qualityLevels.value).toEqual(levels.value)
     expect(refs.isAutoQuality.value).toBe(true)
-    expect(refs.currentQualityIndex.value).toBe(1)
+    expect(refs.currentQualityHeight.value).toBe(null)
   })
 
   it('refreshes on qualitychange (e.g. hls.js MANIFEST_PARSED/LEVEL_SWITCHED forwarded by native.ts)', () => {
@@ -393,7 +398,7 @@ describe('usePlayerEvents — quality', () => {
 
     expect(refs.supportsQuality.value).toBe(true)
     expect(refs.qualityLevels.value).toEqual(levels.value)
-    expect(refs.currentQualityIndex.value).toBe(0)
+    expect(refs.currentQualityHeight.value).toBe(null)
   })
 
   it('reports isAutoQuality going false once a manual level is selected', () => {
@@ -411,7 +416,7 @@ describe('usePlayerEvents — quality', () => {
     emitter.trigger('qualitychange')
 
     expect(refs.isAutoQuality.value).toBe(false)
-    expect(refs.currentQualityIndex.value).toBe(0)
+    expect(refs.currentQualityHeight.value).toBe(720)
   })
 })
 
@@ -470,10 +475,10 @@ describe('usePlayerEvents — captionchange/qualitychange state-change events', 
     isAuto.value = false
     emitter.trigger('qualitychange')
 
-    expect(deps.fire).toHaveBeenCalledWith('qualitychange', { qualityIndex: 0, qualityHeight: 720 })
+    expect(deps.fire).toHaveBeenCalledWith('qualitychange', { qualityHeight: 720 })
   })
 
-  it('fires qualitychange with qualityIndex: null when switching back to Auto', () => {
+  it('fires qualitychange with qualityHeight: null when switching back to Auto', () => {
     const refs = makeRefs()
     refs.hasStarted.value = true
     const deps = makeDeps()
@@ -487,7 +492,7 @@ describe('usePlayerEvents — captionchange/qualitychange state-change events', 
     isAuto.value = true
     emitter.trigger('qualitychange')
 
-    expect(deps.fire).toHaveBeenCalledWith('qualitychange', { qualityIndex: null, qualityHeight: null })
+    expect(deps.fire).toHaveBeenCalledWith('qualitychange', { qualityHeight: null })
   })
 })
 

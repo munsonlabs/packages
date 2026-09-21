@@ -86,10 +86,10 @@ describe('variations', () => {
     const { video, player, sink } = await mountPlayer(catalogue.hls)
     await sink.next('play')
     expect(player.isLoaded).toBe(true)
-    expect(player.total).toBeCloseTo(CLIP_DURATION, 0)
+    expect(player.duration).toBeCloseTo(CLIP_DURATION, 0)
     expect(player.isLive).toBe(false)
 
-    player.seekTo(4)
+    player.seek(4)
     await sink.next('seeked')
     expect(video.currentTime).toBeGreaterThanOrEqual(3.9)
 

@@ -1,7 +1,6 @@
 import type { QualityLevelInfo } from '@/types/playback'
 
 export interface QualitySupport {
-  supportsQuality(): boolean
   getQualityLevels(): QualityLevelInfo[]
   getCurrentQuality(): number | null
   isAutoQuality(): boolean
@@ -62,7 +61,6 @@ export function createQualitySupport(getEngine: () => QualityEngineAdapter | nul
   }
 
   return {
-    supportsQuality: () => getQualityLevels().length > 0,
     getQualityLevels,
     getCurrentQuality,
     isAutoQuality,

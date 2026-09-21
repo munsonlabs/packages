@@ -46,8 +46,8 @@ const { currentAction, isCustom, customAction, builtinLabel, builtinActive, onBu
     </template>
 
     <div class="hud__play-wrap">
-      <PlayButton :player="player" class="ppbtn ppbtn--lg" tabindex="-1" />
-      <Buffering :player="player" class="hud__buf-spinner" />
+      <PlayButton class="ppbtn ppbtn--lg" tabindex="-1" />
+      <Buffering class="hud__buf-spinner" />
     </div>
 
     <button v-if="!hud.isOpen && !player.isFullscreen" class="hud__btn" aria-label="Show controls" tabindex="-1" @click.stop="hud.openControls">

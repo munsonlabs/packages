@@ -1,17 +1,22 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, toRef, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { fmtTime } from '@/utils/time'
 import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/controls/useResolvedPlayer'
+import { useSpokenCues } from '@/composables/controls/useSpokenCues'
 import Icon from '@/components/Icon.vue'
 import type { TranscriptCue } from '@/types/player'
+
+defineOptions({ inheritAttrs: false })
 
 const props = defineProps<
   ResolvedPlayerProps & {
     cues?: TranscriptCue[] | string
+    speechPitch?: number
+    speechRate?: number
   }
 >()
 
-const player = useResolvedPlayer(toRef(props, 'player'), toRef(props, 'for'))
+const player = useResolvedPlayer(props)
 
 const parsedCues = computed<TranscriptCue[]>(() => {
   if (typeof props.cues !== 'string') return props.cues ?? []
@@ -23,7 +28,7 @@ const parsedCues = computed<TranscriptCue[]>(() => {
 })
 
 const activeIndex = computed<number | null>(() => {
-  const current = player.value?.current ?? 0
+  const current = player.value?.currentTime ?? 0
   const cues = parsedCues.value
   for (let i = cues.length - 1; i >= 0; i--) {
     const cue = cues[i]
@@ -40,7 +45,7 @@ const hovering = ref(false)
 function onCueClick(cue: TranscriptCue): void {
   const p = player.value
   if (!p) return
-  if (p.total > 0) p.seek((cue.time / p.total) * 100)
+  p.seek(cue.time)
   void p.play().catch(() => {})
 }
 
@@ -50,49 +55,9 @@ watch(activeIndex, async (index) => {
   listEl.value?.querySelector('.mlv-transcript__cue--active')?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' })
 })
 
-const canSpeak = typeof window !== 'undefined' && 'speechSynthesis' in window
-const speechEnabled = ref(false)
-const mutedForSpeech = ref(false)
-
-function toggleSpeech(): void {
-  if (!canSpeak) return
-  speechEnabled.value = !speechEnabled.value
-  if (speechEnabled.value) {
-    if (player.value && !player.value.isMuted) {
-      player.value.toggleMute()
-      mutedForSpeech.value = true
-    }
-    return
-  }
-  window.speechSynthesis.cancel()
-  if (mutedForSpeech.value && player.value?.isMuted) player.value.toggleMute()
-  mutedForSpeech.value = false
-}
-
-watch(activeIndex, (index) => {
-  if (!canSpeak || !speechEnabled.value || index === null) return
-  const cue = parsedCues.value[index]
-  if (!cue) return
-  window.speechSynthesis.cancel()
-  let utterance = new SpeechSynthesisUtterance(cue.text)
-  utterance.pitch = 2.0
-  utterance.rate = 1.5
-  window.speechSynthesis.speak(utterance)
-})
-
-watch(
-  () => player.value?.isMuted,
-  (isMuted) => {
-    if (!canSpeak || !speechEnabled.value || isMuted !== false) return
-    window.speechSynthesis.cancel()
-    speechEnabled.value = false
-    mutedForSpeech.value = false
-  },
-)
-
-onBeforeUnmount(() => {
-  if (canSpeak) window.speechSynthesis.cancel()
-  if (mutedForSpeech.value && player.value?.isMuted) player.value.toggleMute()
+const { canSpeak, speechEnabled, toggleSpeech } = useSpokenCues(player, parsedCues, activeIndex, {
+  pitch: props.speechPitch,
+  rate: props.speechRate,
 })
 </script>
 
@@ -108,7 +73,7 @@ onBeforeUnmount(() => {
     <Icon name="volume-on" v-if="speechEnabled" />
     <Icon name="volume-mute" v-else />
   </button>
-  <ol ref="listEl" class="mlv-transcript" @pointerenter="hovering = true" @pointerleave="hovering = false">
+  <ol ref="listEl" class="mlv-transcript" v-bind="$attrs" @pointerenter="hovering = true" @pointerleave="hovering = false">
     <li v-for="(cue, index) in parsedCues" :key="`${cue.time}-${index}`" class="mlv-transcript__item">
       <button
         type="button"

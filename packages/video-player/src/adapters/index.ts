@@ -4,13 +4,18 @@ import { HLS_MIME_TYPE, DASH_MIME_TYPE, MP4_MIME_TYPE } from '@/constants'
 
 const matchers: Matcher[] = []
 
+/**
+ * Consumer registrations go in front of the built-ins, which register when this module loads. Pushed
+ * onto the end instead, a matcher for a URL a built-in already claims could never win, so overriding
+ * YouTube or Brightcove - the whole point of registering a platform by hand - quietly did nothing.
+ * Built-ins seed the list in their own declaration order via `appendMatcher`.
+ */
 export function registerMatcher(matcher: Matcher): void {
-  matchers.push(matcher)
+  matchers.unshift(matcher)
 }
 
-export function getPlatform(url: string): string {
-  if (!url) return 'html5'
-  return matchers.find((m) => m.test(url))?.key ?? 'html5'
+function appendMatcher(matcher: Matcher): void {
+  matchers.push(matcher)
 }
 
 export function resolvePlatform(url: string): { key: string; embed: boolean } {
@@ -74,7 +79,7 @@ type LazyPlatformConfig = Pick<Matcher, 'key' | 'test'> &
   ({ embed: true; loadAdapter: () => Promise<EmbedAdapterFactory> } | { embed: false; loadResolver: () => Promise<SourceResolver> })
 
 function registerLazyPlatform(config: LazyPlatformConfig): void {
-  registerMatcher({ key: config.key, test: config.test, embed: config.embed })
+  appendMatcher({ key: config.key, test: config.test, embed: config.embed })
   if (config.embed) embedAdapterLoaders[config.key] = config.loadAdapter
   else sourceResolverLoaders[config.key] = config.loadResolver
 }

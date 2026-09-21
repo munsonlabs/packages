@@ -9,7 +9,7 @@ vi.mock('@/composables/player/useAdapterMount', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/composables/player/useAdapterMount')>()),
   mountAdapter: vi.fn(async () => ({
     status: 'mounted',
-    mounted: { adapter: fakeAdapter, currentSrc: { src: 'a.mp4' }, needsReveal: false },
+    mounted: { adapter: fakeAdapter, needsReveal: false },
   })),
 }))
 

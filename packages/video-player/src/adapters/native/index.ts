@@ -165,7 +165,12 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
     emitter.trigger('error')
   }
 
-  function setSrc(src: string, type?: string): void {
+  let loadedSrc = ''
+  let loadedType: string | undefined
+
+  function load(src: string, type?: string): void {
+    loadedSrc = src
+    loadedType = type
     clearRecoveryTimer()
     streamError = null
     recoveryAttempts = 0
@@ -210,7 +215,7 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
   videoEl.volume = volume ?? 1
   videoEl.playbackRate = playbackRate ?? 1
   videoEl.playsInline = true
-  setSrc(src, type)
+  load(src, type)
 
   return {
     el: videoEl,
@@ -251,20 +256,25 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
       if (err) return { code: err.code, message: err.message || 'This video could not be played.' }
       return streamError
     },
-    setSrc,
+    load,
+    retry: () => load(loadedSrc, loadedType),
     supportsPlaybackRate: () => true,
-    supportsCaptions: captionSupport.supportsCaptions,
-    getCaptionTracks: captionSupport.getCaptionTracks,
-    setCaptionTrack: captionSupport.setCaptionTrack,
-    getActiveCaptionTrack: captionSupport.getActiveCaptionTrack,
-    supportsQuality: qualitySupport.supportsQuality,
-    getQualityLevels: qualitySupport.getQualityLevels,
-    getCurrentQuality: qualitySupport.getCurrentQuality,
-    isAutoQuality: qualitySupport.isAutoQuality,
-    setQuality: qualitySupport.setQuality,
-    supportsPip: pipSupport.supportsPip,
-    isPipActive: pipSupport.isPipActive,
-    togglePip: pipSupport.togglePip,
+    captions: {
+      tracks: captionSupport.getCaptionTracks,
+      active: captionSupport.getActiveCaptionTrack,
+      select: captionSupport.setCaptionTrack,
+    },
+    quality: {
+      levels: qualitySupport.getQualityLevels,
+      current: qualitySupport.getCurrentQuality,
+      isAuto: qualitySupport.isAutoQuality,
+      select: qualitySupport.setQuality,
+    },
+    pip: {
+      isSupported: pipSupport.supportsPip,
+      isActive: pipSupport.isPipActive,
+      toggle: pipSupport.togglePip,
+    },
     enterFullscreen: fullscreenSupport.enterFullscreen,
     exitFullscreen: fullscreenSupport.exitFullscreen,
     on: emitter.on,

@@ -141,7 +141,7 @@ function playEntry(entry: VideoEntry | null, fromGesture: boolean): void {
     fromGesture,
     autoplay: true,
     muted: entry.muted ?? playerRef.value?.isMuted ?? resolveGestureMuted(undefined, fromGesture),
-    volume: entry.volume ?? playerRef.value?.vol,
+    volume: entry.volume ?? playerRef.value?.volume,
   })
 }
 

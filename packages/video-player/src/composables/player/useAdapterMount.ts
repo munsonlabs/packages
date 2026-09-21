@@ -9,9 +9,7 @@ import { getAudioPreference, hasUnmutedThisSession } from '@/utils/audioPreferen
 
 export interface MountedAdapter {
   adapter: PlaybackAdapter
-  currentSrc: { src: string; type?: string }
   nativeUi?: boolean
-  needsReveal: boolean
 }
 
 export type MountResult = { status: 'mounted'; mounted: MountedAdapter } | { status: 'unsupported' } | { status: 'aborted' }
@@ -52,7 +50,7 @@ async function mountEmbedAdapter(
   if (!embedAdapter) return { status: 'unsupported' }
   return {
     status: 'mounted',
-    mounted: { adapter: embedAdapter, currentSrc: { src: props.src }, nativeUi: !!props.nativeUi, needsReveal: true },
+    mounted: { adapter: embedAdapter, nativeUi: !!props.nativeUi },
   }
 }
 
@@ -79,7 +77,7 @@ async function mountNativeAdapter(
   const baseAdTag = applyAdTagParams(props.adTagUrl || resolved.adTagUrl || '', props.adMacroParams)
   void adSetup.attach(videoEl.value, nativeAdapter, baseAdTag, props.headerBidding)
 
-  return { status: 'mounted', mounted: { adapter: nativeAdapter, currentSrc: { src: resolved.src, type: resolved.type }, needsReveal: false } }
+  return { status: 'mounted', mounted: { adapter: nativeAdapter } }
 }
 
 export function mountAdapter(

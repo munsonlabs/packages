@@ -4,37 +4,6 @@ import { createEmitter } from '@/composables/player/emitter'
 import type { Emitter } from '@/composables/player/emitter'
 import type { PlaybackAdapter, MediaErrorLike, EmbedAdapterOptions } from '@/types/playback'
 
-type EmbedUnsupportedFeatures = Pick<
-  PlaybackAdapter,
-  | 'supportsCaptions'
-  | 'getCaptionTracks'
-  | 'setCaptionTrack'
-  | 'getActiveCaptionTrack'
-  | 'supportsQuality'
-  | 'getQualityLevels'
-  | 'getCurrentQuality'
-  | 'isAutoQuality'
-  | 'setQuality'
-  | 'supportsPip'
-  | 'isPipActive'
-  | 'togglePip'
->
-
-export const EMBED_UNSUPPORTED_FEATURES: EmbedUnsupportedFeatures = {
-  supportsCaptions: () => false,
-  getCaptionTracks: () => [],
-  setCaptionTrack: () => {},
-  getActiveCaptionTrack: () => null,
-  supportsQuality: () => false,
-  getQualityLevels: () => [],
-  getCurrentQuality: () => null,
-  isAutoQuality: () => true,
-  setQuality: () => {},
-  supportsPip: () => false,
-  isPipActive: () => false,
-  togglePip: () => {},
-}
-
 let mountCounter = 0
 
 export interface EmbedMount {
@@ -201,8 +170,8 @@ export interface StatefulEmbedImpl {
 
 /**
  * Records an SDK failure on the mirrored state before announcing it. Both halves matter: `error()`
- * reports `errorState` as the reason a consumer sees, and `setSrc()` refuses to reconnect a player
- * that still looks healthy - so an error that only fires the event leaves Retry a silent no-op.
+ * reports `errorState` as the reason a consumer sees, and the player's own error UI keys off it - so
+ * an error that only fires the event leaves the viewer with a generic message and no reason.
  */
 export function failEmbed(state: EmbedMirrorState, emitter: Emitter, message: string | undefined, fallback: string): void {
   state.errorState = { code: 4, message: message || fallback }
@@ -211,6 +180,7 @@ export function failEmbed(state: EmbedMirrorState, emitter: Emitter, message: st
 
 export function createStatefulEmbedAdapter(videoEl: HTMLVideoElement, options: EmbedAdapterOptions, impl: StatefulEmbedImpl): PlaybackAdapter {
   const emitter = createEmitter()
+
   const { techId, wrapper } = createEmbedMount(videoEl, impl.cssClass, options.nativeUi)
   const { schedule, clearAll: clearTimers } = createTimerScheduler()
 
@@ -241,6 +211,13 @@ export function createStatefulEmbedAdapter(videoEl: HTMLVideoElement, options: E
   }
 
   void impl.connect(core)
+
+  /** Embeds have no source to swap into a live player: both loading and retrying mean tearing the SDK player down and connecting again. */
+  function reconnect(): void {
+    state.errorState = null
+    impl.destroyPlayer()
+    void impl.connect(core)
+  }
 
   function enterFullscreen(): void {
     enterFullscreenWithIosFallback(videoEl, () => {
@@ -286,16 +263,14 @@ export function createStatefulEmbedAdapter(videoEl: HTMLVideoElement, options: E
     setPlaybackRate: () => {},
     bufferedEnd: () => state.currentTime,
     error: (): MediaErrorLike | null => state.errorState,
-    /** Only meaningful as a Retry after a failed connect (usePlayer.retry() routes through here) - a live player keeps its source. Mutates `options.src` because each impl's connect() closes over that same object. */
-    setSrc: (src) => {
-      if (impl.hasPlayer() && !state.errorState) return
+    /** Mutates `options.src` because each impl's connect() closes over that same object. */
+    reveal: (el) => revealEmbed(el, wrapper),
+    load: (src) => {
       options.src = src
-      state.errorState = null
-      impl.destroyPlayer()
-      void impl.connect(core)
+      reconnect()
     },
+    retry: reconnect,
     supportsPlaybackRate: () => false,
-    ...EMBED_UNSUPPORTED_FEATURES,
     enterFullscreen,
     exitFullscreen,
     on: emitter.on,

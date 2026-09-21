@@ -45,7 +45,7 @@ describe('mute / volume', () => {
     player.setVolume(0.4)
     await sink.next('volumechange', 1)
     expect(video.volume).toBeCloseTo(0.4, 5)
-    expect(player.vol).toBeCloseTo(0.4, 5)
+    expect(player.volume).toBeCloseTo(0.4, 5)
     expect(player.isAudible).toBe(true)
 
     player.setVolume(0)

@@ -1,7 +1,6 @@
 import type { CaptionTrackInfo } from '@/types/playback'
 
 export interface CaptionSupport {
-  supportsCaptions(): boolean
   getCaptionTracks(): CaptionTrackInfo[]
   setCaptionTrack(index: number | null): void
   getActiveCaptionTrack(): number | null
@@ -107,7 +106,6 @@ export function createCaptionSupport(videoEl: HTMLVideoElement, onChange: () => 
   }
 
   return {
-    supportsCaptions: () => getCaptionTracks().length > 0,
     getCaptionTracks,
     setCaptionTrack,
     getActiveCaptionTrack,

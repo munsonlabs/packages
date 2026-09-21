@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import { computed, toRef } from 'vue'
+import { computed } from 'vue'
 import Icon from '@/components/Icon.vue'
-import { useCaptions } from '@/composables/overlay/useCaptions'
+import { cycleCaptionTrack, captionTrackLabel } from '@/utils/playerActions'
 import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/controls/useResolvedPlayer'
 
 const props = defineProps<ResolvedPlayerProps>()
-const player = useResolvedPlayer(toRef(props, 'player'), toRef(props, 'for'))
+const player = useResolvedPlayer(props)
 
-const captions = computed(() => (player.value ? useCaptions(player.value) : null))
-const currentLabel = computed(() => captions.value?.currentCaptionLabel() ?? 'Off')
+const currentLabel = computed(() => (player.value ? captionTrackLabel(player.value) : 'Off'))
 
 function cycle(): void {
-  captions.value?.cycleCaptionTrack()
+  if (player.value) cycleCaptionTrack(player.value)
 }
 </script>
 

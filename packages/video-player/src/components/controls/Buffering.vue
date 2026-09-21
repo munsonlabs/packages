@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { toRef } from 'vue'
 import Spinner from '@/components/Spinner.vue'
 import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/controls/useResolvedPlayer'
 
 const props = defineProps<ResolvedPlayerProps>()
-const player = useResolvedPlayer(toRef(props, 'player'), toRef(props, 'for'))
+const player = useResolvedPlayer(props)
 </script>
 
 <template>
-  <div v-if="player?.isBuffering" class="mlv-buffering">
-    <slot>
+  <div v-if="player?.isBuffering" class="mlv-buffering" role="status" aria-label="Buffering">
+    <slot :is-buffering="true">
       <Spinner />
     </slot>
   </div>

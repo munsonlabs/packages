@@ -9,7 +9,7 @@ vi.mock('@/composables/player/useAdapterMount', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/composables/player/useAdapterMount')>()),
   mountAdapter: vi.fn(async () => ({
     status: 'mounted',
-    mounted: { adapter: fakeAdapter, currentSrc: { src: 'a.mp4' }, needsReveal: false },
+    mounted: { adapter: fakeAdapter, needsReveal: false },
   })),
 }))
 
@@ -88,22 +88,22 @@ describe('replay()', () => {
   })
 })
 
-describe('pause() / seekTo()', () => {
+describe('pause() / seek()', () => {
   it('pause() pauses the adapter', async () => {
     const { player } = await setup()
     player.pause()
     expect(fakeAdapter.pause).toHaveBeenCalledOnce()
   })
 
-  it('seekTo() takes seconds and clamps to the known duration', async () => {
+  it('seek() takes seconds and clamps to the known duration', async () => {
     const { player } = await setup()
     emitter.trigger('durationchange')
     await nextTick()
-    expect(player.total.value).toBe(100)
+    expect(player.duration.value).toBe(100)
 
-    player.seekTo(30)
-    player.seekTo(500)
-    player.seekTo(-5)
+    player.seek(30)
+    player.seek(500)
+    player.seek(-5)
     expect(vi.mocked(fakeAdapter.setCurrentTime).mock.calls.map((c) => c[0])).toEqual([30, 100, 0])
   })
 })

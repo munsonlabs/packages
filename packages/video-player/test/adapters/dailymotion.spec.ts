@@ -260,7 +260,7 @@ describe('dispose', () => {
 })
 
 describe('SDK load failure', () => {
-  it('setSrc() after a failed load (Retry) clears the error and re-runs the SDK connect', async () => {
+  it('load() after a failed load (Retry) clears the error and re-runs the SDK connect', async () => {
     vi.mocked(loadScript).mockClear()
     vi.mocked(loadScript).mockRejectedValueOnce(new Error('offline'))
     const videoEl = document.createElement('video')
@@ -270,7 +270,7 @@ describe('SDK load failure', () => {
     expect(adapter.error()?.message).toBe('offline')
     expect(window.dailymotion?.createPlayer).not.toHaveBeenCalled()
 
-    adapter.setSrc(DEFAULT_SRC)
+    adapter.load(DEFAULT_SRC)
     await flush()
 
     expect(loadScript).toHaveBeenCalledTimes(2)

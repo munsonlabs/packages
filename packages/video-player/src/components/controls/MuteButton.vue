@@ -1,14 +1,19 @@
 <script setup lang="ts">
-import { toRef } from 'vue'
 import VolumeIcon from '@/components/overlay/VolumeIcon.vue'
 import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/controls/useResolvedPlayer'
 
 const props = defineProps<ResolvedPlayerProps>()
-const player = useResolvedPlayer(toRef(props, 'player'), toRef(props, 'for'))
+const player = useResolvedPlayer(props)
 </script>
 
 <template>
-  <button type="button" class="mlv-mute-button" :aria-label="player?.isMuted ? 'Unmute' : 'Mute'" @click="player?.toggleMute()">
+  <button
+    type="button"
+    class="mlv-mute-button"
+    :aria-pressed="player?.isMuted ?? false"
+    :aria-label="player?.isMuted ? 'Unmute' : 'Mute'"
+    @click="player?.toggleMute()"
+  >
     <slot :is-muted="player?.isMuted ?? false">
       <VolumeIcon :is-audible="player?.isAudible ?? false" />
     </slot>

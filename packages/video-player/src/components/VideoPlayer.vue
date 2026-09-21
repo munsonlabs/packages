@@ -159,7 +159,12 @@ defineExpose(exposePlayerSurface(player))
             <PlayerOverlay v-if="props.controls && !player.isNativeUi" />
 
             <div v-if="props.controls && player.isNativeUi && !player.hasStarted" class="player__native-play">
-              <PlayButton :player="player" class="ppbtn ppbtn--lg" />
+              <PlayButton class="ppbtn ppbtn--lg" />
+            </div>
+
+            <!-- Custom HUD. Controls placed here find this player through context, no wiring needed. -->
+            <div v-if="$slots.default" class="player__custom-hud">
+              <slot />
             </div>
           </div>
         </div>
@@ -236,6 +241,17 @@ defineExpose(exposePlayerSurface(player))
   width: auto;
   max-width: 100%;
   margin: 0 auto;
+}
+
+.player__custom-hud {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.player__custom-hud > * {
+  pointer-events: auto;
 }
 
 .player__native-play {

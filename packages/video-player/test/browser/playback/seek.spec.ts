@@ -12,7 +12,7 @@ describe('seek', () => {
     const seeked = await sink.next('seeked')
     expect(seeked.currentTime).toBeCloseTo(CLIP_DURATION / 2, 0)
     expect(video.currentTime).toBeGreaterThanOrEqual(CLIP_DURATION / 2 - 0.1)
-    expect(player.current).toBeGreaterThanOrEqual(CLIP_DURATION / 2 - 0.1)
+    expect(player.currentTime).toBeGreaterThanOrEqual(CLIP_DURATION / 2 - 0.1)
   })
 
   it('seeking backwards works while playing, and playback continues', async () => {
@@ -29,15 +29,15 @@ describe('seek', () => {
     await waitFor(() => video.currentTime > CLIP_DURATION * 0.1 + 0.2, 'playback to keep advancing after the seek')
   })
 
-  it('seekTo(seconds) lands on that time and clamps past the end', async () => {
+  it('seek(seconds) lands on that time and clamps past the end', async () => {
     const { video, player, sink } = await mountPlayer(catalogue.plain)
     await sink.next('play')
 
-    player.seekTo(2)
+    player.seek(2)
     const seeked = await sink.next('seeked')
     expect(seeked.currentTime).toBeCloseTo(2, 0)
 
-    player.seekTo(999)
+    player.seek(999)
     await sink.next('seeked', 1)
     expect(video.currentTime).toBeCloseTo(CLIP_DURATION, 0)
   })

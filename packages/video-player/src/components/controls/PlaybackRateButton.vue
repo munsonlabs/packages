@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import { computed, toRef } from 'vue'
+import { computed } from 'vue'
 import { PLAYBACK_RATES } from '@/constants'
-import { usePlaybackRate } from '@/composables/overlay/usePlaybackRate'
+import { cyclePlaybackRate, playbackRateLabel } from '@/utils/playerActions'
 import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/controls/useResolvedPlayer'
 
 const props = defineProps<ResolvedPlayerProps>()
-const player = useResolvedPlayer(toRef(props, 'player'), toRef(props, 'for'))
+const player = useResolvedPlayer(props)
 
-const rate = computed(() => (player.value ? usePlaybackRate(player.value) : null))
-const currentLabel = computed(() => (rate.value ? rate.value.fmtRate(player.value!.currentPlaybackRate) : '1×'))
+const currentLabel = computed(() => playbackRateLabel(player.value?.currentPlaybackRate ?? 1))
 
 function cycle(): void {
-  rate.value?.cycleRate()
+  if (player.value) cyclePlaybackRate(player.value)
 }
 </script>
 

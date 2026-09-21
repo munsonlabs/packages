@@ -23,14 +23,14 @@ export function useScrubber(player: Ref<PlayerHandle | null | undefined>): UseSc
 
   const liveProgress = computed(() => {
     const p = player.value
-    return p?.total ? (p.current / p.total) * 100 : 0
+    return p?.duration ? (p.currentTime / p.duration) * 100 : 0
   })
 
   const displayPercent = computed(() => previewPercent.value ?? liveProgress.value)
   const scrubbing = computed(() => previewPercent.value !== null)
 
   const previewSeconds = computed(() => {
-    const total = player.value?.total ?? 0
+    const total = player.value?.duration ?? 0
     return (displayPercent.value / 100) * total
   })
 
@@ -60,7 +60,7 @@ export function useScrubber(player: Ref<PlayerHandle | null | undefined>): UseSc
     const p = player.value
     if (!p) return
     previewPercent.value = percent
-    p.seek(percent)
+    p.seek((percent * (p.duration || 0)) / 100)
     if (wasPlaying) void p.play().catch(() => {})
     cancelCatchUp()
     catchUpTimer = setTimeout(clearPreview, SEEK_CATCH_UP_TIMEOUT_MS)
@@ -68,7 +68,7 @@ export function useScrubber(player: Ref<PlayerHandle | null | undefined>): UseSc
 
   function onInput(e: Event): void {
     const p = player.value
-    if (!p?.total) return
+    if (!p?.duration) return
     beginDrag(p)
     cancelCatchUp()
     previewPercent.value = readPercent(e)
@@ -96,7 +96,7 @@ export function useScrubber(player: Ref<PlayerHandle | null | undefined>): UseSc
       return
     }
     const p = player.value
-    if (!p?.total) return
+    if (!p?.duration) return
     commitSeek(readPercent(e))
   }
 
@@ -109,12 +109,12 @@ export function useScrubber(player: Ref<PlayerHandle | null | undefined>): UseSc
   }
 
   watch(
-    () => player.value?.current,
+    () => player.value?.currentTime,
     () => {
       const p = player.value
-      if (previewPercent.value === null || !p?.total) return
-      const targetTime = (previewPercent.value / 100) * p.total
-      if (Math.abs(p.current - targetTime) < SEEK_CATCH_UP_TOLERANCE_S) clearPreview()
+      if (previewPercent.value === null || !p?.duration) return
+      const targetTime = (previewPercent.value / 100) * p.duration
+      if (Math.abs(p.currentTime - targetTime) < SEEK_CATCH_UP_TOLERANCE_S) clearPreview()
     },
   )
 

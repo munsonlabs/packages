@@ -83,8 +83,8 @@ describe('native adapter — quality (dash.js)', () => {
     const adapter = createNativeAdapter(videoEl, { src: 'stream.mpd', type: 'application/dash+xml' })
     await flushMicrotasks()
 
-    expect(adapter.supportsQuality()).toBe(false)
-    expect(adapter.getQualityLevels()).toEqual([])
+    expect(adapter.quality!.levels().length > 0).toBe(false)
+    expect(adapter.quality!.levels()).toEqual([])
   })
 
   it('lists levels and reports Auto once the stream initializes', async () => {
@@ -99,13 +99,13 @@ describe('native adapter — quality (dash.js)', () => {
     lastInstance().currentQuality = 1
     lastInstance().emit(DashEvents.STREAM_INITIALIZED)
 
-    expect(adapter.supportsQuality()).toBe(true)
-    expect(adapter.getQualityLevels()).toEqual([
+    expect(adapter.quality!.levels().length > 0).toBe(true)
+    expect(adapter.quality!.levels()).toEqual([
       { index: 0, height: 480, bitrate: 800_000, label: '480p' },
       { index: 1, height: 1080, bitrate: 3_000_000, label: '1080p' },
     ])
-    expect(adapter.isAutoQuality()).toBe(true)
-    expect(adapter.getCurrentQuality()).toBe(null)
+    expect(adapter.quality!.isAuto()).toBe(true)
+    expect(adapter.quality!.current()).toBe(null)
   })
 
   it('setQuality(index) calls setQualityFor with replace:true so the switch takes effect immediately', async () => {
@@ -117,7 +117,7 @@ describe('native adapter — quality (dash.js)', () => {
     lastInstance().emit(DashEvents.STREAM_INITIALIZED)
 
     const setQualityFor = vi.spyOn(lastInstance(), 'setQualityFor')
-    adapter.setQuality(0)
+    adapter.quality!.select(0)
 
     expect(setQualityFor).toHaveBeenCalledWith('video', 0, true)
   })
@@ -130,7 +130,7 @@ describe('native adapter — quality (dash.js)', () => {
     lastInstance().bitrateList = [{ qualityIndex: 0, height: 480, bitrate: 800_000 }]
     lastInstance().emit(DashEvents.STREAM_INITIALIZED)
 
-    adapter.setQuality(0)
+    adapter.quality!.select(0)
 
     expect(lastInstance().autoSwitchBitrateVideo).toBe(false)
     expect(lastInstance().currentQuality).toBe(0)
@@ -142,7 +142,7 @@ describe('native adapter — quality (dash.js)', () => {
     await flushMicrotasks()
 
     lastInstance().autoSwitchBitrateVideo = false
-    adapter.setQuality(null)
+    adapter.quality!.select(null)
 
     expect(lastInstance().autoSwitchBitrateVideo).toBe(true)
   })

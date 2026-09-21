@@ -10,7 +10,7 @@ vi.mock('@/composables/player/useAdapterMount', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/composables/player/useAdapterMount')>()),
   mountAdapter: vi.fn(async () => ({
     status: 'mounted',
-    mounted: { adapter: fakeAdapter, currentSrc: { src: 'a.m3u8' }, needsReveal: false },
+    mounted: { adapter: fakeAdapter, needsReveal: false },
   })),
 }))
 
@@ -22,7 +22,7 @@ const LEVELS: QualityLevelInfo[] = [
   { index: 2, height: 1080, bitrate: 5_000_000, label: '1080p' },
 ]
 
-const originalGetQualityLevels = fakeAdapter.getQualityLevels
+const originalGetQualityLevels = fakeAdapter.quality!.levels
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -31,7 +31,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  fakeAdapter.getQualityLevels = originalGetQualityLevels
+  fakeAdapter.quality!.levels = originalGetQualityLevels
 })
 
 function setup(props: Partial<PlayerProps>) {
@@ -45,7 +45,7 @@ function setup(props: Partial<PlayerProps>) {
 const flush = () => new Promise((r) => setTimeout(r, 0))
 
 async function levelsArrive(): Promise<void> {
-  fakeAdapter.getQualityLevels = () => LEVELS
+  fakeAdapter.quality!.levels = () => LEVELS
   emitter.trigger('qualitychange')
   await nextTick()
 }
@@ -56,18 +56,18 @@ describe('quality prop', () => {
     await flush()
     await levelsArrive()
 
-    expect(fakeAdapter.setQuality).not.toHaveBeenCalled()
+    expect(fakeAdapter.quality!.select).not.toHaveBeenCalled()
   })
 
   it('picks the nearest level once the levels are known', async () => {
     const { player } = setup({ quality: 700 })
     await flush()
-    expect(fakeAdapter.setQuality).not.toHaveBeenCalled()
+    expect(fakeAdapter.quality!.select).not.toHaveBeenCalled()
 
     await levelsArrive()
 
-    expect(fakeAdapter.setQuality).toHaveBeenCalledWith(1)
-    expect(player.currentQualityIndex.value).toBe(1)
+    expect(fakeAdapter.quality!.select).toHaveBeenCalledWith(1)
+    expect(player.currentQualityHeight.value).toBe(720)
     expect(player.isAutoQuality.value).toBe(false)
   })
 
@@ -78,11 +78,11 @@ describe('quality prop', () => {
 
     props.quality = 1080
     await nextTick()
-    expect(fakeAdapter.setQuality).toHaveBeenLastCalledWith(2)
+    expect(fakeAdapter.quality!.select).toHaveBeenLastCalledWith(2)
 
     props.quality = null
     await nextTick()
-    expect(fakeAdapter.setQuality).toHaveBeenLastCalledWith(null)
+    expect(fakeAdapter.quality!.select).toHaveBeenLastCalledWith(null)
     expect(player.isAutoQuality.value).toBe(true)
   })
 
@@ -91,10 +91,10 @@ describe('quality prop', () => {
     await flush()
     await levelsArrive()
 
-    player.setQuality(0)
+    player.setQuality(360)
     emitter.trigger('qualitychange')
     await nextTick()
 
-    expect(vi.mocked(fakeAdapter.setQuality).mock.calls.map(([index]) => index)).toEqual([1, 0])
+    expect(vi.mocked(fakeAdapter.quality!.select).mock.calls.map(([index]) => index)).toEqual([1, 0])
   })
 })

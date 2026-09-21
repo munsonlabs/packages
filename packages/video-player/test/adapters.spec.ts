@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import {
-  getPlatform,
   resolvePlatform,
   resolveSource,
   createEmbedAdapter,
@@ -10,49 +9,49 @@ import {
   registerPlatform,
 } from '@/adapters/index'
 
-describe('getPlatform', () => {
+describe('resolvePlatform', () => {
   it('detects youtube.com URLs', () => {
-    expect(getPlatform('https://www.youtube.com/watch?v=abc123')).toBe('youtube')
+    expect(resolvePlatform('https://www.youtube.com/watch?v=abc123').key).toBe('youtube')
   })
 
   it('detects youtu.be short URLs', () => {
-    expect(getPlatform('https://youtu.be/abc123')).toBe('youtube')
+    expect(resolvePlatform('https://youtu.be/abc123').key).toBe('youtube')
   })
 
   it('detects vimeo.com URLs', () => {
-    expect(getPlatform('https://vimeo.com/123456')).toBe('vimeo')
+    expect(resolvePlatform('https://vimeo.com/123456').key).toBe('vimeo')
   })
 
   it('detects player.vimeo.com URLs', () => {
-    expect(getPlatform('https://player.vimeo.com/video/123456')).toBe('vimeo')
+    expect(resolvePlatform('https://player.vimeo.com/video/123456').key).toBe('vimeo')
   })
 
   it('detects dailymotion.com URLs', () => {
-    expect(getPlatform('https://www.dailymotion.com/video/x7tgad0')).toBe('dailymotion')
+    expect(resolvePlatform('https://www.dailymotion.com/video/x7tgad0').key).toBe('dailymotion')
   })
 
   it('detects dai.ly short URLs', () => {
-    expect(getPlatform('https://dai.ly/x7tgad0')).toBe('dailymotion')
+    expect(resolvePlatform('https://dai.ly/x7tgad0').key).toBe('dailymotion')
   })
 
   it('detects cdn.jwplayer.com URLs', () => {
-    expect(getPlatform('https://cdn.jwplayer.com/videos/abc.mp4')).toBe('jwplayer')
+    expect(resolvePlatform('https://cdn.jwplayer.com/videos/abc.mp4').key).toBe('jwplayer')
   })
 
   it('detects jwplayer:// protocol URLs', () => {
-    expect(getPlatform('jwplayer://media-id')).toBe('jwplayer')
+    expect(resolvePlatform('jwplayer://media-id').key).toBe('jwplayer')
   })
 
   it('detects brightcove embed URLs', () => {
-    expect(getPlatform('https://players.brightcove.net/123/abc_default/index.html?videoId=456')).toBe('brightcove')
+    expect(resolvePlatform('https://players.brightcove.net/123/abc_default/index.html?videoId=456').key).toBe('brightcove')
   })
 
   it('falls back to html5 for plain MP4 URLs', () => {
-    expect(getPlatform('https://example.com/video.mp4')).toBe('html5')
+    expect(resolvePlatform('https://example.com/video.mp4').key).toBe('html5')
   })
 
   it('falls back to html5 for HLS URLs', () => {
-    expect(getPlatform('https://example.com/stream.m3u8')).toBe('html5')
+    expect(resolvePlatform('https://example.com/stream.m3u8').key).toBe('html5')
   })
 })
 
@@ -95,7 +94,7 @@ describe('resolveSource', () => {
 describe('extensibility registry', () => {
   it('registerMatcher lets getPlatform/resolvePlatform recognize a new platform', () => {
     registerMatcher({ test: (src) => src.startsWith('acme://'), key: 'acme', embed: true })
-    expect(getPlatform('acme://video-123')).toBe('acme')
+    expect(resolvePlatform('acme://video-123').key).toBe('acme')
     expect(resolvePlatform('acme://video-123')).toEqual({ key: 'acme', embed: true })
   })
 
@@ -162,5 +161,21 @@ describe('built-in platform adapters are dynamically imported on first use', () 
     const result = await resolveSource('brightcove', 'https://players.brightcove.net/lazy-acct/lazy-player_default/index.html?videoId=789')
 
     expect(result).toEqual({ src: 'https://cdn.example.com/lazy.mp4', type: 'video/mp4', poster: null, adTagUrl: null })
+  })
+})
+
+describe('overriding a built-in platform', () => {
+  it('lets a registered platform claim a URL a built-in already matches', () => {
+    expect(resolvePlatform('https://www.youtube.com/watch?v=abc123').key).toBe('youtube')
+
+    registerPlatform({
+      key: 'my-youtube',
+      test: (src) => /youtube\.com/.test(src),
+      embed: true,
+      createAdapter: () => ({}) as never,
+    })
+
+    expect(resolvePlatform('https://www.youtube.com/watch?v=abc123').key).toBe('my-youtube')
+    expect(resolvePlatform('https://vimeo.com/123456').key).toBe('vimeo')
   })
 })

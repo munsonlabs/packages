@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { toRef } from 'vue'
 import { useScrubber } from '@/composables/controls/useScrubber'
 import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/controls/useResolvedPlayer'
 import { fmtTime } from '@/utils/time'
@@ -7,7 +6,7 @@ import { fmtTime } from '@/utils/time'
 defineOptions({ inheritAttrs: false })
 
 const props = defineProps<ResolvedPlayerProps>()
-const player = useResolvedPlayer(toRef(props, 'player'), toRef(props, 'for'))
+const player = useResolvedPlayer(props)
 const { scrubbing, displayPercent, previewSeconds, onInput, onChange, onTouchStart, onTouchEnd, onPointerCancel } = useScrubber(player)
 
 const formatTime = (seconds: number): string => fmtTime(seconds, true)
@@ -22,15 +21,15 @@ const formatTime = (seconds: number): string => fmtTime(seconds, true)
       step="0.5"
       :value="displayPercent"
       class="mlv-scrubber"
-      v-bind="$attrs"
       :style="{ '--p': `${displayPercent}%`, '--b': `${player?.bufferedDisplay ?? 0}%` }"
       aria-label="Seek"
-      :aria-valuetext="`${formatTime(previewSeconds)} of ${formatTime(player?.total ?? 0)}`"
+      :aria-valuetext="`${formatTime(previewSeconds)} of ${formatTime(player?.duration ?? 0)}`"
       @input="onInput"
       @change="onChange"
       @touchstart="onTouchStart"
       @touchend="onTouchEnd"
       @pointercancel="onPointerCancel"
+      v-bind="$attrs"
     />
     <slot name="preview" :scrubbing="scrubbing" :percent="displayPercent" :preview-seconds="previewSeconds" :format-time="formatTime">
       <div v-if="scrubbing" class="mlv-scrubber__preview" :style="{ left: `${displayPercent}%` }">

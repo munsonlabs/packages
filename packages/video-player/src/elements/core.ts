@@ -46,6 +46,10 @@ export type {
   SourceResolver,
   ResolvedSource,
   PlaybackAdapter,
+  AdapterCaptions,
+  AdapterQuality,
+  AdapterPip,
+  PlaybackEvent,
   MediaErrorLike,
   EmbedAdapterOptions,
 } from '@/types/playback'

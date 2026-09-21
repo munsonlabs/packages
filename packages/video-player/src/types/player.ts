@@ -48,7 +48,6 @@ export interface StateChangeEvent {
   isMuted?: boolean
   playbackRate?: number
   captionIndex?: number | null
-  qualityIndex?: number | null
   qualityHeight?: number | null
   isPipActive?: boolean
   isLooping?: boolean
@@ -95,6 +94,7 @@ export interface PlayerProps {
   /** 0-1. */
   volume?: number
   playbackRate?: number
+  /** A target height in pixels (the 720 in 720p); the nearest level the source offers wins. `null` leaves Auto. */
   quality?: number | null
   nativeUi?: boolean
   payload?: Record<string, unknown> | string

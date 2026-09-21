@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { computed, toRef } from 'vue'
+import { computed } from 'vue'
 import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/controls/useResolvedPlayer'
 
 defineOptions({ inheritAttrs: false })
 
 const props = defineProps<ResolvedPlayerProps>()
-const player = useResolvedPlayer(toRef(props, 'player'), toRef(props, 'for'))
+const player = useResolvedPlayer(props)
 
 const displayPercent = computed(() => {
   const p = player.value
   if (!p) return 0
-  return p.isMuted ? 0 : Math.round(p.vol * 100)
+  return p.isMuted ? 0 : Math.round(p.volume * 100)
 })
 
 function onInput(e: Event): void {
@@ -27,10 +27,10 @@ function onInput(e: Event): void {
       step="1"
       :value="displayPercent"
       class="mlv-volume-slider"
-      v-bind="$attrs"
       :style="{ '--v': `${displayPercent}%` }"
       aria-label="Volume"
       @input="onInput"
+      v-bind="$attrs"
     />
     <slot :percent="displayPercent">
       <span class="mlv-volume-pct">{{ displayPercent }}%</span>

@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { PlayerKey, PlaylistKey, HudKey, injectStrict } from '@/composables/player/playerContext'
-import { usePlaybackRate } from '@/composables/overlay/usePlaybackRate'
-import { useCaptions } from '@/composables/overlay/useCaptions'
-import { useQuality } from '@/composables/overlay/useQuality'
+import { cyclePlaybackRate, playbackRateLabel, cycleCaptionTrack, captionTrackLabel, cycleQuality, qualityLabel } from '@/utils/playerActions'
 import Icon from '@/components/Icon.vue'
 import MoreMenuRow from '@/components/overlay/MoreMenuRow.vue'
 import type { CustomAction } from '@/types/player'
@@ -18,9 +16,6 @@ defineEmits<{ back: [] }>()
 const player = injectStrict(PlayerKey)
 const hud = injectStrict(HudKey)
 const playlist = injectStrict(PlaylistKey)
-const { cycleRate, fmtRate } = usePlaybackRate(player)
-const { cycleCaptionTrack, currentCaptionLabel } = useCaptions(player)
-const { cycleQuality, currentQualityLabel } = useQuality(player)
 </script>
 
 <template>
@@ -32,7 +27,12 @@ const { cycleQuality, currentQualityLabel } = useQuality(player)
   </div>
 
   <div class="controls__more-body" @touchstart.passive="hud.keepOpen()">
-    <MoreMenuRow v-if="player.supportsPlaybackRate" label="Playback speed" :value="fmtRate(player.currentPlaybackRate)" @click="cycleRate" />
+    <MoreMenuRow
+      v-if="player.supportsPlaybackRate"
+      label="Playback speed"
+      :value="playbackRateLabel(player.currentPlaybackRate)"
+      @click="cycleRate"
+    />
 
     <MoreMenuRow
       label="Loop"
@@ -48,7 +48,7 @@ const { cycleQuality, currentQualityLabel } = useQuality(player)
       label="Captions"
       icon="captions"
       :active="player.activeCaptionIndex !== null"
-      :value="currentCaptionLabel()"
+      :value="captionTrackLabel(player)"
       @click="cycleCaptionTrack"
     />
 
@@ -57,7 +57,7 @@ const { cycleQuality, currentQualityLabel } = useQuality(player)
       label="Quality"
       icon="quality"
       :active="!player.isAutoQuality"
-      :value="currentQualityLabel()"
+      :value="qualityLabel(player)"
       @click="cycleQuality"
     />
 

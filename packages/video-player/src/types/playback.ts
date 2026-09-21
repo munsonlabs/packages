@@ -23,6 +23,57 @@ export interface AudioPreference {
   volume: number
 }
 
+/**
+ * What an adapter can do is expressed by which capability objects it provides, not by a dozen
+ * `supportsX()` methods answering "no". An embed simply omits the ones it has no SDK for, instead of
+ * stubbing twelve members apiece.
+ */
+export interface AdapterCaptions {
+  tracks(): CaptionTrackInfo[]
+  /** Can't be inferred from our own select() calls - a `default`-attribute track can be shown by the browser directly. */
+  active(): number | null
+  select(index: number | null): void
+}
+
+export interface AdapterQuality {
+  levels(): QualityLevelInfo[]
+  current(): number | null
+  isAuto(): boolean
+  select(index: number | null): void
+}
+
+export interface AdapterPip {
+  /** Picture-in-Picture can be disabled per element and per document, so this stays a question, not a presence check. */
+  isSupported(): boolean
+  isActive(): boolean
+  toggle(): void
+}
+
+/** Every event an adapter emits. Typed so a misspelling in a consumer is a compile error rather than a listener that never fires. */
+export type PlaybackEvent =
+  | 'play'
+  | 'pause'
+  | 'playing'
+  | 'ended'
+  | 'error'
+  | 'timeupdate'
+  | 'durationchange'
+  | 'progress'
+  | 'volumechange'
+  | 'ratechange'
+  | 'seeked'
+  | 'waiting'
+  | 'canplay'
+  | 'qualitychange'
+  | 'captionschange'
+  | 'pipchange'
+  | 'adstart'
+  | 'adend'
+  | 'nativefullscreenenter'
+  | 'nativefullscreenexit'
+  | 'fullscreen-pending'
+  | 'fullscreen-pending-done'
+
 export interface PlaybackAdapter {
   readonly el: HTMLElement
   play(): Promise<void>
@@ -39,26 +90,21 @@ export interface PlaybackAdapter {
   setPlaybackRate(rate: number): void
   bufferedEnd(): number
   error(): MediaErrorLike | null
-  setSrc(src: string, type?: string): void
+  /** Swaps the source. `type` steers the streaming engine and is ignored by embeds, which read it from the URL. */
+  load(src: string, type?: string): void
+  /** Re-attempts the current source after an error. Distinct from `load`: embeds reconnect rather than swap, and there is nothing to swap to. */
+  retry(): void
   /** A method, not a static property - some SDKs (YouTube) only know this after their own async ready callback fires. */
   supportsPlaybackRate(): boolean
-  supportsCaptions(): boolean
-  getCaptionTracks(): CaptionTrackInfo[]
-  setCaptionTrack(index: number | null): void
-  /** Can't be inferred from our own setCaptionTrack() calls - a `default`-attribute track can be shown by the browser directly. */
-  getActiveCaptionTrack(): number | null
-  supportsQuality(): boolean
-  getQualityLevels(): QualityLevelInfo[]
-  getCurrentQuality(): number | null
-  isAutoQuality(): boolean
-  setQuality(index: number | null): void
-  supportsPip(): boolean
-  isPipActive(): boolean
-  togglePip(): void
+  captions?: AdapterCaptions
+  quality?: AdapterQuality
+  pip?: AdapterPip
+  /** Embeds hide a placeholder <video> behind their iframe and reveal it on first play; native playback has nothing to reveal. */
+  reveal?(videoEl: HTMLVideoElement): void
   enterFullscreen(): void
   exitFullscreen(): void
-  on(event: string, listener: PlaybackListener): void
-  off(event: string, listener: PlaybackListener): void
+  on(event: PlaybackEvent, listener: PlaybackListener): void
+  off(event: PlaybackEvent, listener: PlaybackListener): void
   dispose(): void
 }
 

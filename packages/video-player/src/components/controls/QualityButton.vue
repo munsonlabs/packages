@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import { computed, toRef } from 'vue'
+import { computed } from 'vue'
 import Icon from '@/components/Icon.vue'
-import { useQuality } from '@/composables/overlay/useQuality'
+import { cycleQuality, qualityLabel } from '@/utils/playerActions'
 import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/controls/useResolvedPlayer'
 
 const props = defineProps<ResolvedPlayerProps>()
-const player = useResolvedPlayer(toRef(props, 'player'), toRef(props, 'for'))
+const player = useResolvedPlayer(props)
 
-const quality = computed(() => (player.value ? useQuality(player.value) : null))
-const currentLabel = computed(() => quality.value?.currentQualityLabel() ?? 'Auto')
+const currentLabel = computed(() => (player.value ? qualityLabel(player.value) : 'Auto'))
 
 function cycle(): void {
-  quality.value?.cycleQuality()
+  if (player.value) cycleQuality(player.value)
 }
 </script>
 
@@ -27,7 +26,7 @@ function cycle(): void {
     <slot
       :current-label="currentLabel"
       :levels="player?.qualityLevels ?? []"
-      :current-index="player?.currentQualityIndex ?? null"
+      :current-height="player?.currentQualityHeight ?? null"
       :is-auto="player?.isAutoQuality ?? true"
     >
       <Icon name="quality" />

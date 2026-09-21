@@ -84,8 +84,8 @@ describe('native adapter — quality (hls.js)', () => {
     const adapter = createNativeAdapter(videoEl, { src: 'stream.m3u8', type: 'application/x-mpegURL' })
     await flushMicrotasks()
 
-    expect(adapter.supportsQuality()).toBe(false)
-    expect(adapter.getQualityLevels()).toEqual([])
+    expect(adapter.quality!.levels().length > 0).toBe(false)
+    expect(adapter.quality!.levels()).toEqual([])
   })
 
   it('lists levels and reports Auto once the manifest parses', async () => {
@@ -101,13 +101,13 @@ describe('native adapter — quality (hls.js)', () => {
     lastInstance().autoLevelEnabled = true
     lastInstance().emit(HlsEvents.MANIFEST_PARSED)
 
-    expect(adapter.supportsQuality()).toBe(true)
-    expect(adapter.getQualityLevels()).toEqual([
+    expect(adapter.quality!.levels().length > 0).toBe(true)
+    expect(adapter.quality!.levels()).toEqual([
       { index: 0, height: 480, bitrate: 800_000, label: '480p' },
       { index: 1, height: 1080, bitrate: 3_000_000, label: '1080p' },
     ])
-    expect(adapter.isAutoQuality()).toBe(true)
-    expect(adapter.getCurrentQuality()).toBe(null)
+    expect(adapter.quality!.isAuto()).toBe(true)
+    expect(adapter.quality!.current()).toBe(null)
   })
 
   it('collapses repeated resolutions to one entry each, ascending', async () => {
@@ -125,7 +125,7 @@ describe('native adapter — quality (hls.js)', () => {
     ]
     lastInstance().emit(HlsEvents.MANIFEST_PARSED)
 
-    expect(adapter.getQualityLevels()).toEqual([
+    expect(adapter.quality!.levels()).toEqual([
       { index: 0, height: 540, bitrate: 2_177_116, label: '540p' },
       { index: 4, height: 720, bitrate: 3_216_424, label: '720p' },
       { index: 1, height: 1080, bitrate: 8_001_098, label: '1080p' },
@@ -140,7 +140,7 @@ describe('native adapter — quality (hls.js)', () => {
     lastInstance().levels = [{ height: 480, bitrate: 800_000 }]
     lastInstance().emit(HlsEvents.MANIFEST_PARSED)
 
-    adapter.setQuality(0)
+    adapter.quality!.select(0)
 
     expect(lastInstance().manualLevel).toBe(0)
   })
@@ -157,14 +157,14 @@ describe('native adapter — quality (hls.js)', () => {
     lastInstance().playingLevel = 1
     lastInstance().emit(HlsEvents.MANIFEST_PARSED)
 
-    adapter.setQuality(0)
+    adapter.quality!.select(0)
 
     expect(lastInstance().currentLevel).toBe(1)
-    expect(adapter.isAutoQuality()).toBe(false)
-    expect(adapter.getCurrentQuality()).toBe(0)
+    expect(adapter.quality!.isAuto()).toBe(false)
+    expect(adapter.quality!.current()).toBe(0)
 
     lastInstance().settleLevel()
-    expect(adapter.getCurrentQuality()).toBe(0)
+    expect(adapter.quality!.current()).toBe(0)
   })
 
   it('setQuality(null) re-enables auto (hls.js convention: currentLevel = -1)', async () => {
@@ -172,11 +172,11 @@ describe('native adapter — quality (hls.js)', () => {
     const adapter = createNativeAdapter(videoEl, { src: 'stream.m3u8', type: 'application/x-mpegURL' })
     await flushMicrotasks()
 
-    adapter.setQuality(null)
+    adapter.quality!.select(null)
 
     expect(lastInstance().manualLevel).toBe(-1)
-    expect(adapter.isAutoQuality()).toBe(true)
-    expect(adapter.getCurrentQuality()).toBe(null)
+    expect(adapter.quality!.isAuto()).toBe(true)
+    expect(adapter.quality!.current()).toBe(null)
   })
 
   it('emits qualitychange on both MANIFEST_PARSED and LEVEL_SWITCHED', async () => {
@@ -213,9 +213,9 @@ describe('native adapter — quality index space', () => {
     ]
     lastInstance().currentLevel = 1
 
-    const levels = adapter.getQualityLevels()
+    const levels = adapter.quality!.levels()
     expect(levels.map((level) => level.index)).toEqual([0, 2])
-    expect(adapter.getCurrentQuality()).toBe(2)
-    expect(levels.some((level) => level.index === adapter.getCurrentQuality())).toBe(true)
+    expect(adapter.quality!.current()).toBe(2)
+    expect(levels.some((level) => level.index === adapter.quality!.current())).toBe(true)
   })
 })

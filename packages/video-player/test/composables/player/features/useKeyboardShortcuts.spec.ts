@@ -4,9 +4,9 @@ import type { PlayerContext, HudContext } from '@/composables/player/playerConte
 
 function makePlayer(overrides: Partial<PlayerContext> = {}): PlayerContext {
   return {
-    total: 100,
-    current: 50,
-    vol: 0.5,
+    duration: 100,
+    currentTime: 50,
+    volume: 0.5,
     supportsCaptions: false,
     activeCaptionIndex: null,
     togglePlay: vi.fn(),
@@ -133,7 +133,7 @@ describe('shortcuts on the bare shell', () => {
   })
 
   it('seeks forward/back by the configured step on arrow keys', () => {
-    const player = makePlayer({ current: 50, total: 100 })
+    const player = makePlayer({ currentTime: 50, duration: 100 })
     const { onKeydown } = useKeyboardShortcuts(player, makeHud())
 
     fireKeydown(onKeydown, 'ArrowRight', shell())
@@ -144,14 +144,14 @@ describe('shortcuts on the bare shell', () => {
   })
 
   it('clamps seek to the start/end of the video', () => {
-    const player = makePlayer({ current: 2, total: 100 })
+    const player = makePlayer({ currentTime: 2, duration: 100 })
     const { onKeydown } = useKeyboardShortcuts(player, makeHud())
     fireKeydown(onKeydown, 'ArrowLeft', shell())
     expect(player.seek).toHaveBeenCalledWith(0)
   })
 
   it('adjusts volume up/down and clamps to 0-1', () => {
-    const player = makePlayer({ vol: 0.95 })
+    const player = makePlayer({ volume: 0.95 })
     const { onKeydown } = useKeyboardShortcuts(player, makeHud())
     fireKeydown(onKeydown, 'ArrowUp', shell())
     expect(player.setVolume).toHaveBeenCalledWith(1)

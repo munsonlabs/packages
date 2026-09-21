@@ -12,8 +12,8 @@ const CUES: TranscriptCue[] = [
 
 function makePlayer(overrides: Partial<PlayerHandle> = {}): PlayerHandle {
   return reactive({
-    current: 0,
-    total: 100,
+    currentTime: 0,
+    duration: 100,
     isPlaying: true,
     seek: vi.fn(),
     play: vi.fn(() => Promise.resolve()),
@@ -58,22 +58,22 @@ describe('Transcript — clicking a cue', () => {
     expect(player.play).toHaveBeenCalled()
   })
 
-  it('only starts playback while duration is still unknown', async () => {
-    const player = makePlayer({ isPlaying: false, total: 0 })
+  it('still seeks to the cue time while duration is unknown', async () => {
+    const player = makePlayer({ isPlaying: false, duration: 0 })
     const wrapper = mount(Transcript, { props: { player, cues: CUES } })
     await wrapper.findAll('.mlv-transcript__cue')[1].trigger('click')
-    expect(player.seek).not.toHaveBeenCalled()
+    expect(player.seek).toHaveBeenCalledWith(10)
     expect(player.play).toHaveBeenCalled()
   })
 })
 
 describe('Transcript — active cue highlighting', () => {
   it('highlights the last cue at or before the playhead, reactively', async () => {
-    const player = makePlayer({ current: 12 })
+    const player = makePlayer({ currentTime: 12 })
     const wrapper = mount(Transcript, { props: { player, cues: CUES } })
     expect(wrapper.findAll('.mlv-transcript__cue')[1].classes()).toContain('mlv-transcript__cue--active')
 
-    ;(player as unknown as { current: number }).current = 35
+    ;(player as unknown as { currentTime: number }).currentTime = 35
     await wrapper.vm.$nextTick()
     const cues = wrapper.findAll('.mlv-transcript__cue')
     expect(cues[2].classes()).toContain('mlv-transcript__cue--active')
@@ -82,8 +82,22 @@ describe('Transcript — active cue highlighting', () => {
   })
 
   it('highlights nothing in the gap past a cue with an explicit end', async () => {
-    const player = makePlayer({ current: 45 })
+    const player = makePlayer({ currentTime: 45 })
     const wrapper = mount(Transcript, { props: { player, cues: CUES } })
     expect(wrapper.findAll('.mlv-transcript__cue--active')).toHaveLength(0)
+  })
+})
+
+describe('attribute fallthrough', () => {
+  it('applies a class to the list instead of warning about multiple roots', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const wrapper = mount(Transcript, {
+      props: { player: makePlayer(), cues: CUES },
+      attrs: { class: 'my-transcript' },
+    })
+
+    expect(wrapper.find('ol').classes()).toContain('my-transcript')
+    expect(warn.mock.calls.flat().join(' ')).not.toContain('Extraneous non-props attributes')
+    warn.mockRestore()
   })
 })

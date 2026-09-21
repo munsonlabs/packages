@@ -223,3 +223,57 @@ describe('proxied controller methods', () => {
     expect(attachAds).not.toHaveBeenCalled()
   })
 })
+
+describe('header bidding and the first ad request', () => {
+  function makeListenableAdapter(): { adapter: PlaybackAdapter; play: () => void } {
+    const handlers: Record<string, Array<() => void>> = {}
+    const adapter = {
+      on: (event: string, fn: () => void) => {
+        ;(handlers[event] ??= []).push(fn)
+      },
+      off: vi.fn(),
+      isPipActive: () => false,
+    } as unknown as PlaybackAdapter
+    return { adapter, play: () => handlers.play?.forEach((fn) => fn()) }
+  }
+
+  it('waits for the auction before requesting, and requests with the winning tag', async () => {
+    const { resolveHeaderBiddingAdTagUrl } = await import('@/adapters/ads/prebid')
+    let settleAuction: (url: string) => void = () => {}
+    vi.mocked(resolveHeaderBiddingAdTagUrl).mockReturnValueOnce(
+      new Promise<string>((resolve) => {
+        settleAuction = resolve
+      }),
+    )
+    const refs = { isAdPlaying: ref(false), isAdPaused: ref(false), isAdMuted: ref(false), adRemainingTime: ref(0) }
+    const { attach } = useAdSetup(refs, { fire: vi.fn(), pauseThisPlayer: vi.fn() })
+    const { adapter, play } = makeListenableAdapter()
+
+    await attach(makeVideoEl(), adapter, 'https://fallback.example/vast.xml', {
+      adUnit: { code: 'unit', mediaTypes: { video: {} }, bids: [] },
+    })
+
+    play()
+    await Promise.resolve()
+    expect(fakeController.requestAdsOnFirstPlay).not.toHaveBeenCalled()
+
+    settleAuction('https://won.example/vast.xml')
+    await vi.waitFor(() => expect(fakeController.requestAdsOnFirstPlay).toHaveBeenCalled())
+
+    expect(fakeController.setAdTagUrl).toHaveBeenCalledWith('https://won.example/vast.xml')
+    const tagCall = vi.mocked(fakeController.setAdTagUrl).mock.invocationCallOrder[0]
+    const requestCall = vi.mocked(fakeController.requestAdsOnFirstPlay).mock.invocationCallOrder[0]
+    expect(tagCall).toBeLessThan(requestCall)
+  })
+
+  it('requests straight away when there is no auction to wait for', async () => {
+    const refs = { isAdPlaying: ref(false), isAdPaused: ref(false), isAdMuted: ref(false), adRemainingTime: ref(0) }
+    const { attach } = useAdSetup(refs, { fire: vi.fn(), pauseThisPlayer: vi.fn() })
+    const { adapter, play } = makeListenableAdapter()
+
+    await attach(makeVideoEl(), adapter, 'https://ad.example/vast.xml')
+    play()
+
+    await vi.waitFor(() => expect(fakeController.requestAdsOnFirstPlay).toHaveBeenCalledOnce())
+  })
+})

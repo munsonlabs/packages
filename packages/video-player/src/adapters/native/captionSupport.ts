@@ -12,11 +12,16 @@ function isCaptionTrack(track: TextTrack): boolean {
   return track.kind === 'captions' || track.kind === 'subtitles'
 }
 
+/** Hiding a track fires `change`, which lands straight back here - re-entrant, and one behavioural change away from looping. */
+let enforcing = false
+
 /** Sources like HLS manifests can carry more than one caption/subtitle rendition the browser or hls.js
  * defaults to `showing` independently of each other (e.g. an in-band CEA-608 track alongside a
  * sideloaded WebVTT one), stacking their cues. Leaves the first `showing` track alone - that keeps a
  * `<track default>` element's own native default behaviour intact - and hides only the rest. */
 function enforceSingleShowingTrack(videoEl: HTMLVideoElement): void {
+  if (enforcing) return
+  enforcing = true
   let kept = false
   for (let i = 0; i < videoEl.textTracks.length; i++) {
     const track = videoEl.textTracks[i]
@@ -24,6 +29,7 @@ function enforceSingleShowingTrack(videoEl: HTMLVideoElement): void {
     if (kept) track.mode = 'hidden'
     else kept = true
   }
+  enforcing = false
 }
 
 /** Stamps `line` onto every cue already loaded on a track - HLS cues can arrive incrementally, so this
@@ -109,6 +115,9 @@ export function createCaptionSupport(videoEl: HTMLVideoElement, onChange: () => 
       videoEl.textTracks.removeEventListener('addtrack', onAddTrack)
       videoEl.textTracks.removeEventListener('removetrack', onChange)
       videoEl.textTracks.removeEventListener('change', onModeChange)
+      /** TextTrack objects outlive the adapter, so leaving these attached accumulates a closure per remount. */
+      for (const [track, listener] of cueChangeListeners) track.removeEventListener('cuechange', listener)
+      cueChangeListeners.clear()
     },
   }
 }

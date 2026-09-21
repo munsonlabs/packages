@@ -8,7 +8,7 @@ defineOptions({ inheritAttrs: false })
 
 const props = defineProps<ResolvedPlayerProps>()
 const player = useResolvedPlayer(toRef(props, 'player'), toRef(props, 'for'))
-const { scrubbing, displayPercent, previewSeconds, onInput, onChange, onTouchEnd } = useScrubber(player)
+const { scrubbing, displayPercent, previewSeconds, onInput, onChange, onTouchStart, onTouchEnd, onPointerCancel } = useScrubber(player)
 
 const formatTime = (seconds: number): string => fmtTime(seconds, true)
 </script>
@@ -28,7 +28,9 @@ const formatTime = (seconds: number): string => fmtTime(seconds, true)
       :aria-valuetext="`${formatTime(previewSeconds)} of ${formatTime(player?.total ?? 0)}`"
       @input="onInput"
       @change="onChange"
+      @touchstart="onTouchStart"
       @touchend="onTouchEnd"
+      @pointercancel="onPointerCancel"
     />
     <slot name="preview" :scrubbing="scrubbing" :percent="displayPercent" :preview-seconds="previewSeconds" :format-time="formatTime">
       <div v-if="scrubbing" class="mlv-scrubber__preview" :style="{ left: `${displayPercent}%` }">

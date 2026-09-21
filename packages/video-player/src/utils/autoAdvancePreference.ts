@@ -1,9 +1,10 @@
 import { STORAGE_AUTO_ADVANCE_KEY as STORAGE_KEY } from '@/constants'
+import { readStorage, writeStorage } from '@/utils/storage'
 
 export function getAutoAdvance(): boolean {
-  return localStorage.getItem(STORAGE_KEY) === 'true'
+  return readStorage(STORAGE_KEY) === 'true'
 }
 
 export function saveAutoAdvance(enabled: boolean): void {
-  localStorage.setItem(STORAGE_KEY, String(enabled))
+  writeStorage(STORAGE_KEY, String(enabled))
 }

@@ -69,6 +69,7 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
 
   const url = parseUrl(options.src)
   let ytPlayer: YTPlayer | null = null
+  let closeIosFullscreen: (() => void) | null = null
   let activeVideoId: string | null = url.videoId
   let playerReady = false
   let playOnReady = false
@@ -261,6 +262,7 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
 
   function spawnIosFullscreen(): void {
     if (!ytPlayer) return
+    closeIosFullscreen?.()
     const currentTime = ytPlayer.getCurrentTime()
     const { video_id: videoId } = ytPlayer.getVideoData()
     ytPlayer.pauseVideo()
@@ -272,6 +274,7 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
 
     let fsPlayer: YTPlayer | null = null
     const teardown = () => {
+      closeIosFullscreen = null
       document.removeEventListener('pointerdown', onPageInteraction, true)
       finish(() => {
         const resumeAt = fsPlayer?.getCurrentTime() ?? currentTime
@@ -287,6 +290,8 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
     function onPageInteraction(): void {
       teardown()
     }
+
+    closeIosFullscreen = teardown
 
     fsPlayer = new window.YT!.Player(mount.id, {
       videoId,
@@ -401,6 +406,8 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
     off: emitter.off,
     dispose: () => {
       disposed = true
+      /** Unmounting mid-fullscreen otherwise left a full-viewport overlay, a live second iframe and a document listener behind for good. */
+      closeIosFullscreen?.()
       clearTimers()
       if (startInterval) clearInterval(startInterval)
       if (seek.catchUpInterval) clearInterval(seek.catchUpInterval)

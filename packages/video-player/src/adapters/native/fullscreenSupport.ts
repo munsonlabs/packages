@@ -1,5 +1,5 @@
-import { requestFullscreen, exitFullscreen as exitDocFullscreen } from '@/utils/platform'
-import { getShellEl } from '@/adapters/embeds/embedShared'
+import { isIOS, exitFullscreen as exitDocFullscreen } from '@/utils/platform'
+import { enterFullscreenWithIosFallback } from '@/adapters/embeds/embedShared'
 
 export interface FullscreenSupport {
   enterFullscreen(): void
@@ -17,20 +17,24 @@ export function createFullscreenSupport(videoEl: HTMLVideoElement, onEnter: () =
   ] as const
   for (const [name, fn] of forwarders) videoEl.addEventListener(name, fn)
 
+  /**
+   * Desktop Safari exposes webkitEnterFullscreen on HTMLVideoElement too, so branching on its mere
+   * existence sent every Safari user to video-only fullscreen and dropped the shell that carries the
+   * whole control overlay. Only iOS genuinely lacks element fullscreen, so gate on that and take the
+   * same shell path as the embeds everywhere else.
+   */
   function enterFullscreen(): void {
-    const iosVideoEl = videoEl as IosVideoEl
-    if (typeof iosVideoEl.webkitEnterFullscreen === 'function') {
+    enterFullscreenWithIosFallback(videoEl, () => {
+      const iosVideoEl = videoEl as IosVideoEl
+      if (typeof iosVideoEl.webkitEnterFullscreen !== 'function') return false
       iosVideoEl.webkitEnterFullscreen()
-      return
-    }
-    const shell = getShellEl(videoEl)
-    if (shell) requestFullscreen(shell)
+    })
   }
 
   /** document.exitFullscreen() is a no-op for iOS's webkitEnterFullscreen path - needs the matching webkit call. */
   function exitFullscreen(): void {
     const iosVideoEl = videoEl as IosVideoEl
-    if (typeof iosVideoEl.webkitExitFullscreen === 'function') {
+    if (isIOS() && typeof iosVideoEl.webkitExitFullscreen === 'function') {
       iosVideoEl.webkitExitFullscreen()
       return
     }

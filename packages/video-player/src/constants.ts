@@ -45,6 +45,10 @@ export const SEEK_CATCH_UP_TOLERANCE_S = 1
 
 export const SEEK_CATCH_UP_TIMEOUT_MS = 3000
 
+export const STREAM_MAX_RECOVERY_ATTEMPTS = 3
+
+export const STREAM_RECOVERY_BASE_DELAY_MS = 1000
+
 export const QUARTILES: Array<[number, StateChangeType]> = [
   [0.25, 'firstQuartile'],
   [0.5, 'midpoint'],

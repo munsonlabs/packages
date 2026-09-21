@@ -34,22 +34,31 @@ export function useAdSetup(refs: UseAdSetupRefs, deps: UseAdSetupDeps): UseAdSet
   async function attach(videoEl: HTMLVideoElement, adapter: PlaybackAdapter, adTagUrl: string, headerBidding?: HeaderBiddingConfig): Promise<void> {
     if (!(adTagUrl || headerBidding) || !videoEl.parentElement) return
 
+    let resolvedAdTagUrl: string | null = null
+    /**
+     * The first ad request waits on the auction, which fails open on its own timeout. Firing it on
+     * play regardless meant a viewer who pressed play quickly got the fallback tag and the winning
+     * bid was discarded with no warning - the whole point of header bidding, silently skipped.
+     */
+    const adTagSettled: Promise<void> = headerBidding
+      ? import('@/adapters/ads/prebid')
+          .then(({ resolveHeaderBiddingAdTagUrl }) => resolveHeaderBiddingAdTagUrl(headerBidding, adTagUrl).catch(() => adTagUrl))
+          .then((url) => {
+            if (adController) adController.setAdTagUrl(url)
+            else resolvedAdTagUrl = url
+          })
+          .catch(() => {})
+      : Promise.resolve()
+
     /** Registered before the import so a play during the download isn't missed; replayed once adController exists. */
     let playedBeforeReady = false
     adapter.on('play', () => {
-      if (adController) adController.requestAdsOnFirstPlay()
-      else playedBeforeReady = true
+      void adTagSettled.then(() => {
+        if (disposed) return
+        if (adController) adController.requestAdsOnFirstPlay()
+        else playedBeforeReady = true
+      })
     })
-
-    let resolvedAdTagUrl: string | null = null
-    if (headerBidding) {
-      void import('@/adapters/ads/prebid')
-        .then(({ resolveHeaderBiddingAdTagUrl }) => resolveHeaderBiddingAdTagUrl(headerBidding, adTagUrl).catch(() => adTagUrl))
-        .then((url) => {
-          if (adController) adController.setAdTagUrl(url)
-          else resolvedAdTagUrl = url
-        })
-    }
 
     function exitPipForAd(): void {
       if (!isIOS() && adapter.isPipActive()) void document.exitPictureInPicture()

@@ -35,10 +35,26 @@ export function createQualitySupport(getEngine: () => QualityEngineAdapter | nul
     return getEngine()?.isAuto() ?? true
   }
 
+  /**
+   * The ladder keeps one variant per height, so the engine's own current index can name a variant
+   * the ladder filtered out - a manifest with two bitrates at the same height is enough. Reported
+   * raw, that index matched nothing in the published list: the label read "Auto" while quality was
+   * manually pinned, and cycling reset to Auto instead of stepping down. Map it onto its height's
+   * representative so the index a consumer reads is always one it can pass back to setQuality().
+   */
   function getCurrentQuality(): number | null {
     const engine = getEngine()
     if (!engine) return null
-    return isAutoQuality() ? null : engine.currentIndex()
+    if (isAutoQuality()) return null
+
+    const engineIndex = engine.currentIndex()
+    if (engineIndex === null || engineIndex < 0) return null
+
+    const ladder = getQualityLevels()
+    if (ladder.some((level) => level.index === engineIndex)) return engineIndex
+
+    const height = engine.levels().find((level) => level.index === engineIndex)?.height
+    return ladder.find((level) => level.height === height)?.index ?? null
   }
 
   function setQuality(index: number | null): void {

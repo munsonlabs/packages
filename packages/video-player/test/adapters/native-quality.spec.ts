@@ -194,3 +194,28 @@ describe('native adapter — quality (hls.js)', () => {
     expect(listener).toHaveBeenCalledTimes(2)
   })
 })
+
+describe('native adapter — quality index space', () => {
+  beforeEach(() => {
+    instances.length = 0
+  })
+
+  it('maps a filtered-out variant onto the level the ladder publishes', async () => {
+    const videoEl = document.createElement('video')
+    const adapter = createNativeAdapter(videoEl, { src: 'stream.m3u8', type: 'application/x-mpegURL' })
+    await flushMicrotasks()
+
+    // Two variants at 720p: the ladder keeps only the higher-bitrate one, at index 2.
+    lastInstance().levels = [
+      { height: 480, bitrate: 800_000 },
+      { height: 720, bitrate: 1_500_000 },
+      { height: 720, bitrate: 2_500_000 },
+    ]
+    lastInstance().currentLevel = 1
+
+    const levels = adapter.getQualityLevels()
+    expect(levels.map((level) => level.index)).toEqual([0, 2])
+    expect(adapter.getCurrentQuality()).toBe(2)
+    expect(levels.some((level) => level.index === adapter.getCurrentQuality())).toBe(true)
+  })
+})

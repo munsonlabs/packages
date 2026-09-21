@@ -6,7 +6,7 @@ import { createQualitySupport, type QualityEngineAdapter } from '@/adapters/nati
 import { createFullscreenSupport } from '@/adapters/native/fullscreenSupport'
 import { createPipSupport } from '@/adapters/native/pipSupport'
 import type { PlaybackAdapter, MediaErrorLike } from '@/types/playback'
-import { HLS_MIME_TYPE, DASH_MIME_TYPE } from '@/constants'
+import { HLS_MIME_TYPE, DASH_MIME_TYPE, STREAM_MAX_RECOVERY_ATTEMPTS, STREAM_RECOVERY_BASE_DELAY_MS } from '@/constants'
 import type { PreloadMode } from '@/types/player'
 
 export interface NativeAdapterOptions {
@@ -75,6 +75,9 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
   let disposed = false
   let pendingHlsSrc: string | null = null
   let pendingDashSrc: string | null = null
+  let streamError: MediaErrorLike | null = null
+  let recoveryAttempts = 0
+  let recoveryTimer: ReturnType<typeof setTimeout> | null = null
   /** hls.js fetches segments as soon as it attaches unless told otherwise - `preload: 'none'` holds it back until play(). */
   const deferHlsLoad = options.preload === 'none' && !options.autoplay
   let hlsLoadStarted = false
@@ -100,21 +103,26 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
     const HlsErrorTypes = HlsCtor.ErrorTypes
     hls.on(HlsEvents.MANIFEST_PARSED, forwardEvent('qualitychange'))
     hls.on(HlsEvents.LEVEL_SWITCHED, forwardEvent('qualitychange'))
+    /** Any successfully buffered fragment means the stream recovered, so the next outage starts from a clean budget. */
+    hls.on(HlsEvents.FRAG_BUFFERED, () => {
+      recoveryAttempts = 0
+    })
     hls.on(HlsEvents.ERROR, (_event, data) => {
       if (!data.fatal || disposed || pendingHlsSrc !== src) return
-      switch (data.type) {
-        case HlsErrorTypes.NETWORK_ERROR:
-          hls?.startLoad()
-          break
-        case HlsErrorTypes.MEDIA_ERROR:
-          hls?.recoverMediaError()
-          break
-        default:
-          hls?.destroy()
-          hls = null
-          emitter.trigger('error')
-          break
+      const recoverable = data.type === HlsErrorTypes.NETWORK_ERROR || data.type === HlsErrorTypes.MEDIA_ERROR
+      if (!recoverable || recoveryAttempts >= STREAM_MAX_RECOVERY_ATTEMPTS) {
+        failStream(data.reason || data.details || 'This video could not be played.')
+        return
       }
+      /** Backs off between tries: a dead manifest used to retry forever, leaving the player buffering with no error. */
+      const delay = STREAM_RECOVERY_BASE_DELAY_MS * 2 ** recoveryAttempts
+      recoveryAttempts += 1
+      clearRecoveryTimer()
+      recoveryTimer = setTimeout(() => {
+        if (disposed || pendingHlsSrc !== src || !hls) return
+        if (data.type === HlsErrorTypes.NETWORK_ERROR) hls.startLoad()
+        else hls.recoverMediaError()
+      }, delay)
     })
   }
 
@@ -133,7 +141,7 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
       if (disposed || pendingDashSrc !== src) return
       player.destroy()
       dash = null
-      emitter.trigger('error')
+      failStream('This video could not be played.')
     })
   }
 
@@ -143,7 +151,24 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
     return isSafari && (videoEl.canPlayType('application/vnd.apple.mpegurl') !== '' || videoEl.canPlayType(HLS_MIME_TYPE) !== '')
   }
 
+  function clearRecoveryTimer(): void {
+    if (recoveryTimer) clearTimeout(recoveryTimer)
+    recoveryTimer = null
+  }
+
+  /** Streaming engines fail without ever touching videoEl.error, so record the reason ourselves or error() reports nothing. */
+  function failStream(message: string): void {
+    clearRecoveryTimer()
+    hls?.destroy()
+    hls = null
+    streamError = { code: 4, message }
+    emitter.trigger('error')
+  }
+
   function setSrc(src: string, type?: string): void {
+    clearRecoveryTimer()
+    streamError = null
+    recoveryAttempts = 0
     hls?.destroy()
     hls = null
     pendingHlsSrc = null
@@ -223,7 +248,8 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
     },
     error: (): MediaErrorLike | null => {
       const err = videoEl.error
-      return err ? { code: err.code, message: err.message || 'This video could not be played.' } : null
+      if (err) return { code: err.code, message: err.message || 'This video could not be played.' }
+      return streamError
     },
     setSrc,
     supportsPlaybackRate: () => true,
@@ -245,6 +271,7 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
     off: emitter.off,
     dispose: () => {
       disposed = true
+      clearRecoveryTimer()
       hls?.destroy()
       dash?.destroy()
       for (const [name, fn] of forwarders) videoEl.removeEventListener(name, fn)

@@ -81,10 +81,11 @@ export function attachAds(containerEl: HTMLElement, videoEl: HTMLVideoElement, i
 
   function tryRequestAds(): void {
     if (hasRequestedAds || !sdkReady || !playHappened || !adDisplayContainer || !adsLoader || !currentAdTagUrl) return
-    hasRequestedAds = true
 
+    /** Latched only once the request actually goes out - setting it any earlier meant a torn-down SDK global disabled ads for good. */
     const ima = window.google?.ima
     if (!ima) return
+    hasRequestedAds = true
 
     adDisplayContainer.initialize()
     const request = new ima.AdsRequest()
@@ -178,7 +179,9 @@ export function attachAds(containerEl: HTMLElement, videoEl: HTMLVideoElement, i
         }
       })
 
+      /** A request that never produced a manager is retryable - unlatch so a later ad tag can try again. */
       adsLoader.addEventListener(ima.AdErrorEvent.Type.AD_ERROR, (event) => {
+        if (!adsManager) hasRequestedAds = false
         callbacks.onError((event as ImaAdErrorEvent).getError().getMessage())
       })
 

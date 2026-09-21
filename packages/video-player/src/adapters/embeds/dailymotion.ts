@@ -1,4 +1,4 @@
-import { createStatefulEmbedAdapter } from '@/adapters/embeds/embedShared'
+import { createStatefulEmbedAdapter, failEmbed } from '@/adapters/embeds/embedShared'
 import type { EmbedAdapterOptions } from '@/types/playback'
 import { loadScript } from '@/utils/loadScript'
 import type { PlaybackAdapter } from '@/types/playback'
@@ -34,6 +34,11 @@ export function createDailymotionAdapter(videoEl: HTMLVideoElement, options: Emb
           video: videoId,
           params: { autoplay: !!options.autoplay, mute: !!options.muted },
         })
+        /** createPlayer is a round-trip: an unmount during it already ran destroyPlayer against a null dm, so adopting this one now would orphan it and its iframe. */
+        if (isDisposed()) {
+          player.destroy?.()
+          return
+        }
         dm = player
         if (options.volume !== undefined) player.setVolume(options.volume)
 
@@ -90,7 +95,9 @@ export function createDailymotionAdapter(videoEl: HTMLVideoElement, options: Emb
           emitter.trigger('volumechange')
         })
 
-        player.on(e.PLAYER_ERROR, () => emitter.trigger('error'))
+        player.on(e.PLAYER_ERROR, (payload: { error?: { message?: string } } | undefined) => {
+          failEmbed(state, emitter, payload?.error?.message, 'This video could not be played.')
+        })
 
         if (e.AD_START) {
           player.on(e.AD_START, () => {

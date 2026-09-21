@@ -56,7 +56,11 @@ function excludeIframeFromTabOrder(wrapper: HTMLDivElement): void {
     observer.disconnect()
   })
   observer.observe(wrapper, { childList: true, subtree: true })
+  iframeObservers.set(wrapper, observer)
 }
+
+/** An embed whose connect() never produced an iframe would otherwise leave its observer watching a detached wrapper. */
+const iframeObservers = new WeakMap<HTMLDivElement, MutationObserver>()
 
 export function createEmbedMount(videoEl: HTMLVideoElement, cssClass: string, nativeUi?: boolean): EmbedMount {
   videoEl.parentElement?.classList.add(cssClass)
@@ -86,6 +90,8 @@ export function revealEmbed(videoEl: HTMLVideoElement, wrapper: HTMLDivElement):
 }
 
 export function teardownEmbedMount(videoEl: HTMLVideoElement, wrapper: HTMLDivElement, cssClass: string): void {
+  iframeObservers.get(wrapper)?.disconnect()
+  iframeObservers.delete(wrapper)
   wrapper.remove()
   videoEl.parentElement?.classList.remove(cssClass)
   videoEl.style.display = ''
@@ -139,8 +145,11 @@ export function spawnIosFullscreenOverlay(emitter: Emitter): {
   document.body.appendChild(overlay)
 
   let done = false
+  let revealed = false
+  /** Announces the pending state resolved exactly once - YouTube calls this on every non-paused state change. */
   function reveal(): void {
-    if (done) return
+    if (done || revealed) return
+    revealed = true
     emitter.trigger(MVP_FULLSCREEN_PENDING_DONE)
   }
 
@@ -188,6 +197,16 @@ export interface StatefulEmbedImpl {
   sdkFullscreenEnter?: () => void
   sdkFullscreenExit?: () => void
   destroyPlayer: () => void
+}
+
+/**
+ * Records an SDK failure on the mirrored state before announcing it. Both halves matter: `error()`
+ * reports `errorState` as the reason a consumer sees, and `setSrc()` refuses to reconnect a player
+ * that still looks healthy - so an error that only fires the event leaves Retry a silent no-op.
+ */
+export function failEmbed(state: EmbedMirrorState, emitter: Emitter, message: string | undefined, fallback: string): void {
+  state.errorState = { code: 4, message: message || fallback }
+  emitter.trigger('error')
 }
 
 export function createStatefulEmbedAdapter(videoEl: HTMLVideoElement, options: EmbedAdapterOptions, impl: StatefulEmbedImpl): PlaybackAdapter {

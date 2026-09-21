@@ -1,4 +1,4 @@
-import { createStatefulEmbedAdapter } from '@/adapters/embeds/embedShared'
+import { createStatefulEmbedAdapter, failEmbed } from '@/adapters/embeds/embedShared'
 import type { EmbedAdapterOptions } from '@/types/playback'
 import { loadScript } from '@/utils/loadScript'
 import type { PlaybackAdapter } from '@/types/playback'
@@ -56,8 +56,7 @@ export function createVimeoAdapter(videoEl: HTMLVideoElement, options: EmbedAdap
           consumeQueuedPlay(() => void player?.play().catch(() => {}))
         })
         .catch((err: Error) => {
-          state.errorState = { code: 4, message: err?.message || 'This video is unavailable or cannot be embedded here.' }
-          emitter.trigger('error')
+          failEmbed(state, emitter, err?.message, 'This video is unavailable or cannot be embedded here.')
         })
 
       player.on('play', () => {
@@ -106,7 +105,10 @@ export function createVimeoAdapter(videoEl: HTMLVideoElement, options: EmbedAdap
         emitter.trigger('volumechange')
       })
 
-      player.on('error', () => emitter.trigger('error'))
+      player.on('error', (data) => {
+        const reason = (data as { message?: string } | undefined)?.message
+        failEmbed(state, emitter, reason, 'This video is unavailable or cannot be embedded here.')
+      })
     },
     hasPlayer: () => !!player,
     play: () => player?.play(),

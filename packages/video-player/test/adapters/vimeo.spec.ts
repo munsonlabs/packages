@@ -296,3 +296,39 @@ describe('SDK load failure', () => {
     expect(players[0].destroyed).toBe(false)
   })
 })
+
+describe('runtime SDK errors', () => {
+  it('records the SDK reason so error() reports it instead of a generic message', async () => {
+    const { adapter, player } = await createAdapter()
+    player.readyDeferred.resolve()
+    await flush()
+
+    player.trigger('error', { message: 'Because of its privacy settings, this video cannot be played here.' })
+
+    expect(adapter.error()).toEqual({ code: 4, message: 'Because of its privacy settings, this video cannot be played here.' })
+  })
+
+  it('falls back to a friendly message when the SDK gives none', async () => {
+    const { adapter, player } = await createAdapter()
+    player.readyDeferred.resolve()
+    await flush()
+
+    player.trigger('error', {})
+
+    expect(adapter.error()?.message).toBe('This video is unavailable or cannot be embedded here.')
+  })
+
+  it('lets retry rebuild the player after a runtime error', async () => {
+    const { adapter, player } = await createAdapter()
+    player.readyDeferred.resolve()
+    await flush()
+    player.trigger('error', { message: 'nope' })
+
+    adapter.setSrc('https://vimeo.com/347119375')
+    await flush()
+
+    expect(player.destroy).toHaveBeenCalled()
+    expect(players.length).toBe(2)
+    expect(adapter.error()).toBeNull()
+  })
+})

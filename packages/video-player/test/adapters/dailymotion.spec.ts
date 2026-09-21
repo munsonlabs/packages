@@ -278,3 +278,15 @@ describe('SDK load failure', () => {
     expect(window.dailymotion?.createPlayer).toHaveBeenCalledOnce()
   })
 })
+
+describe('dispose during connect', () => {
+  it('destroys a player that arrives after the adapter was disposed', async () => {
+    const { adapter } = await createAdapter()
+
+    adapter.dispose()
+    const player = resolvePlayer()
+    await flush()
+
+    expect(player.destroy).toHaveBeenCalled()
+  })
+})

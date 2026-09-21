@@ -1,9 +1,10 @@
 import { STORAGE_AUDIO_PREFERENCE_KEY, DEFAULT_AUDIO_PREFERENCE } from '@/constants'
+import { readStorage, writeStorage } from '@/utils/storage'
 import type { AudioPreference } from '@/types/playback'
 
 export function getAudioPreference(): AudioPreference {
   try {
-    const raw = localStorage.getItem(STORAGE_AUDIO_PREFERENCE_KEY)
+    const raw = readStorage(STORAGE_AUDIO_PREFERENCE_KEY)
     if (!raw) return DEFAULT_AUDIO_PREFERENCE
     const parsed = JSON.parse(raw)
     return {
@@ -16,7 +17,7 @@ export function getAudioPreference(): AudioPreference {
 }
 
 function saveAudioPreference(pref: AudioPreference): void {
-  localStorage.setItem(STORAGE_AUDIO_PREFERENCE_KEY, JSON.stringify(pref))
+  writeStorage(STORAGE_AUDIO_PREFERENCE_KEY, JSON.stringify(pref))
 }
 
 /** Deliberately in-memory, not persisted - browser autoplay-unmuted permission resets on every reload. */

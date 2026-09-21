@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '@/styles/controlButton.css'
 import VolumeIcon from '@/components/overlay/VolumeIcon.vue'
 import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/controls/useResolvedPlayer'
 
@@ -9,7 +10,7 @@ const player = useResolvedPlayer(props)
 <template>
   <button
     type="button"
-    class="mlv-mute-button"
+    class="mlv-control-btn mlv-mute-button"
     :aria-pressed="player?.isMuted ?? false"
     :aria-label="player?.isMuted ? 'Unmute' : 'Mute'"
     @click="player?.toggleMute()"
@@ -19,23 +20,3 @@ const player = useResolvedPlayer(props)
     </slot>
   </button>
 </template>
-
-<style scoped>
-:where(.mlv-mute-button) {
-  all: unset;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-:where(.mlv-mute-button):focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
-}
-
-:where(.mlv-mute-button :deep(svg)) {
-  width: 1em;
-  height: 1em;
-}
-</style>

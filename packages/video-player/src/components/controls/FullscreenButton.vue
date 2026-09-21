@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '@/styles/controlButton.css'
 import Icon from '@/components/Icon.vue'
 import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/controls/useResolvedPlayer'
 
@@ -9,7 +10,7 @@ const player = useResolvedPlayer(props)
 <template>
   <button
     type="button"
-    class="mlv-fullscreen-button"
+    class="mlv-control-btn mlv-fullscreen-button"
     :aria-label="player?.isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'"
     @click="player?.toggleFullscreen()"
   >
@@ -19,23 +20,3 @@ const player = useResolvedPlayer(props)
     </slot>
   </button>
 </template>
-
-<style scoped>
-:where(.mlv-fullscreen-button) {
-  all: unset;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-:where(.mlv-fullscreen-button):focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
-}
-
-:where(.mlv-fullscreen-button :deep(svg)) {
-  width: 1em;
-  height: 1em;
-}
-</style>

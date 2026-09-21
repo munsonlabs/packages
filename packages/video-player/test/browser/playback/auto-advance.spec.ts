@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vite-plus/test'
-import { playlist } from '@test/browser/catalogue'
+import { playlist, CLIP_DURATION } from '@test/browser/catalogue'
 import { mountStage, waitFor } from '@test/browser/harness'
+
+/** Close enough to the end to reach it in a moment, without landing exactly on the duration, where playback just stalls. */
+const NEAR_END = CLIP_DURATION - 0.5
 
 const [first, second] = playlist
 
@@ -29,7 +32,7 @@ describe('playlist / auto-advance (VideoStage)', () => {
     await selectCard(0)
     await sink.next('play')
 
-    stage.seek(90)
+    stage.seek(NEAR_END)
     const ended = await sink.next('ended')
     expect(ended.src).toBe(first.src)
 
@@ -42,7 +45,7 @@ describe('playlist / auto-advance (VideoStage)', () => {
     await selectCard(0)
     await sink.next('play')
 
-    stage.seek(90)
+    stage.seek(NEAR_END)
     await sink.next('ended')
     await new Promise((r) => setTimeout(r, 500))
 

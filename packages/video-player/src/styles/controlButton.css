@@ -1,0 +1,32 @@
+/*
+ * Shared by every headless control button. Each still carries its own `mlv-*-button` class as a
+ * styling hook; this file is the behaviour they all had copied into their own scoped block.
+ * :where() keeps it at zero specificity so a consumer's own class always wins.
+ */
+
+:where(.mlv-control-btn) {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:where(.mlv-control-btn):focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+:where(.mlv-control-btn) svg {
+  width: 1em;
+  height: 1em;
+}
+
+/* Toggles dim when off and come up to full opacity when on. */
+:where(.mlv-control-btn--toggle) {
+  opacity: 0.6;
+}
+
+:where(.mlv-control-btn--toggle.mlv-control-btn--active) {
+  opacity: 1;
+}

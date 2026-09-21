@@ -12,6 +12,8 @@ export const STORAGE_AUTO_ADVANCE_KEY = 'player:autoAdvance'
 export const STORAGE_AUDIO_PREFERENCE_KEY = 'player:audio'
 export const DEFAULT_AUDIO_PREFERENCE: AudioPreference = { muted: false, volume: 1 }
 
+export const PLAYER_SHELL_CLASS = 'player__shell'
+
 export const MVP_TECH_CLASS = 'mlv-tech'
 export const MVP_YOUTUBE_CLASS = 'mlv-youtube'
 export const MVP_VIMEO_CLASS = 'mlv-vimeo'

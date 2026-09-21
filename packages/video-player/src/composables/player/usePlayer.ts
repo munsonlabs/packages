@@ -43,7 +43,7 @@ export function usePlayer(
     currentTime: current,
     duration: total,
     isMuted,
-    volume: vol,
+    currentVolume: vol,
     currentPlaybackRate,
     hasEnded,
     hasStarted,

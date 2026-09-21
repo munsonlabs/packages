@@ -2,7 +2,7 @@ import { onMounted, onBeforeUnmount } from 'vue'
 import type { Ref } from 'vue'
 import type { PlaybackAdapter } from '@/types/playback'
 import { observeViewport } from '@/composables/player/viewport/viewportObserver'
-import { getShellEl } from '@/adapters/embeds/embedShared'
+import { getShellEl } from '@/utils/shell'
 import { PAUSE_BELOW_RATIO } from '@/constants'
 
 export function useAutoPauseOffscreen(

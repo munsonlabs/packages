@@ -151,7 +151,7 @@ describe('shortcuts on the bare shell', () => {
   })
 
   it('adjusts volume up/down and clamps to 0-1', () => {
-    const player = makePlayer({ volume: 0.95 })
+    const player = makePlayer({ currentVolume: 0.95 })
     const { onKeydown } = useKeyboardShortcuts(player, makeHud())
     fireKeydown(onKeydown, 'ArrowUp', shell())
     expect(player.setVolume).toHaveBeenCalledWith(1)

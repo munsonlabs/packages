@@ -33,7 +33,7 @@ export const PLAYER_STATE_KEYS = [
   'isBuffering',
   'currentTime',
   'duration',
-  'volume',
+  'currentVolume',
   'isMuted',
   'isAudible',
   'isLooping',

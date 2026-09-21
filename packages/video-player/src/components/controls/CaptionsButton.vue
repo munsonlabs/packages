@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '@/styles/controlButton.css'
 import { computed } from 'vue'
 import Icon from '@/components/Icon.vue'
 import { cycleCaptionTrack, captionTrackLabel } from '@/utils/playerActions'
@@ -18,8 +19,8 @@ function cycle(): void {
   <button
     v-if="player?.supportsCaptions"
     type="button"
-    class="mlv-captions-button"
-    :class="{ 'mlv-captions-button--active': player?.activeCaptionIndex !== null }"
+    class="mlv-control-btn mlv-control-btn--toggle mlv-captions-button"
+    :class="{ 'mlv-control-btn--active mlv-captions-button--active': player?.activeCaptionIndex !== null }"
     :aria-label="`Captions: ${currentLabel}`"
     @click="cycle"
   >
@@ -28,28 +29,3 @@ function cycle(): void {
     </slot>
   </button>
 </template>
-
-<style scoped>
-:where(.mlv-captions-button) {
-  all: unset;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.6;
-}
-
-:where(.mlv-captions-button):focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
-}
-
-:where(.mlv-captions-button--active) {
-  opacity: 1;
-}
-
-:where(.mlv-captions-button :deep(svg)) {
-  width: 1em;
-  height: 1em;
-}
-</style>

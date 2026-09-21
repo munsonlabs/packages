@@ -31,7 +31,7 @@ export function usePlayerEvents(state: PlayerState, deps: UsePlayerEventsDeps): 
     currentTime: current,
     duration: total,
     buffered,
-    volume: vol,
+    currentVolume: vol,
     isMuted,
     isLooping,
     currentPlaybackRate: playbackRate,

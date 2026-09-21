@@ -14,7 +14,7 @@ function handle(overrides: Partial<PlayerHandle> = {}): PlayerHandle {
     isLive: false,
     duration: 100,
     currentTime: 0,
-    volume: 1,
+    currentVolume: 1,
     bufferedDisplay: 0,
     toggleMute: vi.fn(),
     setVolume: vi.fn(),

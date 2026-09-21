@@ -10,7 +10,7 @@ const player = useResolvedPlayer(props)
 const displayPercent = computed(() => {
   const p = player.value
   if (!p) return 0
-  return p.isMuted ? 0 : Math.round(p.volume * 100)
+  return p.isMuted ? 0 : Math.round(p.currentVolume * 100)
 })
 
 function onInput(e: Event): void {

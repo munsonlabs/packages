@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '@/styles/controlButton.css'
 import Icon from '@/components/Icon.vue'
 import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/controls/useResolvedPlayer'
 
@@ -10,8 +11,8 @@ const player = useResolvedPlayer(props)
   <button
     v-if="player?.supportsPip"
     type="button"
-    class="mlv-pip-button"
-    :class="{ 'mlv-pip-button--active': player?.isPipActive }"
+    class="mlv-control-btn mlv-control-btn--toggle mlv-pip-button"
+    :class="{ 'mlv-control-btn--active mlv-pip-button--active': player?.isPipActive }"
     :aria-pressed="player?.isPipActive ?? false"
     aria-label="Toggle Picture-in-Picture"
     @click="player?.togglePip()"
@@ -21,28 +22,3 @@ const player = useResolvedPlayer(props)
     </slot>
   </button>
 </template>
-
-<style scoped>
-:where(.mlv-pip-button) {
-  all: unset;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.6;
-}
-
-:where(.mlv-pip-button):focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
-}
-
-:where(.mlv-pip-button--active) {
-  opacity: 1;
-}
-
-:where(.mlv-pip-button :deep(svg)) {
-  width: 1em;
-  height: 1em;
-}
-</style>

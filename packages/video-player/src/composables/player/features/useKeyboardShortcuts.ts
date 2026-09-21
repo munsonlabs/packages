@@ -28,7 +28,7 @@ export function useKeyboardShortcuts(player: PlayerContext, hud: HudContext): Us
   }
 
   function adjustVolume(delta: number): void {
-    player.setVolume(clamp(player.volume + delta, 0, 1))
+    player.setVolume(clamp(player.currentVolume + delta, 0, 1))
   }
 
   function toggleCaptions(): void {

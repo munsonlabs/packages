@@ -2,6 +2,9 @@ import { describe, it, expect } from 'vite-plus/test'
 import { catalogue, CLIP_DURATION } from '@test/browser/catalogue'
 import { mountPlayer, waitFor } from '@test/browser/harness'
 
+/** Close enough to the end to reach it in a moment, without landing exactly on the duration, where playback just stalls. */
+const NEAR_END = CLIP_DURATION - 0.5
+
 describe('loop', () => {
   it('toggleLoop reports `loopchange` and flips isLooping', async () => {
     const { player, sink } = await mountPlayer(catalogue.plain)
@@ -21,7 +24,7 @@ describe('loop', () => {
     player.toggleLoop()
     await sink.next('loopchange')
 
-    player.seek(90)
+    player.seek(NEAR_END)
     await sink.next('seeked')
     await waitFor(() => video.currentTime < CLIP_DURATION * 0.5, 'the playhead to wrap back to the start')
 
@@ -41,7 +44,7 @@ describe('loop', () => {
     await sink.next('loopchange', 1)
     expect(player.isLooping).toBe(false)
 
-    player.seek(90)
+    player.seek(NEAR_END)
     await sink.next('ended')
     expect(player.hasEnded).toBe(true)
   })

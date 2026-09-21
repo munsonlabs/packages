@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '@/styles/controlButton.css'
 import { computed } from 'vue'
 import Icon from '@/components/Icon.vue'
 import { cycleQuality, qualityLabel } from '@/utils/playerActions'
@@ -18,8 +19,8 @@ function cycle(): void {
   <button
     v-if="player?.supportsQuality"
     type="button"
-    class="mlv-quality-button"
-    :class="{ 'mlv-quality-button--active': !player?.isAutoQuality }"
+    class="mlv-control-btn mlv-control-btn--toggle mlv-quality-button"
+    :class="{ 'mlv-control-btn--active mlv-quality-button--active': !player?.isAutoQuality }"
     :aria-label="`Quality: ${currentLabel}`"
     @click="cycle"
   >
@@ -33,28 +34,3 @@ function cycle(): void {
     </slot>
   </button>
 </template>
-
-<style scoped>
-:where(.mlv-quality-button) {
-  all: unset;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.6;
-}
-
-:where(.mlv-quality-button):focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
-}
-
-:where(.mlv-quality-button--active) {
-  opacity: 1;
-}
-
-:where(.mlv-quality-button :deep(svg)) {
-  width: 1em;
-  height: 1em;
-}
-</style>

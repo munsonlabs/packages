@@ -25,11 +25,11 @@ export function createPlayerState(props: PlayerProps) {
     buffered,
     progress,
     bufferedDisplay: computed(() => Math.max(buffered.value, progress.value)),
-    volume: vol,
+    currentVolume: vol,
     isMuted,
     isAudible: computed(() => !isMuted.value && vol.value > 0),
     isLooping: ref(!!props.loop),
-    /** Not `playbackRate`: on a custom element the prop's own DOM property would shadow an exposed field of the same name. Same for `isNativeUi`. */
+    /** Not `playbackRate` or `volume`: on a custom element the prop's own DOM property would shadow an exposed field of the same name. Same for `isNativeUi`. */
     currentPlaybackRate: ref(props.playbackRate ?? 1),
     supportsPlaybackRate: ref(false),
     isAdPlaying: ref(false),

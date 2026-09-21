@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '@/styles/controlButton.css'
 import Icon from '@/components/Icon.vue'
 import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/controls/useResolvedPlayer'
 
@@ -9,8 +10,8 @@ const player = useResolvedPlayer(props)
 <template>
   <button
     type="button"
-    class="mlv-loop-button"
-    :class="{ 'mlv-loop-button--active': player?.isLooping }"
+    class="mlv-control-btn mlv-control-btn--toggle mlv-loop-button"
+    :class="{ 'mlv-control-btn--active mlv-loop-button--active': player?.isLooping }"
     :aria-pressed="player?.isLooping ?? false"
     aria-label="Toggle loop"
     @click="player?.toggleLoop()"
@@ -20,28 +21,3 @@ const player = useResolvedPlayer(props)
     </slot>
   </button>
 </template>
-
-<style scoped>
-:where(.mlv-loop-button) {
-  all: unset;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.6;
-}
-
-:where(.mlv-loop-button):focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
-}
-
-:where(.mlv-loop-button--active) {
-  opacity: 1;
-}
-
-:where(.mlv-loop-button :deep(svg)) {
-  width: 1em;
-  height: 1em;
-}
-</style>

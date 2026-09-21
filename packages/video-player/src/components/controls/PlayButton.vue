@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '@/styles/controlButton.css'
 import { computed } from 'vue'
 import Icon from '@/components/Icon.vue'
 import { useResolvedPlayer, type ResolvedPlayerProps } from '@/composables/controls/useResolvedPlayer'
@@ -35,7 +36,7 @@ function onClick(): void {
 </script>
 
 <template>
-  <button type="button" class="mlv-play-button" :aria-label="label" @click="onClick">
+  <button type="button" class="mlv-control-btn mlv-play-button" :aria-label="label" @click="onClick">
     <slot :is-playing="player?.isPlaying ?? false" :has-ended="player?.hasEnded ?? false" :is-error="player?.isError ?? false">
       <Icon name="replay" v-if="status === 'error' || status === 'ended'" />
       <Icon name="pause" v-else-if="status === 'playing'" />
@@ -43,24 +44,3 @@ function onClick(): void {
     </slot>
   </button>
 </template>
-
-<style scoped>
-/* :where() keeps these at zero specificity so a consumer's own class always wins. */
-:where(.mlv-play-button) {
-  all: unset;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-:where(.mlv-play-button):focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
-}
-
-:where(.mlv-play-button :deep(svg)) {
-  width: 1em;
-  height: 1em;
-}
-</style>

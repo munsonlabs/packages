@@ -1,5 +1,6 @@
 import { MVP_FULLSCREEN_PENDING, MVP_FULLSCREEN_PENDING_DONE, MVP_TECH_CLASS } from '@/constants'
 import { isIOS, requestFullscreen, exitFullscreen as exitDocFullscreen } from '@/utils/platform'
+import { getShellEl } from '@/utils/shell'
 import { createEmitter } from '@/composables/player/emitter'
 import type { Emitter } from '@/composables/player/emitter'
 import type { PlaybackAdapter, MediaErrorLike, EmbedAdapterOptions } from '@/types/playback'
@@ -64,10 +65,6 @@ export function teardownEmbedMount(videoEl: HTMLVideoElement, wrapper: HTMLDivEl
   wrapper.remove()
   videoEl.parentElement?.classList.remove(cssClass)
   videoEl.style.display = ''
-}
-
-export function getShellEl(videoEl: HTMLVideoElement): HTMLElement | null {
-  return videoEl.closest('.player__shell')
 }
 
 /** iframes can't be fullscreened on iOS - `iosFallback` handles that case itself, or returns `false` to fall through to the shell path. */

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, inject } from 'vue'
 import { PlayerKey, HudKey, ActionKey, PlaylistKey, injectStrict } from '@/composables/player/playerContext'
-import { usePlayerAction } from '@/composables/overlay/usePlayerAction'
-import { useElementCompact } from '@/composables/overlay/useOverlayVisibility'
+import { useElementCompact } from '@/composables/useElementCompact'
 import { runFlipTransition } from '@/utils/flipTransition'
 import { isIOS } from '@/utils/platform'
 import PlayButton from '@/components/controls/PlayButton.vue'
@@ -23,7 +22,6 @@ const hud = injectStrict(HudKey)
 const playlist = injectStrict(PlaylistKey)
 
 const action = inject(ActionKey)
-const { isCustom, customAction } = usePlayerAction(action, player, playlist)
 
 const showVolume = ref(false)
 const showMore = ref(false)
@@ -110,7 +108,7 @@ function onMoreClick(): void {
       </template>
 
       <template v-else-if="showMore">
-        <MoreMenu :is-custom="isCustom" :custom-action="customAction" :compact="compact" @back="swapPanel(() => (showMore = false))" />
+        <MoreMenu :compact="compact" @back="swapPanel(() => (showMore = false))" />
       </template>
 
       <template v-else>

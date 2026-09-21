@@ -1,21 +1,19 @@
 <script setup lang="ts">
-import { PlayerKey, PlaylistKey, HudKey, injectStrict } from '@/composables/player/playerContext'
+import { inject } from 'vue'
+import { PlayerKey, PlaylistKey, HudKey, ActionKey, injectStrict } from '@/composables/player/playerContext'
+import { usePlayerAction } from '@/composables/overlay/usePlayerAction'
 import { cyclePlaybackRate, playbackRateLabel, cycleCaptionTrack, captionTrackLabel, cycleQuality, qualityLabel } from '@/utils/playerActions'
 import Icon from '@/components/Icon.vue'
 import MoreMenuRow from '@/components/overlay/MoreMenuRow.vue'
-import type { CustomAction } from '@/types/player'
 
-defineProps<{
-  isCustom: boolean
-  customAction: CustomAction | null
-  compact: boolean
-}>()
+defineProps<{ compact: boolean }>()
 
 defineEmits<{ back: [] }>()
 
 const player = injectStrict(PlayerKey)
 const hud = injectStrict(HudKey)
 const playlist = injectStrict(PlaylistKey)
+const { isCustom, customAction } = usePlayerAction(inject(ActionKey, undefined), player, playlist)
 </script>
 
 <template>

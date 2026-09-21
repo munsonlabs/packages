@@ -13,7 +13,7 @@ import PlainPlayerShell from '@/components/pinned/PlainPlayerShell.vue'
 import PinnedControls from '@/components/pinned/PinnedControls.vue'
 import type { StateChangeEvent, PlayerProps } from '@/types/player'
 import { parseAspectRatio } from '@/utils/aspectRatio'
-import { DEFAULT_ASPECT_RATIO } from '@/constants'
+import { DEFAULT_ASPECT_RATIO, PLAYER_SHELL_CLASS } from '@/constants'
 import '@/elements/ppbtn.css'
 import '@/styles/pinnedCorner.css'
 
@@ -115,8 +115,7 @@ defineExpose(exposePlayerSurface(player))
 
         <div
           ref="shellEl"
-          class="player__shell"
-          :class="{ 'player__shell--portrait': isPortrait }"
+          :class="[PLAYER_SHELL_CLASS, { 'player__shell--portrait': isPortrait }]"
           :style="{ aspectRatio: shellAspect }"
           role="group"
           :aria-label="label || 'Video player'"

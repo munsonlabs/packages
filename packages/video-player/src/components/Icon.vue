@@ -1,6 +1,12 @@
+<script lang="ts">
+import { registerIcons } from '@/icons'
+
+/** A module-level concern, so it runs once on import rather than once per icon per mount. */
+registerIcons()
+</script>
+
 <script setup lang="ts">
 import { Sigil } from '@munsonlabs/sigil/vue'
-import { registerIcons } from '@/icons'
 
 /**
  * One of the player's icons by short name (`play`, `pause`, `volume-on`, …), resolved through the shared
@@ -9,8 +15,6 @@ import { registerIcons } from '@/icons'
  * rebuild.
  */
 defineProps<{ name: string }>()
-
-registerIcons()
 </script>
 
 <template>

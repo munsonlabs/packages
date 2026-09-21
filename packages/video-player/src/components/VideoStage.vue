@@ -3,10 +3,9 @@ import { ref, computed, reactive, toRef, provide, onMounted, onBeforeUnmount, wa
 import VideoPlayer from '@/components/VideoPlayer.vue'
 import PinnedControls from '@/components/pinned/PinnedControls.vue'
 import Icon from '@/components/Icon.vue'
-import { registerStage, unregisterStage, isStageTucked, stageState } from '@/composables/registries/stageRegistry'
+import { registerStage, unregisterStage, stageState } from '@/composables/registries/stageRegistry'
 import { PlaylistKey } from '@/composables/player/playerContext'
-import { usePinnedReservedSpace } from '@/composables/player/viewport/usePinnedReservedSpace'
-import { scrollIntoCenter } from '@/utils/scrollIntoCenter'
+import { usePinnedBox } from '@/composables/player/viewport/usePinnedBox'
 import { dispatchStageEvent, useStageEvent } from '@/composables/stage/useStageBus'
 import { useForwardedPlayer } from '@/composables/useForwardedPlayer'
 import { usePlaylist } from '@/composables/stage/usePlaylist'
@@ -14,7 +13,6 @@ import { WIN_VIDEO_SELECT, WIN_VIDEO_TOGGLE, DEFAULT_ASPECT_RATIO } from '@/cons
 import { parseAspectRatio } from '@/utils/aspectRatio'
 import { getAutoAdvance, saveAutoAdvance } from '@/utils/autoAdvancePreference'
 import { resolveGestureMuted } from '@/utils/audioPreference'
-import { runFlipTransition } from '@/utils/flipTransition'
 import type { PlayerProps, StateChangeEvent, VideoEntry, VideoSelectDetail, VideoToggleDetail, PinCorner } from '@/types/player'
 import '@/styles/pinnedCorner.css'
 
@@ -50,11 +48,19 @@ const minified = ref(false)
 
 const { hasNext, hasPrevious, nextEntry, previousEntry } = usePlaylist(toRef(props, 'playlist'), current)
 
-const isPinned = computed(() => minified.value && !!current.value && playerMounted.value)
-const isTucked = computed(() => isPinned.value && isStageTucked.value)
 const idleAspect = computed(() => parseAspectRatio(current.value?.aspectRatio || DEFAULT_ASPECT_RATIO).cssRatio)
 
-const { wrapperStyle, clear: clearReservedSize } = usePinnedReservedSpace(wrapperEl, stageEl, isPinned)
+const { isPinned, isTucked, wrapperStyle, setPinned, clearReservedSpace, scrollToBox } = usePinnedBox(wrapperEl, stageEl)
+
+/**
+ * Scrolling the stage out of view and back is a move, so it animates. A player mounting into a stage
+ * that had already scrolled away is a content swap, so it must not: a FLIP would park the box at its
+ * old, off-screen position long enough for the player's own auto-pause to stop playback.
+ */
+watch([minified, playerMounted, current], ([nextMinified], [prevMinified]) => {
+  const pinned = minified.value && !!current.value && playerMounted.value
+  setPinned(pinned, { animate: nextMinified !== prevMinified })
+})
 
 let intersectionObserver: IntersectionObserver | null = null
 
@@ -62,19 +68,7 @@ let intersectionObserver: IntersectionObserver | null = null
 function setupObservers(): void {
   intersectionObserver?.disconnect()
   if (!wrapperEl.value) return
-  intersectionObserver = new IntersectionObserver(
-    ([entry]) => {
-      const nextMinified = !entry.isIntersecting
-      if (!current.value || !playerMounted.value) {
-        minified.value = nextMinified
-        return
-      }
-      void runFlipTransition(stageEl.value, () => {
-        minified.value = nextMinified
-      })
-    },
-    { threshold: 0.98 },
-  )
+  intersectionObserver = new IntersectionObserver(([entry]) => (minified.value = !entry.isIntersecting), { threshold: 0.98 })
   intersectionObserver.observe(wrapperEl.value)
 }
 
@@ -90,16 +84,12 @@ function onIdleClick(): void {
   resumeCurrent()
 }
 
-function scrollToStage(): void {
-  scrollIntoCenter(wrapperEl.value)
-}
-
 function dismiss(): void {
   current.value = null
   playerMounted.value = false
   isPlaying.value = false
 
-  clearReservedSize()
+  clearReservedSpace()
   dispatchState()
 }
 
@@ -141,7 +131,7 @@ function playEntry(entry: VideoEntry | null, fromGesture: boolean): void {
     fromGesture,
     autoplay: true,
     muted: entry.muted ?? playerRef.value?.isMuted ?? resolveGestureMuted(undefined, fromGesture),
-    volume: entry.volume ?? playerRef.value?.volume,
+    volume: entry.volume ?? playerRef.value?.currentVolume,
   })
 }
 
@@ -202,7 +192,7 @@ defineExpose({ playNext, playPrevious, hasNext, hasPrevious, ...forwarded })
         [`stage--pin-${pin}`]: isPinned,
       }"
     >
-      <PinnedControls v-if="isPinned" @scroll-to="scrollToStage" @dismiss="dismiss" />
+      <PinnedControls v-if="isPinned" @scroll-to="scrollToBox" @dismiss="dismiss" />
 
       <VideoPlayer v-if="current && playerMounted" ref="playerRef" :key="current.src" v-bind="playerProps" @state-change="onStateChange" />
 

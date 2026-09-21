@@ -24,11 +24,14 @@ export interface IconSource {
   dispose?(): void
 }
 
-/** What an override factory is told: the request, plus the library the query would otherwise have gone to. */
 export interface OverrideRequest extends IconRequest {
   library?: string
 }
 
 export type IconOverride = string | ((request: OverrideRequest) => string)
+
+export interface OverrideOptions {
+  library?: string
+}
 
 export type LibraryConfig = IconSource | SvgLibraryOptions | FontLibraryOptions

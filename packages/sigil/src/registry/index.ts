@@ -1,4 +1,4 @@
-import type { IconOverride, IconQuery, LibraryConfig, ResolvedIcon } from '../types/index'
+import type { IconOverride, IconQuery, LibraryConfig, OverrideOptions, ResolvedIcon } from '../types/index'
 import { version } from '../../package.json'
 import { createLazySource } from './lazy'
 import { isSource, loadKind } from './load'
@@ -6,9 +6,8 @@ import { plan, resolveFrom, resolveSync } from './lookup'
 import { createState, notify } from './state'
 
 /**
- * A registry: named libraries, pinned overrides, a default library and a list of subscribers. This is
- * the type of the shared `sigil` and of anything `createSigil()` returns. Every member is a closure
- * over private state rather than a method, so `const { register } = sigil` works without binding.
+ * A registry: named libraries, pinned overrides, a default library and a list of subscribers. The
+ * type of the shared `sigil` and of anything `createSigil()` returns.
  */
 export interface Sigil {
   readonly version: string
@@ -17,8 +16,8 @@ export interface Sigil {
   register(name: string, config: LibraryConfig, options?: { default?: boolean }): Promise<void>
   unregister(name: string): void
   use(name: string | null): void
-  override(name: string, icon: IconOverride | null): void
-  override(icons: Record<string, IconOverride | null>): void
+  override(name: string, icon: IconOverride | null, options?: OverrideOptions): void
+  override(icons: Record<string, IconOverride | null>, options?: OverrideOptions): void
   getIconSync(name: string, query?: IconQuery): ResolvedIcon | undefined
   getIcon(name: string, query?: IconQuery): Promise<ResolvedIcon | undefined>
   subscribe(listener: () => void): () => void
@@ -26,12 +25,23 @@ export interface Sigil {
 }
 
 /**
- * Builds a registry that shares nothing with any other. The page-wide `sigil` below is one of these;
- * call this directly when isolation is the point - a widget that must not be affected by the host
- * page's icons, or a per-request registry on a server, where the shared instance is process-wide.
+ * Builds a registry that shares nothing with any other - use it for an isolated widget, or a
+ * per-request registry on a server.
  */
 export function createSigil(): Sigil {
   const state = createState()
+
+  /**
+   * The per-library override map for a library name, creating an empty one on first use.
+   */
+  function mapFor(byLibrary: Map<string, Map<string, IconOverride>>, library: string): Map<string, IconOverride> {
+    let map = byLibrary.get(library)
+    if (map === undefined) {
+      map = new Map()
+      byLibrary.set(library, map)
+    }
+    return map
+  }
 
   function changed(): void {
     notify(state)
@@ -49,11 +59,8 @@ export function createSigil(): Sigil {
     },
 
     /**
-     * Adds a library under a name, replacing (and disposing) any library already there. A ready source
-     * is live at once. A description gets a placeholder immediately and the real source when its kind's
-     * module has loaded, so the name is listed and mounted icons re-render without anyone waiting; the
-     * returned promise settles when the library is actually able to answer. If that load fails and this
-     * library had been made the default, the default is cleared so lookups do not keep landing on it.
+     * Adds a library under a name, replacing (and disposing) any library already there. Returns a
+     * promise that settles once the library is actually able to answer.
      */
     register(name, config, options = {}) {
       state.libraries.get(name)?.dispose?.()
@@ -87,8 +94,8 @@ export function createSigil(): Sigil {
     },
 
     /**
-     * Removes a library and lets it release whatever it holds. If it was the default, there is no
-     * default afterwards rather than a dangling name.
+     * Removes a library and lets it release whatever it holds. Clears the default if it was set
+     * to this library.
      */
     unregister(name) {
       state.libraries.get(name)?.dispose?.()
@@ -100,8 +107,7 @@ export function createSigil(): Sigil {
     },
 
     /**
-     * Sets the library that answers when a lookup names none, or clears it with `null`. This is the
-     * runtime switch: every mounted icon without a `library` attribute follows it.
+     * Sets the library that answers when a lookup names none, or clears it with `null`.
      */
     use(name) {
       state.defaultLibrary = name
@@ -109,25 +115,40 @@ export function createSigil(): Sigil {
     },
 
     /**
-     * Pins markup (or a factory producing markup) to a name, ahead of every library, one name at a time
-     * or several from a record. `null` unpins. An override is how a single icon is replaced without
-     * touching the set it came from.
+     * Pins markup (or a factory producing markup) to a name, ahead of every library, one name at a
+     * time or several from a record. `null` unpins. `{ library }` scopes the pin to one library's
+     * names instead of answering for every library.
      */
-    override(nameOrIcons: string | Record<string, IconOverride | null>, icon?: IconOverride | null) {
-      const entries = typeof nameOrIcons === 'string' ? [[nameOrIcons, icon ?? null] as const] : Object.entries(nameOrIcons)
+    override(
+      nameOrIcons: string | Record<string, IconOverride | null>,
+      iconOrOptions?: IconOverride | null | OverrideOptions,
+      maybeOptions?: OverrideOptions,
+    ) {
+      let entries: Array<readonly [string, IconOverride | null]>
+      let options: OverrideOptions | undefined
+
+      if (typeof nameOrIcons === 'string') {
+        entries = [[nameOrIcons, (iconOrOptions ?? null) as IconOverride | null]]
+        options = maybeOptions
+      } else {
+        entries = Object.entries(nameOrIcons)
+        options = iconOrOptions as OverrideOptions | undefined
+      }
+
+      const target = options?.library === undefined ? state.overrides : mapFor(state.libraryOverrides, options.library)
       for (const [name, value] of entries) {
         if (value === null) {
-          state.overrides.delete(name)
+          target.delete(name)
         } else {
-          state.overrides.set(name, value)
+          target.set(name, value)
         }
       }
       changed()
     },
 
     /**
-     * The answer available right now, without I/O: an override, or what the chosen library can give
-     * synchronously. Renderers call this first so a font class or a cached SVG paints in the same frame.
+     * The answer available right now, without I/O: an override, or what the chosen library can
+     * give synchronously.
      */
     getIconSync(name, query = {}) {
       return resolveSync(plan(state, name, query))
@@ -135,8 +156,7 @@ export function createSigil(): Sigil {
 
     /**
      * The full answer: the synchronous one if there is one, otherwise whatever the chosen library
-     * resolves asynchronously. A source that throws yields `undefined` - the icon simply does not render -
-     * with a warning in development builds so the cause is not silent.
+     * resolves asynchronously. A source that throws yields `undefined`.
      */
     async getIcon(name, query = {}) {
       const { request, source, override } = plan(state, name, query)
@@ -156,8 +176,7 @@ export function createSigil(): Sigil {
     },
 
     /**
-     * Registers a listener for every change - registration, override, removal, default - and returns
-     * the function that removes it. `watchIcon` is built on this.
+     * Registers a listener for every change. Returns the function that removes it.
      */
     subscribe(listener) {
       state.listeners.add(listener)
@@ -174,6 +193,7 @@ export function createSigil(): Sigil {
         source.dispose?.()
       }
       state.overrides.clear()
+      state.libraryOverrides.clear()
       state.libraries.clear()
       state.defaultLibrary = null
       changed()
@@ -182,12 +202,8 @@ export function createSigil(): Sigil {
 }
 
 /**
- * The page-wide registry. It is parked on `globalThis` under a well-known symbol so that, however many
- * copies of this package end up on one page (the app's bundle, a third-party component's bundle, a
- * publisher's script from a CDN), the first to load creates the instance and every later one finds and
- * reuses it. That sharing is what lets a separately loaded script replace icons the app already renders.
- * On a server the same mechanism makes the instance process-wide - use `createSigil()` for anything
- * per request.
+ * The page-wide registry, shared by every copy of this package on the page via a well-known
+ * `globalThis` symbol. Use `createSigil()` instead for a per-request instance on a server.
  */
 const KEY = Symbol.for('@munsonlabs/sigil')
 const shared = globalThis as { [KEY]?: Sigil }
@@ -195,7 +211,7 @@ const shared = globalThis as { [KEY]?: Sigil }
 export const sigil: Sigil = (shared[KEY] ??= createSigil())
 
 /**
- * The shared registry's members as named exports, so `import { register } from '@munsonlabs/sigil'` is
- * all most code needs. They are closures, not methods, so nothing has to be bound.
+ * The shared registry's members as named exports, so `import { register } from '@munsonlabs/sigil'`
+ * is all most code needs.
  */
 export const { register, unregister, override, use, getIcon, getIconSync, subscribe, clear } = sigil

@@ -7,13 +7,27 @@ A framework-free icon registry with a `<ml-sigil>` custom element. The core is a
 ## Public API
 
 ```ts
-import { sigil, createSigil, register, unregister, override, use, getIcon, getIconSync, subscribe, clear, watchIcon, cached } from '@munsonlabs/sigil'
+import {
+  sigil,
+  createSigil,
+  register,
+  unregister,
+  override,
+  use,
+  getIcon,
+  getIconSync,
+  subscribe,
+  clear,
+  watchIcon,
+  cached,
+  keepLibrary,
+} from '@munsonlabs/sigil'
 import type { Sigil, IconSource, IconRequest, ResolvedIcon, IconQuery, IconOverride, OverrideRequest } from '@munsonlabs/sigil'
 import { SigilElement, defineElements, createIconNode } from '@munsonlabs/sigil/element'
 import { Sigil } from '@munsonlabs/sigil/vue'
 ```
 
-Full member table in README.md. `register(name, config | source)`/`unregister` manage libraries, `override` pins markup to a name (`null` removes). `createSigil()` returns a registry built from closures over a private `State`, so its methods need no binding: the named exports are one destructuring of the shared `sigil` at the bottom of `registry/index.ts`. Keep the `Sigil` interface, that destructuring line and the README table in step.
+Full member table in README.md. `register(name, config | source)`/`unregister` manage libraries, `override` pins markup to a name (`null` removes), optionally scoped to one library with `{ library }` so the pin can't collide with another library's icon of the same name. `createSigil()` returns a registry built from closures over a private `State`, so its methods need no binding: the named exports are one destructuring of the shared `sigil` at the bottom of `registry/index.ts`. Keep the `Sigil` interface, that destructuring line and the README table in step.
 
 ## Layout
 
@@ -27,6 +41,7 @@ src/
     lazy.ts             createLazySource(): placeholder while a kind's module loads
     load.ts             isSource(), loadKind(): config shape → dynamic import of a kind
   watch.ts              watchIcon(): sync-first, stale-safe resolution both renderers use
+  keep.ts               keepLibrary(): re-registers a library whenever it's missing from the registry
   sources/
     svg.ts              svgLibrary  (loaded by register on first { resolver } / { icons })
     font.ts             fontLibrary (loaded by register on first { className })
@@ -60,7 +75,7 @@ Every function of substance carries a multi-line docblock that says what it does
 - **Renderers do not resolve for themselves.** `watchIcon()` (`watch.ts`) owns sync-first resolution, stale-result dropping and re-resolving on registry changes; `element/` and `vue.ts` only turn a `ResolvedIcon` into DOM. Put resolution behaviour there, once.
 - **The shared instance lives on `globalThis[Symbol.for('@munsonlabs/sigil')]`.** This is what makes two bundled copies of the package on one page share state. Never replace `??=` with `=`, and never store anything on the instance that a different package version could not understand; the public surface is the compatibility contract. `sigil.version` exists so a mismatch can be diagnosed.
 - **Every mutation calls `notify(state)`.** `watchIcon` relies on it to re-resolve.
-- **Overrides are keyed by the raw name**, so `heart/solid` and `heart` are distinct keys.
+- **Overrides are keyed by the raw name**, so `heart/solid` and `heart` are distinct keys. A library-scoped override (`override(name, icon, { library })`) is keyed by `(library, name)` in a separate map (`state.libraryOverrides`) and is checked first in `overrideFor()`; a global override (no `library` option) falls back to the plain `state.overrides` map, unchanged from before.
 - **Resolved SVG markup is always parsed** and rejected if the root is not `<svg>`. Without `DOMParser` (a server) it is root-checked by regex, not mutated and not cached, so nothing unvalidated ever sits in the process-wide instance.
 - **`element/render.ts` and the Vue render function must agree**: `tag`, `className`, `aria-hidden`, then `html` as innerHTML else `text` as content.
 

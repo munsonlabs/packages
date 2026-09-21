@@ -7,10 +7,8 @@ const SVG_ROOT = /^\s*(?:<\?xml[^>]*>\s*)?(?:<!--[\s\S]*?-->\s*)*<svg[\s>]/i
 type Resolver = NonNullable<SvgLibraryOptions['resolver']>
 
 /**
- * Normalises whatever a resolver returned into SVG markup. A resolver may hand back markup directly, a
- * URL to fetch it from, or a module namespace with a `default` string (so `import('./x.svg?raw')` can
- * be returned unwrapped). Anything else is a programming error. A URL that does not respond OK fails
- * the resolution rather than being treated as markup.
+ * Normalises whatever a resolver returned into SVG markup: markup itself, a URL to fetch, or a
+ * module namespace with a `default` string.
  */
 async function toMarkup(value: ResolvedSvg): Promise<string> {
   const content = typeof value === 'object' && value !== null && 'default' in value ? value.default : value
@@ -30,8 +28,7 @@ async function toMarkup(value: ResolvedSvg): Promise<string> {
 }
 
 /**
- * Parses markup as an SVG document and insists that the root really is `<svg>`. This is what keeps an
- * HTML error page served with a 200 from being injected into the page as if it were an icon.
+ * Parses markup as an SVG document and insists that the root really is `<svg>`.
  */
 function parseSvg(markup: string, name: string): SVGSVGElement {
   const root = new DOMParser().parseFromString(markup, 'image/svg+xml').documentElement
@@ -43,9 +40,7 @@ function parseSvg(markup: string, name: string): SVGSVGElement {
 
 /**
  * Makes a resolver out of a plain map of icons - the `{ icons }` form of the config. Each entry is
- * either a single value (markup or URL) or a map of variants with a `default`; an unknown variant falls
- * back to `default`, and a missing name or a variant map without a usable entry fails the resolution.
- * The map may be a promise, which is how a fetched JSON file is registered.
+ * either a single value (markup or URL) or a map of variants with a `default`.
  */
 function fromMap(icons: SvgMap | Promise<SvgMap>): Resolver {
   return async (name, variant = 'default') => {
@@ -66,8 +61,7 @@ function fromMap(icons: SvgMap | Promise<SvgMap>): Resolver {
 }
 
 /**
- * The renderable form of SVG markup: a `<span class="icon-svg">` wrapping it, which one stylesheet
- * rule can size. Overrides produce exactly the same shape.
+ * The renderable form of SVG markup: a `<span class="icon-svg">` wrapping it.
  */
 function toIcon(svg: string): ResolvedIcon {
   return {
@@ -78,15 +72,8 @@ function toIcon(svg: string): ResolvedIcon {
 }
 
 /**
- * A library of SVG icons resolved by name. Configured with either a `resolver` function or an `icons`
- * map (which becomes a resolver), plus an optional `mutator` that runs once on the parsed `<svg>`
- * before the result is cached - typically to strip fixed sizes or force `currentColor`.
- *
- * In a browser every result is parsed and validated, mutated, and then remembered per name and variant
- * through `cached()`, so an icon costs one fetch for the life of the library. Without a DOM (a server
- * render) there is no parser: markup is checked by its root tag only, left unmutated and not cached, so
- * nothing unvalidated ever sits in a process-wide registry - the client does the real work once it
- * hydrates.
+ * A library of SVG icons resolved by name. Configured with a `resolver` function or an `icons`
+ * map, plus an optional `mutator` that runs once on the parsed `<svg>` before it's cached.
  */
 export function svgLibrary(options: SvgLibraryOptions): IconSource {
   const resolver = options.resolver ?? (options.icons ? fromMap(options.icons) : undefined)

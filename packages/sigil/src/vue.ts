@@ -3,11 +3,8 @@ import type { ResolvedIcon } from './types/index'
 import { watchIcon } from './watch'
 
 /**
- * `<Sigil name="…" library="…" variant="…">`: the registry's answer for its props, rendered with `h()`
- * using the same tag, class and `aria-hidden` the element uses, with every non-prop attribute forwarded
- * to the rendered node. Resolution itself is `watchIcon`, restarted whenever a prop changes and stopped
- * on unmount, so the component follows the registry exactly like `<ml-sigil>` does - a library
- * registered later, a `use()` switch or an override from another script all show up in place.
+ * `<Sigil name="…" library="…" variant="…">`: renders the icon the registry resolves for those
+ * props, updating live whenever a prop or the registry changes.
  */
 export const Sigil = defineComponent({
   name: 'Sigil',

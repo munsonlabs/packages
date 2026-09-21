@@ -44,10 +44,7 @@ async function toggle() {
     unregister('mlv')
   } else {
     void register('mlv', {
-      resolver: (name) => {
-        const short = name.replace('mlv-', '')
-        return `https://cdn.jsdelivr.net/npm/lucide-static@1.46.0/icons/${LUCIDE[short] ?? short}.svg`
-      },
+      resolver: (name) => `https://cdn.jsdelivr.net/npm/lucide-static@1.46.0/icons/${LUCIDE[name] ?? name}.svg`,
       mutator: (svg) => {
         svg.removeAttribute('width')
         svg.removeAttribute('height')

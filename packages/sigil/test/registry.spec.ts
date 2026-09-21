@@ -57,6 +57,52 @@ describe('overrides', () => {
     expect(await getIcon('heart')).toMatchObject({ html: SVG })
     expect(lib.calls).toEqual([])
   })
+
+  it('scopes a pin to one library with { library }, leaving other libraries and the global override alone', () => {
+    override('play', SVG)
+    override('play', '<svg data-scoped="mlv"/>', { library: 'mlv' })
+
+    expect(getIconSync('play', { library: 'mlv' })).toEqual({ tag: 'span', className: 'icon-svg', html: '<svg data-scoped="mlv"/>' })
+    expect(getIconSync('play', { library: 'other' })).toEqual({ tag: 'span', className: 'icon-svg', html: SVG })
+    expect(getIconSync('play')).toEqual({ tag: 'span', className: 'icon-svg', html: SVG })
+  })
+
+  it('a scoped override only answers when the query actually resolves to that library', () => {
+    override('play', '<svg data-scoped="mlv"/>', { library: 'mlv' })
+    use('lucide')
+
+    expect(getIconSync('play')).toBeUndefined()
+    expect(getIconSync('play', { library: 'mlv' })).toMatchObject({ html: '<svg data-scoped="mlv"/>' })
+  })
+
+  it('a scoped override applies as the effective library too, not only a named one', () => {
+    override('play', '<svg data-scoped="mlv"/>', { library: 'mlv' })
+    use('mlv')
+
+    expect(getIconSync('play')).toMatchObject({ html: '<svg data-scoped="mlv"/>' })
+  })
+
+  it('removes only the scoped entry when unpinned with { library }, leaving the global override in place', () => {
+    override('play', SVG)
+    override('play', '<svg data-scoped="mlv"/>', { library: 'mlv' })
+    override('play', null, { library: 'mlv' })
+
+    expect(getIconSync('play', { library: 'mlv' })).toEqual({ tag: 'span', className: 'icon-svg', html: SVG })
+  })
+
+  it('accepts a scoped record form too', () => {
+    override({ play: SVG, pause: '<svg data-p/>' }, { library: 'mlv' })
+
+    expect(getIconSync('play', { library: 'mlv' })).toMatchObject({ html: SVG })
+    expect(getIconSync('pause', { library: 'mlv' })).toMatchObject({ html: '<svg data-p/>' })
+    expect(getIconSync('play')).toBeUndefined()
+  })
+
+  it('clear() drops scoped overrides along with everything else', () => {
+    override('play', '<svg data-scoped="mlv"/>', { library: 'mlv' })
+    clear()
+    expect(getIconSync('play', { library: 'mlv' })).toBeUndefined()
+  })
 })
 
 describe('libraries', () => {
@@ -135,9 +181,11 @@ describe('register with a config', () => {
   })
 
   it('rejects an unrecognised shape and leaves a source that answers nothing', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const ready = register('bad', {} as never)
     await expect(ready).rejects.toThrow(/Unrecognised/)
     expect(await getIcon('x', { library: 'bad' })).toBeUndefined()
+    warn.mockRestore()
   })
 
   it('does not notify or keep a source that was unregistered before it loaded', async () => {
@@ -236,7 +284,9 @@ describe('resolution', () => {
   })
 
   it('swallows a rejecting source', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     void register('bad', { resolve: () => Promise.reject(new Error('boom')) })
     expect(await getIcon('heart')).toBeUndefined()
+    warn.mockRestore()
   })
 })

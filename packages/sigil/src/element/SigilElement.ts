@@ -7,12 +7,7 @@ const Base = (typeof HTMLElement === 'undefined' ? class {} : HTMLElement) as ty
 
 /**
  * `<ml-sigil name="…" library="…" variant="…">`: renders the icon the registry resolves for its
- * attributes, into light DOM so page CSS can size and colour it. The three attributes are mirrored as
- * properties, and changing either re-resolves. While connected it follows the registry, so a library
- * registered later, a `use()` switch or an override from another script all show up in place.
- *
- * The class extends a stand-in when `HTMLElement` is missing so the module can be imported on a server;
- * `defineElements` is a no-op there too.
+ * attributes into light DOM, re-resolving whenever an attribute or the registry changes.
  */
 export class SigilElement extends Base {
   static readonly observedAttributes = ATTRIBUTES
@@ -56,8 +51,7 @@ export class SigilElement extends Base {
   }
 
   /**
-   * Writes a property back to its attribute, removing the attribute for `undefined` so the element's
-   * markup always says exactly what it renders.
+   * Writes a property back to its attribute, removing the attribute for `undefined`.
    */
   #reflect(attribute: string, value: string | undefined): void {
     if (value === undefined || value === null) {
@@ -68,9 +62,8 @@ export class SigilElement extends Base {
   }
 
   /**
-   * Starts (or restarts) following the registry for the current attributes. Any previous watch is
-   * stopped first, which is also what discards an asynchronous result still in flight for the old
-   * attributes. With no `name` there is nothing to resolve, so the element is emptied.
+   * Starts (or restarts) following the registry for the current attributes. With no `name` there
+   * is nothing to resolve, so the element is emptied.
    */
   #watch(): void {
     this.#stop?.()
@@ -93,8 +86,8 @@ export class SigilElement extends Base {
 }
 
 /**
- * Registers `<ml-sigil>` (or another tag name) once. Safe to call repeatedly and from several copies of
- * the package: an already-defined tag is left alone rather than throwing.
+ * Registers `<ml-sigil>` (or another tag name) once. Safe to call repeatedly - an already-defined
+ * tag is left alone rather than throwing.
  */
 export function defineElements(tag = 'ml-sigil'): void {
   if (typeof customElements === 'undefined') {

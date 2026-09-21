@@ -2,7 +2,7 @@
 /** Four icons with no `library` attribute; buttons switch the default with use(), a toggle adds an override. */
 const { ready, failed } = useIconDemo()
 
-const names = ['heart', 'star', 'bell', 'home']
+const names = ['search', 'star', 'bell', 'home']
 const sets = ['lucide', 'material', 'emoji']
 const active = ref('lucide')
 const overridden = ref(false)
@@ -13,7 +13,6 @@ async function pick(name: string) {
   active.value = name
 }
 
-// `heart` is already pinned page-wide by the docs' demo overrides, so the toggle uses `bell` to start from a clean slate.
 async function toggleOverride() {
   const { override } = await import('@munsonlabs/sigil')
   overridden.value = !overridden.value

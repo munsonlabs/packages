@@ -8,7 +8,7 @@ const player = useResolvedPlayer(props)
 
 <template>
   <span class="mlv-time-display" :class="{ 'mlv-time-display--live': player?.isLive }">
-    <slot :is-live="player?.isLive ?? false" :current="player?.currentTime ?? 0" :total="player?.duration ?? 0" :format-time="fmtTime">
+    <slot :is-live="player?.isLive ?? false" :current-time="player?.currentTime ?? 0" :duration="player?.duration ?? 0" :format-time="fmtTime">
       <template v-if="player?.isLive"> <span class="mlv-time-display__dot" />Live </template>
       <template v-else>
         <span class="mlv-time-display__time">{{ fmtTime(player?.currentTime ?? 0) }}</span>

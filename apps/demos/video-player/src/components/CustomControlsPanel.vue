@@ -17,11 +17,9 @@ const { addLog } = useEventLog()
 const itemRef = ref<PlayerHandle | null>(null)
 
 function seekBy(deltaSeconds: number): void {
-  const current = itemRef.value?.current ?? 0
-  const total = itemRef.value?.total ?? 0
-  if (!total) return
-  const targetSeconds = Math.min(Math.max(current + deltaSeconds, 0), total)
-  itemRef.value?.seek((targetSeconds / total) * 100)
+  const player = itemRef.value
+  if (!player?.duration) return
+  player.seek(player.currentTime + deltaSeconds)
 }
 
 function onStateChange(e: StateChangeEvent | CustomEvent): void {

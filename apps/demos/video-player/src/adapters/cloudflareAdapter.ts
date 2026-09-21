@@ -83,6 +83,15 @@ function createCloudflareAdapter(videoEl: HTMLVideoElement, options: EmbedAdapte
   wrapper.appendChild(iframe)
 
   let player: CloudflareStreamPlayer | null = null
+  let loadedSrc = options.src
+
+  function applySrc(src: string): void {
+    loadedSrc = src
+    const next = parseCloudflareUrl(src)
+    if (!next) return
+    const host = next.customerCode ? `customer-${next.customerCode}.cloudflarestream.com` : 'iframe.videodelivery.net'
+    iframe.src = `https://${host}/${next.videoUid}/iframe`
+  }
   let disposed = false
 
   void ensureApiLoaded().then(() => {
@@ -119,25 +128,11 @@ function createCloudflareAdapter(videoEl: HTMLVideoElement, options: EmbedAdapte
     setPlaybackRate: () => {},
     bufferedEnd: () => player?.currentTime ?? 0,
     error: () => null,
-    setSrc: (src) => {
-      const next = parseCloudflareUrl(src)
-      if (!next) return
-      const host = next.customerCode ? `customer-${next.customerCode}.cloudflarestream.com` : 'iframe.videodelivery.net'
-      iframe.src = `https://${host}/${next.videoUid}/iframe`
-    },
+    load: applySrc,
+    /** The Stream iframe holds the source itself, so re-attempting it means pointing it at the same URL again. */
+    retry: () => applySrc(loadedSrc),
     supportsPlaybackRate: () => false,
-    supportsCaptions: () => false,
-    getCaptionTracks: () => [],
-    setCaptionTrack: () => {},
-    getActiveCaptionTrack: () => null,
-    supportsQuality: () => false,
-    getQualityLevels: () => [],
-    getCurrentQuality: () => null,
-    isAutoQuality: () => true,
-    setQuality: () => {},
-    supportsPip: () => false,
-    isPipActive: () => false,
-    togglePip: () => {},
+    /** Captions, quality and Picture-in-Picture are simply left out: the Stream iframe exposes none of them, and absent means unsupported. */
     enterFullscreen: () => wrapper.closest('.player__shell')?.requestFullscreen?.(),
     exitFullscreen: () => document.exitFullscreen?.(),
     on: (event, listener) => {

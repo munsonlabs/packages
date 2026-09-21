@@ -16,7 +16,7 @@ import { VideoPlayer, PlayButton, MuteButton, Scrubber } from '@munsonlabs/video
 
 const itemRef = ref(null)
 function seekBy(seconds) {
-  itemRef.value?.seek((itemRef.value.current ?? 0) + seconds)
+  itemRef.value?.seek((itemRef.value.currentTime ?? 0) + seconds)
 }
 </script>
 

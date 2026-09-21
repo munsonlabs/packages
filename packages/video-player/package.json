@@ -34,15 +34,15 @@
       "types": "./dist/elements/controls.d.mts"
     },
     "./style": {
-      "types": "./src/style.d.ts",
+      "types": "./src/types/style.d.ts",
       "import": "./dist/style.css"
     },
     "./style/core": {
-      "types": "./src/style.d.ts",
+      "types": "./src/types/style.d.ts",
       "import": "./dist/elements/core.css"
     },
     "./style/controls": {
-      "types": "./src/style.d.ts",
+      "types": "./src/types/style.d.ts",
       "import": "./dist/elements/controls.css"
     }
   },

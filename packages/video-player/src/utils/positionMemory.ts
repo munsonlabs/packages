@@ -1,5 +1,10 @@
-import { STORAGE_POSITIONS_KEY as STORAGE_KEY, POSITION_MAX_ENTRIES, POSITION_MIN_SAVE_TIME_S } from '@/constants'
 import { readStorage, writeStorage } from '@/utils/storage'
+
+export const STORAGE_POSITIONS_KEY = 'player:positions'
+
+export const POSITION_MAX_ENTRIES = 5
+
+export const POSITION_MIN_SAVE_TIME_S = 5
 
 interface SavedPosition {
   url: string
@@ -8,14 +13,14 @@ interface SavedPosition {
 
 function load(): SavedPosition[] {
   try {
-    return JSON.parse(readStorage(STORAGE_KEY) ?? '[]')
+    return JSON.parse(readStorage(STORAGE_POSITIONS_KEY) ?? '[]')
   } catch {
     return []
   }
 }
 
 function persist(entries: SavedPosition[]): void {
-  writeStorage(STORAGE_KEY, JSON.stringify(entries))
+  writeStorage(STORAGE_POSITIONS_KEY, JSON.stringify(entries))
 }
 
 export function savePosition(url: string, time: number): void {

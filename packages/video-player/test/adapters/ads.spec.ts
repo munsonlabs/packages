@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import { attachAds } from '@/adapters/ads/ads'
 import type { AdCallbacks } from '@/adapters/ads/ads'
-import { MVP_AD_PLAYING_CLASS, MVP_AD_PAUSED_CLASS } from '@/constants'
+import { AD_PLAYING_CLASS, AD_PAUSED_CLASS } from '@/adapters/ads/ads'
 
 const AdEventType = {
   CONTENT_PAUSE_REQUESTED: 'contentPauseRequested',
@@ -207,7 +207,7 @@ describe('ad start/end', () => {
     expect(pauseSpy).toHaveBeenCalledOnce()
     expect(callbacks.onAdStart).toHaveBeenCalledOnce()
     expect(controller.isAdPlaying()).toBe(true)
-    expect(containerEl.classList.contains(MVP_AD_PLAYING_CLASS)).toBe(true)
+    expect(containerEl.classList.contains(AD_PLAYING_CLASS)).toBe(true)
   })
 
   it('resumes content and fires onAdEnd on CONTENT_RESUME_REQUESTED', async () => {
@@ -286,12 +286,12 @@ describe('cross-player pause coordination', () => {
     const manager = triggerAdsManagerLoaded()
     manager.emit(AdEventType.CONTENT_PAUSE_REQUESTED)
     controller.pauseAd()
-    expect(containerEl.classList.contains(MVP_AD_PAUSED_CLASS)).toBe(true)
+    expect(containerEl.classList.contains(AD_PAUSED_CLASS)).toBe(true)
 
     manager.emit(AdEventType.CONTENT_RESUME_REQUESTED)
 
-    expect(containerEl.classList.contains(MVP_AD_PLAYING_CLASS)).toBe(false)
-    expect(containerEl.classList.contains(MVP_AD_PAUSED_CLASS)).toBe(false)
+    expect(containerEl.classList.contains(AD_PLAYING_CLASS)).toBe(false)
+    expect(containerEl.classList.contains(AD_PAUSED_CLASS)).toBe(false)
   })
 })
 
@@ -354,6 +354,6 @@ describe('dispose', () => {
     expect(manager.destroyed).toBe(true)
     expect(lastAdsLoader?.destroyed).toBe(true)
     expect(containerEl.querySelector('.ima-ad-container')).toBeNull()
-    expect(containerEl.classList.contains(MVP_AD_PLAYING_CLASS)).toBe(false)
+    expect(containerEl.classList.contains(AD_PLAYING_CLASS)).toBe(false)
   })
 })

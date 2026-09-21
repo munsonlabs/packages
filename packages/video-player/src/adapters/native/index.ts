@@ -1,13 +1,17 @@
 import type Hls from 'hls.js'
 import type { MediaPlayerClass } from 'dashjs'
-import { createEmitter } from '@/composables/player/emitter'
+import { createEmitter } from '@/utils/emitter'
 import { createCaptionSupport } from '@/adapters/native/captionSupport'
 import { createQualitySupport, type QualityEngineAdapter } from '@/adapters/native/qualitySupport'
 import { createFullscreenSupport } from '@/adapters/native/fullscreenSupport'
 import { createPipSupport } from '@/adapters/native/pipSupport'
 import type { PlaybackAdapter, MediaErrorLike } from '@/types/playback'
-import { HLS_MIME_TYPE, DASH_MIME_TYPE, STREAM_MAX_RECOVERY_ATTEMPTS, STREAM_RECOVERY_BASE_DELAY_MS } from '@/constants'
+import { HLS_MIME_TYPE, DASH_MIME_TYPE } from '@/constants'
 import type { PreloadMode } from '@/types/player'
+
+export const STREAM_MAX_RECOVERY_ATTEMPTS = 3
+
+export const STREAM_RECOVERY_BASE_DELAY_MS = 1000
 
 export interface NativeAdapterOptions {
   src: string
@@ -62,7 +66,6 @@ function dashQualityEngine(player: MediaPlayerClass): QualityEngineAdapter {
         return
       }
       player.updateSettings({ streaming: { abr: { autoSwitchBitrate: { video: false } } } })
-      /** replace:true discards already-buffered segments so a manual switch takes effect immediately. */
       player.setQualityFor('video', index, true)
     },
   }
@@ -78,7 +81,8 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
   let streamError: MediaErrorLike | null = null
   let recoveryAttempts = 0
   let recoveryTimer: ReturnType<typeof setTimeout> | null = null
-  /** hls.js fetches segments as soon as it attaches unless told otherwise - `preload: 'none'` holds it back until play(). */
+
+  // hls.js fetches segments as soon as it attaches unless told otherwise - `preload: 'none'` holds it back until play().
   const deferHlsLoad = options.preload === 'none' && !options.autoplay
   let hlsLoadStarted = false
 
@@ -86,13 +90,13 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
     const { default: HlsCtor } = await import('hls.js')
     if (disposed || pendingHlsSrc !== src) return
 
-    /** A misconfigured import map can resolve to something that isn't the real module - fall back to native playback. */
+    // A misconfigured import map can resolve to something that isn't the real module - fall back to native playback.
     if (typeof HlsCtor?.isSupported !== 'function' || !HlsCtor.isSupported()) {
       videoEl.src = src
       if (options.autoplay) void videoEl.play().catch(() => {})
       return
     }
-    /** Live detection in usePlayerEvents depends on duration() === Infinity, matching Safari's native HLS. */
+
     hls = new HlsCtor({ liveDurationInfinity: true, autoStartLoad: !deferHlsLoad })
     hlsLoadStarted = !deferHlsLoad
     hls.loadSource(src)
@@ -101,12 +105,14 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
 
     const HlsEvents = HlsCtor.Events
     const HlsErrorTypes = HlsCtor.ErrorTypes
+
     hls.on(HlsEvents.MANIFEST_PARSED, forwardEvent('qualitychange'))
     hls.on(HlsEvents.LEVEL_SWITCHED, forwardEvent('qualitychange'))
-    /** Any successfully buffered fragment means the stream recovered, so the next outage starts from a clean budget. */
+
     hls.on(HlsEvents.FRAG_BUFFERED, () => {
       recoveryAttempts = 0
     })
+
     hls.on(HlsEvents.ERROR, (_event, data) => {
       if (!data.fatal || disposed || pendingHlsSrc !== src) return
       const recoverable = data.type === HlsErrorTypes.NETWORK_ERROR || data.type === HlsErrorTypes.MEDIA_ERROR
@@ -145,7 +151,7 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
     })
   }
 
-  /** Prefer Safari's native HLS over hls.js when available - hls.js's MSE path has real gaps there (encrypted/fMP4 streams). */
+  // Prefer Safari's native HLS over hls.js when available
   function supportsNativeHls(): boolean {
     const isSafari = /Apple/.test(navigator.vendor) && !/CriOS|FxiOS|OPiOS|EdgiOS|Chrome|Chromium|Android/.test(navigator.userAgent)
     return isSafari && (videoEl.canPlayType('application/vnd.apple.mpegurl') !== '' || videoEl.canPlayType(HLS_MIME_TYPE) !== '')
@@ -156,7 +162,6 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
     recoveryTimer = null
   }
 
-  /** Streaming engines fail without ever touching videoEl.error, so record the reason ourselves or error() reports nothing. */
   function failStream(message: string): void {
     clearRecoveryTimer()
     hls?.destroy()

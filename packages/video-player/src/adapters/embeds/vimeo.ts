@@ -2,7 +2,11 @@ import { createStatefulEmbedAdapter, failEmbed } from '@/adapters/embeds/embedSh
 import type { EmbedAdapterOptions } from '@/types/playback'
 import { loadScript } from '@/utils/loadScript'
 import type { PlaybackAdapter } from '@/types/playback'
-import { MUTE_VOLUMECHANGE_SYNC_DELAY_MS, MVP_VIMEO_CLASS, VIMEO_SDK_URL } from '@/constants'
+import { MUTE_VOLUMECHANGE_SYNC_DELAY_MS } from '@/constants'
+
+export const VIMEO_CLASS = 'mlv-vimeo'
+
+export const VIMEO_SDK_URL = 'https://player.vimeo.com/api/player.js'
 
 function parseVideoId(url: string): string | null {
   const m = url.match(/(?:vimeo\.com\/(?:video\/|channels\/[^/]+\/|groups\/[^/]+\/videos\/)?|player\.vimeo\.com\/video\/)(\d+)/)
@@ -13,7 +17,7 @@ export function createVimeoAdapter(videoEl: HTMLVideoElement, options: EmbedAdap
   let player: VimeoPlayerInstance | null = null
 
   return createStatefulEmbedAdapter(videoEl, options, {
-    cssClass: MVP_VIMEO_CLASS,
+    cssClass: VIMEO_CLASS,
     connect: async ({ techId, emitter, state, isDisposed, consumeQueuedPlay }) => {
       const videoId = parseVideoId(options.src)
       if (!videoId) return
@@ -115,7 +119,7 @@ export function createVimeoAdapter(videoEl: HTMLVideoElement, options: EmbedAdap
     pause: () => void player?.pause().catch(() => {}),
     seekToSdk: (seconds) => void player?.setCurrentTime(seconds).catch(() => {}),
     volumeToSdk: (vol) => void player?.setVolume(vol).catch(() => {}),
-    /** The SDK's UI lags its own mute state - schedule a late volumechange so consumers catch up. */
+    // The SDK's UI lags its own mute state - schedule a late volumechange so consumers catch up.
     muteToSdk: ({ emitter, schedule }, muted) => {
       void player
         ?.setMuted(muted)

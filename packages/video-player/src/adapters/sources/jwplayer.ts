@@ -1,6 +1,8 @@
 import { pickBestSource, createCachedResolver } from '@/utils/sourceHelpers'
-import { JW_MEDIA_API, HLS_MIME_TYPE, MP4_MIME_TYPE } from '@/constants'
+import { HLS_MIME_TYPE, MP4_MIME_TYPE } from '@/constants'
 import type { ResolvedSource } from '@/types/playback'
+
+export const JW_MEDIA_API = 'https://cdn.jwplayer.com/v2/media'
 
 function extractMediaId(src: string): string | null {
   return (

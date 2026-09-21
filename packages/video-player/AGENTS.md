@@ -63,10 +63,14 @@ Custom-element instances expose the same `defineExpose`d API a Vue template ref 
 Three independent, non-overlapping stylesheets, each a `vp pack` build (`elementEntry('core', 'core.css')` / `elementEntry('controls', 'controls.css')` in `vite.config.ts`) that doubles as both the un-embedded CSS export and the source `inlineCss` embeds into the matching `./element/*` bundle:
 
 - `./style` → `dist/style.css` — everything; only this one is auto-injected by importing `./element`.
-- `./style/core` → `dist/elements/core.css` — just the core player's own styles (`ppbtn.css` + component `<style>` blocks reachable from `VideoPlayer`/`VideoStage`/`VideoCard`/`VideoPlaceholder`).
+- `./style/core` → `dist/elements/core.css` — just the core player's own styles (the sheets under `src/styles/` plus the scoped `<style>` blocks reachable from `VideoPlayer`/`VideoStage`/`VideoCard`/`VideoPlaceholder`).
 - `./style/controls` → `dist/elements/controls.css` — just the 13 headless controls' own styles, plus the shared `controlButton.css` every control button uses.
 
 Pick exactly one per page; importing more than one `./element*` bundle together double-registers any custom element tag they share and throws. A Vue-only consumer using the headless controls without the built-in HUD typically wants `./style/controls` instead of the full `./style`, to skip CSS for a HUD they never render.
+
+### Where the CSS lives
+
+`src/styles/` holds every stylesheet that cannot be scoped, each imported as a side-effect from the component that draws it: `hud.css` (the `controls__*` family the popup, more-menu, volume panel and HUD buttons share), `playerSurface.css` (the video element plus each embed SDK's and IMA's own markup), `playPauseButton.css` (`.ppbtn`), `controlButton.css` (every headless control button) and `pinnedCorner.css` (the pinned/tucked corner box). A component keeps a `<style scoped>` block only for markup it actually renders itself.
 
 ### Themeable CSS variables
 
@@ -84,6 +88,35 @@ The player exposes several CSS custom properties for layout overrides:
 
 Three names on the exposed handle avoid a collision rather than being terse for its own sake: `currentPlaybackRate`, `currentVolume` and `isNativeUi` all shadow a prop of the same name if named plainly, because Vue puts a custom element's props on the element itself as DOM properties. The rest say what they mean: `currentTime`, `duration`, `isMuted`. Quality speaks in **heights in pixels** everywhere — the prop, `setQuality()`, `currentQualityHeight` and the `qualitychange` event — since the ladder keeps one variant per height, which makes heights unique; the engine's own level index never leaves the adapter. `seek()` takes seconds.
 
+## Layout
+
+Directories are features, not kinds, so a component sits next to the composables only it uses:
+
+| Directory     | Holds                                                                                                                         |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `player/`     | `VideoPlayer.vue` and everything that makes one player work: state, controls, events, adapter mount, `features/`, `viewport/` |
+| `stage/`      | `VideoStage.vue`, `VideoCard.vue`, `VideoPlaceholder.vue`, `HideMarker.vue`, the playlist and the window-event bus            |
+| `controls/`   | The 13 headless controls and the composables only they use (`useResolvedPlayer`, `useScrubber`, `useSpokenCues`)              |
+| `overlay/`    | The built-in HUD `VideoPlayer` renders, plus `useHud` and its visibility and action helpers                                   |
+| `pinned/`     | The two player shells, the pinned corner controls, and the pin decision/box composables                                       |
+| `adapters/`   | Every source behind one `PlaybackAdapter` (see below)                                                                         |
+| `registries/` | Module singletons shared by every instance: pause handlers, document listeners, stage presence                                |
+| `shared/`     | `Icon.vue`, `Spinner.vue`, `useElementCompact` - used across features, owned by none                                          |
+| `utils/`      | Pure functions with no Vue involvement                                                                                        |
+| `styles/`     | The stylesheets that cannot be scoped                                                                                         |
+| `types/`      | `player.ts` and `playback.ts`; `types/vendor/` holds the ambient SDK shims                                                    |
+| `elements/`   | The custom-element build entries                                                                                              |
+
+`test/` mirrors this exactly.
+
+## Where a constant lives
+
+`src/constants.ts` holds only what more than one module needs: the two stage event names, the two fullscreen-pending event names, the shell class, the MIME types, the default aspect ratio, the playback rates, the pause threshold and one SDK sync delay. Everything else lives as a module-level `const` in its single consumer, so a timing or a storage key sits next to the code that reads it rather than in a grab bag thirty files away. The old `MVP_` prefix is gone; it predated the `mlv-` convention the CSS uses.
+
+## What `use` means here
+
+A `use*` name is a promise that the function must be called during `setup()`, because it reads reactive state or registers a lifecycle hook. Anything that merely takes state and hands back functions is a `create*` factory, and anything with no Vue involvement at all is a plain module under `src/utils/` or `src/registries/`. So `usePlayer` and `useFullscreen` are composables, while `createPlayerControls`, `createPlayerEvents`, `createAdSetup`, `createKeyboardShortcuts` and `createQuartileEvents` are not, and the emitter, the three registries and `exposePlayerOnElement` live outside `composables/` entirely.
+
 ## Composable core
 
 `src/composables/player/usePlayer.ts` owns all playback state and exposes a single `fire(type, extras)` that emits the `state-change` event — `src/types/player.ts` has the full `StateChangeType` union and `StateChangeEvent` shape. Sub-composables each own one concern and call back into `fire`:
@@ -91,17 +124,17 @@ Three names on the exposed handle avoid a collision rather than being terse for 
 | Composable              | Concern                                                                                                                                                                                                                                                                                                                                                                       |
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `useBuffering`          | Debounced `waiting`→`isBuffering` spinner state; fires `bufferstart`/`bufferend`                                                                                                                                                                                                                                                                                              |
-| `useFullscreen`         | Fullscreen enter/exit, including iOS's native fullscreen quirks; shares one document-level listener pair (`documentEventRegistry.ts`) across every mounted player                                                                                                                                                                                                             |
-| `useQuartileEvents`     | Fires `firstQuartile`/`midpoint`/`thirdQuartile` as playback crosses 25/50/75% of duration                                                                                                                                                                                                                                                                                    |
+| `useFullscreen`         | Fullscreen enter/exit, including iOS's native fullscreen quirks; shares one document-level listener pair (`src/registries/documentEventRegistry.ts`) across every mounted player                                                                                                                                                                                              |
+| `createQuartileEvents`  | Fires `firstQuartile`/`midpoint`/`thirdQuartile` as playback crosses 25/50/75% of duration                                                                                                                                                                                                                                                                                    |
 | `usePositionMemory`     | Persists/restores playback position across mounts (not for live streams)                                                                                                                                                                                                                                                                                                      |
-| `usePlayerEvents`       | Wires native adapter events (`play`/`pause`/`ended`/`error`/`timeupdate`/etc.) to `fire` + local refs                                                                                                                                                                                                                                                                         |
-| `usePlayerControls`     | Exposes the imperative API: `togglePlay`, `seek`, `setVolume`, `setQuality`, `setCaptionTrack`, etc.                                                                                                                                                                                                                                                                          |
-| `useAdSetup`            | Google IMA ad setup/lifecycle for the native `<video>` path; shares one document-level listener pair (`documentEventRegistry.ts`) for tab-hidden ad-pausing. On iOS, restores the original content source after a post-roll ad finishes (IMA plays ads through the same `<video>` element and may not restore it)                                                             |
+| `createPlayerEvents`    | Wires native adapter events (`play`/`pause`/`ended`/`error`/`timeupdate`/etc.) to `fire` + local refs                                                                                                                                                                                                                                                                         |
+| `createPlayerControls`  | Exposes the imperative API: `togglePlay`, `seek`, `setVolume`, `setQuality`, `setCaptionTrack`, etc.                                                                                                                                                                                                                                                                          |
+| `createAdSetup`         | Google IMA ad setup/lifecycle for the native `<video>` path; shares one document-level listener pair (`src/registries/documentEventRegistry.ts`) for tab-hidden ad-pausing. On iOS, restores the original content source after a post-roll ad finishes (IMA plays ads through the same `<video>` element and may not restore it)                                              |
 | `useAutoPauseOffscreen` | Pauses playback once the player scrolls (mostly) out of view — always on                                                                                                                                                                                                                                                                                                      |
 | `useAutoPlayInView`     | Opt-in (`playInView`) auto-play once (mostly) in view; both this and `useAutoPauseOffscreen` share one `IntersectionObserver` per shell via `viewportObserver.ts`, which also debounces "last one to cross the threshold wins" when several players are visible at once                                                                                                       |
 | `usePinnedBox`          | The pinned corner box's reserved space, tuck state, unpin and scroll-back, shared by `VideoPlayer`'s pin shell and `VideoStage`. Each caller keeps its own pin decision **and** its own animation policy: the stage must not animate a player mounting into an already-scrolled-away stage, since a FLIP parks the box off-screen long enough for auto-pause to stop playback |
-| `useForwardedPlayer`    | See Public API above — lives at `src/composables/useForwardedPlayer.ts`, not under `player/`                                                                                                                                                                                                                                                                                  |
-| `stageRegistry`         | `hasStage` (mount count, read by `VideoCard` to know whether to hand off to a stage) and `isStageTucked` (shared ref `HideMarker` sets and `VideoStage` reads directly) — lives at `src/composables/registries/stageRegistry.ts`, not under `player/`                                                                                                                         |
+| `useForwardedPlayer`    | See Public API above — lives at `src/player/useForwardedPlayer.ts`                                                                                                                                                                                                                                                                                                            |
+| `stageRegistry`         | `hasStage` (mount count, read by `VideoCard` to know whether to hand off to a stage) and `isStageTucked` (shared ref `HideMarker` sets and `VideoStage` reads directly) — lives at `src/registries/stageRegistry.ts`                                                                                                                                                          |
 
 ## Adapters
 

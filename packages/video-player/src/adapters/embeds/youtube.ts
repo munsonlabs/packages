@@ -1,4 +1,4 @@
-import { createEmitter } from '@/composables/player/emitter'
+import { createEmitter } from '@/utils/emitter'
 import { loadScript } from '@/utils/loadScript'
 import {
   revealEmbed,
@@ -11,7 +11,11 @@ import {
 import type { EmbedAdapterOptions } from '@/types/playback'
 import type { PlaybackAdapter, MediaErrorLike } from '@/types/playback'
 import { exitFullscreen } from '@/utils/platform'
-import { YOUTUBE_TIMEUPDATE_POLL_MS, MUTE_VOLUMECHANGE_SYNC_DELAY_MS, MVP_YOUTUBE_CLASS } from '@/constants'
+import { MUTE_VOLUMECHANGE_SYNC_DELAY_MS } from '@/constants'
+
+export const YOUTUBE_CLASS = 'mlv-youtube'
+
+export const YOUTUBE_TIMEUPDATE_POLL_MS = 250
 
 interface ParsedUrl {
   videoId: string | null
@@ -65,7 +69,7 @@ function ensureApiLoaded(): Promise<YTNamespace> {
 
 export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAdapterOptions): PlaybackAdapter {
   const emitter = createEmitter()
-  const { techId, wrapper } = createEmbedMount(videoEl, MVP_YOUTUBE_CLASS, options.nativeUi)
+  const { techId, wrapper } = createEmbedMount(videoEl, YOUTUBE_CLASS, options.nativeUi)
 
   const url = parseUrl(options.src)
   let ytPlayer: YTPlayer | null = null
@@ -83,7 +87,6 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
   const { schedule, clearAll: clearTimers } = createTimerScheduler()
   let startInterval: ReturnType<typeof setInterval> | null = null
 
-  /** Tracks a seek issued while paused — the IFrame API fires no event for it actually landing. */
   const seek = {
     active: false,
     wasPaused: false,
@@ -139,7 +142,6 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
 
     playerReady = true
 
-    /** `playerVars.mute` isn't reliably respected - mute via the real mute() call before any autoplay. */
     if (options.muted) ytPlayer?.mute()
     if (options.volume !== undefined) ytPlayer?.setVolume(options.volume * 100)
 
@@ -260,7 +262,6 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
     cueOnReady = true
   }
 
-  /** Shared by load and retry: a failed load has no player to swap a video into, so it reconnects instead. */
   function applyCurrentVideo(): void {
     if (!url.videoId) return
     if (loadError) {
@@ -303,7 +304,6 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
       })
     }
 
-    /** A page interaction only reaches us once native fullscreen has actually released the screen - that's what distinguishes a real exit from a same-state PAUSED event. */
     function onPageInteraction(): void {
       teardown()
     }
@@ -413,7 +413,6 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
     off: emitter.off,
     dispose: () => {
       disposed = true
-      /** Unmounting mid-fullscreen otherwise left a full-viewport overlay, a live second iframe and a document listener behind for good. */
       closeIosFullscreen?.()
       clearTimers()
       if (startInterval) clearInterval(startInterval)
@@ -425,7 +424,7 @@ export function createYoutubeAdapter(videoEl: HTMLVideoElement, options: EmbedAd
         } catch {}
       }
       ytPlayer = null
-      teardownEmbedMount(videoEl, wrapper, MVP_YOUTUBE_CLASS)
+      teardownEmbedMount(videoEl, wrapper, YOUTUBE_CLASS)
       emitter.dispose()
     },
   }

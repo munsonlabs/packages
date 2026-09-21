@@ -1,6 +1,11 @@
-import { IMA_SDK_URL, MVP_AD_PLAYING_CLASS, MVP_AD_PAUSED_CLASS } from '@/constants'
 import { loadScript } from '@/utils/loadScript'
 import { isIOS } from '@/utils/platform'
+
+export const AD_PLAYING_CLASS = 'mlv-ad-playing'
+
+export const AD_PAUSED_CLASS = 'mlv-ad-paused'
+
+export const IMA_SDK_URL = 'https://imasdk.googleapis.com/js/sdkloader/ima3.js'
 
 export interface AdController {
   isAdPlaying: () => boolean
@@ -42,7 +47,6 @@ export function attachAds(containerEl: HTMLElement, videoEl: HTMLVideoElement, i
   let adPlaying = false
   let adPaused = false
   let disposed = false
-  /** Remembers the volume to restore on unmute, since setVolume(0) itself doesn't preserve it. */
   let volumeBeforeMute = 1
   /**
    * On iOS, the IMA SDK plays ad creatives through the same <video> element as content (there is
@@ -57,7 +61,7 @@ export function attachAds(containerEl: HTMLElement, videoEl: HTMLVideoElement, i
   let postRollPending = false
   let originalSrc = ''
 
-  /** IMA sizes the ad creative once and never tracks the container itself, so resize it manually. */
+  // IMA sizes the ad creative once and never tracks the container itself, so resize it manually.
   const resizeObserver = new ResizeObserver(([entry]) => {
     const ima = window.google?.ima
     if (!adsManager || !ima) return
@@ -72,17 +76,16 @@ export function attachAds(containerEl: HTMLElement, videoEl: HTMLVideoElement, i
 
   function setAdPlaying(playing: boolean): void {
     adPlaying = playing
-    containerEl.classList.toggle(MVP_AD_PLAYING_CLASS, playing)
+    containerEl.classList.toggle(AD_PLAYING_CLASS, playing)
     if (!playing) {
       adPaused = false
-      containerEl.classList.remove(MVP_AD_PAUSED_CLASS)
+      containerEl.classList.remove(AD_PAUSED_CLASS)
     }
   }
 
   function tryRequestAds(): void {
     if (hasRequestedAds || !sdkReady || !playHappened || !adDisplayContainer || !adsLoader || !currentAdTagUrl) return
 
-    /** Latched only once the request actually goes out - setting it any earlier meant a torn-down SDK global disabled ads for good. */
     const ima = window.google?.ima
     if (!ima) return
     hasRequestedAds = true
@@ -112,7 +115,7 @@ export function attachAds(containerEl: HTMLElement, videoEl: HTMLVideoElement, i
         if (disposed) return
         const renderingSettings = new ima.AdsRenderingSettings()
         renderingSettings.restoreCustomPlaybackStateOnAdBreakComplete = true
-        /** videoEl as contentPlayback is what lets ad rules schedule mid-rolls at the right timecode. */
+        // videoEl as contentPlayback is what lets ad rules schedule mid-rolls at the right timecode.
         adsManager = (event as ImaAdsManagerLoadedEvent).getAdsManager(videoEl, renderingSettings)
         videoEl.addEventListener('ended', onContentEnded)
         originalSrc = videoEl.currentSrc
@@ -123,7 +126,7 @@ export function attachAds(containerEl: HTMLElement, videoEl: HTMLVideoElement, i
           videoEl.pause()
           setAdPlaying(true)
           callbacks.onAdStart()
-          /** Browser autoplay policy can start the ad muted regardless of what we asked for - report its actual volume. */
+          // Browser autoplay policy can start the ad muted regardless of what we asked for - report its actual volume.
           const startVolume = adsManager?.getVolume() ?? 1
           if (startVolume > 0) volumeBeforeMute = startVolume
           callbacks.onAdMuteChange(startVolume === 0)
@@ -135,29 +138,24 @@ export function attachAds(containerEl: HTMLElement, videoEl: HTMLVideoElement, i
           callbacks.onAdEnd()
           if (postRollPending) {
             postRollPending = false
-            /**
-             * Restore the original content source that IMA may have swapped out on iOS (where the
-             * same <video> element serves both content and ad). Then seek to the end to clear the
-             * browser's internal "ended" flag so the normal ended-state / replay flow works.
-             */
+            // Restore the original content source that IMA may have swapped out on iOS.
             if (originalSrc && videoEl.currentSrc !== originalSrc) videoEl.src = originalSrc
             const end = videoEl.duration
             if (end && isFinite(end)) videoEl.currentTime = end - 0.5
             return
           }
-          /** A mid-roll firing during normal playback shouldn't restart content via HTML5's restart-on-play behavior. */
           if (!videoEl.ended) void videoEl.play().catch(() => {})
         })
 
         adsManager.addEventListener(ima.AdEvent.Type.PAUSED, () => {
           adPaused = true
-          containerEl.classList.add(MVP_AD_PAUSED_CLASS)
+          containerEl.classList.add(AD_PAUSED_CLASS)
           callbacks.onAdPauseChange(true)
         })
 
         adsManager.addEventListener(ima.AdEvent.Type.RESUMED, () => {
           adPaused = false
-          containerEl.classList.remove(MVP_AD_PAUSED_CLASS)
+          containerEl.classList.remove(AD_PAUSED_CLASS)
           callbacks.onAdPauseChange(false)
         })
 
@@ -179,7 +177,7 @@ export function attachAds(containerEl: HTMLElement, videoEl: HTMLVideoElement, i
         }
       })
 
-      /** A request that never produced a manager is retryable - unlatch so a later ad tag can try again. */
+      // A request that never produced a manager is retryable.
       adsLoader.addEventListener(ima.AdErrorEvent.Type.AD_ERROR, (event) => {
         if (!adsManager) hasRequestedAds = false
         callbacks.onError((event as ImaAdErrorEvent).getError().getMessage())
@@ -223,7 +221,7 @@ export function attachAds(containerEl: HTMLElement, videoEl: HTMLVideoElement, i
       adsManager?.destroy()
       adsLoader?.destroy()
       adContainerEl.remove()
-      containerEl.classList.remove(MVP_AD_PLAYING_CLASS, MVP_AD_PAUSED_CLASS)
+      containerEl.classList.remove(AD_PLAYING_CLASS, AD_PAUSED_CLASS)
     },
   }
 }

@@ -1,9 +1,11 @@
-import { MVP_FULLSCREEN_PENDING, MVP_FULLSCREEN_PENDING_DONE, MVP_TECH_CLASS } from '@/constants'
+import { FULLSCREEN_PENDING, FULLSCREEN_PENDING_DONE } from '@/constants'
 import { isIOS, requestFullscreen, exitFullscreen as exitDocFullscreen } from '@/utils/platform'
 import { getShellEl } from '@/utils/shell'
-import { createEmitter } from '@/composables/player/emitter'
-import type { Emitter } from '@/composables/player/emitter'
+import { createEmitter } from '@/utils/emitter'
+import type { Emitter } from '@/utils/emitter'
 import type { PlaybackAdapter, MediaErrorLike, EmbedAdapterOptions } from '@/types/playback'
+
+export const TECH_CLASS = 'mlv-tech'
 
 let mountCounter = 0
 
@@ -12,7 +14,6 @@ export interface EmbedMount {
   wrapper: HTMLDivElement
 }
 
-/** YouTube replaces the target element with its iframe, Vimeo/Dailymotion insert one inside it - so watch the wrapper. */
 function excludeIframeFromTabOrder(wrapper: HTMLDivElement): void {
   const existing = wrapper.querySelector('iframe')
   if (existing) {
@@ -29,7 +30,6 @@ function excludeIframeFromTabOrder(wrapper: HTMLDivElement): void {
   iframeObservers.set(wrapper, observer)
 }
 
-/** An embed whose connect() never produced an iframe would otherwise leave its observer watching a detached wrapper. */
 const iframeObservers = new WeakMap<HTMLDivElement, MutationObserver>()
 
 export function createEmbedMount(videoEl: HTMLVideoElement, cssClass: string, nativeUi?: boolean): EmbedMount {
@@ -38,7 +38,7 @@ export function createEmbedMount(videoEl: HTMLVideoElement, cssClass: string, na
   const techId = `${cssClass}-${++mountCounter}`
   const mount = document.createElement('div')
   mount.id = techId
-  mount.className = MVP_TECH_CLASS
+  mount.className = TECH_CLASS
   mount.style.cssText = 'width:100%;height:100%;top:0;left:0;position:absolute'
 
   const wrapper = document.createElement('div')
@@ -47,7 +47,6 @@ export function createEmbedMount(videoEl: HTMLVideoElement, cssClass: string, na
 
   videoEl.parentElement?.insertBefore(wrapper, videoEl)
 
-  /** Left alone when nativeUi is on - the platform's own accessible controls live inside that iframe, and this would block keyboard access to them entirely. */
   if (!nativeUi) excludeIframeFromTabOrder(wrapper)
 
   return { techId, wrapper }
@@ -67,7 +66,6 @@ export function teardownEmbedMount(videoEl: HTMLVideoElement, wrapper: HTMLDivEl
   videoEl.style.display = ''
 }
 
-/** iframes can't be fullscreened on iOS - `iosFallback` handles that case itself, or returns `false` to fall through to the shell path. */
 export function enterFullscreenWithIosFallback(videoEl: HTMLVideoElement, iosFallback: () => boolean | void): void {
   if (isIOS()) {
     const handled = iosFallback()
@@ -104,7 +102,7 @@ export function spawnIosFullscreenOverlay(emitter: Emitter): {
   reveal: () => void
   finish: (onTeardown?: () => void) => void
 } {
-  emitter.trigger(MVP_FULLSCREEN_PENDING)
+  emitter.trigger(FULLSCREEN_PENDING)
 
   const overlay = document.createElement('div')
   overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;opacity:0;pointer-events:none'
@@ -112,17 +110,17 @@ export function spawnIosFullscreenOverlay(emitter: Emitter): {
 
   let done = false
   let revealed = false
-  /** Announces the pending state resolved exactly once - YouTube calls this on every non-paused state change. */
+
   function reveal(): void {
     if (done || revealed) return
     revealed = true
-    emitter.trigger(MVP_FULLSCREEN_PENDING_DONE)
+    emitter.trigger(FULLSCREEN_PENDING_DONE)
   }
 
   function finish(onTeardown?: () => void): void {
     if (done) return
     done = true
-    emitter.trigger(MVP_FULLSCREEN_PENDING_DONE)
+    emitter.trigger(FULLSCREEN_PENDING_DONE)
     overlay.remove()
     onTeardown?.()
   }
@@ -152,7 +150,6 @@ export interface StatefulEmbedCore {
 
 export interface StatefulEmbedImpl {
   cssClass: string
-  /** Must not reject - catch failures into `state.errorState` + `emitter.trigger('error')` instead. */
   connect: (core: StatefulEmbedCore) => Promise<void> | void
   hasPlayer: () => boolean
   play: () => void | Promise<void>
@@ -209,7 +206,6 @@ export function createStatefulEmbedAdapter(videoEl: HTMLVideoElement, options: E
 
   void impl.connect(core)
 
-  /** Embeds have no source to swap into a live player: both loading and retrying mean tearing the SDK player down and connecting again. */
   function reconnect(): void {
     state.errorState = null
     impl.destroyPlayer()
@@ -260,7 +256,6 @@ export function createStatefulEmbedAdapter(videoEl: HTMLVideoElement, options: E
     setPlaybackRate: () => {},
     bufferedEnd: () => state.currentTime,
     error: (): MediaErrorLike | null => state.errorState,
-    /** Mutates `options.src` because each impl's connect() closes over that same object. */
     reveal: (el) => revealEmbed(el, wrapper),
     load: (src) => {
       options.src = src

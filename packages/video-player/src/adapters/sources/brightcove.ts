@@ -1,6 +1,9 @@
 import { pickBestSource, createCachedResolver } from '@/utils/sourceHelpers'
-import { BRIGHTCOVE_PLAYBACK_API, BRIGHTCOVE_PLAYER_CONFIG } from '@/constants'
 import type { ResolvedSource } from '@/types/playback'
+
+export const BRIGHTCOVE_PLAYBACK_API = 'https://edge.api.brightcove.com/playback/v1/accounts'
+
+export const BRIGHTCOVE_PLAYER_CONFIG = 'https://players.brightcove.net'
 
 interface ParsedBrightcoveSrc {
   accountId: string
@@ -31,7 +34,7 @@ function parseSrc(src: string): ParsedBrightcoveSrc | null {
   }
 }
 
-/** Not every account names its ad plugin `ima3` - check all plugins for a `serverUrl` rather than assuming one name. */
+// Not every account names its ad plugin `ima3` - check all plugins for a `serverUrl` rather than assuming one name.
 function extractAdTagUrl(config: {
   plugins?: Array<{ name: string; options?: { serverUrl?: string; imaOptions?: { serverUrl?: string } } }>
 }): string | null {

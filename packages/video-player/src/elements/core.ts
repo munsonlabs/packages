@@ -1,12 +1,12 @@
 import { defineCustomElement } from 'vue'
-import VideoPlayer from '@/components/VideoPlayer.vue'
-import VideoStage from '@/components/VideoStage.vue'
-import VideoPlaceholder from '@/components/VideoPlaceholder.vue'
-import VideoCard from '@/components/VideoCard.vue'
-import HideMarker from '@/components/HideMarker.vue'
+import VideoPlayer from '@/player/VideoPlayer.vue'
+import VideoStage from '@/stage/VideoStage.vue'
+import VideoPlaceholder from '@/stage/VideoPlaceholder.vue'
+import VideoCard from '@/stage/VideoCard.vue'
+import HideMarker from '@/stage/HideMarker.vue'
 import { registerPlatform, resolvePlatform } from '@/adapters/index'
 
-/** Shadow DOM is not an option - embed SDKs mount by resolving a plain element ID via document.getElementById, which can't see into one. */
+// Shadow DOM is not an option - embed SDKs mount by resolving a plain element ID via document.getElementById
 const VideoPlayerElement = defineCustomElement(VideoPlayer, { shadowRoot: false })
 const VideoStageElement = defineCustomElement(VideoStage, { shadowRoot: false })
 const VideoPlaceholderElement = defineCustomElement(VideoPlaceholder, { shadowRoot: false })
@@ -21,12 +21,6 @@ const TAGS: Array<[string, CustomElementConstructor]> = [
   ['ml-hide-marker', HideMarkerElement],
 ]
 
-/**
- * `customElements.define()` synchronously upgrades any matching tag already in the DOM, which can
- * race a `registerPlatform()` call right after importing this module (see README). Load via a
- * `?defer` import-map query param and call `defineElements()` yourself after registering, for the
- * static-markup case. Idempotent - only defines whichever tags aren't already registered.
- */
 export function defineElements(): void {
   for (const [tag, ctor] of TAGS) {
     if (!customElements.get(tag)) customElements.define(tag, ctor)

@@ -2,7 +2,8 @@ import { createStatefulEmbedAdapter, failEmbed } from '@/adapters/embeds/embedSh
 import type { EmbedAdapterOptions } from '@/types/playback'
 import { loadScript } from '@/utils/loadScript'
 import type { PlaybackAdapter } from '@/types/playback'
-import { MVP_DAILYMOTION_CLASS } from '@/constants'
+
+export const DAILYMOTION_CLASS = 'mlv-dailymotion'
 
 function parseVideoId(url: string): string | null {
   const qs = url.match(/[?&]video=([a-zA-Z0-9]+)/)
@@ -15,7 +16,7 @@ export function createDailymotionAdapter(videoEl: HTMLVideoElement, options: Emb
   let dm: DailymotionPlayer | null = null
 
   return createStatefulEmbedAdapter(videoEl, options, {
-    cssClass: MVP_DAILYMOTION_CLASS,
+    cssClass: DAILYMOTION_CLASS,
     connect: async ({ techId, emitter, state, isDisposed, consumeQueuedPlay }) => {
       const videoId = parseVideoId(options.src)
       if (!videoId) {
@@ -34,7 +35,7 @@ export function createDailymotionAdapter(videoEl: HTMLVideoElement, options: Emb
           video: videoId,
           params: { autoplay: !!options.autoplay, mute: !!options.muted },
         })
-        /** createPlayer is a round-trip: an unmount during it already ran destroyPlayer against a null dm, so adopting this one now would orphan it and its iframe. */
+
         if (isDisposed()) {
           player.destroy?.()
           return
@@ -45,7 +46,6 @@ export function createDailymotionAdapter(videoEl: HTMLVideoElement, options: Emb
         const e = sdk.events
         consumeQueuedPlay(() => dm?.play())
 
-        /** Dailymotion fires VIDEO_PLAY even without autoplay - pause back out the first time. */
         player.on(e.VIDEO_PLAY, () => {
           state.paused = false
           emitter.trigger('play')

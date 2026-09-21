@@ -1,4 +1,4 @@
-import type { PlaybackListener } from '@/composables/player/emitter'
+import type { PlaybackListener } from '@/utils/emitter'
 
 export interface MediaErrorLike {
   code: number

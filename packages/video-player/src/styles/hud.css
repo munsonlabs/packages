@@ -1,0 +1,168 @@
+.controls__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.controls__inner:has(.controls__more-body) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  /* background: red; */
+  max-width: 100%;
+  overflow: auto;
+}
+
+.controls__btn svg {
+  width: 16px;
+  height: 16px;
+}
+.controls__btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.controls--compact .controls__seek,
+.controls--compact .mlv-scrubber-wrap,
+.controls--compact .mlv-time-display__total,
+.controls--compact .controls__btn--pip,
+.controls--compact .controls__btn--next,
+.controls--compact .controls__btn--volume {
+  display: none;
+}
+
+.controls__seek {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 20px;
+  outline: none;
+  cursor: pointer;
+  background: transparent;
+  padding: 8px 0;
+  box-sizing: border-box;
+  background-clip: content-box;
+  background-image: linear-gradient(
+    to right,
+    var(--mlv-accent, #3b82f6) 0%,
+    var(--mlv-accent, #3b82f6) var(--p),
+    rgba(255, 255, 255, 0.3) var(--p),
+    rgba(255, 255, 255, 0.3) var(--b),
+    rgba(255, 255, 255, 0.1) var(--b),
+    rgba(255, 255, 255, 0.1) 100%
+  );
+}
+
+.controls__seek::-webkit-slider-runnable-track {
+  height: 4px;
+  background: transparent;
+}
+
+.controls__seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--mlv-accent, #3b82f6);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mlv-accent, #3b82f6) 30%, transparent);
+  cursor: pointer;
+  margin-top: -5px;
+  transition: transform 0.15s;
+}
+
+.controls__seek:hover::-webkit-slider-thumb {
+  transform: scale(1.25);
+}
+
+.controls__seek::-moz-range-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.controls__seek::-moz-range-progress {
+  height: 4px;
+  background: var(--mlv-accent, #3b82f6);
+}
+
+.controls__seek::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--mlv-accent, #3b82f6);
+  border: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mlv-accent, #3b82f6) 30%, transparent);
+  cursor: pointer;
+}
+
+/* Targets a grandchild forwarded via $attrs, so this MUST stay unscoped/global. */
+.controls__vol-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 5px;
+  outline: none;
+  cursor: pointer;
+  transition: height 0.15s;
+  background: linear-gradient(to right, #fff 0%, #fff var(--v), rgba(255, 255, 255, 0.15) var(--v), rgba(255, 255, 255, 0.15) 100%);
+}
+
+.controls__vol-slider:hover {
+  height: 7px;
+}
+
+.controls__vol-slider:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.controls__vol-slider::-webkit-slider-runnable-track {
+  height: 5px;
+  background: transparent;
+}
+
+.controls__vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  margin-top: -5.5px;
+  transition: transform 0.15s;
+}
+
+.controls__vol-slider:hover::-webkit-slider-thumb {
+  transform: scale(1.2);
+}
+
+.controls__vol-slider::-moz-range-track {
+  height: 5px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.controls__vol-slider::-moz-range-progress {
+  height: 5px;
+  background: #fff;
+}
+
+.controls__vol-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+}

@@ -1,13 +1,13 @@
 import { describe, it, expect, vi } from 'vite-plus/test'
 import { spawnIosFullscreenOverlay } from '@/adapters/embeds/embedShared'
-import { createEmitter } from '@/composables/player/emitter'
-import { MVP_FULLSCREEN_PENDING, MVP_FULLSCREEN_PENDING_DONE } from '@/constants'
+import { createEmitter } from '@/utils/emitter'
+import { FULLSCREEN_PENDING, FULLSCREEN_PENDING_DONE } from '@/constants'
 
 describe('spawnIosFullscreenOverlay', () => {
   it('fires the pending event immediately and appends an invisible/inert overlay', () => {
     const emitter = createEmitter()
     const onPending = vi.fn()
-    emitter.on(MVP_FULLSCREEN_PENDING, onPending)
+    emitter.on(FULLSCREEN_PENDING, onPending)
 
     const { overlay } = spawnIosFullscreenOverlay(emitter)
 
@@ -20,7 +20,7 @@ describe('spawnIosFullscreenOverlay', () => {
   it('reveal() clears the pending state without removing the overlay', () => {
     const emitter = createEmitter()
     const onPendingDone = vi.fn()
-    emitter.on(MVP_FULLSCREEN_PENDING_DONE, onPendingDone)
+    emitter.on(FULLSCREEN_PENDING_DONE, onPendingDone)
     const { overlay, reveal } = spawnIosFullscreenOverlay(emitter)
 
     reveal()

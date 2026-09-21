@@ -1,0 +1,57 @@
+.ppbtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  will-change: backdrop-filter;
+  color: #fff;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    transform 0.15s;
+}
+
+.ppbtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.08);
+}
+
+.ppbtn--lg {
+  width: clamp(48px, 20cqw, 64px);
+  height: clamp(48px, 20cqw, 64px);
+  background: var(--mlv-btn-bg, rgba(255, 255, 255, 0.1));
+  color: var(--mlv-btn-color, #fff);
+}
+
+.ppbtn--lg svg {
+  width: clamp(20px, 9cqw, 28px);
+  height: clamp(20px, 9cqw, 28px);
+}
+
+.ppbtn--lg:hover {
+  background: var(--mlv-btn-bg, rgba(255, 255, 255, 0.2));
+  filter: brightness(1.12);
+}
+
+.ppbtn--sm {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.ppbtn--sm svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ppbtn--sm:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  transform: none;
+}

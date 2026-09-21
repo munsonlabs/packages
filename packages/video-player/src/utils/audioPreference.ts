@@ -1,6 +1,9 @@
-import { STORAGE_AUDIO_PREFERENCE_KEY, DEFAULT_AUDIO_PREFERENCE } from '@/constants'
 import { readStorage, writeStorage } from '@/utils/storage'
 import type { AudioPreference } from '@/types/playback'
+
+export const STORAGE_AUDIO_PREFERENCE_KEY = 'player:audio'
+
+export const DEFAULT_AUDIO_PREFERENCE: AudioPreference = { muted: false, volume: 1 }
 
 export function getAudioPreference(): AudioPreference {
   try {

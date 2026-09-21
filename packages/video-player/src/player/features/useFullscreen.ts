@@ -1,0 +1,66 @@
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import type { Ref } from 'vue'
+import { FULLSCREEN_PENDING, FULLSCREEN_PENDING_DONE } from '@/constants'
+import { onDocumentFullscreenChange } from '@/registries/documentEventRegistry'
+import type { PlaybackAdapter } from '@/types/playback'
+
+export interface UseFullscreenReturn {
+  isFullscreen: Ref<boolean>
+  isFullscreenPending: Ref<boolean>
+  toggleFullscreen: () => void
+  attachPlayerEvents: (player: PlaybackAdapter) => void
+}
+
+export function useFullscreen(getPlayer: () => PlaybackAdapter | null): UseFullscreenReturn {
+  const isFullscreen = ref(false)
+  const isFullscreenPending = ref(false)
+  let unregisterDocListener: (() => void) | null = null
+
+  function onDocFullscreenChange(): void {
+    const doc = document as Document & { webkitFullscreenElement?: Element }
+    isFullscreen.value = !!(document.fullscreenElement || doc.webkitFullscreenElement)
+    isFullscreenPending.value = false
+  }
+
+  function toggleFullscreen(): void {
+    const player = getPlayer()
+    if (!player) return
+    if (isFullscreen.value) {
+      player.exitFullscreen()
+      return
+    }
+    isFullscreenPending.value = true
+    player.enterFullscreen()
+  }
+
+  // iOS's webkitEnterFullscreen path never touches document.fullscreenElement, this covers that (curse you apple)
+  function attachPlayerEvents(player: PlaybackAdapter): void {
+    player.on(FULLSCREEN_PENDING, () => {
+      isFullscreenPending.value = true
+    })
+
+    player.on(FULLSCREEN_PENDING_DONE, () => {
+      isFullscreenPending.value = false
+    })
+
+    player.on('nativefullscreenenter', () => {
+      isFullscreen.value = true
+      isFullscreenPending.value = false
+    })
+
+    player.on('nativefullscreenexit', () => {
+      isFullscreen.value = false
+      isFullscreenPending.value = false
+    })
+  }
+
+  onMounted(() => {
+    unregisterDocListener = onDocumentFullscreenChange(onDocFullscreenChange)
+  })
+
+  onBeforeUnmount(() => {
+    unregisterDocListener?.()
+  })
+
+  return { isFullscreen, isFullscreenPending, toggleFullscreen, attachPlayerEvents }
+}

@@ -1,4 +1,6 @@
-import { SOURCE_TYPE_PRIORITY } from '@/constants'
+import { HLS_MIME_TYPE, MP4_MIME_TYPE } from '@/constants'
+
+export const SOURCE_TYPE_PRIORITY = [HLS_MIME_TYPE, MP4_MIME_TYPE]
 
 export function createCachedResolver<Args extends unknown[], Result>(
   resolveFn: (...args: Args) => Promise<Result>,

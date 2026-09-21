@@ -1,9 +1,10 @@
-import { describe, it, expect, vi } from 'vite-plus/test'
+import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { ref } from 'vue'
 import type { Ref } from 'vue'
 import { createPlayerEvents } from '@/player/createPlayerEvents'
 import { createPlayerState } from '@/player/playerState'
 import { createEmitter } from '@/utils/emitter'
+import { saveCaptionPreference } from '@/utils/captionPreference'
 import type { PlaybackAdapter, CaptionTrackInfo, QualityLevelInfo, MediaErrorLike } from '@/types/playback'
 
 interface FakeAdapterQuality {
@@ -537,5 +538,93 @@ describe('createPlayerEvents — Picture-in-Picture', () => {
     emitter.trigger('pipchange')
     expect(refs.isPipActive.value).toBe(false)
     expect(deps.fire).toHaveBeenCalledWith('pipchange', { isPipActive: false })
+  })
+})
+
+describe('caption preference across players', () => {
+  beforeEach(() => localStorage.clear())
+
+  /** The whole point: a second player, on a different video, must honour what the viewer chose on the first. */
+  function attachWith(tracks: CaptionTrackInfo[], sourceDefault: number | null) {
+    const refs = makeRefs()
+    const { attachPlayerEvents } = createPlayerEvents(refs, makeDeps())
+    const active = ref<number | null>(sourceDefault)
+    const { adapter, emitter } = makeFakeAdapter(ref(120), ref(tracks), active)
+    vi.mocked(adapter.captions!.select).mockImplementation((index) => {
+      active.value = index
+    })
+    attachPlayerEvents(adapter)
+    return { refs, adapter, emitter }
+  }
+
+  const EN_FR: CaptionTrackInfo[] = [
+    { index: 0, label: 'English', language: 'en' },
+    { index: 1, label: 'French', language: 'fr' },
+  ]
+
+  it('leaves a source default alone when the viewer has never chosen', () => {
+    const { refs, adapter } = attachWith(EN_FR, 0)
+
+    expect(adapter.captions!.select).not.toHaveBeenCalled()
+    expect(refs.activeCaptionIndex.value).toBe(0)
+  })
+
+  it('turns off a source default once the viewer has turned captions off', () => {
+    saveCaptionPreference({ enabled: false })
+
+    const { refs, adapter } = attachWith(EN_FR, 0)
+
+    expect(adapter.captions!.select).toHaveBeenCalledWith(null)
+    expect(refs.activeCaptionIndex.value).toBeNull()
+  })
+
+  it('restores the chosen language even where it sits at a different index', () => {
+    saveCaptionPreference({ enabled: true, language: 'fr' })
+
+    const { refs, adapter } = attachWith(
+      [
+        { index: 0, label: 'German', language: 'de' },
+        { index: 1, label: 'English', language: 'en' },
+        { index: 2, label: 'French', language: 'fr' },
+      ],
+      1,
+    )
+
+    expect(adapter.captions!.select).toHaveBeenCalledWith(2)
+    expect(refs.activeCaptionIndex.value).toBe(2)
+  })
+
+  it('leaves the source alone when it does not offer the chosen language', () => {
+    saveCaptionPreference({ enabled: true, language: 'ja' })
+
+    const { refs, adapter } = attachWith(EN_FR, 0)
+
+    expect(adapter.captions!.select).not.toHaveBeenCalled()
+    expect(refs.activeCaptionIndex.value).toBe(0)
+  })
+
+  it('puts captions back off when the source switches a track on later', () => {
+    saveCaptionPreference({ enabled: false })
+    const { adapter, emitter } = attachWith(EN_FR, null)
+
+    // An HLS manifest adding a default subtitle rendition after the player attached.
+    adapter.captions!.select(0)
+    vi.mocked(adapter.captions!.select).mockClear()
+    emitter.trigger('captionschange')
+
+    expect(adapter.captions!.select).toHaveBeenCalledWith(null)
+  })
+
+  it('follows the viewer once they change their mind, rather than the old preference', () => {
+    saveCaptionPreference({ enabled: false })
+    const { adapter, emitter } = attachWith(EN_FR, 0)
+    expect(adapter.captions!.select).toHaveBeenCalledWith(null)
+
+    // What the captions button does: the choice is recorded, so enforcement now follows it.
+    saveCaptionPreference({ enabled: true, language: 'fr' })
+    vi.mocked(adapter.captions!.select).mockClear()
+    emitter.trigger('captionschange')
+
+    expect(adapter.captions!.select).toHaveBeenCalledWith(1)
   })
 })

@@ -4,7 +4,6 @@ import Rail from './Rail.vue'
 import type { Short } from '../data/shorts'
 import type { PlayerHandle, StateChangeEvent } from '@munsonlabs/video-player'
 import { useHoldToFastForward, HOLD_RATE } from '../composables/useHoldToFastForward'
-import { useQualityPreference, preferredQuality } from '../composables/useQualityPreference'
 
 defineProps<{ short: Short; parts: Record<string, Component> }>()
 const uiHidden = defineModel<boolean>('uiHidden', { required: true })
@@ -33,7 +32,15 @@ watch(
   },
 )
 
-useQualityPreference(handle, (label) => flash(`Quality: ${label}`))
+/** The player remembers the pick itself now; this only announces it, and stays quiet for Auto's own switches. */
+watch(
+  () => handle.value?.currentQualityHeight,
+  (height, previous) => {
+    if (previous === undefined || handle.value?.isAutoQuality) return
+    const label = handle.value?.qualityLevels.find((level) => level.height === height)?.label
+    if (label) flash(`Quality: ${label}`)
+  },
+)
 
 function setHandle(el: unknown): void {
   handle.value = el as PlayerHandle | null
@@ -53,7 +60,6 @@ function onState(e: StateChangeEvent): void {
       :poster="short.poster"
       :label="short.title"
       :caption-line="80"
-      :quality="preferredQuality"
       :lazy="false"
       loop
       preload="auto"

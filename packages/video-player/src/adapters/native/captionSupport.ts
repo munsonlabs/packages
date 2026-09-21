@@ -73,8 +73,10 @@ export function createCaptionSupport(videoEl: HTMLVideoElement, onChange: () => 
     onChange()
   }
 
+  /** Reported, not just enforced: a track the browser switches on by itself - `<track default>`, a manifest's default rendition - is a caption change like any other, and the player has to hear about it to keep its own state and the viewer's preference honest. */
   function onModeChange(): void {
     enforceSingleShowingTrack(videoEl)
+    onChange()
   }
 
   videoEl.textTracks.addEventListener('addtrack', onAddTrack)

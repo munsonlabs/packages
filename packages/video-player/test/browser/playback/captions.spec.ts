@@ -64,3 +64,37 @@ describe('captions', () => {
     expect(player.supportsCaptions).toBe(false)
   })
 })
+
+describe('caption preference across players', () => {
+  it('a second player starts with captions off after the viewer turned them off', async () => {
+    const first = await mountPlayer(catalogue.captioned)
+    await first.sink.next('play')
+    await waitFor(() => first.player.activeCaptionIndex === 0, 'the default track to be active')
+
+    first.player.setCaptionTrack(null)
+    await waitFor(() => showingIndex(first.video) === null, 'captions to go off')
+
+    const second = await mountPlayer(catalogue.captioned)
+    await second.sink.next('play')
+    await waitFor(() => second.player.captionTracks.length === 2, 'the new player to register its tracks')
+
+    // The <track default> would otherwise switch English straight back on.
+    await waitFor(() => second.player.activeCaptionIndex === null, 'the new player to honour captions being off')
+    expect(showingIndex(second.video)).toBeNull()
+  })
+
+  it('a second player restores the language the viewer picked', async () => {
+    const first = await mountPlayer(catalogue.captioned)
+    await first.sink.next('play')
+    await waitFor(() => first.player.captionTracks.length === 2, 'both tracks to register')
+
+    first.player.setCaptionTrack(1)
+    await waitFor(() => showingIndex(first.video) === 1, 'French to be showing')
+
+    const second = await mountPlayer(catalogue.captioned)
+    await second.sink.next('play')
+    await waitFor(() => second.player.captionTracks.length === 2, 'the new player to register its tracks')
+
+    await waitFor(() => second.player.activeCaptionIndex === 1, 'the new player to restore French')
+  })
+})

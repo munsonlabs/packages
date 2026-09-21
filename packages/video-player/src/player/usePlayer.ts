@@ -15,6 +15,7 @@ import { createAdSetup } from '@/player/features/createAdSetup'
 import { mountAdapter, type MountedAdapter } from '@/player/adapterMount'
 import type { PlaybackAdapter } from '@/types/playback'
 import type { PlayerProps, StateChangeEvent, StateChangeType } from '@/types/player'
+import { getQualityPreference } from '@/utils/qualityPreference'
 
 export type UsePlayerReturn = PlayerState &
   PlayerControls & {
@@ -114,15 +115,28 @@ export function usePlayer(
       if (adapter && val !== undefined) adapter.setPlaybackRate(val)
     },
   )
+  /**
+   * The `quality` prop is the host speaking and wins outright. With no prop, a height the viewer
+   * picked on an earlier video is restored once this source's levels are known - applied, not
+   * recorded, so restoring it never counts as a fresh choice. Neither overrides the other's job:
+   * without a prop and without a stored preference, the engine's own Auto stands.
+   */
+  let qualityPreferenceApplied = false
   watch(
     () => [props.quality, state.qualityLevels.value.length] as const,
     ([height, levelCount]) => {
-      if (height === undefined || !levelCount) return
-      if (height === null) {
-        if (!state.isAutoQuality.value) controls.setQuality(null)
+      if (!levelCount) return
+
+      if (height !== undefined) {
+        if (height === null && state.isAutoQuality.value) return
+        controls.applyQuality(height)
         return
       }
-      controls.setQuality(height)
+
+      if (qualityPreferenceApplied) return
+      qualityPreferenceApplied = true
+      const preferred = getQualityPreference()
+      if (preferred !== undefined) controls.applyQuality(preferred)
     },
   )
 

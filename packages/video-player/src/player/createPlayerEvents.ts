@@ -6,6 +6,7 @@ import type { UseBufferingReturn } from '@/player/features/useBuffering'
 import type { QuartileEvents } from '@/player/features/createQuartileEvents'
 import type { UsePositionMemoryReturn } from '@/player/features/usePositionMemory'
 import type { StateChangeEvent, StateChangeType } from '@/types/player'
+import { getCaptionPreference, resolvePreferredCaptionTrack } from '@/utils/captionPreference'
 
 export const TIMEUPDATE_FIRE_INTERVAL_MS = 250
 
@@ -58,9 +59,27 @@ export function createPlayerEvents(state: PlayerState, deps: PlayerEventsDeps): 
     supportsPlaybackRate.value = player.supportsPlaybackRate()
 
     /** Re-run on 'captionschange' since HLS subtitle renditions only appear once the manifest parses; hasStarted-gated so mount-time detection isn't reported as a "change". */
+    /**
+     * Captions are a viewer preference that outlives one player, like mute: a `<track default>` or a
+     * manifest's default subtitle rendition would otherwise switch them back on for every new video,
+     * undoing the viewer's choice each time they moved on.
+     *
+     * Enforced wherever the active track is observed rather than once at attach: the browser applies
+     * `default` after the tracks themselves register, so a single early pass would run before there
+     * was anything to correct. It cannot fight the viewer, because their own changes go through
+     * setCaptionTrack, which updates the very preference being enforced here.
+     */
+    function enforceCaptionPreference(): void {
+      if (!captionTracks.value.length) return
+      const preferred = resolvePreferredCaptionTrack(getCaptionPreference(), captionTracks.value)
+      if (preferred === undefined || preferred === player.captions?.active()) return
+      player.captions?.select(preferred)
+    }
+
     function refreshCaptionTracks(): void {
       captionTracks.value = player.captions?.tracks() ?? []
       supportsCaptions.value = captionTracks.value.length > 0
+      enforceCaptionPreference()
       const active = player.captions?.active() ?? null
       if (active === activeCaptionIndex.value) return
       activeCaptionIndex.value = active
@@ -169,7 +188,8 @@ export function createPlayerEvents(state: PlayerState, deps: PlayerEventsDeps): 
       current.value = player.currentTime() ?? 0
       if (!total.value) updateDuration()
       if (!supportsPlaybackRate.value) supportsPlaybackRate.value = player.supportsPlaybackRate()
-      /** No cross-browser event fires when a TextTrack's own mode changes, so re-read here too. */
+      /** No cross-browser event fires when a TextTrack's own mode changes, so re-read - and re-assert the viewer's preference - here too. */
+      enforceCaptionPreference()
       const active = player.captions?.active() ?? null
       if (activeCaptionIndex.value !== active) {
         activeCaptionIndex.value = active

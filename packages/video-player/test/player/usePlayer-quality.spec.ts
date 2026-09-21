@@ -5,6 +5,7 @@ import { mockIntersectionObserver } from '@test/helpers'
 import { fakeAdapter, emitter, resetEmitter } from '@test/player/fakeAdapter'
 import type { PlayerProps, StateChangeEvent } from '@/types/player'
 import type { QualityLevelInfo } from '@/types/playback'
+import { STORAGE_QUALITY_PREFERENCE_KEY } from '@/utils/qualityPreference'
 
 vi.mock('@/player/adapterMount', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/player/adapterMount')>()),
@@ -96,5 +97,98 @@ describe('quality prop', () => {
     await nextTick()
 
     expect(vi.mocked(fakeAdapter.quality!.select).mock.calls.map(([index]) => index)).toEqual([1, 0])
+  })
+})
+
+describe('quality preference across players', () => {
+  /**
+   * A real engine reflects a selection back through current()/isAuto(), and the refresh that follows
+   * a qualitychange reads exactly those. Without that, the fake would report Auto straight back over
+   * anything the player selected and the assertions below would be measuring the fake.
+   */
+  let selectedIndex: number | null = null
+
+  beforeEach(() => {
+    localStorage.clear()
+    selectedIndex = null
+    fakeAdapter.quality!.current = () => selectedIndex
+    fakeAdapter.quality!.isAuto = () => selectedIndex === null
+    vi.mocked(fakeAdapter.quality!.select).mockImplementation((index) => {
+      selectedIndex = index
+    })
+  })
+
+  it('remembers a height the viewer picked, and restores it on the next source', async () => {
+    const first = setup({})
+    await flush()
+    await levelsArrive()
+
+    first.player.setQuality(720)
+    expect(fakeAdapter.quality!.select).toHaveBeenCalledWith(1)
+
+    vi.mocked(fakeAdapter.quality!.select).mockClear()
+    const second = setup({})
+    await flush()
+    await levelsArrive()
+
+    expect(fakeAdapter.quality!.select).toHaveBeenCalledWith(1)
+    expect(second.player.currentQualityHeight.value).toBe(720)
+  })
+
+  it('restores Auto when that is what the viewer last chose', async () => {
+    const first = setup({})
+    await flush()
+    await levelsArrive()
+    first.player.setQuality(1080)
+    first.player.setQuality(null)
+
+    vi.mocked(fakeAdapter.quality!.select).mockClear()
+    const second = setup({})
+    await flush()
+    await levelsArrive()
+
+    expect(second.player.isAutoQuality.value).toBe(true)
+  })
+
+  it('leaves the engine alone when the viewer has never picked', async () => {
+    setup({})
+    await flush()
+    await levelsArrive()
+
+    expect(fakeAdapter.quality!.select).not.toHaveBeenCalled()
+  })
+
+  it('lets the prop win over a stored preference', async () => {
+    const first = setup({})
+    await flush()
+    await levelsArrive()
+    first.player.setQuality(360)
+
+    vi.mocked(fakeAdapter.quality!.select).mockClear()
+    const second = setup({ quality: 1080 })
+    await flush()
+    await levelsArrive()
+
+    expect(second.player.currentQualityHeight.value).toBe(1080)
+  })
+
+  it('does not record the prop as the viewer picking that height', async () => {
+    setup({ quality: 1080 })
+    await flush()
+    await levelsArrive()
+
+    // Asserted on storage rather than a second player, since the host setting a prop must leave no trace at all.
+    expect(localStorage.getItem(STORAGE_QUALITY_PREFERENCE_KEY)).toBeNull()
+  })
+
+  it('records a viewer pick, and only a viewer pick', async () => {
+    const { player } = setup({})
+    await flush()
+    await levelsArrive()
+    expect(localStorage.getItem(STORAGE_QUALITY_PREFERENCE_KEY)).toBeNull()
+
+    player.setQuality(720)
+
+    expect(localStorage.getItem(STORAGE_QUALITY_PREFERENCE_KEY)).toBe(JSON.stringify({ height: 720 }))
   })
 })

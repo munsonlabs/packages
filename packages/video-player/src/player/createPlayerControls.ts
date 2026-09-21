@@ -3,6 +3,8 @@ import type { StateChangeEvent, StateChangeType } from '@/types/player'
 import type { PlayerState } from '@/player/playerState'
 import type { AdSetup } from '@/player/features/createAdSetup'
 import { saveAndTrackAudioPreference } from '@/utils/audioPreference'
+import { saveCaptionPreference } from '@/utils/captionPreference'
+import { saveQualityPreference } from '@/utils/qualityPreference'
 
 export interface PlayerControls {
   play: () => Promise<void>
@@ -16,6 +18,8 @@ export interface PlayerControls {
   setPlaybackRate: (rate: number) => void
   setCaptionTrack: (index: number | null) => void
   setQuality: (height: number | null) => void
+  /** Internal: applies a quality without recording it as the viewer's own choice. */
+  applyQuality: (height: number | null, options?: { remember?: boolean }) => void
   togglePip: () => void
 }
 
@@ -33,6 +37,7 @@ export function createPlayerControls(
     duration: total,
     isLooping,
     currentPlaybackRate,
+    captionTracks,
     activeCaptionIndex,
     currentQualityHeight,
     isAutoQuality,
@@ -136,18 +141,33 @@ export function createPlayerControls(
     currentPlaybackRate.value = rate
   }
 
+  /** Only a viewer's own choice reaches here - a track the source switches on by itself goes through createPlayerEvents - so this is the right place to remember one. */
   function setCaptionTrack(index: number | null): void {
     getPlayer()?.captions?.select(index)
     activeCaptionIndex.value = index
+
+    const track = index === null ? null : captionTracks.value.find((t) => t.index === index)
+    saveCaptionPreference(track ? { enabled: true, language: track.language } : { enabled: false })
+
     if (hasStarted.value) fire('captionchange', { captionIndex: index })
   }
 
   /** Heights are the public unit for quality - they are stable, meaningful (the 720 in 720p) and, since the ladder keeps one variant per height, unique. The engine's own index stays inside the adapter. */
   function setQuality(height: number | null): void {
+    applyQuality(height, { remember: true })
+  }
+
+  /**
+   * `remember` separates a viewer's own pick, which should follow them to the next video, from the
+   * `quality` prop and the stored preference being applied, which must not overwrite what the viewer
+   * chose. The engine's own ABR switches never come through here at all.
+   */
+  function applyQuality(height: number | null, { remember = false }: { remember?: boolean } = {}): void {
     const level = height === null ? null : nearestLevel(height)
     getPlayer()?.quality?.select(level?.index ?? null)
     currentQualityHeight.value = level?.height ?? null
     isAutoQuality.value = level === null
+    if (remember) saveQualityPreference(level?.height ?? null)
     if (hasStarted.value) fire('qualitychange', { qualityHeight: level?.height ?? null })
   }
 
@@ -161,5 +181,19 @@ export function createPlayerControls(
     getPlayer()?.pip?.toggle()
   }
 
-  return { play, pause, replay, togglePlay, seek, toggleMute, setVolume, toggleLoop, setPlaybackRate, setCaptionTrack, setQuality, togglePip }
+  return {
+    play,
+    pause,
+    replay,
+    togglePlay,
+    seek,
+    toggleMute,
+    setVolume,
+    toggleLoop,
+    setPlaybackRate,
+    setCaptionTrack,
+    setQuality,
+    applyQuality,
+    togglePip,
+  }
 }

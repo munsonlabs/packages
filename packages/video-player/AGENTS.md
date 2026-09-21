@@ -109,6 +109,23 @@ Directories are features, not kinds, so a component sits next to the composables
 
 `test/` mirrors this exactly.
 
+## Viewer preferences that outlive one player
+
+Mute and volume (`utils/audioPreference.ts`), auto-advance (`utils/autoAdvancePreference.ts`),
+playback position (`utils/positionMemory.ts`), captions (`utils/captionPreference.ts`) and quality
+(`utils/qualityPreference.ts`) all persist
+through `utils/storage.ts`. Captions are stored as a language rather than a track index, since
+indices are per-video, and `null` from `getCaptionPreference()` means "never chosen", which is what
+lets a `<track default>` stand on a first visit. The preference is re-asserted wherever the active
+track is observed, not once at attach: the browser applies `default` after the tracks register, so a
+single early pass would run before there was anything to correct. It cannot fight the viewer, because
+their own changes go through `setCaptionTrack`, which updates the very preference being enforced.
+
+Quality follows the same split through `createPlayerControls`: `setQuality` is the viewer and records,
+`applyQuality` is the `quality` prop or a stored preference being restored and does not. A prop wins
+over a stored preference and leaves no trace of its own, so a host pinning a resolution never decides
+anything on the viewer's behalf.
+
 ## Where a constant lives
 
 `src/constants.ts` holds only what more than one module needs: the two stage event names, the two fullscreen-pending event names, the shell class, the MIME types, the default aspect ratio, the playback rates, the pause threshold and one SDK sync delay. Everything else lives as a module-level `const` in its single consumer, so a timing or a storage key sits next to the code that reads it rather than in a grab bag thirty files away. The old `MVP_` prefix is gone; it predated the `mlv-` convention the CSS uses.

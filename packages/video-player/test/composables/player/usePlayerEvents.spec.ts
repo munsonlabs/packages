@@ -470,7 +470,7 @@ describe('usePlayerEvents — captionchange/qualitychange state-change events', 
     isAuto.value = false
     emitter.trigger('qualitychange')
 
-    expect(deps.fire).toHaveBeenCalledWith('qualitychange', { qualityIndex: 0 })
+    expect(deps.fire).toHaveBeenCalledWith('qualitychange', { qualityIndex: 0, qualityHeight: 720 })
   })
 
   it('fires qualitychange with qualityIndex: null when switching back to Auto', () => {
@@ -487,7 +487,7 @@ describe('usePlayerEvents — captionchange/qualitychange state-change events', 
     isAuto.value = true
     emitter.trigger('qualitychange')
 
-    expect(deps.fire).toHaveBeenCalledWith('qualitychange', { qualityIndex: null })
+    expect(deps.fire).toHaveBeenCalledWith('qualitychange', { qualityIndex: null, qualityHeight: null })
   })
 })
 

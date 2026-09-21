@@ -34,6 +34,8 @@ const props = withDefaults(defineProps<PlayerProps>(), {
   playInView: false,
   loop: false,
   preload: undefined,
+  captionLine: undefined,
+  quality: undefined,
 })
 
 const emit = defineEmits<{ 'state-change': [event: StateChangeEvent] }>()

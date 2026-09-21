@@ -97,6 +97,19 @@ export function usePlayer(
       if (adapter && val !== undefined) adapter.setPlaybackRate(val)
     },
   )
+  watch(
+    () => [props.quality, state.qualityLevels.value.length] as const,
+    ([height]) => {
+      const levels = state.qualityLevels.value
+      if (height === undefined || !levels.length) return
+      if (height === null) {
+        if (!state.isAutoQuality.value) controls.setQuality(null)
+        return
+      }
+      const nearest = levels.reduce((best, q) => (Math.abs(q.height - height) < Math.abs(best.height - height) ? q : best))
+      if (state.isAutoQuality.value || state.currentQualityIndex.value !== nearest.index) controls.setQuality(nearest.index)
+    },
+  )
 
   useAutoPauseOffscreen(
     videoEl,

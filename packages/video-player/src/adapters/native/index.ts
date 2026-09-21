@@ -18,6 +18,7 @@ export interface NativeAdapterOptions {
   volume?: number
   playbackRate?: number
   preload?: PreloadMode
+  captionLine?: number
 }
 
 const NATIVE_EVENTS = [
@@ -168,7 +169,7 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
   const forwarders = NATIVE_EVENTS.map((name) => [name, forwardEvent(name)] as const)
   for (const [name, fn] of forwarders) videoEl.addEventListener(name, fn)
 
-  const captionSupport = createCaptionSupport(videoEl, forwardEvent('captionschange'))
+  const captionSupport = createCaptionSupport(videoEl, forwardEvent('captionschange'), options.captionLine)
   const qualitySupport = createQualitySupport(() => {
     if (hls) return hlsQualityEngine(hls)
     if (dash) return dashQualityEngine(dash)

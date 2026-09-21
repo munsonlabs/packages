@@ -37,6 +37,7 @@ export function usePlayerControls(
     activeCaptionIndex,
     currentQualityIndex,
     isAutoQuality,
+    qualityLevels,
     errorMessage,
   } = state
 
@@ -149,7 +150,8 @@ export function usePlayerControls(
     getPlayer()?.setQuality(index)
     currentQualityIndex.value = index
     isAutoQuality.value = index === null
-    if (hasStarted.value) fire('qualitychange', { qualityIndex: index })
+    if (hasStarted.value)
+      fire('qualitychange', { qualityIndex: index, qualityHeight: qualityLevels.value.find((q) => q.index === index)?.height ?? null })
   }
 
   function togglePip(): void {

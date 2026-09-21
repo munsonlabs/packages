@@ -47,9 +47,9 @@ export interface StateChangeEvent {
   error?: { code: number; message: string } | null
   isMuted?: boolean
   playbackRate?: number
-  /** null means captions/quality are off (captionIndex) or Auto (qualityIndex). */
   captionIndex?: number | null
   qualityIndex?: number | null
+  qualityHeight?: number | null
   isPipActive?: boolean
   isLooping?: boolean
   element?: HTMLElement | null
@@ -89,13 +89,14 @@ export interface PlayerProps {
   adMacroParams?: Record<string, string>
   headerBidding?: HeaderBiddingConfig
   tracks?: CaptionTrackDef[]
+  captionLine?: number
   autoplay?: boolean
   muted?: boolean
   /** 0-1. */
   volume?: number
   playbackRate?: number
+  quality?: number | null
   nativeUi?: boolean
-  /** A JSON string is accepted too, for custom-element attributes. */
   payload?: Record<string, unknown> | string
   action?: PlayerAction | null
   disableTapCapture?: boolean

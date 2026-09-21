@@ -73,6 +73,7 @@ async function mountNativeAdapter(
     autoplay: props.autoplay,
     ...initial,
     preload: props.preload,
+    captionLine: props.captionLine,
   })
 
   const baseAdTag = applyAdTagParams(props.adTagUrl || resolved.adTagUrl || '', props.adMacroParams)

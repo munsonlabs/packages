@@ -77,7 +77,10 @@ export function usePlayerEvents(state: PlayerState, deps: UsePlayerEventsDeps): 
       const changed = newIndex !== currentQualityIndex.value || newAuto !== isAutoQuality.value
       currentQualityIndex.value = newIndex
       isAutoQuality.value = newAuto
-      if (changed && hasStarted.value) fire('qualitychange', { qualityIndex: newAuto ? null : newIndex })
+      if (changed && hasStarted.value) {
+        const level = newAuto ? undefined : qualityLevels.value.find((q) => q.index === newIndex)
+        fire('qualitychange', { qualityIndex: newAuto ? null : newIndex, qualityHeight: level?.height ?? null })
+      }
     }
 
     refreshQuality()

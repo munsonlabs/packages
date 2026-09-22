@@ -35,7 +35,8 @@ let unobserve: (() => void) | null = null
 const isActive = computed(() => stageState.currentSrc === props.src)
 const isPlaying = computed(() => isActive.value && stageState.isPlaying)
 
-const label = computed(() => (isActive.value && isPlaying.value ? 'Pause' : 'Play'))
+const actionWord = computed(() => (isActive.value && isPlaying.value ? 'Pause' : 'Play'))
+const actionLabel = computed(() => (props.label ? `${actionWord.value} ${props.label}` : actionWord.value))
 
 function dispatchSelect(fromGesture: boolean, autoplay?: boolean, muted?: boolean): void {
   dispatchStageEvent(WIN_VIDEO_SELECT, {
@@ -77,7 +78,7 @@ onBeforeUnmount(() => unobserve?.())
       <div class="placeholder__scrim" />
 
       <div class="placeholder__btn-wrap">
-        <button type="button" class="ppbtn ppbtn--lg" :aria-label="label" @click.stop="handleClick">
+        <button type="button" class="ppbtn ppbtn--lg" :aria-label="actionLabel" @click.stop="handleClick">
           <PlayPauseIcon :is-playing="isActive && isPlaying" />
         </button>
       </div>

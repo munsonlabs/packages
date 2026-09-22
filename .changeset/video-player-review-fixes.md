@@ -1,5 +1,0 @@
----
-'@munsonlabs/video-player': minor
----
-
-Fixed desktop Safari dropping the control overlay in fullscreen, Retry doing nothing after a Vimeo or Dailymotion error, blocked storage crashing a click handler or a component, hour-long videos showing times like `80:05`, a dead HLS manifest retrying forever with no error, a winning header-bidding tag being discarded when play came first, a quality index the published ladder did not contain, the scrubber's tap-to-seek dying after one drag, and four things `dispose()` left behind. Controls now find their player through context, so one nested in `<VideoPlayer>`'s new default slot needs no wiring, and `registerPlatform` can override a built-in. Breaking: `current`/`total`/`vol` are `currentTime`/`duration`/`currentVolume`, `seek()` takes seconds and `seekTo()` is gone, quality is addressed by height everywhere, adapters expose optional `captions`/`quality`/`pip` capability objects and `load`/`retry` in place of `setSrc`, and `useCaptions`/`useQuality`/`usePlaybackRate` are now plain functions.

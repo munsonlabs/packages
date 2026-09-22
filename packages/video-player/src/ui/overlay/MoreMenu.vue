@@ -29,7 +29,7 @@ const { isCustom, customAction } = usePlayerAction(inject(ActionKey, undefined),
       v-if="player.supportsPlaybackRate"
       label="Playback speed"
       :value="playbackRateLabel(player.currentPlaybackRate)"
-      @click="cycleRate"
+      @click="cyclePlaybackRate(player)"
     />
 
     <MoreMenuRow
@@ -47,7 +47,7 @@ const { isCustom, customAction } = usePlayerAction(inject(ActionKey, undefined),
       icon="captions"
       :active="player.activeCaptionIndex !== null"
       :value="captionTrackLabel(player)"
-      @click="cycleCaptionTrack"
+      @click="cycleCaptionTrack(player)"
     />
 
     <MoreMenuRow
@@ -56,7 +56,7 @@ const { isCustom, customAction } = usePlayerAction(inject(ActionKey, undefined),
       icon="quality"
       :active="!player.isAutoQuality"
       :value="qualityLabel(player)"
-      @click="cycleQuality"
+      @click="cycleQuality(player)"
     />
 
     <MoreMenuRow

@@ -211,9 +211,9 @@
       <div class="card">
         <h2><span class="badge jwplayer">jwplayer</span>JW Player</h2>
         <ml-video-card
-          src="https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4"
+          src="https://cdn.jwplayer.com/manifests/J8iBKS1l.m3u8"
           title="JW Player"
-          poster="https://cdn.jwplayer.com/thumbs/O5chtspP-720.jpg"
+          poster="https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg"
           payload='{"platform":"jwplayer"}'
         ></ml-video-card>
       </div>
@@ -221,9 +221,9 @@
       <div class="card">
         <h2><span class="badge html5">html5</span>HTML5 + skippable pre-roll</h2>
         <ml-video-card
-          src="https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4"
+          src="https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4"
           title="Big Buck Bunny (skippable pre-roll)"
-          poster="https://m.media-amazon.com/images/S/pv-target-images/fb7afef01282cdc2d846b2343f9f3d7a785b7133729776f1aa0da6501a2e1f7b.jpg"
+          poster="https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg"
           ad-tag-url="https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator="
           payload='{"platform":"html5"}'
         ></ml-video-card>
@@ -232,9 +232,9 @@
       <div class="card">
         <h2><span class="badge html5">html5</span>HTML5 + pre-roll</h2>
         <ml-video-card
-          src="https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4"
+          src="https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4"
           title="Big Buck Bunny (pre-roll)"
-          poster="https://m.media-amazon.com/images/S/pv-target-images/fb7afef01282cdc2d846b2343f9f3d7a785b7133729776f1aa0da6501a2e1f7b.jpg"
+          poster="https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg"
           ad-tag-url="https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator="
           payload='{"platform":"html5"}'
         ></ml-video-card>
@@ -243,9 +243,9 @@
       <div class="card">
         <h2><span class="badge html5">html5</span>HTML5 + VMAP</h2>
         <ml-video-card
-          src="https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4"
+          src="https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4"
           title="Big Buck Bunny (VMAP — pre + mid + post)"
-          poster="https://m.media-amazon.com/images/S/pv-target-images/fb7afef01282cdc2d846b2343f9f3d7a785b7133729776f1aa0da6501a2e1f7b.jpg"
+          poster="https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg"
           ad-tag-url="https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&impl=s&gdfp_req=1&env=vp&output=vmap&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpost&cmsid=496&vid=short_onecue&correlator="
           payload='{"platform":"html5"}'
         ></ml-video-card>
@@ -254,9 +254,9 @@
       <div class="card">
         <h2><span class="badge html5">html5</span>Inline JSON attrs</h2>
         <ml-video-card
-          src="https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4"
+          src="https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4"
           title="Inline JSON attrs"
-          poster="https://m.media-amazon.com/images/S/pv-target-images/fb7afef01282cdc2d846b2343f9f3d7a785b7133729776f1aa0da6501a2e1f7b.jpg"
+          poster="https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg"
           ad-tag-url="https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator="
           payload='{"source":"standalone"}'
         ></ml-video-card>
@@ -340,16 +340,13 @@
         key: 'demo-one-call',
         test: (src) => src.startsWith('demo-one-call://'),
         embed: false,
-        resolveSource: () => ({ src: 'https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4', type: 'video/mp4' }),
+        resolveSource: () => ({ src: 'https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4', type: 'video/mp4' }),
       })
 
       const oneCallItem = document.createElement('ml-video-card')
       oneCallItem.setAttribute('src', 'demo-one-call://anything')
       oneCallItem.setAttribute('title', 'Registered via registerPlatform')
-      oneCallItem.setAttribute(
-        'poster',
-        'https://m.media-amazon.com/images/S/pv-target-images/fb7afef01282cdc2d846b2343f9f3d7a785b7133729776f1aa0da6501a2e1f7b.jpg',
-      )
+      oneCallItem.setAttribute('poster', 'https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg')
       oneCallItem.addEventListener('state-change', (e) => window.__mvpDemoLog(e.detail[0]))
       document.getElementById('one-call-mount').appendChild(oneCallItem)
     </script>

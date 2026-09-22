@@ -3,7 +3,7 @@
     {
       "id": "2-0",
       "src": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      "poster": "https://m.media-amazon.com/images/S/pv-target-images/fb7afef01282cdc2d846b2343f9f3d7a785b7133729776f1aa0da6501a2e1f7b.jpg",
+      "poster": "https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg",
       "handle": "@peach",
       "title": "Open movie, open codec",
       "likes": "5.4K",
@@ -12,7 +12,7 @@
     {
       "id": "2-1",
       "src": "https://ireplay.tv/test/rate_3_28_live.m3u8",
-      "poster": "https://m.media-amazon.com/images/S/pv-target-images/fb7afef01282cdc2d846b2343f9f3d7a785b7133729776f1aa0da6501a2e1f7b.jpg",
+      "poster": "https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg",
       "handle": "@ireplay",
       "title": "A real live stream - no scrubber, no fast-forward",
       "likes": "910",
@@ -21,7 +21,7 @@
     {
       "id": "2-2",
       "src": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      "poster": "https://m.media-amazon.com/images/S/pv-target-images/fb7afef01282cdc2d846b2343f9f3d7a785b7133729776f1aa0da6501a2e1f7b.jpg",
+      "poster": "https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg",
       "handle": "@blender",
       "title": "Page two, fetched while you were still on page one",
       "likes": "22K",

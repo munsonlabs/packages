@@ -62,7 +62,7 @@ icon: i-lucide-sparkles
 class: rounded-md px-3 py-1.5
 ---
 
-Stuff I find useful
+Open source
 :::
 
 #title

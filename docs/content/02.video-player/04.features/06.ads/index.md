@@ -16,7 +16,7 @@ Pass an ad tag as `adTagUrl`; the IMA SDK loads on demand, nothing else to confi
 
 ```vue
 <VideoCard
-  src="https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4"
+  src="https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4"
   ad-tag-url="https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&gdfp_req=1&output=vast&env=vp&impl=s&correlator="
 />
 ```
@@ -26,7 +26,7 @@ Pass an ad tag as `adTagUrl`; the IMA SDK loads on demand, nothing else to confi
 
 ```html
 <ml-video-card
-  src="https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4"
+  src="https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4"
   ad-tag-url="https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&amp;sz=640x480&amp;cust_params=sample_ct%3Dlinear&amp;gdfp_req=1&amp;output=vast&amp;env=vp&amp;impl=s&amp;correlator="
 ></ml-video-card>
 ```
@@ -35,7 +35,7 @@ Ad tags are query-string heavy - escape the `&` as `&amp;` in HTML, or the brows
 :::
 ::
 
-::player-example{src="https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4" label="Big Buck Bunny" poster="https://m.media-amazon.com/images/S/pv-target-images/fb7afef01282cdc2d846b2343f9f3d7a785b7133729776f1aa0da6501a2e1f7b.jpg" ad-tag-url="https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&gdfp_req=1&output=vast&env=vp&impl=s&correlator=" caption="Live pre-roll against Google's public IMA sample tag. Press play - the ad overlay, countdown and independent ad mute are all real."}
+::player-example{src="https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4" label="Big Buck Bunny" poster="https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg" ad-tag-url="https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&gdfp_req=1&output=vast&env=vp&impl=s&correlator=" caption="Live pre-roll against Google's public IMA sample tag. Press play - the ad overlay, countdown and independent ad mute are all real."}
 ::
 
 The same endpoint serves **VMAP** (`output=vmap`) for pre/mid/post-roll schedules, including multi-ad pods and bumpers. Confirm playback via `adstart`/`adend` on `state-change`.

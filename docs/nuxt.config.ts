@@ -10,7 +10,7 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      templateParams: { separator: '-', siteName: 'Stuff I find useful' },
+      templateParams: { separator: '-', siteName: 'Munson Labs' },
       link: [{ rel: 'icon', type: 'image/svg+xml', href: `${baseURL}favicon.svg` }],
     },
   },
@@ -25,7 +25,7 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
 
   site: {
-    name: 'Stuff I find useful',
+    name: 'Munson Labs',
     description: 'Public npm packages published under the @munsonlabs scope.',
   },
   llms: {

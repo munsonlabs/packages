@@ -43,6 +43,7 @@ await document.querySelector('ml-video-card').play()
 | `setCaptionTrack(index)` | Select a caption track, or `null` for off - fires `captionchange`                                    |
 | `setQuality(height)`     | Select a quality level by height in pixels, nearest wins, or `null` for Auto - fires `qualitychange` |
 | `togglePip()`            | Enter/exit Picture-in-Picture - fires `pipchange`                                                    |
+| `toggleAdMute()`         | Toggle mute on the ad currently playing                                                              |
 | `retry()`                | Re-attempt the current source after an `error`                                                       |
 
 ## State
@@ -51,10 +52,13 @@ All reactive - read them straight off the ref to drive your own HUD.
 
 | Field                                                                          | Type                                                            | Description                                                                                                 |
 | ------------------------------------------------------------------------------ | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `isPlaying` / `hasEnded` / `isError`                                           | `boolean`                                                       | Playback status                                                                                             |
+| `isPlaying` / `hasEnded`                                                       | `boolean`                                                       | Playback status                                                                                             |
+| `hasStarted`                                                                   | `boolean`                                                       | Playback has begun at least once - most `state-change` types stay silent until it flips                     |
+| `isError` / `errorMessage`                                                     | `boolean` / `string`                                            | Error state, and the reason to show                                                                         |
 | `isReady` / `isLoaded`                                                         | `boolean`                                                       | Adapter attached / duration known (or live). `loaded` fires when `isLoaded` flips                           |
 | `currentTime` / `duration`                                                     | `number`                                                        | Position and duration, in seconds                                                                           |
-| `bufferedDisplay`                                                              | `number`                                                        | Percent (0-100) buffered ahead, for a scrubber's buffered fill                                              |
+| `progress`                                                                     | `number`                                                        | `currentTime` as a percent (0-100) of `duration`                                                            |
+| `bufferedDisplay`                                                              | `number`                                                        | Percent (0-100) buffered, never less than the current position - for a scrubber's buffered fill             |
 | `isBuffering`                                                                  | `boolean`                                                       | Stalled long enough to warrant a spinner                                                                    |
 | `isLive`                                                                       | `boolean`                                                       | Live stream - seeking is hidden                                                                             |
 | `isMuted` / `currentVolume`                                                    | `boolean` / `number`                                            | Mute state and volume (0-1)                                                                                 |
@@ -64,10 +68,13 @@ All reactive - read them straight off the ref to drive your own HUD.
 | `supportsCaptions` / `captionTracks` / `activeCaptionIndex`                    | `boolean` / `CaptionTrackInfo[]` / `number \| null`             | Caption availability, the track list, and the active index (`null` = off)                                   |
 | `supportsQuality` / `qualityLevels` / `currentQualityHeight` / `isAutoQuality` | `boolean` / `QualityLevelInfo[]` / `number \| null` / `boolean` | Quality availability, levels (`{ index, height, bitrate, label }`), and the selected height (`null` = Auto) |
 | `supportsPlaybackRate` / `currentPlaybackRate`                                 | `boolean` / `number`                                            | Rate availability and current rate                                                                          |
+| `isAdPlaying` / `isAdPaused` / `isAdMuted`                                     | `boolean`                                                       | Ad playback status, for driving a custom ad UI                                                              |
+| `adRemainingTime`                                                              | `number`                                                        | Seconds left in the current ad                                                                              |
+| `isNativeUi`                                                                   | `boolean`                                                       | The platform's own chrome is in use rather than the built-in HUD                                            |
 
 This is the `PlayerHandle` interface - a headless control's `player` prop accepts anything structurally matching it.
 
 ## Per-component differences
 
 - **`VideoCard`** may still be showing its lazy placeholder - any control method mounts the real player first. With a `VideoStage` on the page the card hands playback off entirely: `togglePlay()` selects/toggles this video on the stage, and everything else is a no-op.
-- **`VideoStage`** adds `playNext()`, `playPrevious()`, `hasNext`, and `hasPrevious` when `playlist` is set. It can't auto-mount without a video selected, so control methods before that are a no-op.
+- **`VideoStage`** also exposes `playNext()`, `playPrevious()`, `hasNext` and `hasPrevious`; without a `playlist` the two flags are `false` and the two methods do nothing. It can't auto-mount without a video selected, so control methods before that are a no-op.

@@ -7,8 +7,8 @@ import { useEventLog } from '../composables/useEventLog'
 
 const DEFAULT_VIDEO: VideoEntry = {
   label: 'Big Buck Bunny — transcript',
-  src: 'https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4',
-  poster: 'https://m.media-amazon.com/images/S/pv-target-images/fb7afef01282cdc2d846b2343f9f3d7a785b7133729776f1aa0da6501a2e1f7b.jpg',
+  src: 'https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4',
+  poster: 'https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg',
 }
 
 const DEFAULT_CUES: TranscriptCue[] = [

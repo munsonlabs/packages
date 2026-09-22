@@ -25,16 +25,18 @@ const AD_PRESETS = [
 ]
 
 const VIDEO_PRESETS = [
-  { label: 'MP4 - Big Buck Bunny', src: 'https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4' },
+  { label: 'MP4 - Big Buck Bunny', src: 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_10s_1MB.mp4' },
+  { label: 'WebM - Big Buck Bunny', src: 'https://test-videos.co.uk/vids/bigbuckbunny/webm/vp9/1080/Big_Buck_Bunny_1080_10s_1MB.webm' },
   { label: 'HLS - Mux test stream', src: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8' },
   {
     label: 'HLS - bipbop (captions + quality)',
     src: 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8',
   },
+  { label: 'DASH - Big Buck Bunny (180p to 2160p)', src: 'https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd' },
   { label: 'YouTube', src: 'https://www.youtube.com/watch?v=UnktCDi-BVs' },
   { label: 'Vimeo', src: 'https://vimeo.com/347119375' },
   { label: 'Dailymotion', src: 'https://www.dailymotion.com/video/x84sh87' },
-  { label: 'JW Player', src: 'https://cdn.jwplayer.com/videos/O5chtspP-4VHSaSK0.mp4' },
+  { label: 'JW Player - Big Buck Bunny', src: 'https://cdn.jwplayer.com/manifests/J8iBKS1l.m3u8' },
 ]
 
 const HB_EXAMPLE = {

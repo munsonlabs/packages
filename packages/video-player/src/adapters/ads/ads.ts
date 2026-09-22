@@ -1,4 +1,4 @@
-import { loadScript } from '@/utils/loadScript'
+import { loadScript } from '@/adapters/loadScript'
 import { isIOS } from '@/utils/platform'
 
 export const AD_PLAYING_CLASS = 'mlv-ad-playing'

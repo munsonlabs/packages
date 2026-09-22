@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import { createYoutubeAdapter } from '@/adapters/embeds/youtube'
-import { loadScript } from '@/utils/loadScript'
+import { loadScript } from '@/adapters/loadScript'
 import { flush } from '@test/helpers'
 
 // Own file: the adapter caches the ready API at module scope, so failures must run before any success.
-vi.mock('@/utils/loadScript', () => ({ loadScript: vi.fn(() => Promise.resolve()) }))
+vi.mock('@/adapters/loadScript', () => ({ loadScript: vi.fn(() => Promise.resolve()) }))
 
 const PlayerState = { ENDED: 0, PLAYING: 1, PAUSED: 2, BUFFERING: 3, CUED: 5 }
 let created = 0

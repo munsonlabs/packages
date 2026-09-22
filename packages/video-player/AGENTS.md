@@ -90,31 +90,33 @@ Three names on the exposed handle avoid a collision rather than being terse for 
 
 ## Layout
 
-Directories are features, not kinds, so a component sits next to the composables only it uses:
+`src/ui/` holds the whole Vue layer - everything that renders or drives a player - and inside it
+directories are features, not kinds, so a component sits next to the composables only it uses.
+Everything outside `ui/` is what the layer is built on: playback backends, persistence, cross-instance
+singletons, types, helpers and the build entries.
 
-| Directory     | Holds                                                                                                                         |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `player/`     | `VideoPlayer.vue` and everything that makes one player work: state, controls, events, adapter mount, `features/`, `viewport/` |
-| `stage/`      | `VideoStage.vue`, `VideoCard.vue`, `VideoPlaceholder.vue`, `HideMarker.vue`, the playlist and the window-event bus            |
-| `controls/`   | The 13 headless controls and the composables only they use (`useResolvedPlayer`, `useScrubber`, `useSpokenCues`)              |
-| `overlay/`    | The built-in HUD `VideoPlayer` renders, plus `useHud` and its visibility and action helpers                                   |
-| `pinned/`     | The two player shells, the pinned corner controls, and the pin decision/box composables                                       |
-| `adapters/`   | Every source behind one `PlaybackAdapter` (see below)                                                                         |
-| `registries/` | Module singletons shared by every instance: pause handlers, document listeners, stage presence                                |
-| `shared/`     | `Icon.vue`, `Spinner.vue`, `useElementCompact` - used across features, owned by none                                          |
-| `utils/`      | Pure functions with no Vue involvement                                                                                        |
-| `styles/`     | The stylesheets that cannot be scoped                                                                                         |
-| `types/`      | `player.ts` and `playback.ts`; `types/vendor/` holds the ambient SDK shims                                                    |
-| `elements/`   | The custom-element build entries                                                                                              |
+| Directory      | Holds                                                                                                                         |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `ui/player/`   | `VideoPlayer.vue` and everything that makes one player work: state, controls, events, adapter mount, `features/`, `viewport/` |
+| `ui/stage/`    | `VideoStage.vue`, `VideoCard.vue`, `VideoPlaceholder.vue`, `HideMarker.vue`, the playlist and the window-event bus            |
+| `ui/controls/` | The 13 headless controls and the composables only they use (`useResolvedPlayer`, `useScrubber`, `useSpokenCues`)              |
+| `ui/overlay/`  | The built-in HUD `VideoPlayer` renders, plus `useHud` and its visibility and action helpers                                   |
+| `ui/pinned/`   | The two player shells, the pinned corner controls, and the pin decision/box composables                                       |
+| `ui/shared/`   | `Icon.vue`, `Spinner.vue`, `useElementCompact` - used across the features above, owned by none                                |
+| `ui/styles/`   | The stylesheets that cannot be scoped                                                                                         |
+| `adapters/`    | Every source behind one `PlaybackAdapter` (see below), plus the emitter, script loader and source helpers only they use       |
+| `preferences/` | Viewer choices that outlive one player, and the guarded storage they share                                                    |
+| `registries/`  | Module singletons shared by every instance: pause handlers, document listeners, stage presence                                |
+| `utils/`       | The genuinely cross-layer helpers and nothing else: time, platform, aspect ratio, shell lookup, FLIP, player actions, expose  |
+| `types/`       | `player.ts` and `playback.ts`; `types/vendor/` holds the ambient SDK shims                                                    |
+| `elements/`    | The custom-element build entries                                                                                              |
 
 `test/` mirrors this exactly.
 
 ## Viewer preferences that outlive one player
 
-Mute and volume (`utils/audioPreference.ts`), auto-advance (`utils/autoAdvancePreference.ts`),
-playback position (`utils/positionMemory.ts`), captions (`utils/captionPreference.ts`) and quality
-(`utils/qualityPreference.ts`) all persist
-through `utils/storage.ts`. Captions are stored as a language rather than a track index, since
+`src/preferences/` is the whole of it: mute and volume, auto-advance, playback position, captions and
+quality, each persisting through its `storage.ts`, which nothing outside that directory imports. Captions are stored as a language rather than a track index, since
 indices are per-video, and `null` from `getCaptionPreference()` means "never chosen", which is what
 lets a `<track default>` stand on a first visit. The preference is re-asserted wherever the active
 track is observed, not once at attach: the browser applies `default` after the tracks register, so a

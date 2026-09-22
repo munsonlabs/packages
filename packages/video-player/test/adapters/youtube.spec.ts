@@ -3,7 +3,7 @@ import { createYoutubeAdapter } from '@/adapters/embeds/youtube'
 import type { EmbedAdapterOptions } from '@/types/playback'
 import { flush } from '@test/helpers'
 
-vi.mock('@/utils/loadScript', () => ({ loadScript: vi.fn(() => Promise.resolve()) }))
+vi.mock('@/adapters/loadScript', () => ({ loadScript: vi.fn(() => Promise.resolve()) }))
 
 const PlayerState = { ENDED: 0, PLAYING: 1, PAUSED: 2, BUFFERING: 3, CUED: 5 }
 

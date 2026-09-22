@@ -1,4 +1,4 @@
-import { pickBestSource, createCachedResolver } from '@/utils/sourceHelpers'
+import { pickBestSource, createCachedResolver } from '@/adapters/sourceHelpers'
 import type { ResolvedSource } from '@/types/playback'
 
 export const BRIGHTCOVE_PLAYBACK_API = 'https://edge.api.brightcove.com/playback/v1/accounts'

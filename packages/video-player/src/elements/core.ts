@@ -1,9 +1,9 @@
 import { defineCustomElement } from 'vue'
-import VideoPlayer from '@/player/VideoPlayer.vue'
-import VideoStage from '@/stage/VideoStage.vue'
-import VideoPlaceholder from '@/stage/VideoPlaceholder.vue'
-import VideoCard from '@/stage/VideoCard.vue'
-import HideMarker from '@/stage/HideMarker.vue'
+import VideoPlayer from '@/ui/player/VideoPlayer.vue'
+import VideoStage from '@/ui/stage/VideoStage.vue'
+import VideoPlaceholder from '@/ui/stage/VideoPlaceholder.vue'
+import VideoCard from '@/ui/stage/VideoCard.vue'
+import HideMarker from '@/ui/stage/HideMarker.vue'
 import { registerPlatform, resolvePlatform } from '@/adapters/index'
 
 // Shadow DOM is not an option - embed SDKs mount by resolving a plain element ID via document.getElementById

@@ -1,8 +1,8 @@
 import { FULLSCREEN_PENDING, FULLSCREEN_PENDING_DONE } from '@/constants'
 import { isIOS, requestFullscreen, exitFullscreen as exitDocFullscreen } from '@/utils/platform'
 import { getShellEl } from '@/utils/shell'
-import { createEmitter } from '@/utils/emitter'
-import type { Emitter } from '@/utils/emitter'
+import { createEmitter } from '@/adapters/emitter'
+import type { Emitter } from '@/adapters/emitter'
 import type { PlaybackAdapter, MediaErrorLike, EmbedAdapterOptions } from '@/types/playback'
 
 export const TECH_CLASS = 'mlv-tech'

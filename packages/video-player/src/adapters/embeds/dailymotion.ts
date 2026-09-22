@@ -1,6 +1,6 @@
 import { createStatefulEmbedAdapter, failEmbed } from '@/adapters/embeds/embedShared'
 import type { EmbedAdapterOptions } from '@/types/playback'
-import { loadScript } from '@/utils/loadScript'
+import { loadScript } from '@/adapters/loadScript'
 import type { PlaybackAdapter } from '@/types/playback'
 
 export const DAILYMOTION_CLASS = 'mlv-dailymotion'

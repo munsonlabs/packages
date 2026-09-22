@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vite-plus/test'
 import { spawnIosFullscreenOverlay } from '@/adapters/embeds/embedShared'
-import { createEmitter } from '@/utils/emitter'
+import { createEmitter } from '@/adapters/emitter'
 import { FULLSCREEN_PENDING, FULLSCREEN_PENDING_DONE } from '@/constants'
 
 describe('spawnIosFullscreenOverlay', () => {

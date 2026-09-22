@@ -1,5 +1,5 @@
-import { createEmitter } from '@/utils/emitter'
-import { loadScript } from '@/utils/loadScript'
+import { createEmitter } from '@/adapters/emitter'
+import { loadScript } from '@/adapters/loadScript'
 import {
   revealEmbed,
   createEmbedMount,

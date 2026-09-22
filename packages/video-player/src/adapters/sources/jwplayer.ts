@@ -1,4 +1,4 @@
-import { pickBestSource, createCachedResolver } from '@/utils/sourceHelpers'
+import { pickBestSource, createCachedResolver } from '@/adapters/sourceHelpers'
 import { HLS_MIME_TYPE, MP4_MIME_TYPE } from '@/constants'
 import type { ResolvedSource } from '@/types/playback'
 

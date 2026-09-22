@@ -1,6 +1,6 @@
 import type Hls from 'hls.js'
 import type { MediaPlayerClass } from 'dashjs'
-import { createEmitter } from '@/utils/emitter'
+import { createEmitter } from '@/adapters/emitter'
 import { createCaptionSupport } from '@/adapters/native/captionSupport'
 import { createQualitySupport, type QualityEngineAdapter } from '@/adapters/native/qualitySupport'
 import { createFullscreenSupport } from '@/adapters/native/fullscreenSupport'

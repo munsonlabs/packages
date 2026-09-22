@@ -1,6 +1,6 @@
 import type { UnwrapNestedRefs } from 'vue'
-import type { UsePlayerReturn } from '@/player/usePlayer'
-import type { PlayerMethodKey, PlayerStateKey } from '@/player/playerSurface'
+import type { UsePlayerReturn } from '@/ui/player/usePlayer'
+import type { PlayerMethodKey, PlayerStateKey } from '@/ui/player/playerSurface'
 
 export type BuiltinAction = 'mute' | 'loop' | 'autoplay'
 

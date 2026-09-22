@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import { createVimeoAdapter } from '@/adapters/embeds/vimeo'
 import type { EmbedAdapterOptions } from '@/types/playback'
-import { loadScript } from '@/utils/loadScript'
+import { loadScript } from '@/adapters/loadScript'
 import { createDeferred, flush } from '@test/helpers'
 
-vi.mock('@/utils/loadScript', () => ({ loadScript: vi.fn(() => Promise.resolve()) }))
+vi.mock('@/adapters/loadScript', () => ({ loadScript: vi.fn(() => Promise.resolve()) }))
 
 class FakeVimeoPlayer implements VimeoPlayerInstance {
   handlers: Record<string, Array<(data: unknown) => void>> = {}

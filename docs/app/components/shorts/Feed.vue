@@ -3,6 +3,7 @@ import { ref, shallowRef, onMounted, type Component } from 'vue'
 import Slide from './components/Slide.vue'
 import Nav from './components/Nav.vue'
 import { registerShortsIcons } from './icons'
+import { provideShortsParts } from './parts'
 import { useRecycler } from './composables/useRecycler'
 import { useShortsFeed } from './composables/useShortsFeed'
 
@@ -11,6 +12,8 @@ const failed = ref(false)
 const scroller = ref<HTMLElement | null>(null)
 const stage = ref<HTMLElement | null>(null)
 const uiHidden = ref(false)
+
+provideShortsParts(parts)
 
 const { shorts, failed: feedFailed, loadMore, refresh } = useShortsFeed()
 const { slots, index, onScroll, go, reset } = useRecycler(scroller, shorts, loadMore)
@@ -53,11 +56,11 @@ onMounted(async () => {
       <div v-else-if="parts" ref="stage" class="shorts__stage">
         <div ref="scroller" class="shorts__scroller" @scroll.passive="onScroll">
           <div v-for="(short, slot) in slots" :key="short?.id ?? `empty-${slot}`" class="shorts__slide">
-            <Slide v-if="short" :short="short" :parts="parts" v-model:ui-hidden="uiHidden" />
+            <Slide v-if="short" :short="short" v-model:ui-hidden="uiHidden" />
           </div>
         </div>
 
-        <Nav :parts="parts" :stage="stage" :index="index" :count="shorts.length" @go="go" @refresh="refreshFeed" />
+        <Nav :stage="stage" :index="index" :count="shorts.length" @go="go" @refresh="refreshFeed" />
       </div>
 
       <p v-else class="shorts__status">Loading the feed…</p>

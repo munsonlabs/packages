@@ -1,32 +1,34 @@
 <script setup lang="ts">
-import type { Component } from 'vue'
 import type { PlayerHandle } from '@munsonlabs/video-player'
+import { useShortsParts } from '../parts'
 
-defineProps<{ parts: Record<string, Component>; handle: PlayerHandle | null; likes: string; comments: string }>()
+defineProps<{ handle: PlayerHandle | null; likes: string; comments: string }>()
+
+const { QualityButton, Sigil } = useShortsParts()
 </script>
 
 <template>
   <div class="shorts__rail">
     <button class="shorts__action">
-      <component :is="parts.Sigil" name="thumb-up" library="shorts" />
+      <Sigil name="thumb-up" library="shorts" />
       <span>{{ likes }}</span>
     </button>
     <button class="shorts__action">
-      <component :is="parts.Sigil" name="thumb-down" library="shorts" />
+      <Sigil name="thumb-down" library="shorts" />
       <span>Dislike</span>
     </button>
     <button class="shorts__action">
-      <component :is="parts.Sigil" name="comment" library="shorts" />
+      <Sigil name="comment" library="shorts" />
       <span>{{ comments }}</span>
     </button>
     <button class="shorts__action">
-      <component :is="parts.Sigil" name="share" library="shorts" />
+      <Sigil name="share" library="shorts" />
       <span>Share</span>
     </button>
-    <component :is="parts.QualityButton" :player="handle" class="shorts__action" v-slot="{ currentLabel }">
-      <component :is="parts.Sigil" name="quality" library="shorts" />
+    <QualityButton :player="handle" class="shorts__action" v-slot="{ currentLabel }">
+      <Sigil name="quality" library="shorts" />
       <span>{{ currentLabel }}</span>
-    </component>
+    </QualityButton>
   </div>
 </template>
 

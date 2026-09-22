@@ -146,8 +146,7 @@ const { hudVisible, popupVisible } = useOverlayVisibility(player, hud)
   pointer-events: all;
 }
 
-/* ControlsPopup (opened via the reveal/close skip links, or by hovering) already has its own Play/Mute/etc - this row would just double up behind it once that's showing. `<transition>` doesn't add a wrapper element, so `.overlay__popup` is still a real sibling for `:has()` to see. */
-.overlay__hud:has(~ .overlay__popup) {
+.overlay__hud:has(~ .overlay__popup:not(.overlay__popup--fs)) {
   opacity: 0 !important;
   pointer-events: none !important;
 }

@@ -53,26 +53,24 @@ export function createPlayerEvents(state: PlayerState, deps: PlayerEventsDeps): 
   } = state
   const { fire, pauseThisPlayer, positionMemory, quartiles, buffering, fullscreen } = deps
 
-  /** Embed SDKs only know supportsPlaybackRate after their own async ready callback, so it's re-read on every timeupdate. */
   function attachPlayerEvents(player: PlaybackAdapter): void {
     isReady.value = true
     supportsPlaybackRate.value = player.supportsPlaybackRate()
 
-    /** Re-run on 'captionschange' since HLS subtitle renditions only appear once the manifest parses; hasStarted-gated so mount-time detection isn't reported as a "change". */
-    /**
-     * Captions are a viewer preference that outlives one player, like mute: a `<track default>` or a
-     * manifest's default subtitle rendition would otherwise switch them back on for every new video,
-     * undoing the viewer's choice each time they moved on.
-     *
-     * Enforced wherever the active track is observed rather than once at attach: the browser applies
-     * `default` after the tracks themselves register, so a single early pass would run before there
-     * was anything to correct. It cannot fight the viewer, because their own changes go through
-     * setCaptionTrack, which updates the very preference being enforced here.
-     */
+    // Re-run on 'captionschange' since HLS subtitle renditions only appear once the manifest parses
     function enforceCaptionPreference(): void {
       if (!captionTracks.value.length) return
-      const preferred = resolvePreferredCaptionTrack(getCaptionPreference(), captionTracks.value)
-      if (preferred === undefined || preferred === player.captions?.active()) return
+
+      const preference = getCaptionPreference()
+      const active = player.captions?.active() ?? null
+
+      if (preference?.enabled && preference.language && active !== null) {
+        const activeLanguage = captionTracks.value.find((track) => track.index === active)?.language
+        if (activeLanguage === preference.language) return
+      }
+
+      const preferred = resolvePreferredCaptionTrack(preference, captionTracks.value)
+      if (preferred === undefined || preferred === active) return
       player.captions?.select(preferred)
     }
 
@@ -115,7 +113,7 @@ export function createPlayerEvents(state: PlayerState, deps: PlayerEventsDeps): 
     refreshPip()
     player.on('pipchange', refreshPip)
 
-    /** Infinity means live. Skipped while an ad plays: on iOS IMA plays the creative through this same <video>, so its duration/timeupdate would overwrite the content's. */
+    // infinity means live
     const updateDuration = () => {
       if (isAdPlaying.value) return
       const d = player.duration()
@@ -156,7 +154,6 @@ export function createPlayerEvents(state: PlayerState, deps: PlayerEventsDeps): 
     player.on('ended', () => {
       isPlaying.value = false
       quartiles.reset()
-      /** A 'waiting' just before 'ended' would otherwise leave isBuffering stuck true. */
       buffering.reset()
       if (isLooping.value) {
         player.setCurrentTime(0)
@@ -188,7 +185,6 @@ export function createPlayerEvents(state: PlayerState, deps: PlayerEventsDeps): 
       current.value = player.currentTime() ?? 0
       if (!total.value) updateDuration()
       if (!supportsPlaybackRate.value) supportsPlaybackRate.value = player.supportsPlaybackRate()
-      /** No cross-browser event fires when a TextTrack's own mode changes, so re-read - and re-assert the viewer's preference - here too. */
       enforceCaptionPreference()
       const active = player.captions?.active() ?? null
       if (activeCaptionIndex.value !== active) {

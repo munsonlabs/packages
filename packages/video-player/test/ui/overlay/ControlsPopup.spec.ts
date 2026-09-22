@@ -121,6 +121,14 @@ describe('closing by clicking away', () => {
     expect(hud.closeControls).toHaveBeenCalled()
   })
 
+  it('ignores an outside click in fullscreen, where a dismissal could not stick', () => {
+    const { hud } = mountPopup(makePlayer({ isFullscreen: true }))
+
+    document.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+
+    expect(hud.closeControls).not.toHaveBeenCalled()
+  })
+
   it('stays open when the click lands inside it', () => {
     const { wrapper, hud } = mountPopup()
 

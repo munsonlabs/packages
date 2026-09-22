@@ -33,6 +33,7 @@ const compact = useElementCompact(popupEl)
 const hasNonDefaultSettings = computed(() => player.isLooping || player.currentPlaybackRate !== 1 || playlist.autoAdvance)
 
 function closeIfOutside(target: EventTarget | null): boolean {
+  if (player.isFullscreen) return false
   if (!popupEl.value || popupEl.value.contains(target as Node)) return false
   hud.closeControls()
   return true

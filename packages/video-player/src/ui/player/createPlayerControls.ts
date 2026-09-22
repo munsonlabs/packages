@@ -18,7 +18,6 @@ export interface PlayerControls {
   setPlaybackRate: (rate: number) => void
   setCaptionTrack: (index: number | null) => void
   setQuality: (height: number | null) => void
-  /** Internal: applies a quality without recording it as the viewer's own choice. */
   applyQuality: (height: number | null, options?: { remember?: boolean }) => void
   togglePip: () => void
 }
@@ -92,7 +91,6 @@ export function createPlayerControls(
     return play()
   }
 
-  /** Branches on reactive isPlaying, not the adapter's raw paused(): that flips before play()'s promise settles and a double-click would then pause() mid-flight. */
   function togglePlay(): void {
     if (adSetup.isAdPlaying()) {
       if (adSetup.isAdPaused()) adSetup.resumeAd()
@@ -105,13 +103,11 @@ export function createPlayerControls(
     else void player.play().catch(() => {})
   }
 
-  /** Seconds, like every other time in this API - the percentage form it used to take is the scrubber's unit, not a player's. */
   function seek(seconds: number): void {
     const max = total.value || Infinity
     getPlayer()?.setCurrentTime(Math.min(Math.max(seconds, 0), max))
   }
 
-  /** Persisted so the next player starts the same way; an unmute here also lifts the forced-mute rule for later gesture-less autoplay this session. */
   function toggleMute(): void {
     const player = getPlayer()
     if (!player) return
@@ -141,18 +137,27 @@ export function createPlayerControls(
     currentPlaybackRate.value = rate
   }
 
-  /** Only a viewer's own choice reaches here - a track the source switches on by itself goes through createPlayerEvents - so this is the right place to remember one. */
+  /**
+   * The preference is recorded *before* the track is selected, not after. Selecting one makes the
+   * adapter report a mode change straight away, which re-enters the caption refresh while this
+   * function is still running - and that refresh re-asserts the stored preference. Saved afterwards,
+   * the viewer's own click was read as a stray change and immediately undone.
+   */
   function setCaptionTrack(index: number | null): void {
-    getPlayer()?.captions?.select(index)
-    activeCaptionIndex.value = index
-
     const track = index === null ? null : captionTracks.value.find((t) => t.index === index)
     saveCaptionPreference(track ? { enabled: true, language: track.language } : { enabled: false })
+
+    getPlayer()?.captions?.select(index)
+    activeCaptionIndex.value = index
 
     if (hasStarted.value) fire('captionchange', { captionIndex: index })
   }
 
-  /** Heights are the public unit for quality - they are stable, meaningful (the 720 in 720p) and, since the ladder keeps one variant per height, unique. The engine's own index stays inside the adapter. */
+  /**
+   * Heights are the public unit for quality - they are stable, meaningful (the 720 in 720p) and,
+   * since the ladder keeps one variant per height, unique. The engine's own index stays inside
+   * the adapter.
+   */
   function setQuality(height: number | null): void {
     applyQuality(height, { remember: true })
   }

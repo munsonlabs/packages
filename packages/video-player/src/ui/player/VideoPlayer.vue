@@ -148,7 +148,7 @@ defineExpose(exposePlayerSurface(player))
             </video>
 
             <div
-              v-if="!props.disableTapCapture && !player.isNativeUi && player.hasStarted && !player.isAdPlaying"
+              v-if="!props.disableTapCapture && !player.isNativeUi && player.hasStarted && !player.isAdPlaying && !hud.isOpen"
               class="overlay__tap-capture"
               @click="onTapCapture"
               @touchend.prevent.stop="onTapCapture"

@@ -21,6 +21,16 @@ export interface UseHudReturn {
   suppressMouseLeave: (ms?: number) => void
 }
 
+function holdsKeyboardFocus(): boolean {
+  const focused = document.activeElement
+  if (!focused?.closest('.overlay__hud, .overlay__popup')) return false
+  try {
+    return focused.matches(':focus-visible')
+  } catch {
+    return true
+  }
+}
+
 export function useHud(isPlaying: Ref<boolean>, isFullscreen: Ref<boolean>): UseHudReturn {
   const showHUD = ref(true)
   const isOpen = ref(false)
@@ -34,8 +44,7 @@ export function useHud(isPlaying: Ref<boolean>, isFullscreen: Ref<boolean>): Use
   function scheduleHide(delay = HUD_HIDE_DELAY_MS): void {
     clearTimeout(timer ?? undefined)
     timer = setTimeout(() => {
-      /** A control could have keyboard focus right now - hiding (and going `inert`) out from under it would yank focus away mid-navigation, so just push the deadline back instead of checking in on every keystroke. */
-      if (document.activeElement?.closest('.overlay__hud, .overlay__popup')) {
+      if (holdsKeyboardFocus()) {
         scheduleHide(delay)
         return
       }

@@ -194,7 +194,9 @@ defineExpose({ playNext, playPrevious, hasNext, hasPrevious, ...forwarded })
     >
       <PinnedControls v-if="isPinned" @scroll-to="scrollToBox" @dismiss="dismiss" />
 
-      <VideoPlayer v-if="current && playerMounted" ref="playerRef" :key="current.src" v-bind="playerProps" @state-change="onStateChange" />
+      <VideoPlayer v-if="current && playerMounted" ref="playerRef" :key="current.src" v-bind="playerProps" @state-change="onStateChange">
+        <slot />
+      </VideoPlayer>
 
       <div v-else class="stage__idle" :style="{ aspectRatio: idleAspect }" @click="onIdleClick">
         <img v-if="current?.poster" :src="current.poster" class="stage__idle-poster" />

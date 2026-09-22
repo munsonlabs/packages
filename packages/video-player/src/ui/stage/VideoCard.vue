@@ -62,6 +62,8 @@ defineExpose(forwarded)
       :autoplay="activated || props.autoplay"
       :muted="resolveGestureMuted(props.muted, userActivated)"
       @state-change="emit('state-change', $event)"
-    />
+    >
+      <slot />
+    </VideoPlayer>
   </template>
 </template>

@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vite-plus/test'
 import { ref } from 'vue'
+import type { Ref } from 'vue'
 import { useScrubber } from '@/ui/controls/useScrubber'
+import { withSetup } from '../../withSetup'
 import type { PlayerHandle } from '@/types/player'
 
 function makePlayer(overrides: Partial<PlayerHandle> = {}) {
@@ -16,6 +18,11 @@ function makePlayer(overrides: Partial<PlayerHandle> = {}) {
   } as unknown as PlayerHandle
 }
 
+function scrubber(player: Ref<PlayerHandle>) {
+  const { result, wrapper } = withSetup(() => useScrubber(player))
+  return { ...result, wrapper }
+}
+
 function rangeEvent(value: number): Event {
   const input = document.createElement('input')
   input.type = 'range'
@@ -29,7 +36,7 @@ afterEach(() => vi.useRealTimers())
 describe('useScrubber', () => {
   it('pauses on drag and seeks on change', () => {
     const player = ref(makePlayer())
-    const { onInput, onChange } = useScrubber(player)
+    const { onInput, onChange } = scrubber(player)
 
     onInput(rangeEvent(40))
     expect(player.value.pause).toHaveBeenCalled()
@@ -41,7 +48,7 @@ describe('useScrubber', () => {
 
   it('still commits a tap after an earlier drag', () => {
     const player = ref(makePlayer())
-    const { onInput, onChange, onTouchStart, onTouchEnd } = useScrubber(player)
+    const { onInput, onChange, onTouchStart, onTouchEnd } = scrubber(player)
 
     onTouchStart()
     onInput(rangeEvent(30))
@@ -57,7 +64,7 @@ describe('useScrubber', () => {
 
   it('does not seek twice when change already committed the gesture', () => {
     const player = ref(makePlayer())
-    const { onInput, onChange, onTouchStart, onTouchEnd } = useScrubber(player)
+    const { onInput, onChange, onTouchStart, onTouchEnd } = scrubber(player)
 
     onTouchStart()
     onInput(rangeEvent(20))
@@ -69,7 +76,7 @@ describe('useScrubber', () => {
 
   it('commits a pending drag on touchend when change never fires', () => {
     const player = ref(makePlayer())
-    const { onInput, onTouchStart, onTouchEnd, scrubbing } = useScrubber(player)
+    const { onInput, onTouchStart, onTouchEnd, scrubbing } = scrubber(player)
 
     onTouchStart()
     onInput(rangeEvent(55))
@@ -83,7 +90,7 @@ describe('useScrubber', () => {
 
   it('restores playback when the gesture is cancelled', () => {
     const player = ref(makePlayer())
-    const { onInput, onPointerCancel, scrubbing } = useScrubber(player)
+    const { onInput, onPointerCancel, scrubbing } = scrubber(player)
 
     onInput(rangeEvent(80))
     onPointerCancel()
@@ -93,9 +100,24 @@ describe('useScrubber', () => {
     expect(scrubbing.value).toBe(false)
   })
 
+  it('drops a pending catch-up timer when the component goes away', () => {
+    const player = ref(makePlayer())
+    const { onInput, onChange, scrubbing, wrapper } = scrubber(player)
+
+    onInput(rangeEvent(45))
+    onChange(rangeEvent(45))
+    expect(scrubbing.value).toBe(true)
+
+    wrapper.unmount()
+
+    expect(scrubbing.value).toBe(false)
+    vi.advanceTimersByTime(10_000)
+    expect(player.value.seek).toHaveBeenCalledTimes(1)
+  })
+
   it('leaves a paused player paused after a seek', () => {
     const player = ref(makePlayer({ isPlaying: false }))
-    const { onInput, onChange } = useScrubber(player)
+    const { onInput, onChange } = scrubber(player)
 
     onInput(rangeEvent(10))
     onChange(rangeEvent(10))

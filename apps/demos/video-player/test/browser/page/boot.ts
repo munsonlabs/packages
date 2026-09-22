@@ -1,3 +1,6 @@
+import { page } from 'vite-plus/test/browser'
+import type { Locator } from 'vite-plus/test/browser'
+
 export async function bootApp(): Promise<void> {
   document.body.innerHTML = '<div id="app"></div>'
   await import('../../../src/main.ts')
@@ -17,7 +20,6 @@ export async function waitFor(predicate: () => boolean, message: string, timeout
   }
 }
 
-export function playButtonIndex(within: Element): number {
-  const all = [...document.querySelectorAll('button[aria-label="Play"]')]
-  return all.indexOf(within.querySelector('button[aria-label="Play"]')!)
+export function playButton(within: Element): Locator {
+  return page.elementLocator(within).getByRole('button', { name: /^Play\b/ })
 }

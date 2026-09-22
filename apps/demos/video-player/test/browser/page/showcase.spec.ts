@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vite-plus/test'
 import { page } from 'vite-plus/test/browser'
-import { bootApp, isPlaying, playButtonIndex, waitFor } from './boot'
+import { bootApp, isPlaying, playButton, waitFor } from './boot'
 
 beforeAll(bootApp)
 
@@ -13,7 +13,7 @@ describe('showcase (stage on)', () => {
   it('a card plays through the VideoStage, which pins when scrolled away, and the event log sees it', async () => {
     const card = document.querySelector<HTMLElement>('[data-variation="Plain clip"]')!
     card.scrollIntoView()
-    await page.getByRole('button', { name: 'Play' }).nth(playButtonIndex(card)).click()
+    await playButton(card).click()
 
     expect(card.querySelector('video.mlv-video')).toBeNull()
     await waitFor(() => isPlaying(document.querySelector('.stage video.mlv-video')), 'the stage video to start playing')

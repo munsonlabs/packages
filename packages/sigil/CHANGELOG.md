@@ -1,5 +1,11 @@
 # @munsonlabs/sigil
 
+## 0.0.2
+
+### Patch Changes
+
+- fcc4728: Added `keepLibrary()`, which re-registers a library whenever it goes missing so `unregister(name)` means "restore the default" rather than "gone for good". `override(name, icon, { library })` now also scopes a pin to one library, so it can't collide with another library's icon of the same name.
+
 ## 0.0.1
 
 ### Patch Changes

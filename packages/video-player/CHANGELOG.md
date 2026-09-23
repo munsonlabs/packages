@@ -1,5 +1,11 @@
 # @munsonlabs/video-player
 
+## 0.2.8
+
+### Patch Changes
+
+- f1d3692: Resuming a paused ad no longer stops it again, and a tap on the scrubber resumes playback on iOS.
+
 ## 0.2.7
 
 ### Patch Changes

@@ -71,7 +71,7 @@ export function usePlayer(
   const buffering = useBuffering(fire)
   const positionMemory = usePositionMemory(props.src, getPlayer, hasEnded)
   const quartiles = createQuartileEvents(current, total, fire)
-  const adSetup = createAdSetup(state, { fire, pauseThisPlayer: () => controls.pause() })
+  const adSetup = createAdSetup(state, { fire, getPauseHandler: () => controls.pause })
   const controls = createPlayerControls(state, getPlayer, adSetup, fire)
   const { attachPlayerEvents } = createPlayerEvents(state, {
     fire,

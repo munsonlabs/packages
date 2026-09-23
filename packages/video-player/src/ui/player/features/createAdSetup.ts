@@ -10,7 +10,8 @@ export type AdSetupRefs = Pick<PlayerState, 'isAdPlaying' | 'isAdPaused' | 'isAd
 
 export interface AdSetupDeps {
   fire: (type: StateChangeType, extras?: Partial<StateChangeEvent>) => void
-  pauseThisPlayer: () => void
+  /** Resolved on each call: the handler this player registered, which pauseOthers compares by identity. */
+  getPauseHandler: () => () => void
 }
 
 export interface AdSetup {
@@ -25,7 +26,7 @@ export interface AdSetup {
 
 export function createAdSetup(refs: AdSetupRefs, deps: AdSetupDeps): AdSetup {
   const { isAdPlaying, isAdPaused, isAdMuted, adRemainingTime } = refs
-  const { fire, pauseThisPlayer } = deps
+  const { fire, getPauseHandler } = deps
 
   let adController: AdController | null = null
   let removeVisibilityListener: (() => void) | null = null
@@ -101,7 +102,7 @@ export function createAdSetup(refs: AdSetupRefs, deps: AdSetupDeps): AdSetup {
       /** Resuming an ad doesn't go through the content video's own 'play' event, so pauseOthers needs its own call here too. */
       onAdPauseChange: (paused) => {
         isAdPaused.value = paused
-        if (!paused) pauseOthers(pauseThisPlayer)
+        if (!paused) pauseOthers(getPauseHandler())
       },
       onAdMuteChange: (muted) => {
         isAdMuted.value = muted

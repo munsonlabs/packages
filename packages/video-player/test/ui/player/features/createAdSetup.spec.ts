@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vite-plus/test'
 import { ref } from 'vue'
 import { createAdSetup } from '@/ui/player/features/createAdSetup'
+import { registerPauseHandler } from '@/registries/playerRegistry'
 import type { AdCallbacks, AdController } from '@/adapters/ads/ads'
 import type { PlaybackAdapter } from '@/types/playback'
 
@@ -51,11 +52,43 @@ beforeEach(() => {
   vi.clearAllMocks()
 })
 
+describe('resuming an ad', () => {
+  it('does not pause the very player the ad is running in', async () => {
+    const refs = { isAdPlaying: ref(false), isAdPaused: ref(false), isAdMuted: ref(false), adRemainingTime: ref(0) }
+    const pauseSelf = vi.fn()
+    const unregister = registerPauseHandler(pauseSelf)
+    const { attach } = createAdSetup(refs, { fire: vi.fn(), getPauseHandler: () => pauseSelf })
+
+    await attach(makeVideoEl(), makeAdapter(), 'https://ad.example/vast.xml')
+    capturedCallbacks?.onAdPauseChange(false)
+
+    expect(refs.isAdPaused.value).toBe(false)
+    expect(pauseSelf).not.toHaveBeenCalled()
+    unregister()
+  })
+
+  it('still pauses every other player on the page', async () => {
+    const refs = { isAdPlaying: ref(false), isAdPaused: ref(false), isAdMuted: ref(false), adRemainingTime: ref(0) }
+    const pauseSelf = vi.fn()
+    const pauseOther = vi.fn()
+    const unregisterSelf = registerPauseHandler(pauseSelf)
+    const unregisterOther = registerPauseHandler(pauseOther)
+    const { attach } = createAdSetup(refs, { fire: vi.fn(), getPauseHandler: () => pauseSelf })
+
+    await attach(makeVideoEl(), makeAdapter(), 'https://ad.example/vast.xml')
+    capturedCallbacks?.onAdPauseChange(false)
+
+    expect(pauseOther).toHaveBeenCalledOnce()
+    unregisterSelf()
+    unregisterOther()
+  })
+})
+
 describe('attach', () => {
   it('is a no-op when there is no ad tag URL and no header bidding', async () => {
     const { attachAds } = await import('@/adapters/ads/ads')
     const refs = { isAdPlaying: ref(false), isAdPaused: ref(false), isAdMuted: ref(false), adRemainingTime: ref(0) }
-    const { attach } = createAdSetup(refs, { fire: vi.fn(), pauseThisPlayer: vi.fn() })
+    const { attach } = createAdSetup(refs, { fire: vi.fn(), getPauseHandler: () => vi.fn() })
 
     await attach(makeVideoEl(), makeAdapter(), '')
 
@@ -65,7 +98,7 @@ describe('attach', () => {
   it('is a no-op when the video element has no parent yet', async () => {
     const { attachAds } = await import('@/adapters/ads/ads')
     const refs = { isAdPlaying: ref(false), isAdPaused: ref(false), isAdMuted: ref(false), adRemainingTime: ref(0) }
-    const { attach } = createAdSetup(refs, { fire: vi.fn(), pauseThisPlayer: vi.fn() })
+    const { attach } = createAdSetup(refs, { fire: vi.fn(), getPauseHandler: () => vi.fn() })
 
     await attach(document.createElement('video'), makeAdapter(), 'https://ad.example/vast.xml')
 
@@ -75,7 +108,7 @@ describe('attach', () => {
   it('attaches ads when given an ad tag URL and a parented video element', async () => {
     const { attachAds } = await import('@/adapters/ads/ads')
     const refs = { isAdPlaying: ref(false), isAdPaused: ref(false), isAdMuted: ref(false), adRemainingTime: ref(0) }
-    const { attach } = createAdSetup(refs, { fire: vi.fn(), pauseThisPlayer: vi.fn() })
+    const { attach } = createAdSetup(refs, { fire: vi.fn(), getPauseHandler: () => vi.fn() })
 
     await attach(makeVideoEl(), makeAdapter(), 'https://ad.example/vast.xml')
 
@@ -84,7 +117,7 @@ describe('attach', () => {
 
   it('resolves header bidding and forwards the winning ad tag URL to the controller', async () => {
     const refs = { isAdPlaying: ref(false), isAdPaused: ref(false), isAdMuted: ref(false), adRemainingTime: ref(0) }
-    const { attach } = createAdSetup(refs, { fire: vi.fn(), pauseThisPlayer: vi.fn() })
+    const { attach } = createAdSetup(refs, { fire: vi.fn(), getPauseHandler: () => vi.fn() })
 
     await attach(makeVideoEl(), makeAdapter(), 'https://fallback.example/vast.xml', { adUnit: {} } as never)
     /** Flushes the header-bidding chain (its own dynamic import of prebid.ts + two .then()s), running concurrently with attach()'s own await above. */
@@ -95,7 +128,7 @@ describe('attach', () => {
 
   it('still requests ads on first play even if play fires before ads.ts has finished loading', async () => {
     const refs = { isAdPlaying: ref(false), isAdPaused: ref(false), isAdMuted: ref(false), adRemainingTime: ref(0) }
-    const { attach } = createAdSetup(refs, { fire: vi.fn(), pauseThisPlayer: vi.fn() })
+    const { attach } = createAdSetup(refs, { fire: vi.fn(), getPauseHandler: () => vi.fn() })
     const adapter = makeAdapter()
 
     /**
@@ -116,7 +149,7 @@ describe('ad callbacks', () => {
   async function setup() {
     const refs = { isAdPlaying: ref(false), isAdPaused: ref(false), isAdMuted: ref(false), adRemainingTime: ref(0) }
     const fire = vi.fn()
-    const { attach } = createAdSetup(refs, { fire, pauseThisPlayer: vi.fn() })
+    const { attach } = createAdSetup(refs, { fire, getPauseHandler: () => vi.fn() })
     await attach(makeVideoEl(), makeAdapter(), 'https://ad.example/vast.xml')
     return { refs, fire }
   }
@@ -180,7 +213,7 @@ describe('ad callbacks', () => {
 describe('proxied controller methods', () => {
   it('reflects false before any ad has attached', () => {
     const refs = { isAdPlaying: ref(false), isAdPaused: ref(false), isAdMuted: ref(false), adRemainingTime: ref(0) }
-    const { isAdPlaying, isAdPaused } = createAdSetup(refs, { fire: vi.fn(), pauseThisPlayer: vi.fn() })
+    const { isAdPlaying, isAdPaused } = createAdSetup(refs, { fire: vi.fn(), getPauseHandler: () => vi.fn() })
 
     expect(isAdPlaying()).toBe(false)
     expect(isAdPaused()).toBe(false)
@@ -188,7 +221,7 @@ describe('proxied controller methods', () => {
 
   it('forwards pauseAd/resumeAd/toggleAdMute to the underlying controller once attached', async () => {
     const refs = { isAdPlaying: ref(false), isAdPaused: ref(false), isAdMuted: ref(false), adRemainingTime: ref(0) }
-    const { attach, pauseAd, resumeAd, toggleAdMute } = createAdSetup(refs, { fire: vi.fn(), pauseThisPlayer: vi.fn() })
+    const { attach, pauseAd, resumeAd, toggleAdMute } = createAdSetup(refs, { fire: vi.fn(), getPauseHandler: () => vi.fn() })
     await attach(makeVideoEl(), makeAdapter(), 'https://ad.example/vast.xml')
 
     pauseAd()
@@ -202,7 +235,7 @@ describe('proxied controller methods', () => {
 
   it('disposes the controller and stops proxying to it', async () => {
     const refs = { isAdPlaying: ref(false), isAdPaused: ref(false), isAdMuted: ref(false), adRemainingTime: ref(0) }
-    const { attach, dispose, isAdPlaying } = createAdSetup(refs, { fire: vi.fn(), pauseThisPlayer: vi.fn() })
+    const { attach, dispose, isAdPlaying } = createAdSetup(refs, { fire: vi.fn(), getPauseHandler: () => vi.fn() })
     await attach(makeVideoEl(), makeAdapter(), 'https://ad.example/vast.xml')
 
     dispose()
@@ -213,7 +246,7 @@ describe('proxied controller methods', () => {
 
   it('never constructs a controller if disposed while ads.ts is still loading', async () => {
     const refs = { isAdPlaying: ref(false), isAdPaused: ref(false), isAdMuted: ref(false), adRemainingTime: ref(0) }
-    const { attach, dispose } = createAdSetup(refs, { fire: vi.fn(), pauseThisPlayer: vi.fn() })
+    const { attach, dispose } = createAdSetup(refs, { fire: vi.fn(), getPauseHandler: () => vi.fn() })
     const { attachAds } = await import('@/adapters/ads/ads')
 
     const attachPromise = attach(makeVideoEl(), makeAdapter(), 'https://ad.example/vast.xml')
@@ -246,7 +279,7 @@ describe('header bidding and the first ad request', () => {
       }),
     )
     const refs = { isAdPlaying: ref(false), isAdPaused: ref(false), isAdMuted: ref(false), adRemainingTime: ref(0) }
-    const { attach } = createAdSetup(refs, { fire: vi.fn(), pauseThisPlayer: vi.fn() })
+    const { attach } = createAdSetup(refs, { fire: vi.fn(), getPauseHandler: () => vi.fn() })
     const { adapter, play } = makeListenableAdapter()
 
     await attach(makeVideoEl(), adapter, 'https://fallback.example/vast.xml', {
@@ -268,7 +301,7 @@ describe('header bidding and the first ad request', () => {
 
   it('requests straight away when there is no auction to wait for', async () => {
     const refs = { isAdPlaying: ref(false), isAdPaused: ref(false), isAdMuted: ref(false), adRemainingTime: ref(0) }
-    const { attach } = createAdSetup(refs, { fire: vi.fn(), pauseThisPlayer: vi.fn() })
+    const { attach } = createAdSetup(refs, { fire: vi.fn(), getPauseHandler: () => vi.fn() })
     const { adapter, play } = makeListenableAdapter()
 
     await attach(makeVideoEl(), adapter, 'https://ad.example/vast.xml')

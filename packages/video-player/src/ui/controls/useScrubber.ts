@@ -59,8 +59,9 @@ export function useScrubber(player: Ref<PlayerHandle | null | undefined>): UseSc
   }
 
   function commitSeek(percent: number): void {
-    dragging.value = false
     const p = player.value
+    if (p && !dragging.value) beginDrag(p)
+    dragging.value = false
     if (!p) return
     previewPercent.value = percent
     p.seek((percent * (p.duration || 0)) / 100)

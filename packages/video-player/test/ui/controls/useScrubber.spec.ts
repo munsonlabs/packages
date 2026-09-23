@@ -88,6 +88,29 @@ describe('useScrubber', () => {
     expect(scrubbing.value).toBe(false)
   })
 
+  it('resumes a playing video after a tap that never fired input', () => {
+    const player = ref(makePlayer())
+    const { onTouchStart, onTouchEnd } = scrubber(player)
+
+    onTouchStart()
+    onTouchEnd(rangeEvent(65) as unknown as TouchEvent)
+
+    expect(player.value.pause).toHaveBeenCalled()
+    expect(player.value.seek).toHaveBeenCalledWith(65)
+    expect(player.value.play).toHaveBeenCalled()
+  })
+
+  it('leaves a paused video paused after a tap that never fired input', () => {
+    const player = ref(makePlayer({ isPlaying: false }))
+    const { onTouchStart, onTouchEnd } = scrubber(player)
+
+    onTouchStart()
+    onTouchEnd(rangeEvent(65) as unknown as TouchEvent)
+
+    expect(player.value.seek).toHaveBeenCalledWith(65)
+    expect(player.value.play).not.toHaveBeenCalled()
+  })
+
   it('restores playback when the gesture is cancelled', () => {
     const player = ref(makePlayer())
     const { onInput, onPointerCancel, scrubbing } = scrubber(player)

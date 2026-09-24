@@ -1,5 +1,13 @@
 # @munsonlabs/video-player
 
+## 0.2.10
+
+### Patch Changes
+
+- aa7a31e: Custom elements, CSS classes and custom properties now read vendor, package, then part, so `<ml-controls-play-button>` is `<ml-video-play-button>` and `--mlv-accent` is `--ml-video-accent`.
+- Updated dependencies [aa7a31e]
+  - @munsonlabs/sigil@0.0.3
+
 ## 0.2.9
 
 ### Patch Changes

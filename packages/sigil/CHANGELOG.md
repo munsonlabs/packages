@@ -1,5 +1,11 @@
 # @munsonlabs/sigil
 
+## 0.0.3
+
+### Patch Changes
+
+- aa7a31e: The custom element is now `<ml-sigil-icon>`, so it no longer shares a prefix with other `@munsonlabs` packages.
+
 ## 0.0.2
 
 ### Patch Changes

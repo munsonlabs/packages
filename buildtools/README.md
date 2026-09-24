@@ -54,6 +54,24 @@ To publish packages to the local registry:
 ./buildtools/dev.sh publish
 ```
 
+From the host, `npm run publish:local` does the same thing without the containers, given a
+`VERDACCIO_URL`:
+
+```bash
+docker compose up -d verdaccio    # http://localhost:4873
+VERDACCIO_URL=http://localhost:4873 npm run publish:local
+```
+
+Either route runs `shipkit deploy --local --scope @munsonlabs/`, which publishes every non-private
+`@munsonlabs/*` package under a `-local.<timestamp>` version, leaving changesets and git untouched.
+
+To install one in another project, either point npm at the registry for the whole project with the
+`.npmrc` above, or name it per install:
+
+```bash
+npm install @munsonlabs/video-player --registry=http://localhost:4873
+```
+
 ## Services
 
 ### Traefik

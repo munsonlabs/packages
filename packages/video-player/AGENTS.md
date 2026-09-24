@@ -189,7 +189,7 @@ vp test --project browser --browser.name=webkit test/browser/playback/auto-advan
 vp test                                                                                                                  # everything, before committing
 ```
 
-From the repo root the same run is `vp run @munsonlabs/video-player#test -- --project browser --browser.name=chromium`; `--watch` and file filters only behave well from the package directory. Browsers install once with `npx playwright install chromium webkit`.
+From the repo root the same run is `vp run @munsonlabs/video-player#test -- --project browser --browser.name=chromium`; `--watch` and file filters only behave well from the package directory. Browsers install once with `vp exec playwright install chromium webkit`.
 
 ## Build
 

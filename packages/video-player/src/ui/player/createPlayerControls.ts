@@ -51,7 +51,7 @@ export function createPlayerControls(
     }
     const player = getPlayer()
     if (!player) return Promise.reject(new Error('Player is not mounted'))
-    if (isPlaying.value) return Promise.resolve()
+    if (!player.paused()) return Promise.resolve()
     return new Promise((resolve, reject) => {
       const settle = () => {
         player.off('playing', onPlaying)

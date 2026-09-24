@@ -25,6 +25,26 @@ function setup(adapter: PlaybackAdapter | null, isPlaying = ref(false), isReady 
   return { controls, isPlaying, state }
 }
 
+describe('play after an immediately preceding pause', () => {
+  it('plays even though isPlaying has not caught up yet', async () => {
+    const adapter = makeAdapter({ paused: () => true, on: vi.fn(), off: vi.fn() })
+    const { controls } = setup(adapter, ref(true))
+
+    void controls.play()
+
+    expect(adapter.play).toHaveBeenCalledOnce()
+  })
+
+  it('still skips a redundant play while the element really is playing', async () => {
+    const adapter = makeAdapter({ paused: () => false })
+    const { controls } = setup(adapter, ref(true))
+
+    await controls.play()
+
+    expect(adapter.play).not.toHaveBeenCalled()
+  })
+})
+
 describe('togglePlay', () => {
   it('calls play() when isPlaying is false', () => {
     const adapter = makeAdapter()

@@ -4,15 +4,21 @@ import type { PlaybackAdapter } from '@/types/playback'
 
 export let emitter = createEmitter()
 
+let fakePaused = true
+
 export function resetEmitter(): void {
   emitter = createEmitter()
+  fakePaused = true
+  emitter.on('play', () => (fakePaused = false))
+  emitter.on('playing', () => (fakePaused = false))
+  emitter.on('pause', () => (fakePaused = true))
 }
 
 export const fakeAdapter = {
   el: document.createElement('video'),
   play: vi.fn(() => Promise.resolve()),
   pause: vi.fn(),
-  paused: () => true,
+  paused: () => fakePaused,
   currentTime: () => 0,
   setCurrentTime: vi.fn(),
   duration: () => 100,

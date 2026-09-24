@@ -11,8 +11,8 @@ const player = useResolvedPlayer(props)
   <button
     v-if="player?.supportsPip"
     type="button"
-    class="mlv-control-btn mlv-control-btn--toggle mlv-pip-button"
-    :class="{ 'mlv-control-btn--active mlv-pip-button--active': player?.isPipActive }"
+    class="ml-video-control-btn ml-video-control-btn--toggle ml-video-pip-button"
+    :class="{ 'ml-video-control-btn--active ml-video-pip-button--active': player?.isPipActive }"
     :aria-pressed="player?.isPipActive ?? false"
     aria-label="Toggle Picture-in-Picture"
     @click="player?.togglePip()"

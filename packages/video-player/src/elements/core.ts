@@ -18,7 +18,7 @@ const TAGS: Array<[string, CustomElementConstructor]> = [
   ['ml-video-stage', VideoStageElement],
   ['ml-video-placeholder', VideoPlaceholderElement],
   ['ml-video-card', VideoCardElement],
-  ['ml-hide-marker', HideMarkerElement],
+  ['ml-video-hide-marker', HideMarkerElement],
 ]
 
 export function defineElements(): void {

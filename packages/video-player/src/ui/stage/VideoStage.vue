@@ -218,7 +218,7 @@ defineExpose({ playNext, playPrevious, hasNext, hasPrevious, ...forwarded })
 <style scoped>
 .stage-wrapper {
   width: 100%;
-  max-width: var(--mlv-max-width, 800px);
+  max-width: var(--ml-video-max-width, 800px);
   margin: 0 auto;
 }
 
@@ -259,7 +259,7 @@ defineExpose({ playNext, playPrevious, hasNext, hasPrevious, ...forwarded })
 .stage__idle {
   position: relative;
   width: 100%;
-  border-radius: var(--mlv-radius, 12px);
+  border-radius: var(--ml-video-radius, 12px);
   overflow: hidden;
   background: #111;
   cursor: pointer;

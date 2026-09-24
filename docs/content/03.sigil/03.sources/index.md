@@ -21,9 +21,9 @@ override('logo', null) // remove
 ```
 
 ```html
-<ml-sigil name="logo"></ml-sigil>
+<ml-sigil-icon name="logo"></ml-sigil-icon>
 <!-- the factory, asked for its active variant -->
-<ml-sigil name="star" variant="active"></ml-sigil>
+<ml-sigil-icon name="star" variant="active"></ml-sigil-icon>
 ```
 
 ::icon-example{names="logo,heart,check"}
@@ -45,9 +45,9 @@ use('lucide') // set as the default library
 ```
 
 ```html
-<ml-sigil name="rocket"></ml-sigil>
+<ml-sigil-icon name="rocket"></ml-sigil-icon>
 <!-- or, without use(), name the library per element -->
-<ml-sigil name="rocket" library="lucide"></ml-sigil>
+<ml-sigil-icon name="rocket" library="lucide"></ml-sigil-icon>
 ```
 
 ::icon-example{names="rocket,camera,bell,bike" library="lucide"}
@@ -75,9 +75,9 @@ use('app')
 ```
 
 ```html
-<ml-sigil name="heart"></ml-sigil>
+<ml-sigil-icon name="heart"></ml-sigil-icon>
 <!-- a variant from the nested map -->
-<ml-sigil name="bell" variant="active"></ml-sigil>
+<ml-sigil-icon name="bell" variant="active"></ml-sigil-icon>
 ```
 
 ::icon-example{names="heart@app,lock@app,bell@app" toggle}
@@ -107,7 +107,7 @@ use('json')
 ```
 
 ```html
-<ml-sigil name="anchor"></ml-sigil> <ml-sigil name="bell" variant="active"></ml-sigil>
+<ml-sigil-icon name="anchor"></ml-sigil-icon> <ml-sigil-icon name="bell" variant="active"></ml-sigil-icon>
 ```
 
 ::icon-example{names="anchor@json,bell@json,bookmark@json" toggle}
@@ -134,7 +134,7 @@ use('fa')
 ```
 
 ```html
-<ml-sigil name="heart"></ml-sigil>
+<ml-sigil-icon name="heart"></ml-sigil-icon>
 <!-- <i class="fa fa-heart" aria-hidden="true"></i> -->
 ```
 
@@ -165,9 +165,9 @@ use('emoji')
 ```
 
 ```html
-<ml-sigil name="heart"></ml-sigil>
-<ml-sigil name="star"></ml-sigil>
-<ml-sigil name="check"></ml-sigil>
+<ml-sigil-icon name="heart"></ml-sigil-icon>
+<ml-sigil-icon name="star"></ml-sigil-icon>
+<ml-sigil-icon name="check"></ml-sigil-icon>
 ```
 
 ::icon-example{names="heart,star,check" library="emoji"}

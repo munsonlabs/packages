@@ -35,7 +35,7 @@ const transcriptSlot = ref<HTMLElement | null>(null)
 onMounted(() => {
   exposePlayerOnElement(wrapperEl.value!, playerRef.value)
 
-  const transcript = document.createElement('ml-controls-transcript')
+  const transcript = document.createElement('ml-video-transcript')
   transcript.setAttribute('for', 'exposed-player')
   ;(transcript as unknown as { cues: unknown }).cues = cues.value
   transcriptSlot.value?.appendChild(transcript)
@@ -51,7 +51,7 @@ function onStateChange(e: StateChangeEvent): void {
     <h2 class="panel__heading"><span class="panel__heading-dot" />Exposing a Vue Player to a Third-Party Control</h2>
     <p class="panel__description">
       The player below is a plain Vue <code>&lt;VideoPlayer&gt;</code> - not a custom element. The transcript next to it is a genuine
-      <code>&lt;ml-controls-transcript&gt;</code> web component, created with plain DOM APIs (standing in for a real third party's own independent
+      <code>&lt;ml-video-transcript&gt;</code> web component, created with plain DOM APIs (standing in for a real third party's own independent
       script) and pointed at the player purely via <code>for="exposed-player"</code> - it has no Vue-specific wiring at all, and would work
       identically dropped into a page with no Vue on it whatsoever. That only works because of one call to <code>exposePlayerOnElement()</code> in
       this panel's <code>onMounted</code>, which copies the Vue player's exposed state/methods onto the wrapper <code>div</code> below - without it,

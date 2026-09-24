@@ -25,7 +25,7 @@ icon: i-lucide:shapes
 to: /sigil/getting-started/introduction
 ---
 
-Framework-free icon registry with a `<ml-sigil>` element - describe an SVG library or icon font, render by name, swap at runtime.
+Framework-free icon registry with a `<ml-sigil-icon>` element - describe an SVG library or icon font, render by name, swap at runtime.
 ::
 
 ::card

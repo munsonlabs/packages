@@ -1,7 +1,7 @@
 import { defineElements } from './SigilElement'
 
 /**
- * Defines `<ml-sigil>` on import. Import with `?defer` on the specifier to skip that and call
+ * Defines `<ml-sigil-icon>` on import. Import with `?defer` on the specifier to skip that and call
  * `defineElements()` yourself instead.
  */
 const deferred = typeof import.meta.url === 'string' && new URL(import.meta.url).searchParams.has('defer')

@@ -9,11 +9,11 @@ defineProps<{ name: string }>()
 </script>
 
 <template>
-  <Sigil :name="name" library="mlv" class="mlv-icon" />
+  <Sigil :name="name" library="mlv" class="ml-video-icon" />
 </template>
 
 <style scoped>
-.mlv-icon {
+.ml-video-icon {
   display: contents;
 }
 </style>

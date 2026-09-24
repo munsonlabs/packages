@@ -36,7 +36,7 @@ function onClick(): void {
 </script>
 
 <template>
-  <button type="button" class="mlv-control-btn mlv-play-button" :aria-label="label" @click="onClick">
+  <button type="button" class="ml-video-control-btn ml-video-play-button" :aria-label="label" @click="onClick">
     <slot :is-playing="player?.isPlaying ?? false" :has-ended="player?.hasEnded ?? false" :is-error="player?.isError ?? false">
       <Icon name="replay" v-if="status === 'error' || status === 'ended'" />
       <Icon name="pause" v-else-if="status === 'playing'" />

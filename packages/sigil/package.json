@@ -1,7 +1,7 @@
 {
   "name": "@munsonlabs/sigil",
   "version": "0.0.2",
-  "description": "Framework-free icon registry with a <ml-sigil> custom element. Register SVG libraries or icon fonts by describing them; the registry loads what it needs.",
+  "description": "Framework-free icon registry with a <ml-sigil-icon> custom element. Register SVG libraries or icon fonts by describing them; the registry loads what it needs.",
   "license": "MIT",
   "files": [
     "dist"

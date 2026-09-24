@@ -69,7 +69,7 @@ export async function mountPlayer(
   })
 
   const screen = await render(Host, { props: { entry, extra: props } })
-  const video = screen.container.querySelector<HTMLVideoElement>('video.mlv-video')
+  const video = screen.container.querySelector<HTMLVideoElement>('video.ml-video-media')
   if (!video || !captured.player) throw new Error('VideoPlayer did not mount a <video> / expose its handle')
   if (awaitMetadata) await waitFor(() => captured.player!.isLoaded, 'the player to report loaded')
 
@@ -99,7 +99,7 @@ export async function mountCard(entry: VideoEntry): Promise<MountedCard> {
   return {
     screen,
     sink,
-    video: () => screen.container.querySelector<HTMLVideoElement>('video.mlv-video'),
+    video: () => screen.container.querySelector<HTMLVideoElement>('video.ml-video-media'),
     clickPlaceholder: () => screen.getByRole('button', { name: 'Play' }).click(),
   }
 }
@@ -137,6 +137,6 @@ export async function mountStage(playlist: VideoEntry[]): Promise<MountedStage> 
     stage: captured.stage,
     sink,
     selectCard: (index) => screen.getByRole('button', { name: 'Play' }).nth(index).click(),
-    stageVideo: () => screen.container.querySelector<HTMLVideoElement>('.stage video.mlv-video'),
+    stageVideo: () => screen.container.querySelector<HTMLVideoElement>('.stage video.ml-video-media'),
   }
 }

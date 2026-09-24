@@ -10,7 +10,7 @@ const player = useResolvedPlayer(props)
 <template>
   <button
     type="button"
-    class="mlv-control-btn mlv-mute-button"
+    class="ml-video-control-btn ml-video-mute-button"
     :aria-pressed="player?.isMuted ?? false"
     :aria-label="player?.isMuted ? 'Unmute' : 'Mute'"
     @click="player?.toggleMute()"

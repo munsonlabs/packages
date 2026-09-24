@@ -1,6 +1,6 @@
 # @munsonlabs/sigil
 
-A framework-free icon registry with a `<ml-sigil>` custom element. Describe where icons come from once - an SVG set on a CDN, an icon font, a JSON map, your own source - then render them anywhere by name and swap them at runtime, even from a script the app didn't bundle. No dependencies; `vue` is optional, for the `/vue` entry.
+A framework-free icon registry with a `<ml-sigil-icon>` custom element. Describe where icons come from once - an SVG set on a CDN, an icon font, a JSON map, your own source - then render them anywhere by name and swap them at runtime, even from a script the app didn't bundle. No dependencies; `vue` is optional, for the `/vue` entry.
 
 ## Installation
 
@@ -26,12 +26,12 @@ override('logo', '<svg viewBox="0 0 24 24">…</svg>')
 ```
 
 ```html
-<ml-sigil name="rocket"></ml-sigil>
+<ml-sigil-icon name="rocket"></ml-sigil-icon>
 <!-- the pinned override -->
-<ml-sigil name="logo"></ml-sigil>
+<ml-sigil-icon name="logo"></ml-sigil-icon>
 ```
 
-The registry is one shared instance per page, so a separately loaded script can register or replace icons and every mounted `<ml-sigil>` (or Vue `<Sigil>`) follows.
+The registry is one shared instance per page, so a separately loaded script can register or replace icons and every mounted `<ml-sigil-icon>` (or Vue `<Sigil>`) follows.
 
 ## Docs
 

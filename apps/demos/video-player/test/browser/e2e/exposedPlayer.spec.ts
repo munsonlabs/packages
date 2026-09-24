@@ -14,8 +14,8 @@ describe('ExposedPlayerPanel', () => {
   it('drives a plain Vue VideoPlayer from a genuine third-party web component via exposePlayerOnElement', async () => {
     const screen = await render(ExposedPlayerPanel, { props: { video: catalogue.plain, cues: CUES } })
 
-    const video = screen.container.querySelector<HTMLVideoElement>('#exposed-player video.mlv-video')!
-    expect(screen.container.querySelector('ml-controls-transcript')).not.toBeNull()
+    const video = screen.container.querySelector<HTMLVideoElement>('#exposed-player video.ml-video-media')!
+    expect(screen.container.querySelector('ml-video-transcript')).not.toBeNull()
 
     await waitFor(() => video.duration > 0, 'video metadata to load')
 

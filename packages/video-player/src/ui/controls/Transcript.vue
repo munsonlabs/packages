@@ -52,7 +52,7 @@ function onCueClick(cue: TranscriptCue): void {
 watch(activeIndex, async (index) => {
   if (index === null || hovering.value) return
   await nextTick()
-  listEl.value?.querySelector('.mlv-transcript__cue--active')?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' })
+  listEl.value?.querySelector('.ml-video-transcript__cue--active')?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' })
 })
 
 const { canSpeak, speechEnabled, toggleSpeech } = useSpokenCues(player, parsedCues, activeIndex, {
@@ -65,7 +65,7 @@ const { canSpeak, speechEnabled, toggleSpeech } = useSpokenCues(player, parsedCu
   <button
     v-if="canSpeak"
     type="button"
-    class="mlv-transcript__speech-toggle"
+    class="ml-video-transcript__speech-toggle"
     :aria-label="speechEnabled ? 'Mute transcript readout' : 'Unmute transcript readout'"
     :aria-pressed="speechEnabled"
     @click="toggleSpeech"
@@ -73,18 +73,18 @@ const { canSpeak, speechEnabled, toggleSpeech } = useSpokenCues(player, parsedCu
     <Icon name="volume-on" v-if="speechEnabled" />
     <Icon name="volume-mute" v-else />
   </button>
-  <ol ref="listEl" class="mlv-transcript" v-bind="$attrs" @pointerenter="hovering = true" @pointerleave="hovering = false">
-    <li v-for="(cue, index) in parsedCues" :key="`${cue.time}-${index}`" class="mlv-transcript__item">
+  <ol ref="listEl" class="ml-video-transcript" v-bind="$attrs" @pointerenter="hovering = true" @pointerleave="hovering = false">
+    <li v-for="(cue, index) in parsedCues" :key="`${cue.time}-${index}`" class="ml-video-transcript__item">
       <button
         type="button"
-        class="mlv-transcript__cue"
-        :class="{ 'mlv-transcript__cue--active': index === activeIndex }"
+        class="ml-video-transcript__cue"
+        :class="{ 'ml-video-transcript__cue--active': index === activeIndex }"
         :aria-current="index === activeIndex ? 'true' : undefined"
         @click="onCueClick(cue)"
       >
         <slot :cue="cue" :index="index" :is-active="index === activeIndex" :format-time="fmtTime">
-          <span class="mlv-transcript__time">{{ fmtTime(cue.time) }}</span>
-          <span class="mlv-transcript__text">{{ cue.text }}</span>
+          <span class="ml-video-transcript__time">{{ fmtTime(cue.time) }}</span>
+          <span class="ml-video-transcript__text">{{ cue.text }}</span>
         </slot>
       </button>
     </li>
@@ -92,14 +92,14 @@ const { canSpeak, speechEnabled, toggleSpeech } = useSpokenCues(player, parsedCu
 </template>
 
 <style scoped>
-:where(.mlv-transcript) {
+:where(.ml-video-transcript) {
   list-style: none;
   margin: 0;
   padding: 0;
   overflow-y: auto;
 }
 
-:where(.mlv-transcript__cue) {
+:where(.ml-video-transcript__cue) {
   all: unset;
   cursor: pointer;
   display: flex;
@@ -111,21 +111,21 @@ const { canSpeak, speechEnabled, toggleSpeech } = useSpokenCues(player, parsedCu
   border-radius: 4px;
 }
 
-:where(.mlv-transcript__cue):focus-visible {
+:where(.ml-video-transcript__cue):focus-visible {
   outline: 2px solid;
   outline-offset: -2px;
 }
 
-:where(.mlv-transcript__cue:hover) {
+:where(.ml-video-transcript__cue:hover) {
   background: rgba(127, 127, 127, 0.15);
 }
 
-:where(.mlv-transcript__cue--active) {
+:where(.ml-video-transcript__cue--active) {
   background: rgba(127, 127, 127, 0.25);
   font-weight: 600;
 }
 
-:where(.mlv-transcript__speech-toggle) {
+:where(.ml-video-transcript__speech-toggle) {
   all: unset;
   cursor: pointer;
   display: inline-flex;
@@ -136,35 +136,35 @@ const { canSpeak, speechEnabled, toggleSpeech } = useSpokenCues(player, parsedCu
   margin-bottom: 0.5rem;
   border-radius: 50%;
   border: 1px solid rgba(127, 127, 127, 0.3);
-  background: var(--mlv-btn-bg, rgba(127, 127, 127, 0.1));
-  color: var(--mlv-btn-color, inherit);
+  background: var(--ml-video-btn-bg, rgba(127, 127, 127, 0.1));
+  color: var(--ml-video-btn-color, inherit);
   transition:
     background 0.2s,
     transform 0.15s;
 }
 
-:where(.mlv-transcript__speech-toggle):focus-visible {
+:where(.ml-video-transcript__speech-toggle):focus-visible {
   outline: 2px solid;
   outline-offset: 2px;
 }
 
-:where(.mlv-transcript__speech-toggle:hover) {
-  background: var(--mlv-btn-bg, rgba(127, 127, 127, 0.2));
+:where(.ml-video-transcript__speech-toggle:hover) {
+  background: var(--ml-video-btn-bg, rgba(127, 127, 127, 0.2));
   transform: scale(1.08);
 }
 
-:where(.mlv-transcript__speech-toggle[aria-pressed='true']) {
-  border-color: var(--mlv-accent, #3b82f6);
-  background: color-mix(in srgb, var(--mlv-accent, #3b82f6) 30%, var(--mlv-btn-bg, rgba(127, 127, 127, 0.1)));
-  color: var(--mlv-btn-color, inherit);
+:where(.ml-video-transcript__speech-toggle[aria-pressed='true']) {
+  border-color: var(--ml-video-accent, #3b82f6);
+  background: color-mix(in srgb, var(--ml-video-accent, #3b82f6) 30%, var(--ml-video-btn-bg, rgba(127, 127, 127, 0.1)));
+  color: var(--ml-video-btn-color, inherit);
 }
 
-:where(.mlv-transcript__speech-toggle :deep(svg)) {
+:where(.ml-video-transcript__speech-toggle :deep(svg)) {
   width: 1.1em;
   height: 1.1em;
 }
 
-:where(.mlv-transcript__time) {
+:where(.ml-video-transcript__time) {
   font-variant-numeric: tabular-nums;
   opacity: 0.7;
   flex-shrink: 0;

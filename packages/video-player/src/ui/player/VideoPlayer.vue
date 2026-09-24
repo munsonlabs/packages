@@ -127,11 +127,11 @@ defineExpose(exposePlayerSurface(player))
           @keydown="handleKeydown"
           @focusout="handleFocusOut"
         >
-          <div data-mlv-player>
+          <div data-ml-video-player>
             <video
               ref="videoEl"
-              class="mlv-video"
-              :class="{ 'mlv-video--hidden': videoHidden }"
+              class="ml-video-media"
+              :class="{ 'ml-video-media--hidden': videoHidden }"
               :poster="props.poster"
               :preload="props.preload"
               playsinline
@@ -177,7 +177,7 @@ defineExpose(exposePlayerSurface(player))
 .player {
   position: relative;
   width: 100%;
-  max-width: var(--mlv-max-width, 800px);
+  max-width: var(--ml-video-max-width, 800px);
   margin: 0 auto;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -199,14 +199,14 @@ defineExpose(exposePlayerSurface(player))
   }
 }
 
-[data-mlv-player] {
+[data-ml-video-player] {
   position: absolute;
   inset: 0;
 }
 
 .player__shell {
   position: relative;
-  border-radius: var(--mlv-radius, 12px);
+  border-radius: var(--ml-video-radius, 12px);
   overflow: hidden;
   background: #000;
   cursor: pointer;
@@ -214,7 +214,7 @@ defineExpose(exposePlayerSurface(player))
   container-name: player-shell;
 }
 
-.mlv-video--hidden {
+.ml-video-media--hidden {
   opacity: 0;
 }
 
@@ -224,11 +224,11 @@ defineExpose(exposePlayerSurface(player))
   z-index: 2;
 }
 
-.mlv-youtube .overlay__tap-capture {
+.ml-video-youtube .overlay__tap-capture {
   clip-path: polygon(0 0, 100% 0, 100% 100%, 64px 100%, 64px calc(100% - 64px), 0 calc(100% - 64px));
 }
 
-.mlv-dailymotion .overlay__tap-capture {
+.ml-video-dailymotion .overlay__tap-capture {
   clip-path: polygon(0 64px, 0 100%, 100% 100%, 100% 0, 64px 0, 64px 64px);
 }
 
@@ -270,8 +270,8 @@ defineExpose(exposePlayerSurface(player))
   height: 100dvh;
 }
 
-.player__shell:fullscreen .mlv-video,
-.player__shell:fullscreen [data-mlv-player] {
+.player__shell:fullscreen .ml-video-media,
+.player__shell:fullscreen [data-ml-video-player] {
   width: 100% !important;
   height: 100% !important;
 }

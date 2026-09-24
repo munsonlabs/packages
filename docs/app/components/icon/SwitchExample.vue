@@ -38,7 +38,7 @@ async function toggleOverride() {
       </UButton>
     </div>
     <div class="icon-demo__row">
-      <ml-sigil v-for="name in names" :key="name" :name="name"></ml-sigil>
+      <ml-sigil-icon v-for="name in names" :key="name" :name="name"></ml-sigil-icon>
     </div>
   </IconDemoFrame>
 </template>

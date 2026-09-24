@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/** Renders a row of <ml-sigil>s. Each name may carry its own library and variant as `name@library:variant`. */
+/** Renders a row of <ml-sigil-icon>s. Each name may carry its own library and variant as `name@library:variant`. */
 const props = withDefaults(defineProps<{ names: string; library?: string; variant?: string; toggle?: boolean }>(), {
   library: undefined,
   variant: undefined,
@@ -24,13 +24,13 @@ const items = computed(() =>
 <template>
   <IconDemoFrame :ready="ready" :failed="failed">
     <div class="icon-demo__row">
-      <ml-sigil
+      <ml-sigil-icon
         v-for="item in items"
         :key="item.key"
         :name="item.name"
         :library="item.library"
         :variant="active ? 'active' : item.variant"
-      ></ml-sigil>
+      ></ml-sigil-icon>
     </div>
     <template v-if="toggle" #after>
       <UButton block size="sm" color="neutral" variant="outline" class="icon-demo__action" @click="active = !active">

@@ -535,7 +535,7 @@ main {
   line-height: 1.5;
 }
 
-.mlv-hide-marker.demo-hide-marker {
+.ml-video-hide-marker.demo-hide-marker {
   min-height: 48px;
   display: flex;
   align-items: center;
@@ -549,7 +549,7 @@ main {
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
-.mlv-hide-marker.demo-hide-marker::before {
+.ml-video-hide-marker.demo-hide-marker::before {
   content: 'HideMarker — stage tucks away while this is in view';
 }
 

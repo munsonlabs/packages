@@ -12,7 +12,7 @@ describe('showcase (stage off)', () => {
     panel.scrollIntoView()
     await playButton(panel).click()
 
-    const video = () => panel.querySelector('video.mlv-video')
+    const video = () => panel.querySelector('video.ml-video-media')
     await waitFor(() => isPlaying(video()), 'the inline video to start playing')
 
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' })

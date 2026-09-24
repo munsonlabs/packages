@@ -89,10 +89,10 @@ const { currentAction, isCustom, customAction, builtinLabel, builtinActive, onBu
   height: clamp(36px, 14cqw, 44px);
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.18);
-  background: var(--mlv-btn-bg, rgba(255, 255, 255, 0.1));
+  background: var(--ml-video-btn-bg, rgba(255, 255, 255, 0.1));
   backdrop-filter: blur(12px);
   will-change: backdrop-filter;
-  color: var(--mlv-btn-color, #fff);
+  color: var(--ml-video-btn-color, #fff);
   cursor: pointer;
   transition:
     background 0.2s,
@@ -105,18 +105,18 @@ const { currentAction, isCustom, customAction, builtinLabel, builtinActive, onBu
 }
 
 .hud__btn:hover {
-  background: var(--mlv-btn-bg, rgba(255, 255, 255, 0.2));
+  background: var(--ml-video-btn-bg, rgba(255, 255, 255, 0.2));
   filter: brightness(1.12);
   transform: scale(1.08);
 }
 
 .hud__btn--active {
-  border-color: var(--mlv-accent, #3b82f6);
-  background: color-mix(in srgb, var(--mlv-accent, #3b82f6) 30%, var(--mlv-btn-bg, rgba(255, 255, 255, 0.1)));
-  color: var(--mlv-btn-color, #fff);
+  border-color: var(--ml-video-accent, #3b82f6);
+  background: color-mix(in srgb, var(--ml-video-accent, #3b82f6) 30%, var(--ml-video-btn-bg, rgba(255, 255, 255, 0.1)));
+  color: var(--ml-video-btn-color, #fff);
 }
 
 .hud__btn--active:hover {
-  background: color-mix(in srgb, var(--mlv-accent, #3b82f6) 45%, var(--mlv-btn-bg, rgba(255, 255, 255, 0.2)));
+  background: color-mix(in srgb, var(--ml-video-accent, #3b82f6) 45%, var(--ml-video-btn-bg, rgba(255, 255, 255, 0.2)));
 }
 </style>

@@ -18,7 +18,7 @@ describe('a custom HUD passed to VideoCard', () => {
       attachTo: document.body,
     })
 
-    const button = wrapper.find('.mlv-play-button')
+    const button = wrapper.find('.ml-video-play-button')
     expect(button.exists()).toBe(true)
     expect(button.attributes('aria-label')).toBe('Play')
     wrapper.unmount()
@@ -32,7 +32,7 @@ describe('a custom HUD passed to VideoCard', () => {
     })
 
     expect(wrapper.find('.placeholder').exists()).toBe(true)
-    expect(wrapper.find('.mlv-play-button').exists()).toBe(false)
+    expect(wrapper.find('.ml-video-play-button').exists()).toBe(false)
     wrapper.unmount()
   })
 })

@@ -11,6 +11,6 @@
         stroke-linejoin="round"
       />
     </svg>
-    <span class="text-base font-semibold tracking-tight">munson<span class="text-primary">labs</span></span>
+    <span class="text-base font-semibold tracking-tight">munson</span>
   </div>
 </template>

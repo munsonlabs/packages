@@ -19,8 +19,8 @@ function cycle(): void {
   <button
     v-if="player?.supportsCaptions"
     type="button"
-    class="mlv-control-btn mlv-control-btn--toggle mlv-captions-button"
-    :class="{ 'mlv-control-btn--active mlv-captions-button--active': player?.activeCaptionIndex !== null }"
+    class="ml-video-control-btn ml-video-control-btn--toggle ml-video-captions-button"
+    :class="{ 'ml-video-control-btn--active ml-video-captions-button--active': player?.activeCaptionIndex !== null }"
     :aria-label="`Captions: ${currentLabel}`"
     @click="cycle"
   >

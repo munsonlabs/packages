@@ -127,14 +127,14 @@ const { isOpen, toggle, close } = usePopover('settings')
             />
             {{ c.label }}
           </label>
-          <label class="theme__row" title="--mlv-radius">
+          <label class="theme__row" title="--ml-video-radius">
             <input
               type="range"
               class="theme__range"
               min="0"
               max="24"
               :value="radius"
-              @input="setThemeVar('--mlv-radius', `${($event.target as HTMLInputElement).value}px`)"
+              @input="setThemeVar('--ml-video-radius', `${($event.target as HTMLInputElement).value}px`)"
             />
             Radius {{ radius }}px
           </label>

@@ -5,7 +5,7 @@ import { createEmitter } from '@/adapters/emitter'
 import type { Emitter } from '@/adapters/emitter'
 import type { PlaybackAdapter, MediaErrorLike, EmbedAdapterOptions } from '@/types/playback'
 
-export const TECH_CLASS = 'mlv-tech'
+export const TECH_CLASS = 'ml-video-tech'
 
 let mountCounter = 0
 

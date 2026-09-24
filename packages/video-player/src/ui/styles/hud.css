@@ -34,8 +34,8 @@
 }
 
 .controls--compact .controls__seek,
-.controls--compact .mlv-scrubber-wrap,
-.controls--compact .mlv-time-display__total,
+.controls--compact .ml-video-scrubber-wrap,
+.controls--compact .ml-video-time-display__total,
 .controls--compact .controls__btn--pip,
 .controls--compact .controls__btn--next,
 .controls--compact .controls__btn--volume {
@@ -55,8 +55,8 @@
   background-clip: content-box;
   background-image: linear-gradient(
     to right,
-    var(--mlv-accent, #3b82f6) 0%,
-    var(--mlv-accent, #3b82f6) var(--p),
+    var(--ml-video-accent, #3b82f6) 0%,
+    var(--ml-video-accent, #3b82f6) var(--p),
     rgba(255, 255, 255, 0.3) var(--p),
     rgba(255, 255, 255, 0.3) var(--b),
     rgba(255, 255, 255, 0.1) var(--b),
@@ -74,8 +74,8 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: var(--mlv-accent, #3b82f6);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mlv-accent, #3b82f6) 30%, transparent);
+  background: var(--ml-video-accent, #3b82f6);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ml-video-accent, #3b82f6) 30%, transparent);
   cursor: pointer;
   margin-top: -5px;
   transition: transform 0.15s;
@@ -92,16 +92,16 @@
 
 .controls__seek::-moz-range-progress {
   height: 4px;
-  background: var(--mlv-accent, #3b82f6);
+  background: var(--ml-video-accent, #3b82f6);
 }
 
 .controls__seek::-moz-range-thumb {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: var(--mlv-accent, #3b82f6);
+  background: var(--ml-video-accent, #3b82f6);
   border: none;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mlv-accent, #3b82f6) 30%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ml-video-accent, #3b82f6) 30%, transparent);
   cursor: pointer;
 }
 

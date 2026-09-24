@@ -70,6 +70,6 @@ defineEmits<{ click: [] }>()
 }
 
 .controls__more-row--active .controls__more-value {
-  color: var(--mlv-accent, #3b82f6);
+  color: var(--ml-video-accent, #3b82f6);
 }
 </style>

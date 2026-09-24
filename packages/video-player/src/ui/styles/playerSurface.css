@@ -1,24 +1,24 @@
-.mlv-video {
+.ml-video-media {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  border-radius: var(--mlv-radius, 12px);
+  border-radius: var(--ml-video-radius, 12px);
   overflow: hidden;
   background: #000;
   object-fit: cover;
 }
 
-.mlv-dailymotion .mlv-tech > *,
-.mlv-dailymotion .dailymotion-player-root,
-.mlv-dailymotion iframe {
+.ml-video-dailymotion .ml-video-tech > *,
+.ml-video-dailymotion .dailymotion-player-root,
+.ml-video-dailymotion iframe {
   position: absolute !important;
   inset: 0 !important;
   width: 100% !important;
   height: 100% !important;
 }
 
-.mlv-vimeo .mlv-tech > div {
+.ml-video-vimeo .ml-video-tech > div {
   position: absolute !important;
   top: 0 !important;
   left: 0 !important;
@@ -27,7 +27,7 @@
   padding: 0 !important;
 }
 
-.mlv-vimeo iframe {
+.ml-video-vimeo iframe {
   position: absolute !important;
   top: 0 !important;
   left: 0 !important;
@@ -35,7 +35,7 @@
   height: 100% !important;
 }
 
-[data-mlv-player] .ima-ad-container {
+[data-ml-video-player] .ima-ad-container {
   z-index: 20 !important;
   position: absolute !important;
   top: 0 !important;
@@ -45,11 +45,11 @@
   pointer-events: none;
 }
 
-.mlv-ad-playing .ima-ad-container {
+.ml-video-ad-playing .ima-ad-container {
   pointer-events: auto;
 }
 
-.mlv-ad-playing .overlay__hud,
-.mlv-ad-playing .overlay__spinner {
+.ml-video-ad-playing .overlay__hud,
+.ml-video-ad-playing .overlay__spinner {
   display: none !important;
 }

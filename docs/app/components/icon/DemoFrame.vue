@@ -43,7 +43,7 @@ defineProps<{ ready: boolean; failed: boolean }>()
 .icon-demo__action {
   margin-top: 0.75rem;
 }
-.icon-demo ml-sigil,
+.icon-demo ml-sigil-icon,
 .icon-demo .icon-demo__vue {
   display: inline-flex;
   align-items: center;
@@ -52,8 +52,8 @@ defineProps<{ ready: boolean; failed: boolean }>()
   height: 2rem;
   color: var(--ui-primary);
 }
-.icon-demo ml-sigil .icon-svg,
-.icon-demo ml-sigil svg,
+.icon-demo ml-sigil-icon .icon-svg,
+.icon-demo ml-sigil-icon svg,
 .icon-demo .icon-demo__vue svg {
   display: block;
   width: 100%;

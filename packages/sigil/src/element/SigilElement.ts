@@ -6,7 +6,7 @@ const ATTRIBUTES = ['name', 'library', 'variant'] as const
 const Base = (typeof HTMLElement === 'undefined' ? class {} : HTMLElement) as typeof HTMLElement
 
 /**
- * `<ml-sigil name="…" library="…" variant="…">`: renders the icon the registry resolves for its
+ * `<ml-sigil-icon name="…" library="…" variant="…">`: renders the icon the registry resolves for its
  * attributes into light DOM, re-resolving whenever an attribute or the registry changes.
  */
 export class SigilElement extends Base {
@@ -86,10 +86,10 @@ export class SigilElement extends Base {
 }
 
 /**
- * Registers `<ml-sigil>` (or another tag name) once. Safe to call repeatedly - an already-defined
+ * Registers `<ml-sigil-icon>` (or another tag name) once. Safe to call repeatedly - an already-defined
  * tag is left alone rather than throwing.
  */
-export function defineElements(tag = 'ml-sigil'): void {
+export function defineElements(tag = 'ml-sigil-icon'): void {
   if (typeof customElements === 'undefined') {
     return
   }

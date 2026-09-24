@@ -170,7 +170,7 @@ function onMoreClick(): void {
 <style scoped>
 .controls {
   position: relative;
-  width: var(--mlv-controls-width, min(450px, calc(100% - 32px)));
+  width: var(--ml-video-controls-width, min(450px, calc(100% - 32px)));
   max-height: 100%;
   padding: 14px 16px 12px;
   display: flex;
@@ -235,7 +235,7 @@ function onMoreClick(): void {
   padding: 0 4px;
 }
 
-.controls__time-display.mlv-time-display--live {
+.controls__time-display.ml-video-time-display--live {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -252,12 +252,12 @@ function onMoreClick(): void {
 }
 
 .controls__btn--active,
-.controls__btn--pip.mlv-pip-button--active {
-  color: var(--mlv-accent, #3b82f6);
+.controls__btn--pip.ml-video-pip-button--active {
+  color: var(--ml-video-accent, #3b82f6);
 }
 .controls__btn--active:hover,
-.controls__btn--pip.mlv-pip-button--active:hover {
-  color: var(--mlv-accent, #60a5fa);
+.controls__btn--pip.ml-video-pip-button--active:hover {
+  color: var(--ml-video-accent, #60a5fa);
 }
 
 .controls__fs-wrap {

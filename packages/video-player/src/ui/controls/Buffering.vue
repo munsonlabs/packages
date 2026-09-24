@@ -7,7 +7,7 @@ const player = useResolvedPlayer(props)
 </script>
 
 <template>
-  <div v-if="player?.isBuffering" class="mlv-buffering" role="status" aria-label="Buffering">
+  <div v-if="player?.isBuffering" class="ml-video-buffering" role="status" aria-label="Buffering">
     <slot :is-buffering="true">
       <Spinner />
     </slot>
@@ -15,7 +15,7 @@ const player = useResolvedPlayer(props)
 </template>
 
 <style scoped>
-:where(.mlv-buffering) {
+:where(.ml-video-buffering) {
   display: inline-flex;
   align-items: center;
   justify-content: center;

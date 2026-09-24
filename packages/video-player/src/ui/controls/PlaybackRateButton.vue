@@ -19,8 +19,8 @@ function cycle(): void {
   <button
     v-if="player?.supportsPlaybackRate"
     type="button"
-    class="mlv-control-btn mlv-control-btn--toggle mlv-playback-rate-button"
-    :class="{ 'mlv-control-btn--active mlv-playback-rate-button--active': player?.currentPlaybackRate !== 1 }"
+    class="ml-video-control-btn ml-video-control-btn--toggle ml-video-playback-rate-button"
+    :class="{ 'ml-video-control-btn--active ml-video-playback-rate-button--active': player?.currentPlaybackRate !== 1 }"
     :aria-label="`Playback speed: ${currentLabel}`"
     @click="cycle"
   >

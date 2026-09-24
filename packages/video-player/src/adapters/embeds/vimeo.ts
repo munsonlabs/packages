@@ -4,7 +4,7 @@ import { loadScript } from '@/adapters/loadScript'
 import type { PlaybackAdapter } from '@/types/playback'
 import { MUTE_VOLUMECHANGE_SYNC_DELAY_MS } from '@/constants'
 
-export const VIMEO_CLASS = 'mlv-vimeo'
+export const VIMEO_CLASS = 'ml-video-vimeo'
 
 export const VIMEO_SDK_URL = 'https://player.vimeo.com/api/player.js'
 

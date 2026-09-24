@@ -13,14 +13,14 @@ const formatTime = (seconds: number): string => fmtTime(seconds, true)
 </script>
 
 <template>
-  <div class="mlv-scrubber-wrap">
+  <div class="ml-video-scrubber-wrap">
     <input
       type="range"
       min="0"
       max="100"
       step="0.5"
       :value="displayPercent"
-      class="mlv-scrubber"
+      class="ml-video-scrubber"
       :style="{ '--p': `${displayPercent}%`, '--b': `${player?.bufferedDisplay ?? 0}%` }"
       aria-label="Seek"
       :aria-valuetext="`${formatTime(previewSeconds)} of ${formatTime(player?.duration ?? 0)}`"
@@ -32,7 +32,7 @@ const formatTime = (seconds: number): string => fmtTime(seconds, true)
       v-bind="$attrs"
     />
     <slot name="preview" :scrubbing="scrubbing" :percent="displayPercent" :preview-seconds="previewSeconds" :format-time="formatTime">
-      <div v-if="scrubbing" class="mlv-scrubber__preview" :style="{ left: `${displayPercent}%` }">
+      <div v-if="scrubbing" class="ml-video-scrubber__preview" :style="{ left: `${displayPercent}%` }">
         {{ formatTime(previewSeconds) }}
       </div>
     </slot>
@@ -40,23 +40,23 @@ const formatTime = (seconds: number): string => fmtTime(seconds, true)
 </template>
 
 <style scoped>
-.mlv-scrubber-wrap {
+.ml-video-scrubber-wrap {
   position: relative;
   width: 100%;
 }
 
-:where(.mlv-scrubber) {
+:where(.ml-video-scrubber) {
   width: 100%;
   cursor: pointer;
   accent-color: currentColor;
 }
 
-:where(.mlv-scrubber):focus-visible {
+:where(.ml-video-scrubber):focus-visible {
   outline: 2px solid #fff !important;
   outline-offset: 0 !important;
 }
 
-.mlv-scrubber__preview {
+.ml-video-scrubber__preview {
   position: absolute;
   bottom: 100%;
   transform: translateX(-50%);

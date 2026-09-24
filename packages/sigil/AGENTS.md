@@ -2,7 +2,7 @@
 
 ## Package purpose
 
-A framework-free icon registry with a `<ml-sigil>` custom element. The core is a tiny kernel: direct overrides by name, plus named `IconSource`s of which exactly one is asked per lookup. Every kind of source (SVG libraries, icon fonts) and every renderer (element, Vue) is its own entry. It exists so icons can be resolved by name and, critically, so a script loaded separately from the app can replace them at runtime through the shared singleton. Its only internal dependency is `@munsonlabs/shipkit` for build tooling.
+A framework-free icon registry with a `<ml-sigil-icon>` custom element. The core is a tiny kernel: direct overrides by name, plus named `IconSource`s of which exactly one is asked per lookup. Every kind of source (SVG libraries, icon fonts) and every renderer (element, Vue) is its own entry. It exists so icons can be resolved by name and, critically, so a script loaded separately from the app can replace them at runtime through the shared singleton. Its only internal dependency is `@munsonlabs/shipkit` for build tooling.
 
 ## Public API
 
@@ -48,7 +48,7 @@ src/
     cached.ts           cached(): per name+variant memo any IconSource can wear; svg uses it
   types/                one file per concern, re-exported from types/index.ts
   element/
-    index.ts            entry /element: defines <ml-sigil> on import (unless ?defer)
+    index.ts            entry /element: defines <ml-sigil-icon> on import (unless ?defer)
     SigilElement.ts     the custom element + defineElements()
     render.ts           createIconNode: ResolvedIcon → DOM
   vue.ts                entry /vue: the Sigil component
@@ -87,4 +87,4 @@ Adding a kind means: a source file in `src/sources/`, its options type in `src/t
 
 ## Testing
 
-`vp test`. Tests import source by alias (`@/registry`, `@/watch`, `@/sources/svg`), never the package specifier. `registry.spec.ts` uses hand-written fake sources so it tests dispatch only; each library kind has its own spec, importing it by `@/sources/…` path since kinds are not exported. Element tests append real `<ml-sigil>` nodes to `document.body` and clear it in `afterEach`. Vue tests use `@vue/test-utils` with `enableAutoUnmount(afterEach)`; without it, mounted icons from earlier tests keep reacting to `clear()` and inflate resolver call counts.
+`vp test`. Tests import source by alias (`@/registry`, `@/watch`, `@/sources/svg`), never the package specifier. `registry.spec.ts` uses hand-written fake sources so it tests dispatch only; each library kind has its own spec, importing it by `@/sources/…` path since kinds are not exported. Element tests append real `<ml-sigil-icon>` nodes to `document.body` and clear it in `afterEach`. Vue tests use `@vue/test-utils` with `enableAutoUnmount(afterEach)`; without it, mounted icons from earlier tests keep reacting to `clear()` and inflate resolver call counts.

@@ -19,8 +19,8 @@ function cycle(): void {
   <button
     v-if="player?.supportsQuality"
     type="button"
-    class="mlv-control-btn mlv-control-btn--toggle mlv-quality-button"
-    :class="{ 'mlv-control-btn--active mlv-quality-button--active': !player?.isAutoQuality }"
+    class="ml-video-control-btn ml-video-control-btn--toggle ml-video-quality-button"
+    :class="{ 'ml-video-control-btn--active ml-video-quality-button--active': !player?.isAutoQuality }"
     :aria-label="`Quality: ${currentLabel}`"
     @click="cycle"
   >

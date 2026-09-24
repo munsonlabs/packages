@@ -52,7 +52,7 @@ import '@munsonlabs/video-player/style'
 
 ### Custom elements (`./element`, `./element/core`, `./element/controls`)
 
-`src/elements/index.ts` (combined), `core.ts` (`ml-video-player`/`-stage`/`-item`/`-placeholder` plus `ml-hide-marker` — grouped here rather than with `controls.ts` because it depends on `VideoStage`'s registry state, which wouldn't be shared across a separate bundle), and `controls.ts` (just the 13 headless controls, tagged `ml-controls-*` — e.g. `ml-controls-play-button`, `ml-controls-mute-button`) are three independent `vp pack` builds (see `vite.config.ts`'s `elementEntry()` factory), each outputting to `dist/elements/<name>.{mjs,d.mts}`. Only the combined `./element` auto-injects its CSS; `./element/core` and `./element/controls` leave that to the consumer (see CSS entry points below). `elements/index.ts` composes `core.ts`+`controls.ts` (import + `export *`) rather than duplicating their `defineCustomElement`/`customElements.define` calls.
+`src/elements/index.ts` (combined), `core.ts` (`ml-video-player`/`-stage`/`-item`/`-placeholder` plus `ml-video-hide-marker` — grouped here rather than with `controls.ts` because it depends on `VideoStage`'s registry state, which wouldn't be shared across a separate bundle), and `controls.ts` (just the 13 headless controls, tagged `ml-video-*` — e.g. `ml-video-play-button`, `ml-video-mute-button`) are three independent `vp pack` builds (see `vite.config.ts`'s `elementEntry()` factory), each outputting to `dist/elements/<name>.{mjs,d.mts}`. Only the combined `./element` auto-injects its CSS; `./element/core` and `./element/controls` leave that to the consumer (see CSS entry points below). `elements/index.ts` composes `core.ts`+`controls.ts` (import + `export *`) rather than duplicating their `defineCustomElement`/`customElements.define` calls.
 
 Custom-element instances expose the same `defineExpose`d API a Vue template ref would (Vue copies `defineExpose` properties onto the element itself) — e.g. `document.querySelector('ml-video-card').togglePlay()` works identically to a Vue ref.
 
@@ -76,13 +76,13 @@ Pick exactly one per page; importing more than one `./element*` bundle together 
 
 The player exposes several CSS custom properties for layout overrides:
 
-| Variable               | Default                         | Used by                    | Description                                                                          |
-| ---------------------- | ------------------------------- | -------------------------- | ------------------------------------------------------------------------------------ |
-| `--mlv-controls-width` | `min(450px, calc(100% - 32px))` | `ControlsPopup.vue`        | Controls popup width — override to widen or narrow the popup                         |
-| `--mlv-popup-align`    | `center`                        | `PlayerOverlay.vue`        | Horizontal alignment of the controls popup                                           |
-| `--mlv-stage-tuck`     | `32px`                          | `pinnedCorner.css`         | Width of the sliver left visible when `HideMarker` tucks the pinned stage off-screen |
-| `--mlv-radius`         | `12px`                          | `pinnedCorner.css`         | Border-radius of the pinned corner box                                               |
-| `--mlv-accent`         | `#3b82f6`                       | HUD, more menu, transcript | Accent for sliders, active toggles, more-menu rows and the transcript's active cue   |
+| Variable                    | Default                         | Used by                    | Description                                                                          |
+| --------------------------- | ------------------------------- | -------------------------- | ------------------------------------------------------------------------------------ |
+| `--ml-video-controls-width` | `min(450px, calc(100% - 32px))` | `ControlsPopup.vue`        | Controls popup width — override to widen or narrow the popup                         |
+| `--ml-video-popup-align`    | `center`                        | `PlayerOverlay.vue`        | Horizontal alignment of the controls popup                                           |
+| `--ml-video-stage-tuck`     | `32px`                          | `pinnedCorner.css`         | Width of the sliver left visible when `HideMarker` tucks the pinned stage off-screen |
+| `--ml-video-radius`         | `12px`                          | `pinnedCorner.css`         | Border-radius of the pinned corner box                                               |
+| `--ml-video-accent`         | `#3b82f6`                       | HUD, more menu, transcript | Accent for sliders, active toggles, more-menu rows and the transcript's active cue   |
 
 ## Naming the player surface
 
@@ -130,7 +130,7 @@ anything on the viewer's behalf.
 
 ## Where a constant lives
 
-`src/constants.ts` holds only what more than one module needs: the two stage event names, the two fullscreen-pending event names, the shell class, the MIME types, the default aspect ratio, the playback rates, the pause threshold and one SDK sync delay. Everything else lives as a module-level `const` in its single consumer, so a timing or a storage key sits next to the code that reads it rather than in a grab bag thirty files away. The old `MVP_` prefix is gone; it predated the `mlv-` convention the CSS uses.
+`src/constants.ts` holds only what more than one module needs: the two stage event names, the two fullscreen-pending event names, the shell class, the MIME types, the default aspect ratio, the playback rates, the pause threshold and one SDK sync delay. Everything else lives as a module-level `const` in its single consumer, so a timing or a storage key sits next to the code that reads it rather than in a grab bag thirty files away. The old `MVP_` prefix is gone; it predated the `ml-video-` convention the CSS uses.
 
 ## What `use` means here
 

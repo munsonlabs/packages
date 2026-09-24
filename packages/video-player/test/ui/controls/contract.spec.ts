@@ -122,17 +122,17 @@ describe('labels reflect state', () => {
 
     const on = mount(CaptionsButton, { props: { player: handle({ supportsCaptions: true, captionTracks: tracks, activeCaptionIndex: 0 }) } })
     expect(on.attributes('aria-label')).toBe('Captions: English')
-    expect(on.classes()).toContain('mlv-control-btn--active')
+    expect(on.classes()).toContain('ml-video-control-btn--active')
   })
 
   it('PlaybackRateButton shows the rate and marks anything but 1x active', () => {
     const normal = mount(PlaybackRateButton, { props: { player: handle({ supportsPlaybackRate: true }) } })
     expect(normal.text()).toBe('1×')
-    expect(normal.classes()).not.toContain('mlv-control-btn--active')
+    expect(normal.classes()).not.toContain('ml-video-control-btn--active')
 
     const fast = mount(PlaybackRateButton, { props: { player: handle({ supportsPlaybackRate: true, currentPlaybackRate: 1.5 }) } })
     expect(fast.text()).toBe('1.5×')
-    expect(fast.classes()).toContain('mlv-control-btn--active')
+    expect(fast.classes()).toContain('ml-video-control-btn--active')
   })
 
   it('TimeDisplay shows elapsed over duration, or a Live badge', () => {
@@ -142,18 +142,18 @@ describe('labels reflect state', () => {
 
     const live = mount(TimeDisplay, { props: { player: handle({ isLive: true }) } })
     expect(live.text()).toContain('Live')
-    expect(live.classes()).toContain('mlv-time-display--live')
+    expect(live.classes()).toContain('ml-video-time-display--live')
   })
 
   it('Buffering renders only while buffering', () => {
     expect(
       mount(Buffering, { props: { player: handle() } })
-        .find('.mlv-buffering')
+        .find('.ml-video-buffering')
         .exists(),
     ).toBe(false)
     expect(
       mount(Buffering, { props: { player: handle({ isBuffering: true }) } })
-        .find('.mlv-buffering')
+        .find('.ml-video-buffering')
         .exists(),
     ).toBe(true)
   })

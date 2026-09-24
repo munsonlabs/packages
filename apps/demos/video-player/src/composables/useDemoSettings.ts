@@ -7,9 +7,9 @@ const PIN_POSITIONS = ['bottom-right', 'bottom-left', 'top-right', 'top-left', '
 const POPUP_ALIGNS = ['center', 'flex-end'] as const
 
 const THEME_COLORS = [
-  { varName: '--mlv-accent', label: 'Accent', fallback: '#3b82f6' },
-  { varName: '--mlv-btn-bg', label: 'Button Background', fallback: '#60a5fa' },
-  { varName: '--mlv-btn-color', label: 'Button Color', fallback: '#93c5fd' },
+  { varName: '--ml-video-accent', label: 'Accent', fallback: '#3b82f6' },
+  { varName: '--ml-video-btn-bg', label: 'Button Background', fallback: '#60a5fa' },
+  { varName: '--ml-video-btn-color', label: 'Button Color', fallback: '#93c5fd' },
 ]
 
 function loadTheme(): Record<string, string> {
@@ -37,7 +37,7 @@ const { val: actionSave, toggle: toggleActionSave } = usePersisted('player:actio
 const { val: actionAutoplay, toggle: toggleActionAutoplay } = usePersisted('player:action:autoplay')
 
 const theme = ref<Record<string, string>>(loadTheme())
-const radius = computed(() => parseInt(theme.value['--mlv-radius'] ?? '12', 10))
+const radius = computed(() => parseInt(theme.value['--ml-video-radius'] ?? '12', 10))
 
 function setThemeVar(varName: string, value: string): void {
   theme.value = { ...theme.value, [varName]: value }
@@ -49,7 +49,7 @@ function resetTheme(): void {
 
 watchEffect(() => {
   const style = document.documentElement.style
-  for (const varName of [...THEME_COLORS.map((c) => c.varName), '--mlv-radius']) {
+  for (const varName of [...THEME_COLORS.map((c) => c.varName), '--ml-video-radius']) {
     const value = theme.value[varName]
     if (value) style.setProperty(varName, value)
     else style.removeProperty(varName)
@@ -58,7 +58,7 @@ watchEffect(() => {
 })
 
 watchEffect(() => {
-  document.documentElement.style.setProperty('--mlv-popup-align', popupAlign.value)
+  document.documentElement.style.setProperty('--ml-video-popup-align', popupAlign.value)
 })
 
 const savedStates = ref<Record<string, boolean>>({})

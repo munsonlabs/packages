@@ -12,7 +12,7 @@ const tick = () => new Promise((r) => setTimeout(r, 0))
 defineElements()
 
 function mountIcon(attrs: Record<string, string>): SigilElement {
-  const el = document.createElement('ml-sigil') as SigilElement
+  const el = document.createElement('ml-sigil-icon') as SigilElement
   for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v)
   document.body.appendChild(el)
   return el
@@ -40,9 +40,9 @@ describe('createIconNode', () => {
   })
 })
 
-describe('<ml-sigil>', () => {
+describe('<ml-sigil-icon>', () => {
   it('defines idempotently', () => {
-    expect(customElements.get('ml-sigil')).toBe(SigilElement)
+    expect(customElements.get('ml-sigil-icon')).toBe(SigilElement)
     expect(() => defineElements()).not.toThrow()
   })
 

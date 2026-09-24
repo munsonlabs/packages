@@ -3,7 +3,7 @@ import type { Component } from 'vue'
 
 type Entry = Record<string, unknown>
 
-const STORAGE_KEY = 'mlv-docs:try-your-own'
+const STORAGE_KEY = 'ml-video-docs:try-your-own'
 
 const AD_PRESETS = [
   {

@@ -180,7 +180,7 @@ describe('what the row shows', () => {
   it('swaps the play button for the spinner while buffering', () => {
     const { wrapper } = mountPopup(makePlayer({ isBuffering: true }))
 
-    expect(wrapper.find('.mlv-buffering').exists()).toBe(true)
-    expect(wrapper.find('.mlv-play-button').exists()).toBe(false)
+    expect(wrapper.find('.ml-video-buffering').exists()).toBe(true)
+    expect(wrapper.find('.ml-video-play-button').exists()).toBe(false)
   })
 })

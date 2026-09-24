@@ -22,8 +22,8 @@
 .ppbtn--lg {
   width: clamp(48px, 20cqw, 64px);
   height: clamp(48px, 20cqw, 64px);
-  background: var(--mlv-btn-bg, rgba(255, 255, 255, 0.1));
-  color: var(--mlv-btn-color, #fff);
+  background: var(--ml-video-btn-bg, rgba(255, 255, 255, 0.1));
+  color: var(--ml-video-btn-color, #fff);
 }
 
 .ppbtn--lg svg {
@@ -32,7 +32,7 @@
 }
 
 .ppbtn--lg:hover {
-  background: var(--mlv-btn-bg, rgba(255, 255, 255, 0.2));
+  background: var(--ml-video-btn-bg, rgba(255, 255, 255, 0.2));
   filter: brightness(1.12);
 }
 

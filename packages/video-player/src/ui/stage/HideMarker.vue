@@ -20,11 +20,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="el" class="mlv-hide-marker" />
+  <div ref="el" class="ml-video-hide-marker" />
 </template>
 
 <style scoped>
-.mlv-hide-marker {
+.ml-video-hide-marker {
   width: 100%;
   min-height: 1px;
 }

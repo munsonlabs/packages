@@ -3,7 +3,7 @@ import type { EmbedAdapterOptions } from '@/types/playback'
 import { loadScript } from '@/adapters/loadScript'
 import type { PlaybackAdapter } from '@/types/playback'
 
-export const DAILYMOTION_CLASS = 'mlv-dailymotion'
+export const DAILYMOTION_CLASS = 'ml-video-dailymotion'
 
 function parseVideoId(url: string): string | null {
   const qs = url.match(/[?&]video=([a-zA-Z0-9]+)/)

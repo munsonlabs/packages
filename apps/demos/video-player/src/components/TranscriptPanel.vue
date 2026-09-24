@@ -55,7 +55,7 @@ function onStateChange(e: StateChangeEvent | CustomEvent): void {
         <component :is="webComponents ? 'ml-video-player' : VideoPlayer" ref="itemRef" v-bind="video" @state-change="onStateChange" />
       </div>
       <div class="transcript-panel__list">
-        <component :is="webComponents ? 'ml-controls-transcript' : Transcript" :player="itemRef" :cues="cues" />
+        <component :is="webComponents ? 'ml-video-transcript' : Transcript" :player="itemRef" :cues="cues" />
       </div>
     </div>
   </section>

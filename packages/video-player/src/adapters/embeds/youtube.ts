@@ -13,7 +13,7 @@ import type { PlaybackAdapter, MediaErrorLike } from '@/types/playback'
 import { exitFullscreen } from '@/utils/platform'
 import { MUTE_VOLUMECHANGE_SYNC_DELAY_MS } from '@/constants'
 
-export const YOUTUBE_CLASS = 'mlv-youtube'
+export const YOUTUBE_CLASS = 'ml-video-youtube'
 
 export const YOUTUBE_TIMEUPDATE_POLL_MS = 250
 

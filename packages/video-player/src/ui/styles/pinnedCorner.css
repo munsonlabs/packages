@@ -12,7 +12,7 @@
 .player--pin-bottom-left,
 .player--pin-top-right,
 .player--pin-top-left {
-  border-radius: var(--mlv-radius, 12px);
+  border-radius: var(--ml-video-radius, 12px);
   transition: transform 0.18s ease;
 }
 
@@ -45,12 +45,12 @@
 .stage--pin-top-right.stage--tucked,
 .player--pin-bottom-right.player--tucked,
 .player--pin-top-right.player--tucked {
-  transform: translateX(calc(100% - var(--mlv-stage-tuck, 32px)));
+  transform: translateX(calc(100% - var(--ml-video-stage-tuck, 32px)));
 }
 
 .stage--pin-bottom-left.stage--tucked,
 .stage--pin-top-left.stage--tucked,
 .player--pin-bottom-left.player--tucked,
 .player--pin-top-left.player--tucked {
-  transform: translateX(calc(-100% + var(--mlv-stage-tuck, 32px)));
+  transform: translateX(calc(-100% + var(--ml-video-stage-tuck, 32px)));
 }

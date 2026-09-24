@@ -93,13 +93,13 @@ onBeforeUnmount(() => unobserve?.())
 <style scoped>
 .placeholder {
   width: 100%;
-  max-width: var(--mlv-max-width, 800px);
+  max-width: var(--ml-video-max-width, 800px);
   margin: 0 auto;
 }
 
 .placeholder__shell {
   position: relative;
-  border-radius: var(--mlv-radius, 12px);
+  border-radius: var(--ml-video-radius, 12px);
   overflow: hidden;
   background: #111;
   cursor: pointer;

@@ -10,8 +10,8 @@ const player = useResolvedPlayer(props)
 <template>
   <button
     type="button"
-    class="mlv-control-btn mlv-control-btn--toggle mlv-loop-button"
-    :class="{ 'mlv-control-btn--active mlv-loop-button--active': player?.isLooping }"
+    class="ml-video-control-btn ml-video-control-btn--toggle ml-video-loop-button"
+    :class="{ 'ml-video-control-btn--active ml-video-loop-button--active': player?.isLooping }"
     :aria-pressed="player?.isLooping ?? false"
     aria-label="Toggle loop"
     @click="player?.toggleLoop()"

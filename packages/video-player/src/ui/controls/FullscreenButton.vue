@@ -10,7 +10,7 @@ const player = useResolvedPlayer(props)
 <template>
   <button
     type="button"
-    class="mlv-control-btn mlv-fullscreen-button"
+    class="ml-video-control-btn ml-video-fullscreen-button"
     :aria-label="player?.isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'"
     @click="player?.toggleFullscreen()"
   >

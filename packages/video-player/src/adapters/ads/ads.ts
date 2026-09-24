@@ -1,9 +1,9 @@
 import { loadScript } from '@/adapters/loadScript'
 import { isIOS } from '@/utils/platform'
 
-export const AD_PLAYING_CLASS = 'mlv-ad-playing'
+export const AD_PLAYING_CLASS = 'ml-video-ad-playing'
 
-export const AD_PAUSED_CLASS = 'mlv-ad-paused'
+export const AD_PAUSED_CLASS = 'ml-video-ad-paused'
 
 export const IMA_SDK_URL = 'https://imasdk.googleapis.com/js/sdkloader/ima3.js'
 

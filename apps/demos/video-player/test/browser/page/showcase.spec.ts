@@ -15,8 +15,8 @@ describe('showcase (stage on)', () => {
     card.scrollIntoView()
     await playButton(card).click()
 
-    expect(card.querySelector('video.mlv-video')).toBeNull()
-    await waitFor(() => isPlaying(document.querySelector('.stage video.mlv-video')), 'the stage video to start playing')
+    expect(card.querySelector('video.ml-video-media')).toBeNull()
+    await waitFor(() => isPlaying(document.querySelector('.stage video.ml-video-media')), 'the stage video to start playing')
     await waitFor(() => /^[1-9]\d*$/.test(document.querySelector('.popover-btn__badge')?.textContent ?? ''), 'the Events badge to count')
     await waitFor(() => !!document.querySelector('.stage--minified'), 'the stage to pin')
 

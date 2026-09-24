@@ -14,7 +14,7 @@ async function run() {
 <template>
   <IconDemoFrame :ready="ready" :failed="failed">
     <div class="icon-demo__row">
-      <ml-sigil v-for="name in names" :key="name" :name="name" library="lucide"></ml-sigil>
+      <ml-sigil-icon v-for="name in names" :key="name" :name="name" library="lucide"></ml-sigil-icon>
     </div>
     <template #after>
       <UButton block size="sm" color="neutral" variant="outline" class="icon-demo__action" @click="run">

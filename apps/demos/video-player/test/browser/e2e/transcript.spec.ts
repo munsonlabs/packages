@@ -13,7 +13,7 @@ describe('TranscriptPanel', () => {
   it('clicking a cue seeks to its timestamp and starts playback', async () => {
     const screen = await render(TranscriptPanel, { props: { video: catalogue.plain, cues: CUES } })
 
-    const video = screen.container.querySelector<HTMLVideoElement>('video.mlv-video')!
+    const video = screen.container.querySelector<HTMLVideoElement>('video.ml-video-media')!
     await waitFor(() => video.duration > 0, 'video metadata to load')
 
     // A locator-driven click carries a genuine user gesture; a raw DOM `element.click()` does
@@ -34,7 +34,7 @@ describe('TranscriptPanel', () => {
     ]
     const screen = await render(TranscriptPanel, { props: { video: catalogue.plain, cues } })
 
-    const video = screen.container.querySelector<HTMLVideoElement>('video.mlv-video')!
+    const video = screen.container.querySelector<HTMLVideoElement>('video.ml-video-media')!
     await waitFor(() => video.duration > 0, 'video metadata to load')
 
     const cueTwo = screen.getByRole('button', { name: /Cue two/ })

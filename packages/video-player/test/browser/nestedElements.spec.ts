@@ -8,14 +8,14 @@ describe('nesting a control inside <ml-video-player>', () => {
     const host = document.createElement('div')
     host.innerHTML = `
       <ml-video-player src="${CLIP_URL}" muted>
-        <ml-controls-play-button></ml-controls-play-button>
+        <ml-video-play-button></ml-video-play-button>
       </ml-video-player>`
     document.body.appendChild(host)
 
     const player = host.querySelector('ml-video-player')!
     await waitFor(() => !!player.querySelector('.player__shell'), 'the player to render')
 
-    expect(host.querySelector('ml-controls-play-button')).toBeNull()
+    expect(host.querySelector('ml-video-play-button')).toBeNull()
     expect(player.querySelector('.player__custom-hud')).toBeNull()
     host.remove()
   })
@@ -24,11 +24,11 @@ describe('nesting a control inside <ml-video-player>', () => {
     const host = document.createElement('div')
     host.innerHTML = `
       <ml-video-player id="fitted" src="${CLIP_URL}" muted autoplay></ml-video-player>
-      <ml-controls-play-button for="fitted"></ml-controls-play-button>`
+      <ml-video-play-button for="fitted"></ml-video-play-button>`
     document.body.appendChild(host)
 
     const player = host.querySelector('ml-video-player') as HTMLElement & { isPlaying: boolean }
-    const control = host.querySelector('ml-controls-play-button')!
+    const control = host.querySelector('ml-video-play-button')!
 
     await waitFor(() => !!control.querySelector('button'), 'the control to render')
     await waitFor(() => player.isPlaying === true, 'the player to start')

@@ -8,9 +8,9 @@
 
 /* Embedded players (live examples, CDN demo, Shorts) pick up the site accent */
 :root {
-  --mlv-accent: var(--ui-primary);
-  --mlv-btn-bg: var(--ui-primary);
-  --mlv-btn-color: var(--ui-text-inverted);
+  --ml-video-accent: var(--ui-primary);
+  --ml-video-btn-bg: var(--ui-primary);
+  --ml-video-btn-color: var(--ui-text-inverted);
 }
 
 /* Sub-navigation menu centring (pre-existing) */

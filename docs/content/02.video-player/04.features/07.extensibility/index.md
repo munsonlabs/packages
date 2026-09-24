@@ -7,7 +7,7 @@ navigation:
 
 ## A fully custom HUD
 
-Set `controls="false"` for a bare `<video>` with no built-in HUD, then build your own from the 13 [headless controls](/video-player/api/controls) - each a Vue component and an `ml-controls-*` custom element - and the [imperative API](/video-player/api/methods) for anything they don't cover:
+Set `controls="false"` for a bare `<video>` with no built-in HUD, then build your own from the 13 [headless controls](/video-player/api/controls) - each a Vue component and an `ml-video-*` custom element - and the [imperative API](/video-player/api/methods) for anything they don't cover:
 
 ```vue
 <script setup>
@@ -61,4 +61,4 @@ The logic behind the built-in controls is exported, so a custom control can reus
 ## Wrapping and exposing a player
 
 - [`useForwardedPlayer`](/video-player/api/methods/wrapping#useforwardedplayer) forwards a wrapped `VideoPlayer`'s full handle through your own component's `defineExpose`, with an optional `guard` to intercept calls.
-- [`exposePlayerOnElement`](/video-player/api/methods/wrapping#exposeplayeronelement) copies that handle onto a DOM element, so a third party's script or a separately-bundled `<ml-controls-*>` element can drive a plain Vue player.
+- [`exposePlayerOnElement`](/video-player/api/methods/wrapping#exposeplayeronelement) copies that handle onto a DOM element, so a third party's script or a separately-bundled `<ml-video-*>` element can drive a plain Vue player.

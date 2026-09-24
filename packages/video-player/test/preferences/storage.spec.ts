@@ -14,17 +14,17 @@ afterEach(() => vi.restoreAllMocks())
 
 describe('storage', () => {
   it('round-trips when storage works', () => {
-    writeStorage('mlv-test', 'value')
-    expect(readStorage('mlv-test')).toBe('value')
+    writeStorage('ml-video-test', 'value')
+    expect(readStorage('ml-video-test')).toBe('value')
   })
 
   it('returns null instead of throwing when reads are blocked', () => {
     breakStorage()
-    expect(readStorage('mlv-test')).toBeNull()
+    expect(readStorage('ml-video-test')).toBeNull()
   })
 
   it('swallows a failed write', () => {
     breakStorage()
-    expect(() => writeStorage('mlv-test', 'value')).not.toThrow()
+    expect(() => writeStorage('ml-video-test', 'value')).not.toThrow()
   })
 })

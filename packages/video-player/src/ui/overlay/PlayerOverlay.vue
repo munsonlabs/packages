@@ -156,7 +156,7 @@ const { hudVisible, popupVisible } = useOverlayVisibility(player, hud)
   inset: 0;
   z-index: 5;
   display: flex;
-  align-items: var(--mlv-popup-align, center);
+  align-items: var(--ml-video-popup-align, center);
   justify-content: center;
   padding: 16px;
   pointer-events: none;

@@ -14,7 +14,7 @@ async function mountElement(tag: 'ml-video-card' | 'ml-video-player', entry: Rec
   const Host = defineComponent({ render: () => h('div', [h(tag, { ...entry, onStateChange: onState })]) })
   const screen = await render(Host)
   const el = screen.container.querySelector<PlayerElement>(tag)!
-  return { screen, el, sink, video: () => el.querySelector<HTMLVideoElement>('video.mlv-video') }
+  return { screen, el, sink, video: () => el.querySelector<HTMLVideoElement>('video.ml-video-media') }
 }
 
 describe('custom elements', () => {
@@ -75,7 +75,7 @@ describe('custom elements', () => {
     await screen.getByRole('button', { name: 'Play' }).first().click()
     const play = await sink.next('play')
     expect(play.src).toBe(playlist[0].src)
-    expect(stage.querySelector<HTMLVideoElement>('video.mlv-video')?.paused).toBe(false)
+    expect(stage.querySelector<HTMLVideoElement>('video.ml-video-media')?.paused).toBe(false)
     expect(stage.hasNext).toBe(true)
 
     stage.playNext()

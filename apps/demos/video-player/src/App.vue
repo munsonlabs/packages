@@ -13,7 +13,7 @@ import RecyclerReelPage from './components/RecyclerReelPage.vue'
 import { videos } from './data/demoVideos'
 import { useDemoSettings } from './composables/useDemoSettings'
 
-const { showStage } = useDemoSettings()
+const { showStage, webComponents } = useDemoSettings()
 const showReelPage = ref(false)
 </script>
 
@@ -55,7 +55,7 @@ const showReelPage = ref(false)
       </section>
       <TranscriptPanel />
       <ExposedPlayerPanel />
-      <HideMarker class="demo-hide-marker" />
+      <component :is="webComponents ? 'ml-video-hide-marker' : HideMarker" class="demo-hide-marker" />
     </main>
   </div>
 </template>
@@ -535,7 +535,8 @@ main {
   line-height: 1.5;
 }
 
-.ml-video-hide-marker.demo-hide-marker {
+/* Vue renders the class on a div; the element build renders it on the host, with the class inside. */
+.demo-hide-marker {
   min-height: 48px;
   display: flex;
   align-items: center;
@@ -549,7 +550,7 @@ main {
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
-.ml-video-hide-marker.demo-hide-marker::before {
+.demo-hide-marker::before {
   content: 'HideMarker — stage tucks away while this is in view';
 }
 

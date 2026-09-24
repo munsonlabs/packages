@@ -88,6 +88,25 @@ describe('useScrubber', () => {
     expect(scrubbing.value).toBe(false)
   })
 
+  it('does not start a paused video when a tap follows an earlier drag', () => {
+    const player = ref(makePlayer())
+    const { onInput, onChange, onTouchStart, onTouchEnd } = scrubber(player)
+
+    onTouchStart()
+    onInput(rangeEvent(20))
+    onChange(rangeEvent(20))
+    onTouchEnd(rangeEvent(20) as unknown as TouchEvent)
+
+    vi.mocked(player.value.play).mockClear()
+    Object.assign(player.value, { isPlaying: false })
+
+    onTouchStart()
+    onTouchEnd(rangeEvent(70) as unknown as TouchEvent)
+
+    expect(player.value.seek).toHaveBeenCalledWith(70)
+    expect(player.value.play).not.toHaveBeenCalled()
+  })
+
   it('resumes a playing video after a tap that never fired input', () => {
     const player = ref(makePlayer())
     const { onTouchStart, onTouchEnd } = scrubber(player)

@@ -15,6 +15,8 @@ const unit = {
 
 const browser = {
   include: ['test/browser/**/*.spec.ts'],
+  /** Real browsers loading real media on a shared CI runner are slower than any local run; none of these specs assert speed. */
+  testTimeout: 30_000,
   setupFiles: ['vitest-browser-vue', ...setup('test/browser/setup.ts')],
   browser: {
     enabled: true,

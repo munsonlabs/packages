@@ -3,7 +3,7 @@ import { render } from 'vitest-browser-vue'
 import { VideoPlayer, VideoStage, VideoCard } from '@/index'
 import type { PlayerHandle, StateChangeEvent, StateChangeType, VideoEntry } from '@/index'
 
-export async function waitFor(predicate: () => boolean, message: string, timeout = 10_000): Promise<void> {
+export async function waitFor(predicate: () => boolean, message: string, timeout = 20_000): Promise<void> {
   const start = Date.now()
   while (!predicate()) {
     if (Date.now() - start > timeout) throw new Error(`Timed out waiting for: ${message}`)

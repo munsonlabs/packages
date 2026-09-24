@@ -1,5 +1,11 @@
 # @munsonlabs/video-player
 
+## 0.2.9
+
+### Patch Changes
+
+- c1f99c0: play() called straight after pause() now starts playback instead of being skipped, so a tap on the scrubber resumes.
+
 ## 0.2.8
 
 ### Patch Changes

@@ -49,7 +49,7 @@ jobs:
           commit: 'chore(release): version packages'
           # Run without a shell, so the lockfile refresh lives in the npm script; without it the PR fails `npm ci`.
           version: npm run version-packages
-          publish: npx changeset publish
+          publish: vp exec changeset publish
         env:
           GITHUB_TOKEN: ${{ secrets.CHANGESETS_TOKEN || secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

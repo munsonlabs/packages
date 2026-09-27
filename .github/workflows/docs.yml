@@ -34,7 +34,7 @@ jobs:
           site-url: ${{ vars.DOCS_URL }}
 
       - name: Deploy to Cloudflare Pages
-        run: npx --yes wrangler@4 pages deploy docs/.output/public --project-name="$PROJECT" --branch="$BRANCH"
+        run: vp dlx wrangler@4 pages deploy docs/.output/public --project-name="$PROJECT" --branch="$BRANCH"
         env:
           PROJECT: ${{ vars.CLOUDFLARE_PROJECT_NAME }}
           BRANCH: ${{ inputs.branch }}

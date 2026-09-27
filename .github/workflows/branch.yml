@@ -27,7 +27,7 @@ jobs:
         with:
           nuxt: 'false'
       - run: vp run --filter './packages/*' build
-      - run: npx pkg-pr-new publish './packages/*'
+      - run: vp dlx pkg-pr-new publish './packages/*'
 
   # Pending changesets on beta publish under the `beta` dist-tag; the version bump is never committed,
   # so the changesets stay put and drive the real release once beta merges into main.
@@ -48,7 +48,7 @@ jobs:
         with:
           name: dist
           path: packages
-      - run: npx changeset version --snapshot beta
+      - run: vp exec changeset version --snapshot beta
       - name: Publish
         run: |
           if git diff --quiet -- 'packages/*/package.json'; then
@@ -56,6 +56,6 @@ jobs:
             exit 0
           fi
           npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
-          npx changeset publish --tag beta --no-git-tag
+          vp exec changeset publish --tag beta --no-git-tag
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

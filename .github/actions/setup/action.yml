@@ -28,10 +28,10 @@ runs:
 
     # .npmrc sets ignore-scripts, so Nuxt's postinstall never runs.
     - if: inputs.nuxt == 'true'
-      run: npx nuxt prepare
+      run: vp exec nuxt prepare
       shell: bash
       working-directory: docs
 
     - if: inputs.playwright != 'false'
-      run: npx playwright install --with-deps ${{ inputs.playwright }}
+      run: vp exec playwright install --with-deps ${{ inputs.playwright }}
       shell: bash

@@ -102,12 +102,12 @@ every package as `0.0.0-<tag>-<timestamp>` and leaves changesets and git untouch
   GitHub Actions to create and approve pull requests_, or store a personal access token (repo scope)
   as the `CHANGESETS_TOKEN` secret. Prefer the token: PRs opened with the default `GITHUB_TOKEN` do
   not trigger CI on themselves.
-- For the docs: a Cloudflare Pages project (`npx wrangler pages project create <project>
+- For the docs: a Cloudflare Pages project (`vp dlx wrangler pages project create <project>
 --production-branch=main`), plus these under _Settings → Secrets and variables → Actions_:
   - **Secrets** tab: `CLOUDFLARE_API_TOKEN`, an account token with only _Cloudflare Pages: Edit_ on
     the entire account, and `CLOUDFLARE_ACCOUNT_ID`.
   - **Variables** tab, as repository variables: `CLOUDFLARE_PROJECT_NAME` and `DOCS_URL`, the
-    production URL as `npx wrangler pages project list` shows it. The workflows read these through
+    production URL as `vp dlx wrangler pages project list` shows it. The workflows read these through
     `vars`, so the deploy fails with "Missing Pages project name" if they are added as secrets.
 - For branch packages: the [pkg.pr.new](https://github.com/apps/pkg-pr-new) GitHub app, installed on
   the munsonlabs organisation for this repository.

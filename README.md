@@ -6,7 +6,7 @@
 
 Public npm packages published under the `@munsonlabs` scope.
 
-[**Documentation**](https://munsonlabs.github.io/packages/) ·
+[**Documentation**](https://munsonlabs.pages.dev/) ·
 [![Build](https://github.com/munsonlabs/packages/actions/workflows/release.yml/badge.svg)](https://github.com/munsonlabs/packages/actions/workflows/release.yml)
 [![MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 

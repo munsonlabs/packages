@@ -35,4 +35,4 @@ The registry is one shared instance per page, so a separately loaded script can 
 
 ## Docs
 
-Every kind of source, resolution order, variants, the element and Vue component, other frameworks, third-party scripts and the full API: **https://munsonlabs.github.io/packages/sigil/getting-started/introduction**
+Every kind of source, resolution order, variants, the element and Vue component, other frameworks, third-party scripts and the full API: **https://munsonlabs.pages.dev/sigil/getting-started/introduction**

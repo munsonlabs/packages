@@ -29,4 +29,4 @@ import '@munsonlabs/video-player/style'
 
 ## Docs
 
-Full guides for props, events, ads, captions, quality, theming, headless controls, and web component usage: **https://munsonlabs.github.io/packages/video-player/getting-started/introduction**
+Full guides for props, events, ads, captions, quality, theming, headless controls, and web component usage: **https://munsonlabs.pages.dev/video-player/getting-started/introduction**

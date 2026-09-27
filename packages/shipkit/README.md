@@ -21,4 +21,4 @@ shipkit deploy         # publish (local, snapshot, or via changesets)
 
 ## Docs
 
-CLI reference, vite configs, and tsconfigs: **https://munsonlabs.github.io/packages/shipkit/introduction**
+CLI reference, vite configs, and tsconfigs: **https://munsonlabs.pages.dev/shipkit/introduction**

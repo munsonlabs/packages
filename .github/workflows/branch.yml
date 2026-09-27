@@ -26,8 +26,8 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           nuxt: 'false'
-      - run: vp run --filter @munsonlabs/sigil --filter @munsonlabs/video-player build
-      - run: npx pkg-pr-new publish ./packages/sigil ./packages/video-player
+      - run: vp run --filter './packages/*' build
+      - run: npx pkg-pr-new publish './packages/*'
 
   # Pending changesets on beta publish under the `beta` dist-tag; the version bump is never committed,
   # so the changesets stay put and drive the real release once beta merges into main.

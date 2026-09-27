@@ -54,7 +54,7 @@ fixtures are H.264. Each package's `AGENTS.md` covers its own test layout and de
 
 ## Releasing
 
-Changesets drive it: describe the change on your branch with `npm run publish`, merge, then merge the **Version Packages** PR when you want to ship. The flow, the snapshot escape hatch and the secrets the workflow needs are in [`.changeset/README.md`](.changeset/README.md).
+Changesets drive it: describe the change on your branch with `npm run publish`, merge, then merge the **Version Packages** PR when you want to ship. Every other branch push gets a docs preview on Cloudflare Pages and installable [pkg.pr.new](https://pkg.pr.new) builds, and changesets on `beta` publish under the npm `beta` tag. The flow, the previews, the snapshot escape hatch and the secrets the workflows need are in [`.changeset/README.md`](.changeset/README.md).
 
 ## Local registry
 

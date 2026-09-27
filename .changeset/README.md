@@ -50,12 +50,19 @@ than letters and digits into hyphens and cuts it at 28 characters, so `feat/dark
 
 ### pkg.pr.new
 
-Each push publishes that commit's build of `@munsonlabs/sigil` and `@munsonlabs/video-player` to
-pkg.pr.new, without touching npm. The job log prints the install lines:
+Each push builds every package in `packages/` and publishes that commit's build of each to
+pkg.pr.new, without touching npm, so a new package is picked up without editing the workflow. Every
+package is published on every push, changed or not, so one ref always gives a matching set. Each URL
+installs one package:
 
 ```bash
-npm i https://pkg.pr.new/munsonlabs/packages/@munsonlabs/sigil@<sha>
+npm i https://pkg.pr.new/munsonlabs/packages/@munsonlabs/sigil@<ref>
 ```
+
+`<ref>` is the short commit SHA, which never moves, or a PR number or branch name for the latest
+build on it. The job log prints the install lines, and
+[pkg.pr.new/~/munsonlabs/packages](https://pkg.pr.new/~/munsonlabs/packages) lists every build.
+Builds cannot be deleted, so nothing secret should ever end up in a package's `dist`.
 
 The URL is saved in the consuming project's `package.json` as the version. Switch it back to a
 released version (`npm i @munsonlabs/sigil@latest`, or `@beta`) before that project merges into its
@@ -86,9 +93,14 @@ every package as `0.0.0-<tag>-<timestamp>` and leaves changesets and git untouch
   GitHub Actions to create and approve pull requests_, or store a personal access token (repo scope)
   as the `CHANGESETS_TOKEN` secret. Prefer the token: PRs opened with the default `GITHUB_TOKEN` do
   not trigger CI on themselves.
-- For the docs: a Cloudflare Pages project, the `CLOUDFLARE_API_TOKEN` (Pages: Edit) and
-  `CLOUDFLARE_ACCOUNT_ID` secrets, and the `CLOUDFLARE_PROJECT_NAME` and `DOCS_URL` (the production
-  URL) repository variables.
-- For branch packages: the [pkg.pr.new](https://github.com/apps/pkg-pr-new) GitHub app.
+- For the docs: a Cloudflare Pages project (`npx wrangler pages project create <project>
+--production-branch=main`), plus these under _Settings → Secrets and variables → Actions_:
+  - **Secrets** tab: `CLOUDFLARE_API_TOKEN`, an account token with only _Cloudflare Pages: Edit_ on
+    the entire account, and `CLOUDFLARE_ACCOUNT_ID`.
+  - **Variables** tab, as repository variables: `CLOUDFLARE_PROJECT_NAME` and `DOCS_URL`, the
+    production URL as `npx wrangler pages project list` shows it. The workflows read these through
+    `vars`, so the deploy fails with "Missing Pages project name" if they are added as secrets.
+- For branch packages: the [pkg.pr.new](https://github.com/apps/pkg-pr-new) GitHub app, installed on
+  the munsonlabs organisation for this repository.
 - Optionally the [changeset-bot](https://github.com/apps/changeset-bot) GitHub app, so PRs without a
   changeset get a reminder comment.

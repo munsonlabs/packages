@@ -1,0 +1,61 @@
+name: Branch
+
+on:
+  # main goes through Release, and the Version Packages branch only through its pull request.
+  push:
+    branches-ignore: [main, changeset-release/**]
+
+jobs:
+  # Same CI definition as every other branch; its build job also uploads the dist that `beta` publishes.
+  verify:
+    uses: ./.github/workflows/ci.yml
+    with:
+      upload-dist: true
+
+  # Previews don't wait for CI, so a branch with failing tests still gets one.
+  docs-preview:
+    uses: ./.github/workflows/docs.yml
+    with:
+      branch: ${{ github.ref_name }}
+    secrets: inherit
+
+  packages-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+        with:
+          nuxt: 'false'
+      - run: vp run --filter @munsonlabs/sigil --filter @munsonlabs/video-player build
+      - run: npx pkg-pr-new publish ./packages/sigil ./packages/video-player
+
+  # Pending changesets on beta publish under the `beta` dist-tag; the version bump is never committed,
+  # so the changesets stay put and drive the real release once beta merges into main.
+  beta:
+    if: github.ref == 'refs/heads/beta'
+    needs: verify
+    runs-on: ubuntu-latest
+    concurrency:
+      group: beta-publish
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+        with:
+          nuxt: 'false'
+      # .npmrc sets ignore-scripts, so publish uses the build `verify` produced.
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: packages
+      - run: npx changeset version --snapshot beta
+      - name: Publish
+        run: |
+          if git diff --quiet -- 'packages/*/package.json'; then
+            echo "No pending changesets, nothing to publish."
+            exit 0
+          fi
+          npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
+          npx changeset publish --tag beta --no-git-tag
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

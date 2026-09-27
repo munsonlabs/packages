@@ -1,0 +1,38 @@
+name: Build site
+description: Build the demos and generate the docs into docs/.output/public, served from the site root.
+
+inputs:
+  site-url:
+    description: Canonical URL of the site, used for canonical links and llms.txt.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Build demos
+      shell: bash
+      run: |
+        for dir in apps/demos/*/; do
+          name=$(node -p "require('./$dir/package.json').name")
+          var="VITE_BASE_$(printf '%s' "$name" | sed 's|^@||; s|[/.-]|_|g' | tr '[:lower:]' '[:upper:]')"
+          export "$var=/demo/$(basename "$dir")/"
+          echo "$var=/demo/$(basename "$dir")/"
+        done
+        vp run --filter './apps/demos/*' build
+
+    - name: Generate docs
+      shell: bash
+      run: vp run --filter docs generate
+      env:
+        NUXT_APP_BASE_URL: /
+        NUXT_SITE_URL: ${{ inputs.site-url }}
+
+    - name: Assemble site
+      shell: bash
+      run: |
+        for dir in apps/demos/*/; do
+          target="docs/.output/public/demo/$(basename "$dir")"
+          mkdir -p "$(dirname "$target")"
+          cp -r "$dir/dist" "$target"
+          echo "published $target"
+        done

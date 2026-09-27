@@ -7,7 +7,6 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  actions: write # to dispatch the Pages workflow after a publish
 
 # Two runs racing on main could both try to publish.
 concurrency:
@@ -25,6 +24,8 @@ jobs:
   release:
     needs: verify
     runs-on: ubuntu-latest
+    outputs:
+      published: ${{ steps.changesets.outputs.published }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -54,9 +55,11 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # The docs load the published bundle, so the site rebuilds after the packages land on npm.
-      - if: steps.changesets.outputs.published == 'true'
-        name: Redeploy the docs site
-        run: gh workflow run pages.yml --ref "$GITHUB_REF_NAME"
-        env:
-          GH_TOKEN: ${{ github.token }}
+  # The docs load the published bundle, so the site rebuilds after the packages land on npm.
+  docs:
+    needs: release
+    if: needs.release.outputs.published == 'true'
+    uses: ./.github/workflows/docs.yml
+    with:
+      branch: main
+    secrets: inherit

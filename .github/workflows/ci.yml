@@ -19,7 +19,8 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
       - run: vp run -r build
-      - if: inputs.upload-dist
+      # Branch pushes publish previews from this build.
+      - if: inputs.upload-dist || github.event_name == 'push'
         uses: actions/upload-artifact@v7
         with:
           name: dist
@@ -56,3 +57,57 @@ jobs:
           nuxt: 'false'
           playwright: webkit
       - run: vp run -r test -- --browser.name=webkit
+
+  # Previews run on branch pushes only; main deploys and publishes through Release.
+  docs-preview:
+    if: github.event_name == 'push' && github.ref != 'refs/heads/main'
+    uses: ./.github/workflows/docs.yml
+    with:
+      branch: ${{ github.ref_name }}
+    secrets: inherit
+
+  packages-preview:
+    if: github.event_name == 'push' && github.ref != 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+        with:
+          nuxt: 'false'
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: packages
+      - run: npx pkg-pr-new publish ./packages/sigil ./packages/video-player
+
+  # Pending changesets on beta publish under the `beta` dist-tag; the version bump is never committed,
+  # so the changesets stay put and drive the real release once beta merges into main.
+  beta-publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/beta'
+    needs: [build, check, test]
+    runs-on: ubuntu-latest
+    concurrency:
+      group: beta-publish
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+        with:
+          nuxt: 'false'
+      # .npmrc sets ignore-scripts, so publish uses the build `build` produced.
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: packages
+      - run: npx changeset version --snapshot beta
+      - name: Publish
+        run: |
+          if git diff --quiet -- 'packages/*/package.json'; then
+            echo "No pending changesets, nothing to publish."
+            exit 0
+          fi
+          npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
+          npx changeset publish --tag beta --no-git-tag
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

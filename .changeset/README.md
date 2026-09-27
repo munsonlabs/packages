@@ -72,6 +72,13 @@ own `main`. A CI step there stops it slipping through:
 ! grep -q 'pkg.pr.new' package.json
 ```
 
+To try a build in the browser without installing it, [esm.sh](https://esm.sh) serves pkg.pr.new
+builds as ES modules under `/pr/`, subpath exports included:
+
+```js
+import 'https://esm.sh/pr/munsonlabs/packages/@munsonlabs/video-player@<ref>/element'
+```
+
 ### beta
 
 Merge features into `beta` to ship them together ahead of a release. Each push there runs

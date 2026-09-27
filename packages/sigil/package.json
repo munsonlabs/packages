@@ -3,6 +3,11 @@
   "version": "0.0.3",
   "description": "Framework-free icon registry with a <ml-sigil-icon> custom element. Register SVG libraries or icon fonts by describing them; the registry loads what it needs.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/munsonlabs/packages.git",
+    "directory": "packages/sigil"
+  },
   "files": [
     "dist"
   ],

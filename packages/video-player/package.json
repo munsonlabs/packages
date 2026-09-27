@@ -2,6 +2,11 @@
   "name": "@munsonlabs/video-player",
   "version": "0.2.10",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/munsonlabs/packages.git",
+    "directory": "packages/video-player"
+  },
   "files": [
     "dist"
   ],

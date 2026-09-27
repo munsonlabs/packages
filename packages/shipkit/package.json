@@ -3,6 +3,11 @@
   "version": "0.1.0",
   "private": false,
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/munsonlabs/packages.git",
+    "directory": "packages/shipkit"
+  },
   "bin": {
     "shipkit": "./dist/index.mjs"
   },

@@ -27,7 +27,8 @@ each demo in `apps/demos/` under `/demo/<name>/`, then deploys it with `wrangler
 - Every other branch push deploys a preview to `https://<branch>.<project>.pages.dev`. Deleting
   the branch deletes all of its previews through
   [`prune-previews.yml`](../.github/workflows/prune-previews.yml). Cloudflare has no retention
-  setting of its own, so previews of branches that still exist are kept.
+  setting of its own, so previews of branches that still exist are kept. Run **Prune previews**
+  from the Actions tab with a branch name to delete one branch's previews by hand.
 
 The branch flows and the secrets and variables the deploy needs are in
 [`.changeset/README.md`](../.changeset/README.md).

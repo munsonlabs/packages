@@ -59,8 +59,9 @@ installs one package:
 npm i https://pkg.pr.new/munsonlabs/packages/@munsonlabs/sigil@<ref>
 ```
 
-`<ref>` is the short commit SHA, which never moves, or a PR number or branch name for the latest
-build on it. The job log prints the install lines, and
+`<ref>` is the short commit SHA, which never moves, or the latest build on a PR number or branch. A
+branch is written exactly as it is named, slash included (`@feat/dark-mode`), not in the hyphenated
+form Cloudflare uses for docs previews. The job log prints the install lines, and
 [pkg.pr.new/~/munsonlabs/packages](https://pkg.pr.new/~/munsonlabs/packages) lists every build.
 Builds cannot be deleted, so nothing secret should ever end up in a package's `dist`.
 
@@ -73,10 +74,11 @@ own `main`. A CI step there stops it slipping through:
 ```
 
 To try a build in the browser without installing it, [esm.sh](https://esm.sh) serves pkg.pr.new
-builds as ES modules under `/pr/`, subpath exports included:
+builds as ES modules under `/pr/`, subpath exports included. It only resolves commit SHAs, not
+branch names:
 
 ```js
-import 'https://esm.sh/pr/munsonlabs/packages/@munsonlabs/video-player@<ref>/element'
+import 'https://esm.sh/pr/munsonlabs/packages/@munsonlabs/video-player@<sha>/element'
 ```
 
 ### beta

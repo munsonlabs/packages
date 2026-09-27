@@ -40,7 +40,8 @@ whatever release comes next, because nothing published has changed.
 CI and deploys a preview of the docs to
 `https://<branch>.<project>.pages.dev`. Cloudflare lowercases the branch name, turns anything other
 than letters and digits into hyphens and cuts it at 28 characters, so `feat/dark-mode` becomes
-`feat-dark-mode`.
+`feat-dark-mode`. Deleting the branch deletes its previews
+([`prune-previews.yml`](../.github/workflows/prune-previews.yml)); its pkg.pr.new builds stay.
 
 | Branch    | Docs                           | Packages                                      |
 | --------- | ------------------------------ | --------------------------------------------- |

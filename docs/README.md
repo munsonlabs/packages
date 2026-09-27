@@ -24,7 +24,10 @@ each demo in `apps/demos/` under `/demo/<name>/`, then deploys it with `wrangler
 
 - Production (`main`) deploys after a release publishes, so the published-package demo finds its
   version on npm. Run **Deploy docs** from the Actions tab to redeploy by hand.
-- Every other branch push deploys a preview to `https://<branch>.<project>.pages.dev`.
+- Every other branch push deploys a preview to `https://<branch>.<project>.pages.dev`. Deleting
+  the branch deletes all of its previews through
+  [`prune-previews.yml`](../.github/workflows/prune-previews.yml). Cloudflare has no retention
+  setting of its own, so previews of branches that still exist are kept.
 
 The branch flows and the secrets and variables the deploy needs are in
 [`.changeset/README.md`](../.changeset/README.md).

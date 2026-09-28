@@ -30,6 +30,18 @@ class FakeVimeoPlayer implements VimeoPlayerInstance {
   setVolume = vi.fn((_vol: number) => Promise.resolve())
   setMuted = vi.fn((_muted: boolean) => Promise.resolve())
   setPlaybackRate = vi.fn((_rate: number) => Promise.resolve())
+  textTracks: VimeoTextTrack[] = []
+  getTextTracks = vi.fn(() => Promise.resolve(this.textTracks.map((t) => ({ ...t }))))
+  enableTextTrack = vi.fn((language: string, kind?: string) => {
+    const track = this.textTracks.find((t) => t.language === language && (!kind || t.kind === kind))
+    if (!track) return Promise.reject(new Error('InvalidTrackLanguageError'))
+    this.textTracks.forEach((t) => (t.mode = t === track ? 'showing' : 'disabled'))
+    return Promise.resolve({ ...track })
+  })
+  disableTextTrack = vi.fn(() => {
+    this.textTracks.forEach((t) => (t.mode = 'disabled'))
+    return Promise.resolve()
+  })
 
   on(event: string, cb: (data: unknown) => void): void {
     ;(this.handlers[event] ??= []).push(cb)
@@ -333,5 +345,96 @@ describe('runtime SDK errors', () => {
     expect(player.destroy).toHaveBeenCalled()
     expect(players.length).toBe(2)
     expect(adapter.error()).toBeNull()
+  })
+})
+
+describe('captions', () => {
+  const EN: VimeoTextTrack = { label: 'English', language: 'en', kind: 'captions', mode: 'disabled' }
+  const FR: VimeoTextTrack = { label: 'Français', language: 'fr', kind: 'subtitles', mode: 'disabled' }
+
+  async function readyWithTracks(tracks: VimeoTextTrack[]) {
+    const created = await createAdapter()
+    created.player.textTracks = tracks.map((t) => ({ ...t }))
+    const captionschange = vi.fn()
+    created.adapter.on('captionschange', captionschange)
+    created.player.readyDeferred.resolve()
+    await flush()
+    return { ...created, captionschange }
+  }
+
+  it('lists the text tracks once the player is ready and announces them', async () => {
+    const { adapter, captionschange } = await readyWithTracks([EN, FR])
+
+    expect(adapter.captions?.tracks()).toEqual([
+      { index: 0, label: 'English', language: 'en' },
+      { index: 1, label: 'Français', language: 'fr' },
+    ])
+    expect(adapter.captions?.active()).toBeNull()
+    expect(captionschange).toHaveBeenCalled()
+  })
+
+  it('reports a track Vimeo already has showing as active', async () => {
+    const { adapter } = await readyWithTracks([EN, { ...FR, mode: 'showing' }])
+
+    expect(adapter.captions?.active()).toBe(1)
+  })
+
+  it('enables the picked track by language and kind, and answers active() before the SDK confirms', async () => {
+    const { adapter, player } = await readyWithTracks([EN, FR])
+
+    adapter.captions?.select(1)
+
+    expect(adapter.captions?.active()).toBe(1)
+    expect(player.enableTextTrack).toHaveBeenCalledWith('fr', 'subtitles')
+  })
+
+  it('disables captions when the selection is cleared', async () => {
+    const { adapter, player } = await readyWithTracks([{ ...EN, mode: 'showing' }])
+
+    adapter.captions?.select(null)
+
+    expect(adapter.captions?.active()).toBeNull()
+    expect(player.disableTextTrack).toHaveBeenCalledOnce()
+  })
+
+  it('follows a switch made inside Vimeo through texttrackchange', async () => {
+    const { adapter, player, captionschange } = await readyWithTracks([EN, FR])
+    captionschange.mockClear()
+
+    player.textTracks[0].mode = 'showing'
+    player.trigger('texttrackchange', { kind: 'captions', label: 'English', language: 'en' })
+    await flush()
+
+    expect(adapter.captions?.active()).toBe(0)
+    expect(captionschange).toHaveBeenCalled()
+  })
+
+  it('resyncs from the SDK when Vimeo rejects the switch', async () => {
+    const { adapter, player } = await readyWithTracks([EN])
+    player.enableTextTrack.mockImplementationOnce(() => Promise.reject(new Error('nope')))
+
+    adapter.captions?.select(0)
+    expect(adapter.captions?.active()).toBe(0)
+    await flush()
+
+    expect(adapter.captions?.active()).toBeNull()
+  })
+
+  it('ignores an index that is not in the track list', async () => {
+    const { adapter, player } = await readyWithTracks([EN])
+
+    adapter.captions?.select(5)
+
+    expect(adapter.captions?.active()).toBeNull()
+    expect(player.enableTextTrack).not.toHaveBeenCalled()
+  })
+
+  it('clears the tracks when a new source is loaded', async () => {
+    const { adapter } = await readyWithTracks([EN])
+
+    adapter.load('https://vimeo.com/76979871')
+
+    expect(adapter.captions?.tracks()).toEqual([])
+    expect(adapter.captions?.active()).toBeNull()
   })
 })

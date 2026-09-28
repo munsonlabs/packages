@@ -37,7 +37,7 @@ whatever release comes next, because nothing published has changed.
 ## Previews
 
 [`branch.yml`](../.github/workflows/branch.yml) runs on every branch push other than `main`. It runs
-CI and deploys a preview of the docs to
+CI and, once CI passes, deploys a preview of the docs to
 `https://<branch>.<project>.pages.dev`. Cloudflare lowercases the branch name, turns anything other
 than letters and digits into hyphens and cuts it at 28 characters, so `feat/dark-mode` becomes
 `feat-dark-mode`. Deleting the branch deletes its previews
@@ -51,7 +51,7 @@ than letters and digits into hyphens and cuts it at 28 characters, so `feat/dark
 
 ### pkg.pr.new
 
-Each push builds every package in `packages/` and publishes that commit's build of each to
+Each push that passes CI publishes the build CI tested of every package in `packages/` to
 pkg.pr.new, without touching npm, so a new package is picked up without editing the workflow. Every
 package is published on every push, changed or not, so one ref always gives a matching set. Each URL
 installs one package:

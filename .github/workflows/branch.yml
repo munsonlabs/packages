@@ -12,21 +12,27 @@ jobs:
     with:
       upload-dist: true
 
-  # Previews don't wait for CI, so a branch with failing tests still gets one.
+  # Previews wait for CI, so a docs preview or pkg.pr.new build always comes from a commit that passed.
   docs-preview:
+    needs: verify
     uses: ./.github/workflows/docs.yml
     with:
       branch: ${{ github.ref_name }}
     secrets: inherit
 
+  # Publishes the dist `verify` built and tested rather than building again.
   packages-preview:
+    needs: verify
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
         with:
           nuxt: 'false'
-      - run: vp run --filter './packages/*' build
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: packages
       - run: vp dlx pkg-pr-new publish './packages/*'
 
   # Pending changesets on beta publish under the `beta` dist-tag; the version bump is never committed,

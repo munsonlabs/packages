@@ -1,9 +1,9 @@
 name: Branch
 
 on:
-  # main goes through Release, and the Version Packages branch only through its pull request.
+  # main goes through Release, the Version Packages branch only through its pull request, and idea/ branches not at all.
   push:
-    branches-ignore: [main, changeset-release/**]
+    branches-ignore: [main, changeset-release/**, idea/**]
 
 jobs:
   # Same CI definition as every other branch; its build job also uploads the dist that `beta` publishes.

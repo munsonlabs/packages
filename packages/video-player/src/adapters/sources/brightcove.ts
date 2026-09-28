@@ -1,5 +1,6 @@
 import { pickBestSource, createCachedResolver } from '@/adapters/sourceHelpers'
 import type { ResolvedSource } from '@/types/playback'
+import type { CaptionTrackDef } from '@/types/player'
 
 export const BRIGHTCOVE_PLAYBACK_API = 'https://edge.api.brightcove.com/playback/v1/accounts'
 
@@ -62,11 +63,45 @@ const fetchPlayerConfig = createCachedResolver<
   (accountId, playerId, embed) => `${accountId}/${playerId}_${embed}`,
 )
 
+interface BrightcoveTextTrack {
+  src?: string | null
+  srclang?: string | null
+  label?: string | null
+  kind?: string
+  mime_type?: string | null
+  default?: boolean
+}
+
+/**
+ * Keeps only caption and subtitle files - `text_tracks` also carries thumbnail and chapter
+ * metadata. The API lists each file once over http and once over https, so both are folded
+ * onto https (which a secure page could load anyway) and the duplicate dropped.
+ */
+function extractTextTracks(textTracks: BrightcoveTextTrack[] | undefined): CaptionTrackDef[] {
+  const seen = new Set<string>()
+  const tracks: CaptionTrackDef[] = []
+  for (const t of textTracks ?? []) {
+    if ((t.kind !== 'captions' && t.kind !== 'subtitles') || !t.src) continue
+    if (t.mime_type && t.mime_type !== 'text/webvtt') continue
+    const src = t.src.replace(/^http:\/\//, 'https://')
+    if (seen.has(src)) continue
+    seen.add(src)
+    tracks.push({
+      src,
+      kind: t.kind,
+      ...(t.srclang && { srclang: t.srclang }),
+      ...(t.label && { label: t.label }),
+      ...(t.default && { default: true }),
+    })
+  }
+  return tracks
+}
+
 async function fetchSources(
   accountId: string,
   videoId: string,
   policyKey: string,
-): Promise<{ sources: Array<{ src: string; type: string }>; poster: string | null }> {
+): Promise<{ sources: Array<{ src: string; type: string }>; poster: string | null; tracks: CaptionTrackDef[] }> {
   const res = await fetch(`${BRIGHTCOVE_PLAYBACK_API}/${accountId}/videos/${videoId}`, {
     headers: { Accept: `application/json;pk=${policyKey}` },
   })
@@ -80,6 +115,7 @@ async function fetchSources(
   return {
     sources: sources.map((s) => ({ src: s.src, type: s.type })),
     poster: data.poster ?? data.thumbnail ?? null,
+    tracks: extractTextTracks(data.text_tracks),
   }
 }
 
@@ -93,7 +129,7 @@ export async function resolveSource(src: string, overrideKey?: string): Promise<
 
   const { accountId, playerId, embed, videoId } = parsed
   const { policyKey, adTagUrl } = await fetchPlayerConfig(accountId, playerId, embed, overrideKey)
-  const { sources, poster } = await fetchSources(accountId, videoId, policyKey)
+  const { sources, poster, tracks } = await fetchSources(accountId, videoId, policyKey)
 
-  return { ...sources[0], poster, adTagUrl }
+  return { ...sources[0], poster, adTagUrl, tracks }
 }

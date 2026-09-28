@@ -1,4 +1,5 @@
 import type { PlaybackListener } from '@/adapters/emitter'
+import type { CaptionTrackDef } from '@/types/player'
 
 export interface MediaErrorLike {
   code: number
@@ -113,6 +114,8 @@ export interface ResolvedSource {
   type?: string
   poster?: string | null
   adTagUrl?: string | null
+  /** Caption files the platform lists beside the stream, loaded only when the player has no `tracks` of its own. */
+  tracks?: CaptionTrackDef[]
 }
 
 export interface Matcher {

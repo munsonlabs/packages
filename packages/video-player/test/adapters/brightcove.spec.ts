@@ -54,6 +54,7 @@ describe('resolveSource', () => {
       type: 'video/mp4',
       poster: 'https://cdn.example.com/poster.jpg',
       adTagUrl: null,
+      tracks: [],
     })
     expect(fetch).toHaveBeenCalledWith(`https://players.brightcove.net/${accountId}/${playerEmbed}/config.json`)
     expect(fetch).toHaveBeenCalledWith(`https://edge.api.brightcove.com/playback/v1/accounts/${accountId}/videos/456`, {
@@ -93,5 +94,31 @@ describe('resolveSource', () => {
     mockFetch({ video_cloud: {} }, {})
 
     await expect(resolveSource(uniqueUrl())).rejects.toThrow(/policy_key/)
+  })
+
+  it('keeps only WebVTT caption and subtitle tracks, on https and without the http duplicate', async () => {
+    const thumbnails = { src: 'https://cdn.example.com/thumbs.vtt', kind: 'metadata', label: 'thumbnails', mime_type: 'text/webvtt' }
+    const en = { src: 'http://cdn.example.com/en.vtt', srclang: 'en', label: 'English', kind: 'captions', mime_type: 'text/webvtt', default: true }
+    mockFetch(
+      { video_cloud: { policy_key: 'pk123' } },
+      {
+        sources: [{ src: 'https://cdn.example.com/video.mp4', type: 'video/mp4' }],
+        text_tracks: [
+          thumbnails,
+          en,
+          { ...en, src: 'https://cdn.example.com/en.vtt' },
+          { src: 'https://cdn.example.com/fr.vtt', srclang: 'fr', label: null, kind: 'subtitles', mime_type: 'text/webvtt' },
+          { src: 'https://cdn.example.com/de.dfxp', srclang: 'de', label: 'Deutsch', kind: 'captions', mime_type: 'application/ttml+xml' },
+          { src: null, srclang: 'es', label: 'Español', kind: 'captions' },
+        ],
+      },
+    )
+
+    const result = await resolveSource(uniqueUrl())
+
+    expect(result.tracks).toEqual([
+      { src: 'https://cdn.example.com/en.vtt', kind: 'captions', srclang: 'en', label: 'English', default: true },
+      { src: 'https://cdn.example.com/fr.vtt', kind: 'subtitles', srclang: 'fr' },
+    ])
   })
 })

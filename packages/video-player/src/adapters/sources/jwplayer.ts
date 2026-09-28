@@ -1,6 +1,7 @@
 import { pickBestSource, createCachedResolver } from '@/adapters/sourceHelpers'
 import { HLS_MIME_TYPE, MP4_MIME_TYPE } from '@/constants'
 import type { ResolvedSource } from '@/types/playback'
+import type { CaptionTrackDef } from '@/types/player'
 
 export const JW_MEDIA_API = 'https://cdn.jwplayer.com/v2/media'
 
@@ -17,6 +18,13 @@ function extractAdTagUrl(item: { advertising?: { schedule?: Array<{ tag?: string
   const schedule = item?.advertising?.schedule
   if (Array.isArray(schedule) && schedule.length) return schedule[0].tag ?? null
   return item?.advertising?.tag ?? null
+}
+
+/** `tracks` mixes captions with chapter and thumbnail-strip files; JW names a caption file's label but not its language. */
+function extractCaptionTracks(tracks: Array<{ file?: string; kind?: string; label?: string }> | undefined): CaptionTrackDef[] {
+  return (tracks ?? [])
+    .filter((t) => t.kind === 'captions' && !!t.file)
+    .map((t) => ({ src: t.file as string, kind: 'captions' as const, ...(t.label && { label: t.label }) }))
 }
 
 const fetchMediaConfig = createCachedResolver(async (mediaId: string): Promise<ResolvedSource> => {
@@ -36,6 +44,7 @@ const fetchMediaConfig = createCachedResolver(async (mediaId: string): Promise<R
     type: sources[0].type,
     poster: item.image ?? null,
     adTagUrl: extractAdTagUrl(item),
+    tracks: extractCaptionTracks(item.tracks),
   }
 })
 

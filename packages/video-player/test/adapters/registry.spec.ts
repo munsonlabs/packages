@@ -160,7 +160,7 @@ describe('built-in platform adapters are dynamically imported on first use', () 
 
     const result = await resolveSource('brightcove', 'https://players.brightcove.net/lazy-acct/lazy-player_default/index.html?videoId=789')
 
-    expect(result).toEqual({ src: 'https://cdn.example.com/lazy.mp4', type: 'video/mp4', poster: null, adTagUrl: null })
+    expect(result).toEqual({ src: 'https://cdn.example.com/lazy.mp4', type: 'video/mp4', poster: null, adTagUrl: null, tracks: [] })
   })
 })
 

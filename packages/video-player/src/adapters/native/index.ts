@@ -5,9 +5,10 @@ import { createCaptionSupport } from '@/adapters/native/captionSupport'
 import { createQualitySupport, type QualityEngineAdapter } from '@/adapters/native/qualitySupport'
 import { createFullscreenSupport } from '@/adapters/native/fullscreenSupport'
 import { createPipSupport } from '@/adapters/native/pipSupport'
+import { attachSidecarTracks } from '@/adapters/native/sidecarTracks'
 import type { PlaybackAdapter, MediaErrorLike } from '@/types/playback'
 import { HLS_MIME_TYPE, DASH_MIME_TYPE } from '@/constants'
-import type { PreloadMode } from '@/types/player'
+import type { PreloadMode, CaptionTrackDef } from '@/types/player'
 
 export const STREAM_MAX_RECOVERY_ATTEMPTS = 3
 
@@ -23,6 +24,8 @@ export interface NativeAdapterOptions {
   playbackRate?: number
   preload?: PreloadMode
   captionLine?: number
+  /** Caption files a source platform lists beside its stream - see attachSidecarTracks. */
+  tracks?: CaptionTrackDef[]
 }
 
 const NATIVE_EVENTS = [
@@ -212,6 +215,7 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
   })
   const fullscreenSupport = createFullscreenSupport(videoEl, forwardEvent('nativefullscreenenter'), forwardEvent('nativefullscreenexit'))
   const pipSupport = createPipSupport(videoEl, forwardEvent('pipchange'))
+  const sidecarTracks = options.tracks?.length ? attachSidecarTracks(videoEl, options.tracks) : null
 
   const { poster, muted, autoplay, volume, playbackRate, preload, src, type } = options
   videoEl.poster = poster ?? ''
@@ -291,6 +295,7 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
       dash?.destroy()
       for (const [name, fn] of forwarders) videoEl.removeEventListener(name, fn)
       captionSupport.dispose()
+      sidecarTracks?.dispose()
       fullscreenSupport.dispose()
       pipSupport.dispose()
       emitter.dispose()

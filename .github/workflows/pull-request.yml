@@ -1,0 +1,16 @@
+name: Pull request
+
+on:
+  pull_request:
+
+jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+
+  # Pushes publish through Branch, but nothing does when a pull request opens, so pkg.pr.new would only
+  # comment after the next push. Publishing here on open puts the comment up straight away; later pushes
+  # update it through Branch. The Version Packages pull request has nothing to preview.
+  packages-preview:
+    needs: verify
+    if: (github.event.action == 'opened' || github.event.action == 'reopened') && !startsWith(github.head_ref, 'changeset-release/')
+    uses: ./.github/workflows/packages-preview.yml

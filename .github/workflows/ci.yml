@@ -1,14 +1,9 @@
 name: CI
 
 on:
-  # Pushes run this through Release (main) or Branch (everything else); pull requests run it directly.
-  pull_request:
+  # Pushes run this through Release (main) or Branch (everything else), pull requests through Pull request.
+  # The build job always uploads packages/*/dist for the caller's later jobs to publish.
   workflow_call:
-    inputs:
-      upload-dist:
-        description: Upload packages/*/dist for the caller's later jobs to consume.
-        type: boolean
-        default: false
 
 jobs:
   build:
@@ -16,9 +11,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
+        with:
+          nuxt: 'true'
       - run: vp run -r build
-      - if: inputs.upload-dist
-        uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: packages/*/dist
@@ -29,8 +25,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
-        with:
-          nuxt: 'false'
       - run: vp run -r check
 
   test:
@@ -39,7 +33,6 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
         with:
-          nuxt: 'false'
           playwright: chromium
       - run: vp run -r test -- --browser.name=chromium
 
@@ -51,6 +44,5 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
         with:
-          nuxt: 'false'
           playwright: webkit
       - run: vp run -r test -- --browser.name=webkit

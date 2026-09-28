@@ -9,8 +9,6 @@ jobs:
   # Same CI definition as every other branch; its build job also uploads the dist that `beta` publishes.
   verify:
     uses: ./.github/workflows/ci.yml
-    with:
-      upload-dist: true
 
   # Previews wait for CI, so a docs preview or pkg.pr.new build always comes from a commit that passed.
   docs-preview:
@@ -20,20 +18,9 @@ jobs:
       branch: ${{ github.ref_name }}
     secrets: inherit
 
-  # Publishes the dist `verify` built and tested rather than building again.
   packages-preview:
     needs: verify
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: ./.github/actions/setup
-        with:
-          nuxt: 'false'
-      - uses: actions/download-artifact@v8
-        with:
-          name: dist
-          path: packages
-      - run: vp dlx pkg-pr-new publish './packages/*'
+    uses: ./.github/workflows/packages-preview.yml
 
   # Pending changesets on beta publish under the `beta` dist-tag; the version bump is never committed,
   # so the changesets stay put and drive the real release once beta merges into main.
@@ -47,8 +34,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
-        with:
-          nuxt: 'false'
       # .npmrc sets ignore-scripts, so publish uses the build `verify` produced.
       - uses: actions/download-artifact@v8
         with:

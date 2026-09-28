@@ -18,7 +18,7 @@ const { isCustom, customAction } = usePlayerAction(inject(ActionKey, undefined),
 
 <template>
   <div class="controls__more-header">
-    <button class="controls__btn" aria-label="Back" @click="$emit('back')">
+    <button type="button" class="controls__btn" aria-label="Back" @click="$emit('back')">
       <Icon name="back" />
     </button>
     <span class="controls__more-label">More</span>

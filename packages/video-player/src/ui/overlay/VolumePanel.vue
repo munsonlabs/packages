@@ -12,11 +12,11 @@ const hud = injectStrict(HudKey)
 
 <template>
   <div class="controls__vol-header">
-    <button class="controls__btn" aria-label="Back" @click="$emit('back')">
+    <button type="button" class="controls__btn" aria-label="Back" @click="$emit('back')">
       <Icon name="back" />
     </button>
     <span class="controls__vol-label">Volume</span>
-    <button class="controls__btn" :aria-label="player.isMuted ? 'Unmute' : 'Mute'" @click="player.toggleMute()">
+    <button type="button" class="controls__btn" :aria-label="player.isMuted ? 'Unmute' : 'Mute'" @click="player.toggleMute()">
       <VolumeIcon :is-audible="player.isAudible" />
     </button>
   </div>

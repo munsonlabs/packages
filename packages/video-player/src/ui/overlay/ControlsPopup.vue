@@ -129,11 +129,12 @@ function onMoreClick(): void {
 
           <TimeDisplay class="controls__time-display" />
 
-          <button v-if="playlist.hasNext" class="controls__btn controls__btn--next" aria-label="Play next" @click="playlist.playNext()">
+          <button v-if="playlist.hasNext" type="button" class="controls__btn controls__btn--next" aria-label="Play next" @click="playlist.playNext()">
             <Icon name="skip-next" />
           </button>
 
           <button
+            type="button"
             class="controls__btn controls__btn--volume"
             aria-label="Volume"
             aria-haspopup="true"
@@ -144,6 +145,7 @@ function onMoreClick(): void {
           </button>
 
           <button
+            type="button"
             class="controls__btn controls__btn--more"
             :class="{ 'controls__btn--active': hasNonDefaultSettings }"
             aria-label="More"

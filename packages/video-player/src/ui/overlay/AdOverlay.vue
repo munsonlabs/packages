@@ -17,12 +17,12 @@ const countdown = computed(() => (player.adRemainingTime > 0 ? fmtTime(player.ad
         <span v-if="countdown" class="ad-overlay__countdown">{{ countdown }}</span>
       </div>
 
-      <button class="ad-overlay__btn" :aria-label="player.isAdPaused ? 'Resume ad' : 'Pause ad'" @click="player.togglePlay()">
+      <button type="button" class="ad-overlay__btn" :aria-label="player.isAdPaused ? 'Resume ad' : 'Pause ad'" @click="player.togglePlay()">
         <Icon name="play" v-if="player.isAdPaused" />
         <Icon name="pause" v-else />
       </button>
 
-      <button class="ad-overlay__btn" :aria-label="player.isAdMuted ? 'Unmute ad' : 'Mute ad'" @click="player.toggleAdMute()">
+      <button type="button" class="ad-overlay__btn" :aria-label="player.isAdMuted ? 'Unmute ad' : 'Mute ad'" @click="player.toggleAdMute()">
         <Icon name="volume-mute" v-if="player.isAdMuted" />
         <Icon name="volume-on" v-else />
       </button>

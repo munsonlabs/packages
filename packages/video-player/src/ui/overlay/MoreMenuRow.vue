@@ -17,7 +17,13 @@ defineEmits<{ click: [] }>()
 </script>
 
 <template>
-  <button class="controls__more-row" :class="{ 'controls__more-row--active': active }" :aria-label="ariaLabel || label" @click="$emit('click')">
+  <button
+    type="button"
+    class="controls__more-row"
+    :class="{ 'controls__more-row--active': active }"
+    :aria-label="ariaLabel || label"
+    @click="$emit('click')"
+  >
     <span v-if="icon || iconHtml" class="controls__more-row-label">
       <Icon v-if="icon" :name="icon" class="controls__more-row-icon" />
       <span v-else class="controls__more-row-icon" v-html="iconHtml" />

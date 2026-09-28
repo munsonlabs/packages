@@ -5,11 +5,11 @@ defineEmits<{ 'scroll-to': []; dismiss: [] }>()
 </script>
 
 <template>
-  <button class="pinned-controls__scroll-to" aria-label="Scroll to player" @click.stop="$emit('scroll-to')">
+  <button type="button" class="pinned-controls__scroll-to" aria-label="Scroll to player" @click.stop="$emit('scroll-to')">
     <Icon name="expand" />
   </button>
 
-  <button class="pinned-controls__dismiss" aria-label="Close" @click.stop="$emit('dismiss')">
+  <button type="button" class="pinned-controls__dismiss" aria-label="Close" @click.stop="$emit('dismiss')">
     <Icon name="close" />
   </button>
 </template>

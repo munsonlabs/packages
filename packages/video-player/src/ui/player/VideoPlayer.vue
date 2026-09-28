@@ -59,18 +59,21 @@ watch(
   () => player.isFullscreen,
   (isFullscreen) => {
     if (isFullscreen && !props.disableKeyboardShortcuts) {
-      nextTick(() => shellEl.value?.focus())
+      nextTick(() => shellEl.value?.focus({ preventScroll: true }))
     }
   },
 )
 
-/** ControlsPopup swaps its main row for MoreMenu/VolumePanel via v-if, which unmounts whatever HUD button was just clicked - the browser resets focus to <body> when a focused node is removed, and shortcuts would otherwise go dead until the viewer clicked back in. Only reclaims focus once it's landed on <body> outright, so a real Tab/click to something else on the page is left alone. */
+/** ControlsPopup swaps its main row for MoreMenu/VolumePanel via v-if, which unmounts whatever HUD button was just clicked - the browser resets focus to <body> when a focused node is removed, and shortcuts would otherwise go dead until the viewer clicked back in. Only reclaims focus when the node that lost it was removed or made inert - iOS also drops focus to <body> on a tap elsewhere (another player, say), and grabbing it back there would scroll the page to this one. */
 function handleFocusOut(e: FocusEvent): void {
   if (props.disableKeyboardShortcuts) return
   const next = e.relatedTarget as Node | null
   if (next && shellEl.value?.contains(next)) return
+  const lost = e.target as HTMLElement
   requestAnimationFrame(() => {
-    if (document.activeElement === document.body) shellEl.value?.focus()
+    if (document.activeElement !== document.body) return
+    if (lost.isConnected && !lost.closest('[inert]')) return
+    shellEl.value?.focus({ preventScroll: true })
   })
 }
 

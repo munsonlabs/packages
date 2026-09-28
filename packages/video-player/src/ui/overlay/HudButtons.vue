@@ -22,6 +22,7 @@ const { currentAction, isCustom, customAction, builtinLabel, builtinActive, onBu
     <template v-if="!hud.isOpen && !player.isFullscreen">
       <button
         v-if="currentAction === 'mute' || currentAction === 'loop' || currentAction === 'autoplay'"
+        type="button"
         class="hud__btn"
         :class="{ 'hud__btn--active': builtinActive }"
         :aria-label="builtinLabel"
@@ -35,6 +36,7 @@ const { currentAction, isCustom, customAction, builtinLabel, builtinActive, onBu
 
       <button
         v-else-if="isCustom && customAction"
+        type="button"
         class="hud__btn"
         :aria-label="customAction.label"
         tabindex="-1"
@@ -50,7 +52,14 @@ const { currentAction, isCustom, customAction, builtinLabel, builtinActive, onBu
       <Buffering class="hud__buf-spinner" />
     </div>
 
-    <button v-if="!hud.isOpen && !player.isFullscreen" class="hud__btn" aria-label="Show controls" tabindex="-1" @click.stop="hud.openControls">
+    <button
+      v-if="!hud.isOpen && !player.isFullscreen"
+      type="button"
+      class="hud__btn"
+      aria-label="Show controls"
+      tabindex="-1"
+      @click.stop="hud.openControls"
+    >
       <Icon name="controls" />
     </button>
   </div>

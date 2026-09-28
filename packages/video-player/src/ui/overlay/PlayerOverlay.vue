@@ -20,7 +20,7 @@ const { hudVisible, popupVisible } = useOverlayVisibility(player, hud)
 
   <div v-if="player.isError" class="overlay__error">
     <p>{{ player.errorMessage || 'This video could not be played.' }}</p>
-    <button class="overlay__retry" @click.stop="player.retry">Retry</button>
+    <button type="button" class="overlay__retry" @click.stop="player.retry">Retry</button>
   </div>
 
   <button type="button" class="overlay__reveal" aria-label="Show player controls" @click="hud.openControls()">Show player controls</button>

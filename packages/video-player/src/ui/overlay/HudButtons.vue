@@ -100,7 +100,6 @@ const { currentAction, isCustom, customAction, builtinLabel, builtinActive, onBu
   border: 1px solid rgba(255, 255, 255, 0.18);
   background: var(--ml-video-btn-bg, rgba(255, 255, 255, 0.1));
   backdrop-filter: blur(12px);
-  will-change: backdrop-filter;
   color: var(--ml-video-btn-color, #fff);
   cursor: pointer;
   transition:

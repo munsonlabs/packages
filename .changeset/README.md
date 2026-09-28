@@ -66,6 +66,13 @@ form Cloudflare uses for docs previews. The job log prints the install lines, an
 [pkg.pr.new/~/munsonlabs/packages](https://pkg.pr.new/~/munsonlabs/packages) lists every build.
 Builds cannot be deleted, so nothing secret should ever end up in a package's `dist`.
 
+On a pull request, pkg.pr.new keeps one comment up to date with a StackBlitz link for each example of
+a package the branch changed, its `@munsonlabs/*` dependencies pointed at that commit's build. An
+example belongs to a package by name: `apps/examples/video-player-vue` and
+`apps/examples/video-player-element` show up only when `packages/video-player` changed, and a branch
+whose packages have no examples gets the install commands alone. The examples sit outside the
+workspace, so CI never builds them; each is a plain project StackBlitz installs from npm.
+
 The URL is saved in the consuming project's `package.json` as the version. Switch it back to a
 released version (`npm i @munsonlabs/sigil@latest`, or `@beta`) before that project merges into its
 own `main`. A CI step there stops it slipping through:

@@ -20,12 +20,15 @@ jobs:
       branch: ${{ github.ref_name }}
     secrets: inherit
 
-  # Publishes the dist `verify` built and tested rather than building again.
+  # Publishes the dist `verify` built and tested rather than building again. Every package goes out on
+  # every push, but only the packages this branch changed get their StackBlitz examples in the PR comment.
   packages-preview:
     needs: verify
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: ./.github/actions/setup
         with:
           nuxt: 'false'
@@ -33,7 +36,7 @@ jobs:
         with:
           name: dist
           path: packages
-      - run: vp dlx pkg-pr-new publish './packages/*'
+      - run: node .github/scripts/publish-previews.mjs
 
   # Pending changesets on beta publish under the `beta` dist-tag; the version bump is never committed,
   # so the changesets stay put and drive the real release once beta merges into main.

@@ -1,5 +1,13 @@
 # @munsonlabs/video-player
 
+## 0.2.11
+
+### Patch Changes
+
+- 4329605: The HUD's round buttons no longer turn invisible on iOS after the phone is locked and unlocked.
+- 7a5ada4: The scrubber's timestamp preview is no longer cut off by the edges of the controls popup.
+- a075c9a: A tap on the video now closes the open controls popup over YouTube, Vimeo and Dailymotion embeds, and a player no longer takes focus back and scrolls the page to itself on iOS when another one is played.
+
 ## 0.2.10
 
 ### Patch Changes

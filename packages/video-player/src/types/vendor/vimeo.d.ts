@@ -17,6 +17,13 @@ declare global {
     muted?: boolean
   }
 
+  interface VimeoTextTrack {
+    label: string
+    language: string
+    kind: 'captions' | 'subtitles'
+    mode: 'showing' | 'disabled'
+  }
+
   interface VimeoPlayerConstructor {
     new (element: string | HTMLElement, options: VimeoPlayerOptions): VimeoPlayerInstance
   }
@@ -31,6 +38,9 @@ declare global {
     setVolume(volume: number): Promise<void>
     setMuted(muted: boolean): Promise<void>
     setPlaybackRate(rate: number): Promise<void>
+    getTextTracks(): Promise<VimeoTextTrack[]>
+    enableTextTrack(language: string, kind?: string): Promise<VimeoTextTrack>
+    disableTextTrack(): Promise<void>
     on(event: string, callback: (data: unknown) => void): void
   }
 }

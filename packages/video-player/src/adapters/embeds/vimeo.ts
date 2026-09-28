@@ -15,10 +15,48 @@ function parseVideoId(url: string): string | null {
 
 export function createVimeoAdapter(videoEl: HTMLVideoElement, options: EmbedAdapterOptions): PlaybackAdapter {
   let player: VimeoPlayerInstance | null = null
+  let textTracks: VimeoTextTrack[] = []
+  let activeTrack: number | null = null
+  let announceCaptions = (): void => {}
+
+  /**
+   * The SDK only answers asynchronously, so the track list and active index are mirrored here and
+   * re-announced through `captionschange` whenever Vimeo reports them - including a switch made
+   * inside Vimeo's own UI when `nativeUi` is on.
+   */
+  function syncTextTracks(): void {
+    void player
+      ?.getTextTracks()
+      .then((tracks) => {
+        textTracks = tracks
+        const showing = tracks.findIndex((t) => t.mode === 'showing')
+        activeTrack = showing === -1 ? null : showing
+        announceCaptions()
+      })
+      .catch(() => {})
+  }
+
+  /**
+   * `active()` answers from the mirror straight away rather than waiting on the SDK - the player
+   * re-reads it on every timeupdate, and a stale answer there would undo the viewer's pick before
+   * Vimeo confirmed it. A rejected switch resyncs from the SDK instead.
+   */
+  function selectTextTrack(index: number | null): void {
+    const track = index === null ? null : textTracks[index]
+    if (index !== null && !track) return
+    activeTrack = index
+    const change = track ? player?.enableTextTrack(track.language, track.kind) : player?.disableTextTrack()
+    void change?.catch(syncTextTracks)
+  }
 
   return createStatefulEmbedAdapter(videoEl, options, {
     cssClass: VIMEO_CLASS,
     connect: async ({ techId, emitter, state, isDisposed, consumeQueuedPlay }) => {
+      textTracks = []
+      activeTrack = null
+      announceCaptions = () => emitter.trigger('captionschange')
+      emitter.trigger('captionschange')
+
       const videoId = parseVideoId(options.src)
       if (!videoId) return
 
@@ -57,6 +95,7 @@ export function createVimeoAdapter(videoEl: HTMLVideoElement, options: EmbedAdap
         .then(() => {
           if (options.muted) player?.setMuted(true).catch(() => {})
           if (options.volume !== undefined) player?.setVolume(options.volume).catch(() => {})
+          syncTextTracks()
           consumeQueuedPlay(() => void player?.play().catch(() => {}))
         })
         .catch((err: Error) => {
@@ -94,7 +133,10 @@ export function createVimeoAdapter(videoEl: HTMLVideoElement, options: EmbedAdap
       player.on('loaded', () => {
         durationSet = false
         emitter.trigger('durationchange')
+        syncTextTracks()
       })
+
+      player.on('texttrackchange', syncTextTracks)
 
       player.on('seeked', (data) => {
         state.currentTime = (data as { seconds: number }).seconds
@@ -127,6 +169,11 @@ export function createVimeoAdapter(videoEl: HTMLVideoElement, options: EmbedAdap
         .catch(() => {})
     },
     sdkFullscreenEnter: () => void player?.requestFullscreen().catch(() => {}),
+    captions: {
+      tracks: () => textTracks.map((t, index) => ({ index, label: t.label, language: t.language })),
+      active: () => activeTrack,
+      select: selectTextTrack,
+    },
     destroyPlayer: () => {
       const toDestroy = player
       player = null

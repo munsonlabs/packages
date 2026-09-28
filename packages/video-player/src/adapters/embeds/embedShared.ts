@@ -3,7 +3,7 @@ import { isIOS, requestFullscreen, exitFullscreen as exitDocFullscreen } from '@
 import { getShellEl } from '@/utils/shell'
 import { createEmitter } from '@/adapters/emitter'
 import type { Emitter } from '@/adapters/emitter'
-import type { PlaybackAdapter, MediaErrorLike, EmbedAdapterOptions } from '@/types/playback'
+import type { PlaybackAdapter, MediaErrorLike, EmbedAdapterOptions, AdapterCaptions } from '@/types/playback'
 
 export const TECH_CLASS = 'ml-video-tech'
 
@@ -160,6 +160,7 @@ export interface StatefulEmbedImpl {
   sdkFullscreenEnter?: () => void
   sdkFullscreenExit?: () => void
   destroyPlayer: () => void
+  captions?: AdapterCaptions
 }
 
 /**
@@ -263,6 +264,7 @@ export function createStatefulEmbedAdapter(videoEl: HTMLVideoElement, options: E
     },
     retry: reconnect,
     supportsPlaybackRate: () => false,
+    ...(impl.captions && { captions: impl.captions }),
     enterFullscreen,
     exitFullscreen,
     on: emitter.on,

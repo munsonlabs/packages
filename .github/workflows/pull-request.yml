@@ -6,8 +6,6 @@ on:
 jobs:
   verify:
     uses: ./.github/workflows/ci.yml
-    with:
-      upload-dist: true
 
   # Pushes publish through Branch, but nothing does when a pull request opens, so pkg.pr.new would only
   # comment after the next push. Publishing here on open puts the comment up straight away; later pushes

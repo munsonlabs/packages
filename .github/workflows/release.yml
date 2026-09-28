@@ -17,8 +17,6 @@ jobs:
   # Same CI definition as every other branch; its build job also uploads the dist that `release` publishes.
   verify:
     uses: ./.github/workflows/ci.yml
-    with:
-      upload-dist: true
 
   # Changesets flow: pending changesets open or refresh the Version Packages PR; merging it publishes.
   release:
@@ -31,10 +29,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: voidzero-dev/setup-vp@v1.19.0
-        with:
-          node-version-file: .node-version
-          cache: true
+      - uses: ./.github/actions/setup
 
       # .npmrc sets ignore-scripts, so publish uses the build `verify` produced.
       - uses: actions/download-artifact@v8

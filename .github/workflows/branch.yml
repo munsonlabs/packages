@@ -9,8 +9,6 @@ jobs:
   # Same CI definition as every other branch; its build job also uploads the dist that `beta` publishes.
   verify:
     uses: ./.github/workflows/ci.yml
-    with:
-      upload-dist: true
 
   # Previews wait for CI, so a docs preview or pkg.pr.new build always comes from a commit that passed.
   docs-preview:
@@ -36,8 +34,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
-        with:
-          nuxt: 'false'
       # .npmrc sets ignore-scripts, so publish uses the build `verify` produced.
       - uses: actions/download-artifact@v8
         with:

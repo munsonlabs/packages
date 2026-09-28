@@ -118,6 +118,11 @@ export const captionVideos: VideoEntry[] = [
       { src: './media/captions/bbb-fr.vtt', kind: 'captions', srclang: 'fr', label: 'Français' },
     ],
   },
+  {
+    label: 'Vimeo (auto-generated English captions)',
+    src: 'https://vimeo.com/58659769',
+    poster: 'https://vumbnail.com/58659769.jpg',
+  },
 ]
 
 export const qualityVideos: VideoEntry[] = [

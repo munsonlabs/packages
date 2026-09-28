@@ -93,6 +93,10 @@ function onPinDismiss(unpin: () => void): void {
 }
 
 function onTapCapture(): void {
+  if (hud.isOpen && !player.isFullscreen) {
+    hud.closeControls()
+    return
+  }
   hud.onVideoTap()
   player.fire('tap')
 }
@@ -148,7 +152,7 @@ defineExpose(exposePlayerSurface(player))
             </video>
 
             <div
-              v-if="!props.disableTapCapture && !player.isNativeUi && player.hasStarted && !player.isAdPlaying && !hud.isOpen"
+              v-if="!props.disableTapCapture && !player.isNativeUi && player.hasStarted && !player.isAdPlaying"
               class="overlay__tap-capture"
               @click="onTapCapture"
               @touchend.prevent.stop="onTapCapture"

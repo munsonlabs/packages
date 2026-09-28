@@ -35,6 +35,7 @@ const hasNonDefaultSettings = computed(() => player.isLooping || player.currentP
 function closeIfOutside(target: EventTarget | null): boolean {
   if (player.isFullscreen) return false
   if (!popupEl.value || popupEl.value.contains(target as Node)) return false
+  if ((target as Element | null)?.closest?.('.overlay__tap-capture')) return false
   hud.closeControls()
   return true
 }

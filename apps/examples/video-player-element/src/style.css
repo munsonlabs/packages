@@ -1,0 +1,27 @@
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #0b0d12;
+  color: #e2e8f0;
+}
+
+main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+h1 {
+  font-size: 1.25rem;
+}
+
+p {
+  color: #94a3b8;
+}
+
+.events {
+  margin-top: 1rem;
+  color: #94a3b8;
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
+}

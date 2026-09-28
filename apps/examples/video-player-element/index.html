@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@munsonlabs/video-player - custom element</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <main>
+      <h1>@munsonlabs/video-player</h1>
+      <p>
+        The same player as a custom element, with no framework on the page. Edit <code>index.html</code> or <code>src/main.js</code> to try your own
+        source.
+      </p>
+
+      <ml-video-player
+        src="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
+        label="Big Buck Bunny"
+        poster="https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg"
+      ></ml-video-player>
+
+      <ol class="events"></ol>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

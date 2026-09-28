@@ -8,7 +8,7 @@ const FR = { src: 'https://cdn.example.com/fr.vtt', kind: 'subtitles' as const, 
 let blobCount = 0
 
 function okResponse() {
-  return { ok: true, blob: () => Promise.resolve(new Blob(['WEBVTT'], { type: 'text/vtt' })) }
+  return { ok: true, arrayBuffer: () => Promise.resolve(new TextEncoder().encode('WEBVTT').buffer) }
 }
 
 function trackEls(videoEl: HTMLVideoElement): HTMLTrackElement[] {
@@ -146,5 +146,15 @@ describe('sidecar caption tracks', () => {
 
     expect(trackEls(videoEl)).toEqual([])
     expect(URL.createObjectURL).not.toHaveBeenCalled()
+  })
+
+  it('types the blob as WebVTT whatever content type the platform served it with', async () => {
+    const videoEl = makeVideo()
+
+    attachSidecarTracks(videoEl, [EN])
+    await flush(4)
+
+    const blob = vi.mocked(URL.createObjectURL).mock.calls[0][0] as Blob
+    expect(blob.type).toBe('text/vtt')
   })
 })

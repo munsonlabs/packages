@@ -52,7 +52,8 @@ export function attachSidecarTracks(videoEl: HTMLVideoElement, tracks: CaptionTr
   async function load(def: CaptionTrackDef): Promise<void> {
     const res = await fetch(def.src, { signal: controller.signal })
     if (!res.ok) return
-    const blob = await res.blob()
+    // Platforms serve these as text/plain (JW does); the blob is typed as WebVTT so no engine turns it away.
+    const blob = new Blob([await res.arrayBuffer()], { type: 'text/vtt' })
     if (controller.signal.aborted || streamCovers(def.srclang)) return
 
     const url = URL.createObjectURL(blob)

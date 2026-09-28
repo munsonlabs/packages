@@ -10,7 +10,7 @@ import CustomControlsPanel from './components/CustomControlsPanel.vue'
 import TranscriptPanel from './components/TranscriptPanel.vue'
 import ExposedPlayerPanel from './components/ExposedPlayerPanel.vue'
 import RecyclerReelPage from './components/RecyclerReelPage.vue'
-import { videos } from './data/demoVideos'
+import { videos, captionVideos } from './data/demoVideos'
 import { useDemoSettings } from './composables/useDemoSettings'
 
 const { showStage, webComponents } = useDemoSettings()
@@ -41,6 +41,12 @@ const showReelPage = ref(false)
 
     <main>
       <VideoPanel heading="Videos" :videos="videos" :show-stage="showStage" />
+      <VideoPanel
+        heading="Captions"
+        dot-variant="captions"
+        :videos="captionVideos"
+        description="Tracks from a local tracks prop and from Vimeo's own player, in the same captions menu."
+      />
       <VariationsPanel />
       <PinnedPlayerPanel />
       <!-- <CustomControlsPanel /> -->

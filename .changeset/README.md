@@ -73,6 +73,11 @@ example belongs to a package by name: `apps/examples/video-player-vue` and
 whose packages have no examples gets the install commands alone. The examples sit outside the
 workspace, so CI never builds them; each is a plain project StackBlitz installs from npm.
 
+The comment goes up when the pull request opens: [`pull-request.yml`](../.github/workflows/pull-request.yml)
+runs CI and publishes on open or reopen, and every push after that updates the same comment through
+`branch.yml`. A branch with no pull request still publishes on every green push, with the links in a
+"Continuous Releases" check on the commit instead of a comment.
+
 The URL is saved in the consuming project's `package.json` as the version. Switch it back to a
 released version (`npm i @munsonlabs/sigil@latest`, or `@beta`) before that project merges into its
 own `main`. A CI step there stops it slipping through:

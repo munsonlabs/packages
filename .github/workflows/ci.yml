@@ -1,8 +1,7 @@
 name: CI
 
 on:
-  # Pushes run this through Release (main) or Branch (everything else); pull requests run it directly.
-  pull_request:
+  # Pushes run this through Release (main) or Branch (everything else), pull requests through Pull request.
   workflow_call:
     inputs:
       upload-dist:

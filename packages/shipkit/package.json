@@ -48,6 +48,7 @@
   "dependencies": {
     "@changesets/cli": "^2.27.0",
     "@vitejs/plugin-vue": "^6.0.6",
+    "@vitest/browser-playwright": "4.1.11",
     "vue": "^3.5.0",
     "vue-tsc": "^3.2.5"
   },

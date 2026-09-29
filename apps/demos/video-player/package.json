@@ -14,8 +14,6 @@
   },
   "devDependencies": {
     "@munsonlabs/shipkit": "*",
-    "@vitest/browser-playwright": "4.1.11",
-    "playwright": "1.62.1",
     "vitest-browser-vue": "^2.1.0"
   }
 }

@@ -1,5 +1,16 @@
 # @munsonlabs/video-player
 
+## 0.3.0
+
+### Minor Changes
+
+- 36b0f80: Portrait videos read their max height from `--ml-video-portrait-max-height` (default `75dvh`).
+
+### Patch Changes
+
+- Updated dependencies [2823ba0]
+  - @munsonlabs/sigil@0.1.0
+
 ## 0.2.11
 
 ### Patch Changes

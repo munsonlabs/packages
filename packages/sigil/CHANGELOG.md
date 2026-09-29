@@ -1,5 +1,11 @@
 # @munsonlabs/sigil
 
+## 0.1.0
+
+### Minor Changes
+
+- 2823ba0: Links to the repository and the new docs site.
+
 ## 0.0.3
 
 ### Patch Changes

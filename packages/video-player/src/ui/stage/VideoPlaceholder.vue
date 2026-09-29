@@ -106,7 +106,7 @@ onBeforeUnmount(() => unobserve?.())
 }
 
 .placeholder__shell--portrait {
-  max-height: 75dvh;
+  max-height: var(--ml-video-portrait-max-height, 75dvh);
   width: auto;
   margin: 0 auto;
 }

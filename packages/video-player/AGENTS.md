@@ -76,13 +76,14 @@ Pick exactly one per page; importing more than one `./element*` bundle together 
 
 The player exposes several CSS custom properties for layout overrides:
 
-| Variable                    | Default                         | Used by                    | Description                                                                          |
-| --------------------------- | ------------------------------- | -------------------------- | ------------------------------------------------------------------------------------ |
-| `--ml-video-controls-width` | `min(450px, calc(100% - 32px))` | `ControlsPopup.vue`        | Controls popup width — override to widen or narrow the popup                         |
-| `--ml-video-popup-align`    | `center`                        | `PlayerOverlay.vue`        | Horizontal alignment of the controls popup                                           |
-| `--ml-video-stage-tuck`     | `32px`                          | `pinnedCorner.css`         | Width of the sliver left visible when `HideMarker` tucks the pinned stage off-screen |
-| `--ml-video-radius`         | `12px`                          | `pinnedCorner.css`         | Border-radius of the pinned corner box                                               |
-| `--ml-video-accent`         | `#3b82f6`                       | HUD, more menu, transcript | Accent for sliders, active toggles, more-menu rows and the transcript's active cue   |
+| Variable                         | Default                         | Used by                                   | Description                                                                                        |
+| -------------------------------- | ------------------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `--ml-video-controls-width`      | `min(450px, calc(100% - 32px))` | `ControlsPopup.vue`                       | Controls popup width — override to widen or narrow the popup                                       |
+| `--ml-video-popup-align`         | `center`                        | `PlayerOverlay.vue`                       | Horizontal alignment of the controls popup                                                         |
+| `--ml-video-stage-tuck`          | `32px`                          | `pinnedCorner.css`                        | Width of the sliver left visible when `HideMarker` tucks the pinned stage off-screen               |
+| `--ml-video-radius`              | `12px`                          | `pinnedCorner.css`                        | Border-radius of the pinned corner box                                                             |
+| `--ml-video-accent`              | `#3b82f6`                       | HUD, more menu, transcript                | Accent for sliders, active toggles, more-menu rows and the transcript's active cue                 |
+| `--ml-video-portrait-max-height` | `75dvh`                         | `VideoPlayer.vue`, `VideoPlaceholder.vue` | Max height of a portrait video, shared by the placeholder and the player so the swap does not jump |
 
 ## Naming the player surface
 

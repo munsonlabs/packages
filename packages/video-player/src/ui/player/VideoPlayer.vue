@@ -240,7 +240,7 @@ defineExpose(exposePlayerSurface(player))
 }
 
 .player__shell--portrait {
-  max-height: 75dvh;
+  max-height: var(--ml-video-portrait-max-height, 75dvh);
   width: auto;
   max-width: 100%;
   margin: 0 auto;

@@ -1,5 +1,11 @@
 # @munsonlabs/shipkit
 
+## 0.2.0
+
+### Minor Changes
+
+- 2823ba0: A `test/browser` directory runs its specs in real browsers, and the setup file is now `test/setup.ts`.
+
 ## 0.1.0
 
 ### Minor Changes

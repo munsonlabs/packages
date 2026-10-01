@@ -147,6 +147,18 @@ describe('createPlayerEvents — live stream detection', () => {
     expect(deps.positionMemory.save).not.toHaveBeenCalled()
   })
 
+  it('clears a viewer pause once the video plays again, so play-in-view can resume it later', () => {
+    const refs = makeRefs()
+    const { attachPlayerEvents } = createPlayerEvents(refs, makeDeps())
+    const { adapter, emitter } = makeFakeAdapter(ref(120))
+    refs.isPausedByViewer.value = true
+
+    attachPlayerEvents(adapter)
+    emitter.trigger('play')
+
+    expect(refs.isPausedByViewer.value).toBe(false)
+  })
+
   it('still runs quartiles and position memory for a normal (non-live) video', () => {
     const refs = makeRefs()
     const deps = makeDeps()

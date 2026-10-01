@@ -18,8 +18,9 @@ function makeAdapter(paused: boolean): PlaybackAdapter {
   return { paused: () => paused, play: vi.fn(() => Promise.resolve()), setMuted: vi.fn() } as unknown as PlaybackAdapter
 }
 
-function setup(adapter: PlaybackAdapter | null, explicitMuted?: boolean) {
+function setup(adapter: PlaybackAdapter | null, explicitMuted?: boolean, shouldStayPaused = false) {
   const muted = ref(explicitMuted)
+  const stayPaused = ref(shouldStayPaused)
   const shell = document.createElement('div')
   shell.className = 'player__shell'
   const video = document.createElement('video')
@@ -36,9 +37,10 @@ function setup(adapter: PlaybackAdapter | null, explicitMuted?: boolean) {
       isFullscreen,
       isFullscreenPending,
       () => muted.value,
+      () => stayPaused.value,
     ),
   )
-  return { isFullscreen, isFullscreenPending, muted, wrapper }
+  return { isFullscreen, isFullscreenPending, muted, stayPaused, wrapper }
 }
 
 beforeEach(() => {
@@ -51,6 +53,26 @@ describe('onWin (this player won the viewport-priority race)', () => {
     const adapter = makeAdapter(true)
     setup(adapter)
 
+    capturedOnWin?.()
+
+    expect(adapter.play).toHaveBeenCalledOnce()
+  })
+
+  it('leaves a player paused when it should stay paused, e.g. the viewer paused it or it ended', () => {
+    const adapter = makeAdapter(true)
+    setup(adapter, undefined, true)
+
+    capturedOnWin?.()
+
+    expect(adapter.play).not.toHaveBeenCalled()
+  })
+
+  it('plays again on a later win once it no longer has to stay paused', () => {
+    const adapter = makeAdapter(true)
+    const { stayPaused } = setup(adapter, undefined, true)
+
+    capturedOnWin?.()
+    stayPaused.value = false
     capturedOnWin?.()
 
     expect(adapter.play).toHaveBeenCalledOnce()

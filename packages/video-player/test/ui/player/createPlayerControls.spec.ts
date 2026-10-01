@@ -70,6 +70,20 @@ describe('togglePlay', () => {
     expect(adapter.pause).not.toHaveBeenCalled()
   })
 
+  it('marks the pause as the viewer’s own, so play-in-view will not undo it', () => {
+    const adapter = makeAdapter()
+    const { controls, state } = setup(adapter, ref(true))
+    controls.togglePlay()
+    expect(state.isPausedByViewer.value).toBe(true)
+  })
+
+  it('does not mark a pause the player made on its own', () => {
+    const adapter = makeAdapter()
+    const { controls, state } = setup(adapter, ref(true))
+    controls.pause()
+    expect(state.isPausedByViewer.value).toBe(false)
+  })
+
   it('does nothing when the player is not ready', () => {
     const adapter = makeAdapter()
     const { controls } = setup(adapter, ref(false), ref(false))

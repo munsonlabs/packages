@@ -32,6 +32,7 @@ export function createPlayerControls(
     isPlaying,
     isReady,
     hasEnded,
+    isPausedByViewer,
     hasStarted,
     duration: total,
     isLooping,
@@ -99,8 +100,12 @@ export function createPlayerControls(
     }
     const player = getPlayer()
     if (!player || !isReady.value) return
-    if (isPlaying.value) player.pause()
-    else void player.play().catch(() => {})
+    if (isPlaying.value) {
+      isPausedByViewer.value = true
+      player.pause()
+    } else {
+      void player.play().catch(() => {})
+    }
   }
 
   function seek(seconds: number): void {

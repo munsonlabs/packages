@@ -18,7 +18,7 @@ function makeAdapter(paused: boolean): PlaybackAdapter {
   return { paused: () => paused, play: vi.fn(() => Promise.resolve()), setMuted: vi.fn() } as unknown as PlaybackAdapter
 }
 
-function setup(adapter: PlaybackAdapter | null, explicitMuted?: boolean) {
+function setup(adapter: PlaybackAdapter | null, explicitMuted?: boolean, stayPaused = false) {
   const shell = document.createElement('div')
   shell.className = 'player__shell'
   const video = document.createElement('video')
@@ -28,7 +28,16 @@ function setup(adapter: PlaybackAdapter | null, explicitMuted?: boolean) {
 
   const isFullscreen = ref(false)
   const isFullscreenPending = ref(false)
-  const { wrapper } = withSetup(() => useAutoPlayInView(videoEl, () => adapter, isFullscreen, isFullscreenPending, explicitMuted))
+  const { wrapper } = withSetup(() =>
+    useAutoPlayInView(
+      videoEl,
+      () => adapter,
+      isFullscreen,
+      isFullscreenPending,
+      explicitMuted,
+      () => stayPaused,
+    ),
+  )
   return { isFullscreen, isFullscreenPending, wrapper }
 }
 
@@ -45,6 +54,15 @@ describe('onWin (this player won the viewport-priority race)', () => {
     capturedOnWin?.()
 
     expect(adapter.play).toHaveBeenCalledOnce()
+  })
+
+  it('leaves a player paused when it should stay paused, e.g. the viewer paused it or it ended', () => {
+    const adapter = makeAdapter(true)
+    setup(adapter, undefined, true)
+
+    capturedOnWin?.()
+
+    expect(adapter.play).not.toHaveBeenCalled()
   })
 
   it('does not call play again on an already-playing player', () => {

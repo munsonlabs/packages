@@ -27,6 +27,7 @@ export function createPlayerEvents(state: PlayerState, deps: PlayerEventsDeps): 
   const {
     isPlaying,
     hasEnded,
+    isPausedByViewer,
     isReady,
     isAdPlaying,
     isLive,
@@ -141,6 +142,7 @@ export function createPlayerEvents(state: PlayerState, deps: PlayerEventsDeps): 
       hasStarted.value = true
       isPlaying.value = true
       hasEnded.value = false
+      isPausedByViewer.value = false
       if (!isLive.value) positionMemory.restoreOnce(player)
       fire('play')
     })

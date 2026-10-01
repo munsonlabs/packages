@@ -14,6 +14,7 @@ export function createPlayerState(props: PlayerProps) {
   return {
     isPlaying: ref(false),
     hasEnded: ref(false),
+    isPausedByViewer: ref(false),
     isReady: ref(false),
     isLoaded: ref(false),
     isLive: ref(false),

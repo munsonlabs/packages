@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/public/favicon.svg" width="72" height="72" alt="">
+<img src="docs/public/brand/marks/labs.svg" width="176" height="176" alt="Munson Labs">
 
 # Munson Labs packages
 

@@ -1,4 +1,10 @@
+<div align="center">
+
+<img src="https://raw.githubusercontent.com/munsonlabs/packages/main/docs/public/brand/marks/sigil.svg" width="176" height="176" alt="Munson Labs Sigil">
+
 # @munsonlabs/sigil
+
+</div>
 
 A framework-free icon registry with a `<ml-sigil-icon>` custom element. Describe where icons come from once - an SVG set on a CDN, an icon font, a JSON map, your own source - then render them anywhere by name and swap them at runtime, even from a script the app didn't bundle. No dependencies; `vue` is optional, for the `/vue` entry.
 

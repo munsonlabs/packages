@@ -1,4 +1,10 @@
+<div align="center">
+
+<img src="https://raw.githubusercontent.com/munsonlabs/packages/main/docs/public/brand/marks/video-player.svg" width="176" height="176" alt="Munson Labs Video Player">
+
 # @munsonlabs/video-player
+
+</div>
 
 A Vue 3 video player supporting YouTube, Vimeo, Dailymotion, Brightcove, JW Player, and plain HTML5 (MP4, HLS, DASH). Includes a sticky stage player, lazy loading, custom actions, IMA ad support, header bidding, captions, adaptive quality selection, headless controls, and web component exports.
 

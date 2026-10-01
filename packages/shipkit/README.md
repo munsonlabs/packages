@@ -1,4 +1,10 @@
+<div align="center">
+
+<img src="https://raw.githubusercontent.com/munsonlabs/packages/main/docs/public/brand/marks/shipkit.svg" width="176" height="176" alt="Munson Labs Shipkit">
+
 # @munsonlabs/shipkit
+
+</div>
 
 Shared build tooling for Munson Labs packages. Provides the `shipkit` CLI, shared vite configs, and shared tsconfigs used across all `@munsonlabs/*` packages.
 

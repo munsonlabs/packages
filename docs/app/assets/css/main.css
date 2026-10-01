@@ -6,6 +6,58 @@
   --font-mono: 'Geist Mono', ui-monospace, monospace;
 }
 
+@theme static {
+  --color-brand-50: #eef9f2;
+  --color-brand-100: #d6f1e0;
+  --color-brand-200: #afe2c5;
+  --color-brand-300: #7dcca2;
+  --color-brand-400: #4cb07c;
+  --color-brand-500: #2e9460;
+  --color-brand-600: #22784d;
+  --color-brand-700: #1d603f;
+  --color-brand-800: #1a4d34;
+  --color-brand-900: #16402c;
+  --color-brand-950: #0a2418;
+
+  --color-gold-50: #fdf8ec;
+  --color-gold-100: #faedcc;
+  --color-gold-200: #f4d994;
+  --color-gold-300: #eec35c;
+  --color-gold-400: #e8b03f;
+  --color-gold-500: #e2a32e;
+  --color-gold-600: #c3801f;
+  --color-gold-700: #9c5f1c;
+  --color-gold-800: #7f4c1d;
+  --color-gold-900: #6a3f1c;
+  --color-gold-950: #3c200b;
+
+  --color-vermilion-50: #fdf1ee;
+  --color-vermilion-100: #fbe0d9;
+  --color-vermilion-200: #f6c0b2;
+  --color-vermilion-300: #ef9784;
+  --color-vermilion-400: #e66a51;
+  --color-vermilion-500: #d8432b;
+  --color-vermilion-600: #bd3420;
+  --color-vermilion-700: #9a291b;
+  --color-vermilion-800: #8a3a1c;
+  --color-vermilion-900: #652118;
+  --color-vermilion-950: #370e09;
+}
+
+.theme-red {
+  --ui-color-primary-50: var(--color-vermilion-50);
+  --ui-color-primary-100: var(--color-vermilion-100);
+  --ui-color-primary-200: var(--color-vermilion-200);
+  --ui-color-primary-300: var(--color-vermilion-300);
+  --ui-color-primary-400: var(--color-vermilion-400);
+  --ui-color-primary-500: var(--color-vermilion-500);
+  --ui-color-primary-600: var(--color-vermilion-600);
+  --ui-color-primary-700: var(--color-vermilion-700);
+  --ui-color-primary-800: var(--color-vermilion-800);
+  --ui-color-primary-900: var(--color-vermilion-900);
+  --ui-color-primary-950: var(--color-vermilion-950);
+}
+
 /* Embedded players (live examples, CDN demo, Shorts) pick up the site accent */
 :root {
   --ml-video-accent: var(--ui-primary);
@@ -28,43 +80,6 @@ h1,
 h2,
 h3 {
   letter-spacing: -0.02em;
-}
-
-/* Landing hero */
-.ml-hero {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-}
-
-.ml-hero h1 {
-  background: linear-gradient(180deg, var(--ui-text-highlighted), var(--ui-text-muted));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.ml-hero h1 em {
-  font-style: normal;
-  background: linear-gradient(90deg, var(--ui-color-primary-400), var(--ui-color-primary-600));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* Package cards on the landing page */
-.ml-packages > a,
-.ml-packages > div {
-  transition:
-    transform 200ms ease,
-    box-shadow 200ms ease,
-    border-color 200ms ease;
-}
-
-.ml-packages > a:hover {
-  transform: translateY(-2px);
-  border-color: color-mix(in oklab, var(--ui-primary) 50%, var(--ui-border));
-  box-shadow: 0 12px 40px -16px var(--ui-primary);
 }
 
 /* Docs: give inline code and callouts a hint of the brand colour */

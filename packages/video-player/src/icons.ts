@@ -3,9 +3,10 @@ import type { ResolvedIcon } from '@munsonlabs/sigil'
 
 /**
  * Every icon the built-in HUD and controls draw, as inline SVG, keyed by the name a page can override.
- * `<Icon>` always resolves these with `library="mlv"`, so an override pinned to the `mlv` library
- * (`override(name, svg, { library: 'mlv' })`) is what reaches them - a host's own unscoped override of
- * the same short name never collides, and the names need no prefix to stay out of its way.
+ * `<Icon>` always resolves these with `library="mlv"`. An override pinned to that library
+ * (`override(name, svg, { library: 'mlv' })`) reaches only the player. An unscoped override of the
+ * same short name reaches it too: sigil checks the library's own overrides first, then the global
+ * ones, so a host's `override('play', svg)` reskins every library's `play`, the player's included.
  */
 export const ICONS: Record<string, string> = {
   back: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>',

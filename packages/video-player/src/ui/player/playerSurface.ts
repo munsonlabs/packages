@@ -18,6 +18,7 @@ export const PLAYER_METHOD_KEYS = [
   'setCaptionTrack',
   'setQuality',
   'togglePip',
+  'setClipRange',
 ] as const satisfies readonly (keyof UsePlayerReturn)[]
 
 export const PLAYER_STATE_KEYS = [
@@ -55,6 +56,8 @@ export const PLAYER_STATE_KEYS = [
   'supportsPip',
   'isPipActive',
   'isNativeUi',
+  'clipRange',
+  'mediaElement',
 ] as const satisfies readonly (keyof UsePlayerReturn)[]
 
 export type PlayerMethodKey = (typeof PLAYER_METHOD_KEYS)[number]

@@ -8,6 +8,8 @@ export interface UsePositionMemoryReturn {
   restoreOnce: (player: PlaybackAdapter) => void
   save: (player: PlaybackAdapter | null) => void
   clear: () => void
+  /** Skips the restore: something else (a deep link) has already chosen where playback starts. */
+  forgo: () => void
 }
 
 export function usePositionMemory(videoUrl: string, getPlayer: () => PlaybackAdapter | null, hasEnded: Ref<boolean>): UsePositionMemoryReturn {
@@ -38,5 +40,9 @@ export function usePositionMemory(videoUrl: string, getPlayer: () => PlaybackAda
     unregister()
   })
 
-  return { restoreOnce, save, clear }
+  function forgo(): void {
+    hasRestored = true
+  }
+
+  return { restoreOnce, save, clear, forgo }
 }

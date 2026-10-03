@@ -1,6 +1,6 @@
-import { ref, computed } from 'vue'
+import { ref, computed, shallowRef } from 'vue'
 import type { CaptionTrackInfo, QualityLevelInfo } from '@/types/playback'
-import type { PlayerProps } from '@/types/player'
+import type { ClipRange, PlayerProps } from '@/types/player'
 import { resolveInitialMuted, resolveInitialVolume } from '@/ui/player/adapterMount'
 
 export function createPlayerState(props: PlayerProps) {
@@ -46,6 +46,13 @@ export function createPlayerState(props: PlayerProps) {
     supportsPip: ref(false),
     isPipActive: ref(false),
     isNativeUi: ref(false),
+    /** Set by `setClipRange()` or a deep link (`#ml-t=42,52`); the scrubber highlights it. */
+    clipRange: ref<ClipRange | null>(null),
+    /**
+     * The `<video>` the native path plays (MP4, HLS, DASH), for reading frame-accurate time;
+     * `null` before the adapter mounts and for embeds, whose media lives in someone else's iframe.
+     */
+    mediaElement: shallowRef<HTMLVideoElement | null>(null),
   }
 }
 

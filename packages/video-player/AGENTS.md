@@ -48,6 +48,7 @@ import '@munsonlabs/video-player/style'
 | `PlayButton`/`MuteButton`/`FullscreenButton`/`LoopButton`/`PipButton`/`CaptionsButton`/`QualityButton`/`PlaybackRateButton`/`Buffering`/`Scrubber`/`VolumeSlider`/`TimeDisplay`/`Transcript` | Headless control primitives for building a custom HUD (`:controls="false"`). Each resolves its player in this order: a `player` prop, then a `for` element id, then the enclosing `<VideoPlayer>` via context — so a control nested in the player's default slot needs no wiring at all |
 | `useForwardedPlayer()`                                                                                                                                                                       | Curated forward of a template-ref'd `VideoPlayer`'s controls/state for a wrapper component's own `defineExpose` — the same mechanism `VideoCard`/`VideoStage` use internally                                                                                                            |
 | `resolvePlatform(url)`                                                                                                                                                                       | The platform key plus `embed: true/false` in one lookup                                                                                                                                                                                                                                 |
+| `parseDeepLink(location)`                                                                                                                                                                    | Reads `#ml-t=start,end` plus `&ml-player=<id>` from the hash (only) into `{ start, end, target }`; what the `deepLink` prop uses                                                                                                                                                                    |
 | `HideMarker`                                                                                                                                                                                 | Slotless sentinel — while it's in the viewport, a pinned `VideoStage` tucks off to a sliver instead of covering it, see the docs site's Components page                                                                                                                                 |
 
 ### Custom elements (`./element`, `./element/core`, `./element/controls`)
@@ -87,7 +88,7 @@ The player exposes several CSS custom properties for layout overrides:
 
 ## Naming the player surface
 
-Three names on the exposed handle avoid a collision rather than being terse for its own sake: `currentPlaybackRate`, `currentVolume` and `isNativeUi` all shadow a prop of the same name if named plainly, because Vue puts a custom element's props on the element itself as DOM properties. The rest say what they mean: `currentTime`, `duration`, `isMuted`. Quality speaks in **heights in pixels** everywhere — the prop, `setQuality()`, `currentQualityHeight` and the `qualitychange` event — since the ladder keeps one variant per height, which makes heights unique; the engine's own level index never leaves the adapter. `seek()` takes seconds.
+Three names on the exposed handle avoid a collision rather than being terse for its own sake: `currentPlaybackRate`, `currentVolume` and `isNativeUi` all shadow a prop of the same name if named plainly, because Vue puts a custom element's props on the element itself as DOM properties. The rest say what they mean: `currentTime`, `duration`, `isMuted`. Quality speaks in **heights in pixels** everywhere — the prop, `setQuality()`, `currentQualityHeight` and the `qualitychange` event — since the ladder keeps one variant per height, which makes heights unique; the engine's own level index never leaves the adapter. `seek()` takes seconds. `mediaElement` is the one DOM object on the handle: the `<video>` a native source plays in (`null` for embeds), for a host that needs time per frame (reel's picker playhead and caption overlay); playback still goes through the methods.
 
 ## Layout
 
@@ -155,6 +156,31 @@ A `use*` name is a promise that the function must be called during `setup()`, be
 | `usePinnedBox`          | The pinned corner box's reserved space, tuck state, unpin and scroll-back, shared by `VideoPlayer`'s pin shell and `VideoStage`. Each caller keeps its own pin decision **and** its own animation policy: the stage must not animate a player mounting into an already-scrolled-away stage, since a FLIP parks the box off-screen long enough for auto-pause to stop playback |
 | `useForwardedPlayer`    | See Public API above — lives at `src/player/useForwardedPlayer.ts`                                                                                                                                                                                                                                                                                                            |
 | `stageRegistry`         | `hasStage` (mount count, read by `VideoCard` to know whether to hand off to a stage) and `isStageTucked` (shared ref `HideMarker` sets and `VideoStage` reads directly) — lives at `src/registries/stageRegistry.ts`                                                                                                                                                          |
+
+## Clip ranges and deep links
+
+`ui/player/features/useClipRange.ts` owns `clipRange` (state on the handle, highlighted by
+`Scrubber`) and `setClipRange(range, { end })`, a handle method: what happens at the range's end
+(`'pause'` once, `'loop'` until the viewer seeks more than a second outside, which clears it,
+`'continue'`) is enforced by one `check(time)`, called on every presented frame while playing inside an
+armed range on the native path (`requestVideoFrameCallback` on `mediaElement`, else
+`requestAnimationFrame`) and from `currentTime` (so `timeupdate`) always, plus `ended` for a loop that
+runs to the end of the media. The frame loop is (re)decided by `syncFrameLoop()` on every change of
+`isPlaying`, `hasEnded`, `mediaElement` and the range, holds at most one pending callback, and is cancelled
+on pause, end, clear and unmount (`clip-range.spec.ts` counts live callbacks). It starts only once `timeupdate` has shown the clock moving since play: per-frame work (a frame callback, or a `currentTime` query) on WebKit's native MPEG-TS HLS whose clock has stalled, as it does in Playwright's WebKit, makes WebKit fail the media with "Media failed to decode" (`picker-hls.spec.ts` in reel caught it). Do not switch the check to `requestVideoFrameCallback`'s `mediaTime`: in WebKit's native HLS it is not on the `currentTime` timeline. Embeds have no
+`mediaElement` (it is set only when the adapter's `el` is an `HTMLVideoElement`), so they keep the
+`timeupdate` path: about a quarter of a second of overshoot against about a frame. Setting a range never seeks; the end behaviour starts once the
+playhead is inside it. It calls `positionMemory.forgo()`, because the first `play` otherwise restores
+a remembered position over the range. It is a method rather than a prop because the player can
+release the range itself, and a `clipRange` prop would shadow the state of the same name on the
+custom element. `@munsonlabs/reel`'s picker loops its preview through it.
+
+`deepLink` (attribute `deep-link`) is opt-in. `utils/mediaFragment.ts` parses the URL (pure, unit
+tested); `ui/player/features/useDeepLink.ts`, called from `usePlayer`, applies it on mount and on every
+`hashchange`: scroll the shell into view, `setClipRange(link, { end: deepLinkEnd })`, and seek once
+the duration is known. `registries/deepLinkRegistry.ts` keeps the "first player wins" claim for links without
+an `ml-player` id, keyed by the URL text and released on unmount. video-player knows nothing about
+`@munsonlabs/reel`; the only contract is the URL format, which reel's `clipLink()` writes.
 
 ## Adapters
 

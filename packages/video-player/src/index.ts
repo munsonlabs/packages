@@ -75,6 +75,8 @@ export { useForwardedPlayer } from '@/ui/player/useForwardedPlayer'
 export type { ForwardedPlayer, UseForwardedPlayerReturn } from '@/ui/player/useForwardedPlayer'
 export type { PlayerMethodKey, PlayerStateKey } from '@/ui/player/playerSurface'
 export { exposePlayerOnElement } from '@/utils/exposePlayerOnElement'
+export { parseDeepLink } from '@/utils/mediaFragment'
+export type { DeepLink } from '@/utils/mediaFragment'
 export type {
   CaptionTrackInfo,
   QualityLevelInfo,

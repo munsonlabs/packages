@@ -1,5 +1,5 @@
 export { createClip } from '@/clip/clip'
-export { planOutput } from '@/clip/support'
+export { canClip, support, planOutput } from '@/clip/support'
 export { ClipError } from '@/utils/errors'
 export { planCrop, parseAspect } from '@/clip/crop'
 export type { CropPlan } from '@/clip/crop'

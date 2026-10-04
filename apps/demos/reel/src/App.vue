@@ -17,12 +17,23 @@ const LENGTH = 10
 
 const player = ref<PlayerHandle>()
 const action = shallowRef<CustomAction | null>(null)
+const unavailable = ref('')
 const progress = ref<number | null>(null)
 const clip = shallowRef<{ url: string; name: string } | null>(null)
 const notice = ref('')
 
-onMounted(() => {
-  action.value = { icon: scissors, label: 'Clip this', onClick: () => void clipThis() }
+/**
+ * Offer "Clip this" only when this browser can clip this source; otherwise say why. Reel and
+ * Mediabunny are imported here, not with the page.
+ */
+onMounted(async () => {
+  const { canClip } = await import('@munsonlabs/reel')
+  const check = await canClip(src)
+  if (check.ok) {
+    action.value = { icon: scissors, label: 'Clip this', onClick: () => void clipThis() }
+  } else {
+    unavailable.value = check.message
+  }
 })
 
 async function clipThis(): Promise<void> {
@@ -39,7 +50,6 @@ async function clipThis(): Promise<void> {
       source: src,
       start,
       end,
-      // A 9:16 window at the crop's own resolution, centred; `focus` moves it.
       crop: { aspect: '9:16' },
       onProgress: (fraction) => (progress.value = fraction),
       onWarning: (warning) => (notice.value = warning.message),
@@ -47,7 +57,6 @@ async function clipThis(): Promise<void> {
     if (clip.value) URL.revokeObjectURL(clip.value.url)
     clip.value = { url: URL.createObjectURL(blob), name: `clock-${start.toFixed(1)}-${end.toFixed(1)}.mp4` }
   } catch (error) {
-    // A source that cannot be clipped rejects with a ClipError whose reason is a stable code.
     notice.value = error instanceof Error ? error.message : String(error)
   } finally {
     progress.value = null
@@ -68,7 +77,8 @@ async function clipThis(): Promise<void> {
 
     <div class="toolbar">
       <button type="button" class="clip" :disabled="!action || progress !== null" @click="clipThis">Clip this</button>
-      <span v-if="progress !== null" class="note">Exporting… {{ Math.round(progress * 100) }}%</span>
+      <span v-if="unavailable" class="note">Clipping is not available here: {{ unavailable }}</span>
+      <span v-else-if="progress !== null" class="note">Exporting… {{ Math.round(progress * 100) }}%</span>
       <span v-else class="note">Reel and Mediabunny load when you press it.</span>
     </div>
 
@@ -83,14 +93,10 @@ async function clipThis(): Promise<void> {
 
     <h2>How it works</h2>
     <p>
-      The player is <code>@munsonlabs/video-player</code>; the scissors are its custom <code>action</code>. Pressing them takes ten seconds around the
-      moment you are at and hands them to <code>createClip()</code>: the video is decoded with WebCodecs, cropped to 9:16 and encoded to an MP4 with
-      H.264 video and AAC audio, all on this device. Nothing is uploaded. A source that cannot be clipped (an embed, DRM, a file without CORS) rejects
-      with a <code>ClipError</code> and its reason shows under the clip.
-    </p>
-    <p>
-      The crop is a 9:16 window planned by <code>planCrop()</code>, centred on a focus point and clamped to the frame, at the window's own resolution
-      so nothing is upscaled. Each frame is drawn offset and scaled so the canvas edges cut it, which is correct in every engine.
+      The player is <code>@munsonlabs/video-player</code>; the scissors are its custom <code>action</code>, offered only after
+      <code>canClip()</code> says this browser can clip this file. Pressing them takes ten seconds around the moment you are at and hands them to
+      <code>createClip()</code>: the video is decoded with WebCodecs, cropped to 9:16 and encoded to an MP4 with H.264 video and AAC audio, all on
+      this device. Nothing is uploaded.
     </p>
   </article>
 </template>

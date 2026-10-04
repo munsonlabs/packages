@@ -1,4 +1,4 @@
-import type { ClipSource } from '@/types/sources'
+import type { ClipSource, SourceInfo } from '@/types/sources'
 
 /**
  * A target aspect ratio as `'width:height'`, e.g. `'9:16'` for vertical shorts, or `'source'` to keep
@@ -103,3 +103,25 @@ export type ClipBlocker =
   | 'undecodable-video'
   /** This browser has no H.264 encoder at the clip's size; clips are always H.264 in MP4. */
   | 'no-video-encoder'
+
+export type CanClipResult = { ok: true; info: SourceInfo; plan: OutputPlan } | { ok: false; reason: ClipBlocker; message: string }
+
+/** The result of one `isConfigSupported` probe. */
+export interface CodecProbe {
+  /** The exact codec string probed. */
+  codec: string
+  supported: boolean
+}
+
+/** What this browser offers for clipping, independent of any source. */
+export interface Support {
+  /** `VideoEncoder`, `VideoDecoder`, `VideoFrame`, `OffscreenCanvas` and a secure context are all present. */
+  webcodecs: boolean
+  secureContext: boolean
+  /** H.264 decode of a typical 720p High profile stream. */
+  decode: { avc: CodecProbe }
+  /** The H.264 encoder, probed at 1080x1920. Without it nothing can be clipped. */
+  video: { avc: CodecProbe }
+  /** The AAC encoder, probed at 48kHz stereo. Without it only AAC sources keep their sound (copied). */
+  audio: { aac: CodecProbe }
+}

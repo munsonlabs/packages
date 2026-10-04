@@ -15,6 +15,7 @@ import {
   createClip,
   canClip,
   support,
+  createStoryboard,
   clipLink,
   ClipError,
   planCrop,
@@ -40,6 +41,7 @@ import type {
   CaptionCue,
   CaptionStyle,
   ClipOrigin,
+  Storyboard,
   EndCardOptions,
   EndCardInfo,
   StampOptions,
@@ -68,6 +70,8 @@ src/
     origin.ts       clipLink() (Media Fragments #t=), originTags() (MP4 ilst atoms)
     support.ts      support(), canClip(), inspect() (opens, checks the primary video track decodes),
                     planOutput() (H.264 or nothing; the audio: copy, encode, none or unavailable)
+    storyboard.ts   createStoryboard(): keyframe timestamps (EncodedPacketSink, metadata only) de-duplicated →
+                    CanvasSink → JPEG sprite + VTT; onTile per thumbnail; signal disposes the input
   sources/
     source.ts       resolveSource() (<video>/URL/Blob → Blob | absolute URL, blockers), openInput(), readError()
   captions/
@@ -88,7 +92,7 @@ src/
     watermark.ts    createWatermarkPainter(): the strip drawn over every clip frame
     image.ts        loadImage() (<img crossOrigin=anonymous>, SVG rasterised, 1x1 taint test), createImageCache()
   types/            every public type, documented; `index.ts` re-exports them all (the core's `export type *`)
-    clip.ts         ClipOptions, crop, OutputPlan, ClipWarning, ClipOrigin, ClipBlocker, CanClipResult, Support
+    clip.ts         ClipOptions, crop, OutputPlan, ClipWarning, ClipOrigin, ClipBlocker, CanClipResult, Support, Storyboard
     captions.ts     CaptionCue, CaptionInput, CaptionTrackSource, CaptionOptions
     render.ts       CaptionStyle (how captions are painted), end card, ImageSource, WatermarkOptions, StampOptions
     sources.ts      ClipSource, SourceInfo
@@ -117,7 +121,7 @@ on; inline comments only for a why the code cannot show.
 - **Every decoded sample is closed where it is drawn.** `pumpVideo` closes each `VideoSample` in a
   `finally`, including on `continue`, `break` and errors; `CanvasSource.add` copies the one reused
   `OffscreenCanvas` into a frame and Mediabunny closes that. `trackFrames()` in the browser helpers
-  asserts zero open frames after a clip, an abort and an end card.
+  asserts zero open frames after a clip, an abort, an end card and a storyboard.
 - **The video is reel's, the audio is Mediabunny's.** Video is not a Conversion track because the end
   card needs frames after the source runs out, and a `process` hook cannot add frames after the last
   sample without building them all at once (each a full-size `VideoFrame`). Audio stays a composable
@@ -158,6 +162,9 @@ on; inline comments only for a why the code cannot show.
   (`target: 'audio'`), like a logo or captions. Firefox has
   no AAC encoder, which is fine for AAC sources (copied) and silent for anything else there. No WebM,
   VP9/VP8/AV1 or Opus output; input formats are Mediabunny's and unchanged.
+
+- **Thumbnails are keyframes unless `exact`.** One decode per distinct keyframe; `onTile` reports
+  each thumbnail as it lands, and an aborted `signal` disposes the input.
 
 ## Testing
 

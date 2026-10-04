@@ -32,6 +32,9 @@ const withCard = ref(true)
 const withLogo = ref(true)
 
 const player = ref<PlayerHandle>()
+const strip = ref<HTMLCanvasElement | null>(null)
+const TILES = 10
+const tileTimes: number[] = []
 const action = shallowRef<CustomAction | null>(null)
 const unavailable = ref('')
 const progress = ref<number | null>(null)
@@ -40,14 +43,41 @@ const clip = shallowRef<{ url: string; name: string; link: string; hash: string 
 const notice = ref('')
 
 onMounted(async () => {
-  const { canClip } = await import('@munsonlabs/reel')
+  const { canClip, createStoryboard } = await import('@munsonlabs/reel')
   const check = await canClip(src)
-  if (check.ok) {
-    action.value = { icon: scissors, label: 'Clip this', onClick: () => void clipThis() }
-  } else {
+  if (!check.ok) {
     unavailable.value = check.message
+    return
   }
+  action.value = { icon: scissors, label: 'Clip this', onClick: () => void clipThis() }
+  // The filmstrip: one keyframe per tile, painted as each one is decoded.
+  const canvas = strip.value
+  const ctx = canvas?.getContext('2d')
+  if (!canvas || !ctx) return
+  const tile = canvas.width / TILES
+  await createStoryboard({
+    source: src,
+    interval: check.info.duration / TILES,
+    tileWidth: 160,
+    columns: TILES,
+    onTile: (index, image, time) => {
+      tileTimes[index] = time
+      ctx.drawImage(image, index * tile, 0, tile, canvas.height)
+    },
+  })
 })
+
+/**
+ * A click on a tile seeks the page's player to that thumbnail's time.
+ */
+function seekTile(event: MouseEvent): void {
+  const canvas = strip.value
+  if (!canvas) return
+  const box = canvas.getBoundingClientRect()
+  const index = Math.min(TILES - 1, Math.floor(((event.clientX - box.left) / box.width) * TILES))
+  const time = tileTimes[index]
+  if (time !== undefined) player.value?.seek(time)
+}
 
 async function clipThis(): Promise<void> {
   const handle = player.value
@@ -109,6 +139,8 @@ function backToMoment(link: string): void {
       deep-link-end="loop"
     />
 
+    <canvas ref="strip" class="strip" width="1600" height="90" aria-label="Thumbnails; click to seek" @click="seekTile" />
+
     <div class="toolbar">
       <button type="button" class="clip" :disabled="!action || progress !== null" @click="clipThis">Clip this</button>
       <label class="source">
@@ -159,6 +191,10 @@ function backToMoment(link: string): void {
       With <em>End card</em> on, the clip ends with a silent card faded in over its last frame: the logo, the publisher, the headline and the
       article's address in large type. With <em>Logo on the clip</em>, the same logo is stamped in the top-right corner of every frame, in a spot
       TikTok, Reels and Shorts leave clear. A logo that cannot be loaded is left out with a note, never failing the clip.
+    </p>
+    <p>
+      The strip under the player is a <code>createStoryboard()</code>: ten thumbnails, each the nearest keyframe before its time, decoded once and
+      painted as they land through <code>onTile</code>. Click one to seek the player there.
     </p>
     <p>Try a link: <a href="#ml-t=4,9" @click.prevent="backToMoment(`${origin.url}#ml-t=4,9&ml-player=article`)">0:04 to 0:09</a>.</p>
   </article>
@@ -227,6 +263,16 @@ h1 {
   border-radius: 8px;
   border: 1px solid #cfc9b8;
   background: #fff;
+}
+
+.strip {
+  display: block;
+  width: 100%;
+  height: 56px;
+  margin: 8px 0 0;
+  border-radius: 8px;
+  background: #1f2328;
+  cursor: pointer;
 }
 
 .toolbar {

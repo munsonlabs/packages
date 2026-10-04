@@ -169,3 +169,43 @@ export interface Support {
   /** The AAC encoder, probed at 48kHz stereo. Without it only AAC sources keep their sound (copied). */
   audio: { aac: CodecProbe }
 }
+
+export interface StoryboardOptions {
+  source: ClipSource
+  /** First thumbnail's time, in seconds. Defaults to `0`. */
+  start?: number
+  /** Thumbnails stop before this time. Defaults to the end of the source. */
+  end?: number
+  /** Seconds between thumbnails. Defaults to `ceil((end - start) / 100)`, at least 1. */
+  interval?: number
+  /** Thumbnail width in pixels; height follows the source aspect. Defaults to `160`. */
+  tileWidth?: number
+  /** Thumbnails per sprite row. Defaults to `10`. */
+  columns?: number
+  /** The URL the VTT should point at for the sprite. Defaults to `'storyboard.jpg'`. */
+  imageUrl?: string
+  /**
+   * Decode the exact frame at each thumbnail's time. Defaults to `false`: each thumbnail shows the
+   * nearest keyframe at or before its time, so each keyframe is decoded once and nothing after it,
+   * which is many times faster on long-GOP streams. Thumbnails that share a keyframe share a picture.
+   */
+  exact?: boolean
+  /**
+   * Called as each thumbnail is drawn, in order, with its index, its picture (`tileWidth` x
+   * `tileHeight`) and its time in seconds, so a filmstrip can paint progressively. The picture is
+   * reused once the callback returns: draw it (or copy it) synchronously.
+   */
+  onTile?: (index: number, image: CanvasImageSource, time: number) => void
+  /** Stops reading at once; the promise then rejects with the signal's reason. */
+  signal?: AbortSignal
+}
+
+export interface Storyboard {
+  /** One JPEG sprite holding every thumbnail in a grid. */
+  image: Blob
+  /** A WebVTT storyboard: one cue per thumbnail pointing into the sprite with `#xywh=`. */
+  vtt: string
+  tileWidth: number
+  tileHeight: number
+  count: number
+}

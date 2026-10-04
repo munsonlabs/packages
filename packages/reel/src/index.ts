@@ -1,5 +1,6 @@
 export { createClip } from '@/clip/clip'
 export { canClip, support, planOutput } from '@/clip/support'
+export { createStoryboard } from '@/clip/storyboard'
 export { ClipError } from '@/utils/errors'
 export { clipLink } from '@/clip/origin'
 export { planCrop, parseAspect } from '@/clip/crop'

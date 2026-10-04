@@ -1,6 +1,6 @@
 import { ALL_FORMATS, BlobSource, Input, UrlSource } from 'mediabunny'
 import { ClipError } from '@/utils/errors'
-import type { ClipSource } from '@/types'
+import type { ClipSource, PlaylistCache } from '@/types'
 
 const embedHosts =
   /(^|\.)(youtube\.com|youtube-nocookie\.com|youtu\.be|vimeo\.com|dailymotion\.com|dai\.ly|brightcove\.net|players\.brightcove\.net|jwplayer\.com|jwplatform\.com)$/i
@@ -18,9 +18,9 @@ export function isEmbedUrl(url: string): boolean {
 }
 
 /**
- * Reduces any {@link ClipSource} to the thing that is actually read: a `Blob` or an absolute URL.
- * A `<video>` is checked for the playback modes that hide the file (EME, MediaSource, MediaStream)
- * and otherwise replaced by its `currentSrc`. Throws a {@link ClipError} naming the blocker.
+ * Any {@link ClipSource} as what is actually read: a `Blob` or an absolute URL. A `<video>` is refused
+ * for the playback modes that hide the file (EME, MediaSource, MediaStream) and otherwise read through
+ * its `currentSrc`. Throws a {@link ClipError} naming the blocker.
  */
 export async function resolveSource(source: ClipSource): Promise<Blob | string> {
   if (source instanceof Blob) {
@@ -79,14 +79,15 @@ async function blobUrlIsFile(url: string): Promise<boolean> {
 /**
  * Opens a Mediabunny `Input` over a resolved source. URL sources never retry: Mediabunny's default
  * backoff would retry a network error forever, and a CORS failure looks like a network error, so one
- * failed request is reported straight away as `'unreachable'`.
+ * failed request is reported straight away as `'unreachable'`. With a `cache`, HLS playlists are
+ * read through it (see `createPlaylistCache`).
  */
-export function openInput(resolved: Blob | string): Input {
+export function openInput(resolved: Blob | string, cache?: PlaylistCache): Input {
   if (resolved instanceof Blob) {
     return new Input({ source: new BlobSource(resolved), formats: ALL_FORMATS })
   }
   return new Input({
-    source: new UrlSource(resolved, { getRetryDelay: () => null }),
+    source: new UrlSource(resolved, { getRetryDelay: () => null, ...(cache ? { fetchFn: cache.fetch } : {}) }),
     formats: ALL_FORMATS,
   })
 }

@@ -43,23 +43,26 @@ clipLink(location.href, 42, 52) // 'https://…#t=42,52'
 
 ## API
 
-| Export                                                        | Description                                                                                                                                                                                                |
-| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `createClip(options)`                                         | Trim, crop, burn in captions, encode. Resolves a `Blob`; rejects with a `ClipError` (with `reason`) or the abort signal's reason.                                                                          |
-| `canClip(source, options?)`                                   | Reads only the header. Resolves `{ ok: true, info, plan }` or `{ ok: false, reason, message }`; never throws.                                                                                              |
-| `support()`                                                   | Probes `VideoEncoder`/`AudioEncoder`/`VideoDecoder.isConfigSupported` for the H.264 encoder and decoder and the AAC encoder, the only codecs clips use.                                                    |
-| `createStoryboard(options)`                                   | A JPEG sprite of thumbnails plus a WebVTT storyboard (`#xywh=`) for scrubber previews: keyframes by default (`exact: true` for exact frames), with `onTile` for progressive painting and `signal` to stop. |
-| `loadCaptions(input, { signal })`, `isCaptionText`            | Captions from cues, a `TextTrack`, WebVTT text, or a WebVTT file's URL (fetched; rejects with an `Error` when it cannot be fetched or is not WebVTT); the text-or-URL rule.                                |
-| `clipLink(origin, start, end)`                                | The origin URL with a Media Fragments `#t=start,end`.                                                                                                                                                      |
-| `drawEndCard(ctx, info)`                                      | The default end card renderer, for a custom `endCard.draw` that adds to it.                                                                                                                                |
-| `createQrCode(text)`, `drawQrCode(ctx, modules, x, y, size)`  | QR modules at ECC M (lazy-loads the encoder) and a pixel-snapped painter.                                                                                                                                  |
-| `readableUrl(url, maxWidth?, measure?)`                       | `https://www.acme.news/a/b?x#t=1,2` → `acme.news/a/b`; shortened in the middle (domain and last segment kept) to fit `maxWidth`.                                                                           |
-| `planStamp(width, height, logo, options?)`                    | The box `stamp` draws a logo in, with the default safe-area margins.                                                                                                                                       |
-| `planCrop`, `planOutput`, `parseVtt`, `toCues`, `parseAspect` | The pieces `createClip` is built from, exported for previews and tests.                                                                                                                                    |
+| Export                                                          | Description                                                                                                                                                                                                                                                      |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createClip(options)`                                           | Trim, crop, burn in captions, encode. Resolves a `Blob`; rejects with a `ClipError` (with `reason`) or the abort signal's reason.                                                                                                                                |
+| `canClip(source, options?)`                                     | Reads only the header. Resolves `{ ok: true, info, plan }` or `{ ok: false, reason, message }`; never throws.                                                                                                                                                    |
+| `support()`                                                     | Probes `VideoEncoder`/`AudioEncoder`/`VideoDecoder.isConfigSupported` for the H.264 encoder and decoder and the AAC encoder, the only codecs clips use.                                                                                                          |
+| `createStoryboard(options)`                                     | A JPEG sprite of thumbnails plus a WebVTT storyboard (`#xywh=`) for scrubber previews: keyframes by default (`exact: true` for exact frames), from the smallest track that fills a tile, with `onTile` for progressive painting and `signal` to stop.            |
+| `listCaptionTracks(source, { tracks?, cache? })`                | The caption tracks to choose from: the `tracks` passed in (`passed:<n>`), then the source's HLS `SUBTITLES` renditions (`hls:<n>`) and a `<video>`'s caption/subtitle text tracks (`text:<n>`), as `{ id, kind, language, label, default, autoselect, forced }`. |
+| `loadCaptionTrack(source, id, { start, end, tracks?, cache? })` | One track's cues for a range: a passed track's WebVTT file is fetched or parsed; for HLS only the overlapping WebVTT segments are fetched, with `X-TIMESTAMP-MAP` honoured; a disabled text track is read and restored.                                          |
+| `loadCaptions(input, { signal })`, `isCaptionText`              | Captions from cues, a `TextTrack`, WebVTT text, or a WebVTT file's URL (fetched; rejects with an `Error` when it cannot be fetched or is not WebVTT); the text-or-URL rule.                                                                                      |
+| `createPlaylistCache()`                                         | `{ fetch, clear() }`, passed as `cache` to `canClip`, `createStoryboard`, `createClip`, `listCaptionTracks` and `loadCaptionTrack` so one flow fetches each HLS playlist once.                                                                                   |
+| `clipLink(origin, start, end)`                                  | The origin URL with a Media Fragments `#t=start,end`.                                                                                                                                                                                                            |
+| `drawEndCard(ctx, info)`                                        | The default end card renderer, for a custom `endCard.draw` that adds to it.                                                                                                                                                                                      |
+| `createQrCode(text)`, `drawQrCode(ctx, modules, x, y, size)`    | QR modules at ECC M (lazy-loads the encoder) and a pixel-snapped painter.                                                                                                                                                                                        |
+| `readableUrl(url, maxWidth?, measure?)`                         | `https://www.acme.news/a/b?x#t=1,2` → `acme.news/a/b`; shortened in the middle (domain and last segment kept) to fit `maxWidth`.                                                                                                                                 |
+| `planStamp(width, height, logo, options?)`                      | The box `stamp` draws a logo in, with the default safe-area margins.                                                                                                                                                                                             |
+| `planCrop`, `planOutput`, `parseVtt`, `toCues`, `parseAspect`   | The pieces `createClip` is built from, exported for previews and tests.                                                                                                                                                                                          |
 
-`createClip` options: `source`, `start`, `end`, `crop: { aspect, focus, height }`, `captions: { cues | tracks, style }`,
+`createClip` options: `source`, `start`, `end`, `crop: { aspect, focus, height }`, `captions: { cues | tracks + track, style }`, `track`,
 `audio` (`false` drops it), `origin`,
-`metadata` (default `true` with an origin), `endCard`, `stamp`, `watermark`, `onProgress`, `onWarning`, `signal`.
+`metadata` (default `true` with an origin), `endCard`, `stamp`, `watermark`, `onProgress`, `onWarning`, `signal`, `cache`.
 
 ### Caption input
 
@@ -68,13 +71,16 @@ string), fetched with the clip's `signal`. Captions are WebVTT only: convert SRT
 is text** when it starts with `WEBVTT` (after a BOM and whitespace), has a cue timing line
 (`00:01.000 --> 00:02.000`), holds whitespace, or is empty; **anything else is a URL**, relative to
 `document.baseURI` (`isCaptionText`). Captions that will not load never fail a clip: a file that cannot be
-fetched (HTTP error, CORS) or is not WebVTT (no `WEBVTT` header) leaves the clip without captions, with
-`onWarning({ reason: 'captions-unavailable', target: 'captions', message })` (or `console.warn`).
-`loadCaptions`, called directly, rejects when the file cannot be fetched or read.
+fetched (HTTP error, CORS) or is not WebVTT (no `WEBVTT` header), or an HLS rendition whose playlist or
+segments fail, leaves the clip without captions, with `onWarning({ reason: 'captions-unavailable', target:
+'captions', message })` (or `console.warn`). An unknown `track` id still rejects (`RangeError`);
+`loadCaptions` and `loadCaptionTrack`, called directly, reject when the file cannot be fetched or read.
 
 `captions.tracks` offers several, in video-player's `tracks` shape (`{ src, kind?, srclang?, label?,
-default? }`, each `src` a WebVTT file's URL or WebVTT text): the one marked `default` is burned in, else the
-first matching `navigator.language`, else the first. `cues` wins.
+default? }`, each `src` a WebVTT file's URL or WebVTT text), chosen by `track: 'passed:<n>'`; without `track` the
+one marked `default` is burned in, else the first matching `navigator.language`, else the first. Ids:
+`passed:<n>` is `tracks[n]`, `hls:<n>` the master's n-th subtitles rendition, `text:<n>` a `<video>`'s
+`textTracks[n]`. `cues` wins over both.
 
 ### Caption style
 
@@ -85,6 +91,19 @@ raise it with `position` and `margin`. `captions.style` is a `CaptionStyle` of o
 `fontFamily`, `fontWeight` (`700`), `size` (`0.045` of the height), `color` (white), `background`
 (`'rgba(0, 0, 0, 0.6)'`, or `null` for no box), `position` (`'top' | 'middle' | 'bottom'`), `margin`
 (`0.14` of the height) and `maxWidth` (`0.86` of the width).
+
+### HLS: variants and subtitles
+
+An HLS master playlist is read through Mediabunny, choosing variants from the playlist's `RESOLUTION`,
+`BANDWIDTH` and `CODECS`, so `canClip` downloads playlists only. `info` describes the largest
+variant this browser can decode and `info.videoTracks` lists them all. `createClip` reads the
+**smallest variant that covers the output** after the crop (and that variant's own audio);
+storyboards read the smallest one that fills a tile. `track: 'auto' | 'smallest' | 'largest' |
+(tracks) => track` overrides the choice for either. `captions: { track: 'hls:0' }` burns in a
+subtitle rendition from `listCaptionTracks`, fetching only the WebVTT segments the clip overlaps;
+cues passed as `cues` win. Calls on one stream can share a `createPlaylistCache()` (`cache`): each `.m3u8`
+is fetched once, whole, and Mediabunny's range requests for it are answered from memory; a master is kept
+until `clear()`, a media playlist only once it has `#EXT-X-ENDLIST`, so live playlists are always re-read.
 
 ### End card, stamp and watermark
 
@@ -169,5 +188,5 @@ drawing the whole frame offset and scaled instead (see `test/browser/clip/webkit
 ```bash
 vp test                                                        # unit + chromium, webkit, firefox
 vp test --project browser --browser.name=webkit --reporter=verbose   # one engine, with the REEL_* evidence lines
-node scripts/make-fixture.mjs [count] [rotated]               # regenerate the generated fixtures
+node scripts/make-fixture.mjs [count] [rotated] [ladder]      # regenerate the generated fixtures (ladder: the HLS variant + subtitles fixture)
 ```

@@ -24,12 +24,15 @@ import {
   isCaptionText,
   toCues,
   loadCaptions,
+  createPlaylistCache,
   parseAspect,
   drawEndCard,
   createQrCode,
   drawQrCode,
   readableUrl,
   planStamp,
+  listCaptionTracks,
+  loadCaptionTrack,
 } from '@munsonlabs/reel'
 import type {
   ClipOptions,
@@ -48,8 +51,12 @@ import type {
   StampPosition,
   ClipWarning,
   ImageSource,
+  TrackChoice,
+  VideoTrackInfo,
+  CaptionTrackInfo,
   CaptionInput,
   CaptionTrackSource,
+  PlaylistCache,
 } from '@munsonlabs/reel'
 ```
 
@@ -68,18 +75,27 @@ src/
                     CanvasSource) plus end card frames, beside a composable Conversion for audio only
     crop.ts         parseAspect(), planCrop() (window + even output size), even()
     origin.ts       clipLink() (Media Fragments #t=), originTags() (MP4 ilst atoms)
-    support.ts      support(), canClip(), inspect() (opens, checks the primary video track decodes),
+    support.ts      support(), canClip(), inspect() (opens, lists video tracks, picks the largest decodable as the
+                    reference; HLS reads playlists only), selectTracks() (the track to read + its paired audio),
                     planOutput() (H.264 or nothing; the audio: copy, encode, none or unavailable)
     storyboard.ts   createStoryboard(): keyframe timestamps (EncodedPacketSink, metadata only) de-duplicated →
                     CanvasSink → JPEG sprite + VTT; onTile per thumbnail; signal disposes the input
   sources/
-    source.ts       resolveSource() (<video>/URL/Blob → Blob | absolute URL, blockers), openInput(), readError()
+    source.ts       resolveSource() (<video>/URL/Blob → Blob | absolute URL, blockers), openInput() (fetchFn from a playlist cache), readError()
+    tracks.ts       listVideoCandidates() (size/bitrate/codec from metadata, I-frame playlists dropped),
+                    rankCandidates() ('auto' = smallest covering `need`, then largest down), canDecodeCandidate()
+    playlists.ts    createPlaylistCache(): a fetch that reads each .m3u8 once, whole, and answers later (Range) requests
+                    with synthesised 206s; masters kept until clear(), media playlists only with #EXT-X-ENDLIST
   captions/
     cues.ts         parseVtt(), isCaptionText() (the text-or-URL rule), isVttFile() (a WEBVTT header), captionUrl(),
                     toCues() (text | cues | TextTrack, no fetching), activeCues(),
-                    defaultTrackIndex(), asTrackList(). No fetch, no Mediabunny
+                    defaultTrackIndex(), passedTrackInfo(), asTrackList(). No fetch, no Mediabunny
     fetch.ts        fetchCaptions() (signal; rejects with an Error on HTTP/CORS failure or a body that is not
                     WebVTT (isVttFile)), loadCaptions() (any CaptionInput). Core only
+    hls.ts          master/media playlist parsing (SUBTITLES renditions, variants, segments, BYTERANGE, MAP),
+                    X-TIMESTAMP-MAP, cueOffset(), loadHlsCues() (only overlapping segments). No Mediabunny.
+    tracks.ts       listCaptionTracks() (passed tracks as passed:<n>, HLS renditions, <video> textTracks), readTextTrack() (disabled → hidden → restored)
+    load.ts         loadCaptionTrack() (passed:<n> from `tracks`, hls:<n>, text:<n>), mediaStartOf() (first timestamp of the lowest variant's first segment, via Mediabunny; core only)
   render/           everything painted into the clip's frames (`captions/` gets the cues)
     captions.ts     the one caption look (white bold text on a translucent box near the bottom; CaptionStyle
                     overrides merged over it), wrapText() (also the end card's), createCaptionPainter(): each text
@@ -93,19 +109,19 @@ src/
     image.ts        loadImage() (<img crossOrigin=anonymous>, SVG rasterised, 1x1 taint test), createImageCache()
   types/            every public type, documented; `index.ts` re-exports them all (the core's `export type *`)
     clip.ts         ClipOptions, crop, OutputPlan, ClipWarning, ClipOrigin, ClipBlocker, CanClipResult, Support, Storyboard
-    captions.ts     CaptionCue, CaptionInput, CaptionTrackSource, CaptionOptions
+    captions.ts     CaptionCue, CaptionInput, CaptionTrackSource, CaptionOptions, CaptionTrackInfo
     render.ts       CaptionStyle (how captions are painted), end card, ImageSource, WatermarkOptions, StampOptions
-    sources.ts      ClipSource, SourceInfo
+    sources.ts      ClipSource, PlaylistCache, VideoTrackInfo, TrackChoice, SourceInfo
     vite-env.d.ts   vite/client
   utils/
     url.ts          readableUrl() (no scheme/www/query/hash, IDN to Unicode, middle-ellipsis to fit), middleEllipsis()
     errors.ts       ClipError { reason }
 scripts/make-fixture.mjs   regenerates the generated fixtures in Playwright Chromium (no ffmpeg needed)
-test/               unit specs (happy-dom), mirroring src/: clip/ (crop, origin), sources/ (source), captions/
-                    (cues, urls: text-or-URL, passed tracks, fetch), render/ (endcard: layout via a recording
-                    ctx), utils/ (url)
+test/               unit specs (happy-dom), mirroring src/: clip/ (crop, origin), sources/ (playlists: the cache,
+                    source), captions/ (cues, urls: text-or-URL, passed tracks, fetch), render/ (endcard: layout via a
+                    recording ctx), utils/ (url)
 test/browser/       real-browser specs in Chromium, WebKit and Firefox, sorted by the same areas:
-                    clip/, captions/, render/ (caption-style, endcard, stamp); the shared helpers.ts, global-setup.ts and media/ (the fixtures) stay at its root
+                    clip/, captions/, render/ (caption-style, endcard, stamp), sources/; the shared helpers.ts, global-setup.ts and media/ (the fixtures) stay at its root
 ```
 
 Docblocks follow sigil's convention: full sentences on what a function does and what callers can rely
@@ -133,10 +149,11 @@ on; inline comments only for a why the code cannot show.
   kept external in the build like Mediabunny. The card shows the article (`origin.url`, readable), the
   QR encodes the `#t=` deep link.
 - **Captions that will not load never fail a clip.** `createClip` loads the cues before encoding;
-  any failure but an abort leaves the clip without captions and `onWarning` gets
-  `'captions-unavailable'` (`target: 'captions'`). That covers a fetch or HTTP error, CORS, and a fetched
-  body that is not WebVTT (`isVttFile`: no `WEBVTT` header). `loadCaptions`, called directly, still
-  rejects (a plain `Error`). It is not a `ClipBlocker`.
+  any failure but an abort or a `RangeError` (an unknown track id: the caller's mistake) leaves the
+  clip without captions and `onWarning` gets `'captions-unavailable'` (`target: 'captions'`). That
+  covers a fetch or HTTP error, CORS, an HLS rendition whose playlist or segments fail, and a fetched
+  body that is not WebVTT (`isVttFile`: no `WEBVTT` header). `loadCaptions`/`loadCaptionTrack`,
+  called directly, still reject (a plain `Error`). It is not a `ClipBlocker`.
 - **A logo never fails a clip.** Every logo (stamp and card) goes through `loadImage` in `render/image.ts`
   before encoding: `<img crossOrigin="anonymous">`, then a 1x1 draw-and-read-back, because a tainted
   canvas makes `CanvasSource`'s `VideoFrame` throw on every frame. Failure resolves `{ ok: false }`,
@@ -163,6 +180,15 @@ on; inline comments only for a why the code cannot show.
   no AAC encoder, which is fine for AAC sources (copied) and silent for anything else there. No WebM,
   VP9/VP8/AV1 or Opus output; input formats are Mediabunny's and unchanged.
 
+- **Read the smallest track that will do.** `inspect()` lists every video track (HLS variants) from
+  metadata and plans crops on the largest decodable one; `selectTracks()` then reads the smallest that
+  covers the output (`createClip`) or a tile (`createStoryboard`), and its own paired audio, which is
+  why the audio Conversion runs with `tracks: 'all'` and discards every other audio track ('primary'
+  would take the top variant's). For HLS, duration comes from the reference variant's playlist
+  (`getDurationFromMetadata`), never `computeDuration()` over all tracks, which reads the last segment
+  of every variant. Decodability is checked with `getDecoderConfig()` + `isConfigSupported`, not
+  `track.canDecode()`, which reports a segment that fails to download as "cannot decode" and would
+  silently fall through to a bigger variant. `hls-ladder.spec.ts` counts requests to prove it.
 - **Thumbnails are keyframes unless `exact`.** One decode per distinct keyframe; `onTile` reports
   each thumbnail as it lands, and an aborted `signal` disposes the input.
 
@@ -186,10 +212,14 @@ up to one fewer than the CPU count per engine.
 `caption-style.spec.ts` holds the caption look on a real canvas: the default is pixel-identical to a
 verbatim copy of the painter reel shipped first (the old `'subtitle'` look), overrides apply, and a long
 cue wraps onto more lines with every word kept. `clip.spec.ts` checks the burned-in band and that a clip
-whose captions fail to load (a 404 URL, a file that is not captions) is still made, warns
-`captions-unavailable` and has no captions.
+whose captions fail to load (a 404 URL, a broken HLS rendition, a file that is not captions) is still made,
+warns `captions-unavailable` and has no captions.
 
-Fixtures: `flower.mp4` is copied from video-player (960x540 H.264 + AAC, 5.06s).
+Fixtures: `flower.mp4` and `hls/` are copied from video-player (960x540 H.264 + AAC, 5.06s).
+`ladder/` (`make-fixture.mjs ladder`) is an HLS master with 320x180 and 1280x720 variants (1s MPEG-TS
+segments named `.m2ts`, because the Vite test server compiles `.ts` URLs as TypeScript; media starts at
+PTS 10s) and en/fr segmented WebVTT subtitles with `X-TIMESTAMP-MAP=MPEGTS:945000`; `broken.m3u8`
+points the small variant at missing segments.
 `count-720p.mp4` (12s 1280x720 30fps H.264 + AAC) and `rotated-90.mp4`/`rotated-270.mp4` (2s, 640x480
 frames with a `tkhd` rotation matrix, displayed 480x640 with red/green/blue/yellow quadrants) are
 generated by `scripts/make-fixture.mjs [count] [rotated]`; tests

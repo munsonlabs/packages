@@ -1,8 +1,5 @@
-import type { CaptionCue, CaptionInput, CaptionTrackSource } from '@/types'
+import type { CaptionCue, CaptionInput, CaptionTrackInfo, CaptionTrackSource } from '@/types'
 
-/**
- * Parses a WebVTT timestamp (`mm:ss.ttt` or `hh:mm:ss.ttt`) into seconds, or `null` if it is not one.
- */
 export function parseTimestamp(value: string): number | null {
   const match = /^(?:(\d+):)?(\d{2}):(\d{2})[.,](\d{3})$/.exec(value.trim())
   if (!match) {
@@ -15,10 +12,16 @@ export function parseTimestamp(value: string): number | null {
   return hours * 3600 + minutes * 60 + seconds + millis / 1000
 }
 
-/**
- * Removes WebVTT cue markup (`<v Speaker>`, `<i>`, `<c.class>`, karaoke timestamps) and decodes the
- * handful of entities VTT allows, leaving the plain text that gets drawn.
- */
+export function vttTimestamp(seconds: number): string {
+  const ms = Math.max(0, Math.round(seconds * 1000))
+  const pad = (value: number, width = 2) => String(value).padStart(width, '0')
+  return `${pad(Math.floor(ms / 3_600_000))}:${pad(Math.floor(ms / 60_000) % 60)}:${pad(Math.floor(ms / 1000) % 60)}.${pad(ms % 1000, 3)}`
+}
+
+export function isCaptionKind(kind: string): boolean {
+  return kind === 'captions' || kind === 'subtitles'
+}
+
 export function stripCueMarkup(text: string): string {
   return text
     .replace(/<[^>]*>/g, '')
@@ -30,9 +33,8 @@ export function stripCueMarkup(text: string): string {
 }
 
 /**
- * Parses the text of a WebVTT file into cues. It reads what burning in needs (timing and text) and
- * skips everything else: the header, `NOTE`, `STYLE` and `REGION` blocks, cue identifiers and cue
- * settings. Blocks with an unreadable timing line are dropped rather than failing the whole file.
+ * Parses WebVTT into cues: timing and text only, skipping the header, `NOTE`/`STYLE`/`REGION` blocks,
+ * identifiers and settings. A block with an unreadable timing line is dropped, not fatal.
  */
 export function parseVtt(source: string): CaptionCue[] {
   const cues: CaptionCue[] = []
@@ -57,35 +59,14 @@ export function parseVtt(source: string): CaptionCue[] {
   return cues
 }
 
-/** Anything that can be a `-->` cue timing line. */
-const TIMING_LINE = /(^|\n)[^\S\n]*(?:\d+:)?\d{1,2}:\d{1,2}(?:[.,]\d{1,3})?[^\S\n]*-->[^\S\n]*(?:\d+:)?\d{1,2}:\d{1,2}/
-
-/**
- * True when a caption string is caption text rather than the address of a caption file. It is text
- * when, after an optional byte-order mark and leading whitespace, it starts with `WEBVTT`; when any
- * line is a cue timing (`00:01.000 --> 00:02.000`); when it holds whitespace inside it (a line break,
- * or a space a URL would have percent-encoded); or when it is empty. Anything else is a URL, absolute
- * or relative to `document.baseURI`.
- */
-export function isCaptionText(value: string): boolean {
-  const text = value.replace(/^\uFEFF/, '').trim()
-  return text === '' || text.startsWith('WEBVTT') || TIMING_LINE.test(text) || /\s/.test(text)
-}
-
-/**
- * True when fetched text is a WebVTT file: after an optional byte-order mark and leading whitespace
- * it starts with the `WEBVTT` header. An HTML page, JSON, an empty body or a SubRip file is not.
- */
 export function isVttFile(text: string): boolean {
   return /^WEBVTT(?:[ \t\r\n]|$)/.test(text.replace(/^\uFEFF/, '').trimStart())
 }
 
 /**
- * Normalises caption input that needs no fetching into cues sorted by start time: cues, the text of a
- * WebVTT file, or a `TextTrack`. A `TextTrack` is read from its loaded `cues`; a track whose
- * mode is `'disabled'` has none, so the caller should set it to `'hidden'` and wait for its cues before
- * clipping. A string that is a URL (see {@link isCaptionText}) has no cues here; `createClip` and the
- * picker fetch it.
+ * Cues sorted by start from cues, WebVTT text or a `TextTrack`. A `TextTrack` is read from its loaded
+ * `cues`, and a `'disabled'` track has none: set it `'hidden'` and wait for its cues first. A URL string
+ * has no cues here; `createClip` and the picker fetch it.
  */
 export function toCues(input: CaptionCue[] | string | TextTrack): CaptionCue[] {
   let cues: CaptionCue[]
@@ -105,28 +86,19 @@ export function toCues(input: CaptionCue[] | string | TextTrack): CaptionCue[] {
   return cues.sort((a, b) => a.start - b.start)
 }
 
-/**
- * The cues showing at `time` (source seconds), in start order. Captions are few, so a linear scan per
- * frame costs nothing next to encoding the frame.
- */
 export function activeCues(cues: CaptionCue[], time: number): CaptionCue[] {
   return cues.filter((cue) => cue.start <= time && time < cue.end)
 }
 
-/** The base relative caption URLs resolve against: the document's base URL, else the page's. */
 function baseUrl(): string | undefined {
   return globalThis.document?.baseURI ?? globalThis.location?.href
 }
 
-/**
- * The absolute URL a caption input names (a `URL`, or a string {@link isCaptionText} says is not
- * text), or `null` for text, cues and tracks.
- */
 export function captionUrl(input: unknown): string | null {
   if (input instanceof URL) {
     return input.href
   }
-  if (typeof input === 'string' && !isCaptionText(input)) {
+  if (typeof input === 'string' && input.trim() !== '' && !isVttFile(input)) {
     try {
       return new URL(input.trim(), baseUrl()).href
     } catch {
@@ -136,12 +108,10 @@ export function captionUrl(input: unknown): string | null {
   return null
 }
 
-/** True for a list of caption track descriptors (`{ src, … }`) rather than a list of cues. */
 export function isTrackList(input: unknown): input is CaptionTrackSource[] {
   return Array.isArray(input) && input.length > 0 && input.every((item) => item !== null && typeof item === 'object' && 'src' in item)
 }
 
-/** Caption input as track descriptors: a list stays a list, a single input is one unnamed track. */
 export function asTrackList(input: CaptionInput | CaptionTrackSource[] | null | undefined): Array<CaptionTrackSource | { src: CaptionInput }> {
   if (input === null || input === undefined || (Array.isArray(input) && input.length === 0)) {
     return []
@@ -150,9 +120,9 @@ export function asTrackList(input: CaptionInput | CaptionTrackSource[] | null | 
 }
 
 /**
- * Which of several passed caption tracks is chosen when none is asked for: the one marked `default`,
- * else the first whose `srclang` matches `language` (exactly, then by its primary subtag, so `fr`
- * matches `fr-CA` and the other way round), else the first. `-1` for no tracks.
+ * The passed track chosen when none is asked for: the one marked `default`, else the first whose
+ * `srclang` matches `language` (exactly, then by primary subtag, so `fr` matches `fr-CA`), else the
+ * first. `-1` for no tracks.
  */
 export function defaultTrackIndex(
   tracks: ReadonlyArray<{ srclang?: string; default?: boolean }>,
@@ -178,4 +148,15 @@ export function defaultTrackIndex(
     }
   }
   return 0
+}
+
+export function passedTrackInfo(tracks: ReadonlyArray<CaptionTrackSource>, language?: string): CaptionTrackInfo[] {
+  const chosen = defaultTrackIndex(tracks, language)
+  return tracks.map((track, index) => ({
+    id: `passed:${index}`,
+    kind: 'passed',
+    language: track.srclang ?? '',
+    label: track.label || track.srclang || `Captions ${index + 1}`,
+    default: index === chosen,
+  }))
 }

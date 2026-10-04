@@ -1,39 +1,21 @@
 import { CanvasSink, EncodedPacketSink } from 'mediabunny'
 import { even } from '@/clip/crop'
-import { inspect } from '@/clip/support'
+import { vttTimestamp } from '@/captions/cues'
+import { abortReason } from '@/utils/errors'
+import { inspect, selectTracks } from '@/clip/support'
 import type { Storyboard, StoryboardOptions } from '@/types'
 
-/** Formats seconds as a WebVTT timestamp, `hh:mm:ss.ttt`. */
-export function vttTimestamp(seconds: number): string {
-  const totalMillis = Math.round(seconds * 1000)
-  const hours = Math.floor(totalMillis / 3_600_000)
-  const minutes = Math.floor((totalMillis % 3_600_000) / 60_000)
-  const secs = Math.floor((totalMillis % 60_000) / 1000)
-  const millis = totalMillis % 1000
-  const pad = (value: number, width = 2) => String(value).padStart(width, '0')
-  return `${pad(hours)}:${pad(minutes)}:${pad(secs)}.${pad(millis, 3)}`
-}
-
-function abortReason(signal: AbortSignal): unknown {
-  return signal.reason ?? new DOMException('The storyboard was aborted.', 'AbortError')
-}
-
 /**
- * Builds a scrubber storyboard: one JPEG sprite of evenly spaced thumbnails and a WebVTT file whose
- * cues point into it with `#xywh=`, the format players (video-player's scrubber preview included) read
- * for hover previews.
- *
- * It reads as little as it can. By default each thumbnail is the nearest keyframe at or before its
- * time: the keyframes are looked up first, thumbnails sharing one are decoded once, and no frame after
- * a keyframe is decoded (`exact: true` decodes to the exact time instead). Frames come from
- * Mediabunny's `CanvasSink`, which closes every frame itself; this function only ever holds canvases.
- * `onTile` sees each thumbnail as it lands; aborting `signal` disposes the input, cancelling any
- * download in flight.
+ * A scrubber storyboard: a JPEG sprite of evenly spaced thumbnails and a WebVTT file pointing into it
+ * with `#xywh=`. Reads the smallest track that covers a tile and, unless `exact`, decodes each distinct
+ * keyframe once (thumbnails sharing one share a picture). `CanvasSink` closes every frame itself.
+ * `onTile` sees each thumbnail as it lands; aborting `signal` disposes the input.
  */
 export async function createStoryboard(options: StoryboardOptions): Promise<Storyboard> {
   const { signal } = options
   signal?.throwIfAborted()
-  const { input, video, info } = await inspect(options.source)
+  const inspected = await inspect(options.source, options.cache)
+  const { input, info } = inspected
   const onAbort = () => input.dispose()
   signal?.addEventListener('abort', onAbort, { once: true })
   try {
@@ -44,6 +26,7 @@ export async function createStoryboard(options: StoryboardOptions): Promise<Stor
     const tileWidth = even(options.tileWidth ?? 160)
     const tileHeight = even((tileWidth * info.height) / info.width)
     const columns = options.columns ?? 10
+    const { video } = await selectTracks(inspected, options.track ?? 'auto', { width: tileWidth, height: tileHeight })
     const firstTimestamp = await video.getFirstTimestamp()
     const starts: number[] = []
     for (let t = from; t < to; t += interval) {

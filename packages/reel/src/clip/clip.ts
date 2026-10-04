@@ -8,7 +8,8 @@ import { clipLink, originTags } from '@/clip/origin'
 import { ClipError } from '@/utils/errors'
 import { createImageCache } from '@/render/image'
 import { createStampPainter } from '@/render/stamp'
-import { audioRequest, inspect, noVideoEncoder, planOutput } from '@/clip/support'
+import { loadCaptionTrack } from '@/captions/load'
+import { inspect, noVideoEncoder, planOutput, selectTracks, type Inspected } from '@/clip/support'
 import { createWatermarkPainter } from '@/render/watermark'
 import type { CaptionCue, ClipOptions, ClipWarning } from '@/types'
 
@@ -18,9 +19,10 @@ function abortReason(signal: AbortSignal): unknown {
 
 /**
  * The cues a clip burns in: those passed (cues, WebVTT text, a `TextTrack`, or a WebVTT file's URL to
- * fetch), else the default passed track's.
+ * fetch), else the chosen caption track's (by default the default passed track), read only for
+ * `[start, end)`.
  */
-async function clipCues(options: ClipOptions): Promise<CaptionCue[]> {
+async function clipCues(options: ClipOptions, inspected: Inspected, start: number, end: number): Promise<CaptionCue[]> {
   const captions = options.captions
   if (!captions) {
     return []
@@ -29,8 +31,16 @@ async function clipCues(options: ClipOptions): Promise<CaptionCue[]> {
     return loadCaptions(captions.cues, { signal: options.signal })
   }
   const passed = captions.tracks ?? []
-  if (passed.length > 0) {
-    return loadCaptions(passed[defaultTrackIndex(passed)].src, { signal: options.signal })
+  const id = captions.track ?? (passed.length > 0 ? `passed:${defaultTrackIndex(passed)}` : undefined)
+  if (id) {
+    return loadCaptionTrack(options.source, id, {
+      start,
+      end,
+      signal: options.signal,
+      resolved: inspected.info.resolved,
+      tracks: passed,
+      cache: options.cache,
+    })
   }
   return []
 }
@@ -41,7 +51,7 @@ async function clipCues(options: ClipOptions): Promise<CaptionCue[]> {
  * file: always an MP4 (`video/mp4`) with H.264 video and AAC audio.
  *
  * Everything happens on the device. Mediabunny demuxes the source (reading only the byte ranges it
- * needs from a URL) and WebCodecs decodes each frame; reel draws it cropped onto one reused
+ * needs from a URL, and from an HLS stream only the smallest variant that covers the output) and WebCodecs decodes each frame; reel draws it cropped onto one reused
  * `OffscreenCanvas`, paints captions over it and hands the canvas to a `CanvasSource`, which encodes
  * it with backpressure. End card frames go through the same canvas after the clip. Audio runs beside
  * it as a composable Mediabunny `Conversion` into the same output: AAC is copied without re-encoding,
@@ -50,9 +60,10 @@ async function clipCues(options: ClipOptions): Promise<CaptionCue[]> {
  * Logos (the stamp's and the end card's) are loaded and checked before encoding starts; one that
  * cannot be loaded, or would taint the canvas, is left out and reported through `onWarning` (or
  * `console.warn`) rather than failing the clip. Captions are too: a caption file that cannot be
- * fetched or read leaves the clip without captions and warns `'captions-unavailable'`. Audio that is
- * not AAC, in a browser without an AAC encoder (Firefox), is left out too: the clip is silent and
- * `onWarning` gets `'audio-unavailable'`.
+ * fetched or read, or an HLS subtitles rendition whose playlist or segments fail, leaves the clip
+ * without captions and warns `'captions-unavailable'`. An unknown `captions.track` id still rejects,
+ * with a `RangeError`. Audio that is not AAC, in a browser without an AAC encoder (Firefox), is left
+ * out too: the clip is silent and `onWarning` gets `'audio-unavailable'`.
  *
  * Rejects with a {@link ClipError} when the source cannot be clipped (the same reasons `canClip`
  * reports), and with `signal.reason` when aborted.
@@ -63,7 +74,8 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
     throw abortReason(signal)
   }
 
-  const { input, video, audio, info } = await inspect(options.source)
+  const inspected = await inspect(options.source, options.cache)
+  const { input, info } = inspected
   let conversion: Conversion | undefined
   let output: Output | undefined
   let card: PreparedEndCard | undefined
@@ -89,8 +101,15 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
     }
 
     const crop = planCrop(info.width, info.height, options.crop)
-    const sound = await audioRequest(audio)
-    const plan = await planOutput({ width: crop.outputWidth, height: crop.outputHeight, ...sound, audio: options.audio })
+    // The crop is planned on the largest track; the one read is the smallest whose crop window still
+    // holds the output's pixels, e.g. the 180p variant for a 180-pixel-high clip of a 1080p stream.
+    const need = {
+      width: Math.ceil((crop.outputWidth * info.width) / crop.width),
+      height: Math.ceil((crop.outputHeight * info.height) / crop.height),
+    }
+    const { video, audio } = await selectTracks(inspected, options.track ?? 'auto', need)
+    const sourceAudio = audio ? await audio.getCodec() : null
+    const plan = await planOutput({ width: crop.outputWidth, height: crop.outputHeight, sourceAudio, audio: options.audio })
     if (!plan) {
       throw noVideoEncoder(crop.outputWidth, crop.outputHeight)
     }
@@ -98,7 +117,7 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
       warn({
         reason: 'audio-unavailable',
         target: 'audio',
-        message: `reel: the audio is left out. Clips are MP4 with AAC audio, and this browser has no AAC encoder for the source's ${sound.sourceAudio} audio.`,
+        message: `reel: the audio is left out. Clips are MP4 with AAC audio, and this browser has no AAC encoder for the source's ${sourceAudio} audio.`,
       })
     }
     if (signal?.aborted) {
@@ -113,13 +132,17 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
     }
     let cues: CaptionCue[] = []
     try {
-      cues = await clipCues(options)
+      cues = await clipCues(options, inspected, start, end)
     } catch (error) {
-      if (signal?.aborted) {
+      // An unknown track id is the caller's mistake, not a file that failed to load.
+      if (signal?.aborted || error instanceof RangeError) {
         throw error
       }
       const detail = (error instanceof Error ? error.message : String(error)).replace(/^reel: /, '')
       warn({ reason: 'captions-unavailable', target: 'captions', message: `reel: the captions are left out. ${detail}` })
+    }
+    if (signal?.aborted) {
+      throw abortReason(signal)
     }
     const paintCaptions = createCaptionPainter(width, height, options.captions?.style)
     const paintWatermark = options.watermark?.text ? createWatermarkPainter(width, height, options.watermark) : null
@@ -156,15 +179,18 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
     output.addVideoTrack(videoSource)
 
     if ((plan.audio === 'copy' || plan.audio === 'encode') && audio) {
-      // AAC is copied packet for packet; anything else is decoded and encoded as AAC.
+      // AAC is copied packet for packet; anything else is decoded and encoded as AAC. Every track is
+      // offered and all but the chosen video's own audio discarded: 'primary' would take the input's
+      // primary audio, which for HLS belongs to the top variant, not the one read.
+      const chosenAudio = audio
       conversion = await Conversion.init({
         input,
         output,
         composable: true,
-        tracks: 'primary',
+        tracks: 'all',
         trim: { start, end },
         video: { discard: true },
-        audio: { codec: 'aac' },
+        audio: (track) => (track === chosenAudio ? { codec: 'aac' } : { discard: true }),
         showWarnings: false,
       })
     }
@@ -205,6 +231,7 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
           if (to <= from) {
             continue
           }
+          // Drawn at the reference track's size, so a smaller variant fills the same crop window.
           sample.draw(ctx, -crop.left * scaleX, -crop.top * scaleY, info.width * scaleX, info.height * scaleY)
           if (cues.length > 0) {
             paintCaptions(ctx, activeCues(cues, from))

@@ -1,6 +1,6 @@
 import type { CaptionOptions } from '@/types/captions'
 import type { EndCardOptions, StampOptions, WatermarkOptions } from '@/types/render'
-import type { ClipSource, SourceInfo } from '@/types/sources'
+import type { ClipSource, PlaylistCache, SourceInfo, TrackChoice } from '@/types/sources'
 
 /**
  * A target aspect ratio as `'width:height'`, e.g. `'9:16'` for vertical shorts, or `'source'` to keep
@@ -17,14 +17,8 @@ export type Aspect = '9:16' | '4:5' | '1:1' | '16:9' | 'source' | `${number}:${n
 export type CropFocus = number | { x?: number; y?: number }
 
 export interface CropOptions {
-  /** Target aspect ratio. Defaults to `'9:16'`. */
   aspect?: Aspect
-  /** Centre of the crop window. Defaults to the middle of the frame. */
   focus?: CropFocus
-  /**
-   * Output height in pixels. Defaults to the height of the crop window itself, so nothing is upscaled;
-   * a 720p source gives a 404x720 9:16 clip. Set `1920` to always produce 1080x1920.
-   */
   height?: number
 }
 
@@ -33,90 +27,44 @@ export interface CropOptions {
  * AAC audio, so only the audio varies.
  */
 export interface OutputPlan {
-  /**
-   * `'copy'`: the source's AAC packets are copied untouched (no audio encoder needed). `'encode'`: the
-   * source's audio is another codec, decoded and encoded as AAC. `'none'`: the source has no audio, or
-   * `audio: false`. `'unavailable'`: the source's audio is not AAC and this browser has no AAC encoder
-   * (Firefox), so the clip is silent and `createClip` warns `'audio-unavailable'`.
-   */
   audio: 'copy' | 'encode' | 'none' | 'unavailable'
 }
 
 export interface ClipOptions {
   source: ClipSource
-  /** Start of the clip on the source's timeline, in seconds. Defaults to `0`. */
   start?: number
-  /** End of the clip on the source's timeline, in seconds. Defaults to the end of the source. */
   end?: number
-  /** Crop window. Defaults to a centred 9:16 window at the crop's own resolution. */
   crop?: CropOptions
-  /** Captions to burn into the picture. */
   captions?: CaptionOptions
-  /**
-   * Set to `false` to drop audio. Defaults to `true`: AAC is copied, other audio encoded as AAC, and
-   * where this browser has no AAC encoder the clip is silent and `onWarning` gets `'audio-unavailable'`.
-   */
+  track?: TrackChoice
   audio?: boolean
-  /** Where the clip came from. Used for {@link ClipOptions.metadata} and by `clipLink()`. */
   origin?: ClipOrigin
-  /**
-   * Write the origin into the file's metadata (title, publisher, a deep link back to the moment and
-   * an encoder tag). Defaults to `true` when `origin` is given. When `false`, or with no origin, the
-   * clip carries no metadata from the source either.
-   */
   metadata?: boolean
-  /**
-   * Extra frames after the clip that point back at the original: logo, publisher, title and the
-   * article's address in large type, faded in over the clip's last frame. Every value defaults from
-   * `origin`; `true` means all defaults. A QR code of the deep link is opt-in (`qr: true`). The card is
-   * silent: the audio ends where the clip does.
-   */
   endCard?: EndCardOptions | boolean
-  /** A thin strip of text, such as the site name, drawn over every frame of the clip (not the card). */
   watermark?: WatermarkOptions
-  /**
-   * A logo drawn in a corner of every frame of the clip (not the end card, which has its own logo).
-   * The default placement clears the interface short-form apps draw over a vertical video.
-   */
   stamp?: StampOptions
-  /** Called with a fraction from 0 to 1 as the clip is written. */
   onProgress?: (fraction: number) => void
-  /**
-   * Called for anything left out of a clip that was still made: a logo that could not be loaded,
-   * captions that could not be loaded or read, or audio this browser cannot write as AAC. Without it,
-   * warnings go to `console.warn`.
-   */
   onWarning?: (warning: ClipWarning) => void
-  /** Aborts the clip; the returned promise then rejects with the signal's reason. */
   signal?: AbortSignal
+  cache?: PlaylistCache
 }
 
-/** Something left out of a clip that was still made. */
+/**
+ * Something left out of a clip that was still made.
+ */
 export interface ClipWarning {
-  /**
-   * `'logo-unavailable'`: a logo could not be loaded, or would have tainted the canvas.
-   * `'captions-unavailable'`: the captions could not be loaded or read (a failed fetch or an HTTP
-   * error, a cross-origin file without CORS headers, a file that is not WebVTT).
-   * `'audio-unavailable'`: the source's audio is not AAC and this browser has no AAC encoder (Firefox),
-   * so the clip is silent.
-   */
   reason: 'logo-unavailable' | 'captions-unavailable' | 'audio-unavailable'
-  /** What was left out: the end card's logo, the stamp, the captions, or the audio. */
   target: 'endCard' | 'stamp' | 'captions' | 'audio'
   message: string
 }
 
-/** The page a clip was cut from, so the clip can point back at it. */
+/**
+ * The page a clip was cut from, so the clip can point back at it.
+ */
 export interface ClipOrigin {
-  /** The page or video URL the viewer was watching. */
   url: string
   title?: string
-  /** Who published the original, e.g. a site or channel name. */
   publisher?: string
-  /**
-   * The id of the player the clip came from, its `deep-link="<id>"` in `@munsonlabs/video-player`,
-   * so the link names it (`&ml-player=<id>`) on a page with several players.
-   */
   player?: string
 }
 
@@ -125,85 +73,37 @@ export interface ClipOrigin {
  * browser rules the clip out.
  */
 export type ClipBlocker =
-  /** No `VideoEncoder`/`VideoDecoder` (WebCodecs) or `OffscreenCanvas`, or not a secure context. */
   | 'no-webcodecs'
-  /** A YouTube, Vimeo, Dailymotion, Brightcove or JW Player page URL: the pixels live in someone else's iframe. */
   | 'embed'
-  /** The `<video>` is playing encrypted media through EME (`mediaKeys` is set). */
   | 'drm'
-  /** The `<video>` is fed by a `MediaSource` (hls.js, dash.js, Shaka) rather than a file URL. */
   | 'mse'
-  /** The `<video>` is fed a `MediaStream` (camera, screen, WebRTC). */
   | 'media-stream'
-  /** A DASH manifest; reel reads files and HLS playlists, not MPDs. */
   | 'dash'
-  /** The URL could not be read: a network error or, most often, a cross-origin file without CORS headers. */
   | 'unreachable'
-  /** The bytes are not a container reel can read. */
   | 'unsupported-container'
-  /** The source has no video track. */
   | 'no-video'
-  /** This browser cannot decode the source's video codec (also what encrypted tracks look like). */
   | 'undecodable-video'
-  /** This browser has no H.264 encoder at the clip's size; clips are always H.264 in MP4. */
   | 'no-video-encoder'
 
 export type CanClipResult = { ok: true; info: SourceInfo; plan: OutputPlan } | { ok: false; reason: ClipBlocker; message: string }
 
-/** The result of one `isConfigSupported` probe. */
-export interface CodecProbe {
-  /** The exact codec string probed. */
-  codec: string
-  supported: boolean
-}
-
-/** What this browser offers for clipping, independent of any source. */
-export interface Support {
-  /** `VideoEncoder`, `VideoDecoder`, `VideoFrame`, `OffscreenCanvas` and a secure context are all present. */
-  webcodecs: boolean
-  secureContext: boolean
-  /** H.264 decode of a typical 720p High profile stream. */
-  decode: { avc: CodecProbe }
-  /** The H.264 encoder, probed at 1080x1920. Without it nothing can be clipped. */
-  video: { avc: CodecProbe }
-  /** The AAC encoder, probed at 48kHz stereo. Without it only AAC sources keep their sound (copied). */
-  audio: { aac: CodecProbe }
-}
-
 export interface StoryboardOptions {
   source: ClipSource
-  /** First thumbnail's time, in seconds. Defaults to `0`. */
   start?: number
-  /** Thumbnails stop before this time. Defaults to the end of the source. */
   end?: number
-  /** Seconds between thumbnails. Defaults to `ceil((end - start) / 100)`, at least 1. */
   interval?: number
-  /** Thumbnail width in pixels; height follows the source aspect. Defaults to `160`. */
   tileWidth?: number
-  /** Thumbnails per sprite row. Defaults to `10`. */
   columns?: number
-  /** The URL the VTT should point at for the sprite. Defaults to `'storyboard.jpg'`. */
   imageUrl?: string
-  /**
-   * Decode the exact frame at each thumbnail's time. Defaults to `false`: each thumbnail shows the
-   * nearest keyframe at or before its time, so each keyframe is decoded once and nothing after it,
-   * which is many times faster on long-GOP streams. Thumbnails that share a keyframe share a picture.
-   */
   exact?: boolean
-  /**
-   * Called as each thumbnail is drawn, in order, with its index, its picture (`tileWidth` x
-   * `tileHeight`) and its time in seconds, so a filmstrip can paint progressively. The picture is
-   * reused once the callback returns: draw it (or copy it) synchronously.
-   */
+  track?: TrackChoice
   onTile?: (index: number, image: CanvasImageSource, time: number) => void
-  /** Stops reading at once; the promise then rejects with the signal's reason. */
   signal?: AbortSignal
+  cache?: PlaylistCache
 }
 
 export interface Storyboard {
-  /** One JPEG sprite holding every thumbnail in a grid. */
   image: Blob
-  /** A WebVTT storyboard: one cue per thumbnail pointing into the sprite with `#xywh=`. */
   vtt: string
   tileWidth: number
   tileHeight: number

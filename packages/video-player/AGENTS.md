@@ -22,7 +22,7 @@ import {
   VolumeSlider,
   TimeDisplay,
 } from '@munsonlabs/video-player'
-import { useForwardedPlayer } from '@munsonlabs/video-player'
+import { useForwardedPlayer, useResolvedPlayer } from '@munsonlabs/video-player'
 import type {
   PlayerProps,
   StateChangeEvent,
@@ -33,6 +33,7 @@ import type {
   ForwardedPlayer,
   PlayerMethodKey,
   UseForwardedPlayerReturn,
+  ResolvedPlayerProps,
 } from '@munsonlabs/video-player'
 import '@munsonlabs/video-player/style'
 ```
@@ -47,8 +48,9 @@ import '@munsonlabs/video-player/style'
 | `registerPlatform()`                                                                                                                                                                         | Teaches the player a new platform (URL matcher + embed adapter or source resolver) without forking — see the docs site's Platforms page                                                                                                                                                 |
 | `PlayButton`/`MuteButton`/`FullscreenButton`/`LoopButton`/`PipButton`/`CaptionsButton`/`QualityButton`/`PlaybackRateButton`/`Buffering`/`Scrubber`/`VolumeSlider`/`TimeDisplay`/`Transcript` | Headless control primitives for building a custom HUD (`:controls="false"`). Each resolves its player in this order: a `player` prop, then a `for` element id, then the enclosing `<VideoPlayer>` via context — so a control nested in the player's default slot needs no wiring at all |
 | `useForwardedPlayer()`                                                                                                                                                                       | Curated forward of a template-ref'd `VideoPlayer`'s controls/state for a wrapper component's own `defineExpose` — the same mechanism `VideoCard`/`VideoStage` use internally                                                                                                            |
+| `useResolvedPlayer(props)`                                                                                                                                                                   | For controls built outside the package: resolves `player`, then `for`, then the enclosing `VideoPlayer`. Returns a ref to the handle (`ResolvedPlayerProps`: `player?`, `for?`)                                                                                                         |
 | `resolvePlatform(url)`                                                                                                                                                                       | The platform key plus `embed: true/false` in one lookup                                                                                                                                                                                                                                 |
-| `parseDeepLink(location)`                                                                                                                                                                    | Reads `#ml-t=start,end` plus `&ml-player=<id>` from the hash (only) into `{ start, end, target }`; what the `deepLink` prop uses                                                                                                                                                                    |
+| `parseDeepLink(location)`                                                                                                                                                                    | Reads `#ml-t=start,end` plus `&ml-player=<id>` from the hash (only) into `{ start, end, target }`; what the `deepLink` prop uses                                                                                                                                                        |
 | `HideMarker`                                                                                                                                                                                 | Slotless sentinel — while it's in the viewport, a pinned `VideoStage` tucks off to a sliver instead of covering it, see the docs site's Components page                                                                                                                                 |
 
 ### Custom elements (`./element`, `./element/core`, `./element/controls`)

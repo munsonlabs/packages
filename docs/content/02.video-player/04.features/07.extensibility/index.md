@@ -61,4 +61,5 @@ The logic behind the built-in controls is exported, so a custom control can reus
 ## Wrapping and exposing a player
 
 - [`useForwardedPlayer`](/video-player/api/methods/wrapping#useforwardedplayer) forwards a wrapped `VideoPlayer`'s full handle through your own component's `defineExpose`, with an optional `guard` to intercept calls.
+- [`useResolvedPlayer`](/video-player/api/methods/wrapping#useresolvedplayer) finds a player for a control of your own: resolves `player`, then `for`, then the enclosing `VideoPlayer`.
 - [`exposePlayerOnElement`](/video-player/api/methods/wrapping#exposeplayeronelement) copies that handle onto a DOM element, so a third party's script or a separately-bundled `<ml-video-*>` element can drive a plain Vue player.

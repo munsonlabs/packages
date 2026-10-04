@@ -1,0 +1,197 @@
+import { BufferTarget, CanvasSource, Conversion, Mp4OutputFormat, Output, QUALITY_HIGH, VideoSampleSink, type MetadataTags } from 'mediabunny'
+import { ClipError } from '@/utils/errors'
+import { audioRequest, inspect, noVideoEncoder, planOutput } from '@/clip/support'
+import type { ClipOptions, ClipWarning } from '@/types'
+
+function abortReason(signal: AbortSignal): unknown {
+  return signal.reason ?? new DOMException('The clip was aborted.', 'AbortError')
+}
+
+/**
+ * Rounds down to an even number, at least 2. H.264 encoders work in 4:2:0 and several reject odd
+ * dimensions outright, so every output size passes through here.
+ */
+function even(value: number): number {
+  return Math.max(2, Math.floor(value / 2) * 2)
+}
+
+/**
+ * Cuts `[start, end)` out of a video and resolves with the encoded file: always an MP4
+ * (`video/mp4`) with H.264 video and AAC audio.
+ *
+ * Everything happens on the device. Mediabunny demuxes the source (reading only the byte ranges it
+ * needs from a URL) and WebCodecs decodes each frame; reel draws it onto one reused
+ * `OffscreenCanvas` and hands the canvas to a `CanvasSource`, which encodes
+ * it with backpressure. Audio runs beside
+ * it as a composable Mediabunny `Conversion` into the same output: AAC is copied without re-encoding,
+ * other audio encoded as AAC. Every decoded sample is closed as soon as it is drawn.
+ *
+ * Audio that is not AAC, in a browser without an AAC encoder (Firefox), is left out rather than
+ * failing the clip: the clip is silent and `onWarning` (or `console.warn`) gets `'audio-unavailable'`.
+ *
+ * Rejects with a {@link ClipError} when the source cannot be clipped (the same reasons `canClip`
+ * reports), and with `signal.reason` when aborted.
+ */
+export async function createClip(options: ClipOptions): Promise<Blob> {
+  const { signal } = options
+  if (signal?.aborted) {
+    throw abortReason(signal)
+  }
+
+  const { input, video, audio, info } = await inspect(options.source)
+  let conversion: Conversion | undefined
+  let output: Output | undefined
+  const warn = (warning: ClipWarning) => {
+    if (options.onWarning) {
+      options.onWarning(warning)
+    } else {
+      console.warn(warning.message)
+    }
+  }
+  const running: Promise<unknown>[] = []
+  const onAbort = () => {
+    void conversion?.cancel()
+  }
+  signal?.addEventListener('abort', onAbort)
+
+  try {
+    const start = Math.max(0, options.start ?? 0)
+    const end = Math.min(info.duration, options.end ?? info.duration)
+    if (!(end > start)) {
+      throw new RangeError(`reel: end (${end}) must be after start (${start}) and within the source (${info.duration}s).`)
+    }
+
+    const width = even(info.width)
+    const height = even(info.height)
+    const sound = await audioRequest(audio)
+    const plan = await planOutput({ width, height, ...sound, audio: options.audio })
+    if (!plan) {
+      throw noVideoEncoder(width, height)
+    }
+    if (plan.audio === 'unavailable') {
+      warn({
+        reason: 'audio-unavailable',
+        target: 'audio',
+        message: `reel: the audio is left out. Clips are MP4 with AAC audio, and this browser has no AAC encoder for the source's ${sound.sourceAudio} audio.`,
+      })
+    }
+    if (signal?.aborted) {
+      throw abortReason(signal)
+    }
+
+    const canvas = new OffscreenCanvas(width, height)
+    const ctx = canvas.getContext('2d', { alpha: false })
+    if (!ctx) {
+      throw new ClipError('no-webcodecs', 'OffscreenCanvas has no 2D context here.')
+    }
+
+    const total = end - start
+
+    // Source tags are never carried over: they can hold things (location, device, a different
+    // title) that do not describe the clip.
+    const tags: MetadataTags = {}
+
+    output = new Output({
+      format: new Mp4OutputFormat({ fastStart: 'in-memory' }),
+      target: new BufferTarget(),
+    })
+    const videoSource = new CanvasSource(canvas, { codec: 'avc', quality: QUALITY_HIGH })
+    output.addVideoTrack(videoSource)
+
+    if ((plan.audio === 'copy' || plan.audio === 'encode') && audio) {
+      // AAC is copied packet for packet; anything else is decoded and encoded as AAC.
+      conversion = await Conversion.init({
+        input,
+        output,
+        composable: true,
+        tracks: 'primary',
+        trim: { start, end },
+        video: { discard: true },
+        audio: { codec: 'aac' },
+        showWarnings: false,
+      })
+    }
+    output.setMetadataTags(tags)
+    if (signal?.aborted) {
+      throw abortReason(signal)
+    }
+    await output.start()
+
+    const report = options.onProgress
+    let reported = 0
+    const progress = (time: number) => {
+      const fraction = Math.min(0.999, time / total)
+      if (report && fraction > reported) {
+        reported = fraction
+        report(fraction)
+      }
+    }
+
+    /**
+     * Draws every frame of the clip into the canvas and encodes it. `sample.draw` applies the track's
+     * rotation, so a phone video arrives upright.
+     */
+    const pumpVideo = async () => {
+      for await (const sample of new VideoSampleSink(video).samples(start, end)) {
+        try {
+          if (signal?.aborted) {
+            break
+          }
+          const from = Math.max(start, sample.timestamp)
+          const to = Math.min(end, sample.timestamp + sample.duration)
+          if (to <= from) {
+            continue
+          }
+          sample.draw(ctx, 0, 0, width, height)
+          await videoSource.add(from - start, to - from)
+          progress(to - start)
+        } finally {
+          sample.close()
+        }
+      }
+      if (signal?.aborted) {
+        throw abortReason(signal)
+      }
+      videoSource.close()
+    }
+
+    const videoRun = pumpVideo()
+    running.push(videoRun)
+    if (conversion) {
+      running.push(conversion.execute())
+    }
+    await Promise.all(running)
+    await output.finalize()
+    // An abort that lands while the file is being finalised still rejects: the caller asked for no
+    // clip and waits to hear so.
+    if (signal?.aborted) {
+      throw abortReason(signal)
+    }
+
+    const buffer = (output.target as BufferTarget).buffer
+    if (!buffer) {
+      throw new Error('reel: the output was finalised without data.')
+    }
+    report?.(1)
+    return new Blob([buffer], { type: 'video/mp4' })
+  } catch (error) {
+    // Stop whatever is still running and wait for it to settle before the input is disposed, so no
+    // pump is left reading a closed source. Cancelling surfaces as ConversionCanceledError or as the
+    // output's own "has been canceled" error depending on where the pipeline was; after an abort,
+    // either is just the abort.
+    if (conversion && (conversion.state === 'executing' || conversion.state === 'idle')) {
+      await conversion.cancel()
+    }
+    if (output && output.state !== 'canceled' && output.state !== 'finalized') {
+      await output.cancel()
+    }
+    await Promise.allSettled(running)
+    if (signal?.aborted) {
+      throw abortReason(signal)
+    }
+    throw error
+  } finally {
+    signal?.removeEventListener('abort', onAbort)
+    input.dispose()
+  }
+}

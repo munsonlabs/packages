@@ -13,6 +13,10 @@ export const SEAL_GLYPHS = {
     { kind: 'line', d: 'M26.2 5.7H25V3.5H27.6V4.6', width: 0.65 },
     { kind: 'line', d: 'M26.2 4.6H28.8V6.7H26.2Z', width: 0.65 },
   ],
+  reel: [
+    { kind: 'solid', d: 'M25.15 4.95H28.75V7.05H25.15Z' },
+    { kind: 'line', d: 'M25.3 4.05L28.45 3.15' },
+  ],
   dye: [{ kind: 'solid', d: 'M26.9 3.1C26.4 3.9 25.6 4.8 25.6 5.7A1.3 1.3 0 0 0 28.2 5.7C28.2 4.8 27.4 3.9 26.9 3.1Z' }],
 } as const satisfies Record<string, readonly { kind: 'line' | 'solid'; d: string; width?: number }[]>
 

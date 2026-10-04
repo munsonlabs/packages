@@ -1,5 +1,13 @@
 <script setup lang="ts">
-const EXPERIMENTS = [
+const EXPERIMENTS: Array<{ name: string; branch: string; icon: string; description: string; to?: string }> = [
+  {
+    name: 'Reel',
+    branch: 'idea/reel',
+    icon: 'i-lucide-clapperboard',
+    to: '/reel/getting-started/introduction',
+    description:
+      'In-browser clip making with WebCodecs: trim, crop to 9:16, burn in captions, stamp your logo and add an end card that sends viewers back to the article. Plus a “clip this” picker.',
+  },
   {
     name: 'Blueprint',
     branch: 'blueprint-layers',
@@ -23,14 +31,14 @@ const EXPERIMENTS = [
     title="What’s being built next"
     description="Early packages on their own branches. The APIs will move before a first release."
   >
-    <div class="grid gap-4 md:grid-cols-2">
+    <div class="grid gap-4 md:grid-cols-3">
       <UPageCard
         v-for="item in EXPERIMENTS"
         :key="item.name"
         :icon="item.icon"
         :description="item.description"
-        :to="`https://github.com/munsonlabs/packages/tree/${item.branch}`"
-        target="_blank"
+        :to="item.to ?? `https://github.com/munsonlabs/packages/tree/${item.branch}`"
+        :target="item.to ? undefined : '_blank'"
       >
         <template #title>
           <span class="flex flex-wrap items-center gap-2">

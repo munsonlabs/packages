@@ -680,6 +680,10 @@
           ['line', 'M26.2 4.6H28.8V6.7H26.2Z', 0.65],
         ],
         dye: [['solid', 'M26.9 3.1C26.4 3.9 25.6 4.8 25.6 5.7A1.3 1.3 0 0 0 28.2 5.7C28.2 4.8 27.4 3.9 26.9 3.1Z']],
+        reel: [
+          ['solid', 'M25.15 4.95H28.75V7.05H25.15Z'],
+          ['line', 'M25.3 4.05L28.45 3.15'],
+        ],
       }
       const cutGlyph = (name) =>
         (SEAL_GLYPHS[name] ?? SEAL_GLYPHS.labs)
@@ -948,6 +952,12 @@
           name: 'Shipkit',
           pkg: '@munsonlabs/shipkit',
           note: 'A terminal prompt, matching the Lucide terminal icon Shipkit uses in the docs: a chevron and a cursor underscore.',
+        },
+        {
+          key: 'reel',
+          name: 'Reel',
+          pkg: '@munsonlabs/reel',
+          note: 'A clapperboard: a solid slate under an open clapstick, for cutting clips. Solid like the play button, so the two video packages read as a pair.',
         },
         {
           key: 'blueprint',

@@ -1,7 +1,7 @@
 {
   "name": "@munsonlabs/reel",
   "version": "0.0.0",
-  "description": "Experimental: in-browser clip making with WebCodecs. Trim a video, crop it to 9:16, burn in captions and export an MP4, all on the device.",
+  "description": "Experimental: in-browser clip making with WebCodecs. Trim a video, crop it to 9:16, burn in captions and export an MP4, all on the device, with a clip picker built on @munsonlabs/video-player.",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -12,7 +12,10 @@
     "dist"
   ],
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/elements/**",
+    "./dist/**/*.css"
+  ],
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "exports": {
@@ -20,6 +23,20 @@
       "source": "./src/index.ts",
       "import": "./dist/index.mjs",
       "types": "./dist/index.d.mts"
+    },
+    "./element": {
+      "source": "./src/elements/index.ts",
+      "import": "./dist/elements/element.mjs",
+      "types": "./dist/elements/element.d.mts"
+    },
+    "./vue": {
+      "source": "./src/vue.ts",
+      "import": "./dist/vue.mjs",
+      "types": "./dist/vue.d.mts"
+    },
+    "./style": {
+      "types": "./src/types/style.d.ts",
+      "import": "./dist/style.css"
     }
   },
   "publishConfig": {
@@ -34,9 +51,25 @@
     "test:watch": "vp test --watch"
   },
   "dependencies": {
+    "@munsonlabs/sigil": "*",
     "mediabunny": "^1.61.0"
   },
   "devDependencies": {
-    "@munsonlabs/shipkit": "*"
+    "@munsonlabs/shipkit": "*",
+    "@munsonlabs/video-player": "*",
+    "hls.js": "^1.6.16",
+    "vue": "3.5.42"
+  },
+  "peerDependencies": {
+    "@munsonlabs/video-player": "*",
+    "vue": ">=3"
+  },
+  "peerDependenciesMeta": {
+    "@munsonlabs/video-player": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
   }
 }

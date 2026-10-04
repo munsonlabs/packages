@@ -1,4 +1,4 @@
-import base from '@munsonlabs/shipkit/vite/base.config'
+import base from '@munsonlabs/shipkit/vite/vue.config'
 import { playwright } from 'vite-plus/test/browser-playwright'
 
 const { pack: basePack = {}, test: baseTest = {}, ...baseConfig } = base as any
@@ -33,24 +33,50 @@ const projects = (baseTest.projects ?? []).map((project: any) => {
   return { ...project, test: { ...project.test, globalSetup: ['test/browser/global-setup.ts'], browser: { ...project.test.browser, instances } } }
 })
 
-/** Never in reel's own files: Mediabunny loads with the core. */
-const external = ['mediabunny']
+/**
+ * The picker is built on @munsonlabs/video-player and draws the player's sigil icons, and tests and
+ * the build resolve both from their dist, so every task waits for them.
+ */
+const afterTask = (command: string, extra = {}) => ({
+  command,
+  dependsOn: ['@munsonlabs/sigil#build', '@munsonlabs/video-player#build'],
+  ...extra,
+})
+
+/** Never in reel's own files: Mediabunny loads with the core, Vue and the player are the picker's peers. */
+const external = ['mediabunny', 'vue', '@munsonlabs/video-player']
 
 export default {
   ...baseConfig,
   run: {
     tasks: {
-      build: { command: 'vp pack' },
-      check: { command: 'vp check' },
+      build: afterTask('vp pack'),
+      check: afterTask('vp check'),
       // Uncached: a cached task runs with file-access tracking, and under it Firefox's media decoder
       // fails (MEDIA_ERR_DECODE) from the second video a test page plays, failing every later spec.
-      test: { command: 'vp test', cache: false },
+      test: afterTask('vp test', { cache: false }),
     },
   },
+  // Dynamically imported modules would otherwise be discovered mid-run, and the dependency
+  // re-optimisation reloads the browser test page under the running specs. hls.js is the player's,
+  // imported when a picker previews HLS outside Safari.
+  optimizeDeps: { include: ['hls.js'] },
   test: { ...baseTest, projects },
-  pack: {
-    ...basePack,
-    entry: { index: 'src/index.ts' },
-    deps: { ...basePack.deps, neverBundle: external },
-  },
+  pack: [
+    // The core and the Vue components. The components' styles land in dist/style.css (`./style`).
+    {
+      ...basePack,
+      entry: { index: 'src/index.ts', vue: 'src/vue.ts' },
+      deps: { ...basePack.deps, neverBundle: external },
+    },
+    // As video-player's element builds do, the element carries its own sigil and its CSS inlined into
+    // the JS, so one import gives a working picker. Vue and the player stay external peers, shared
+    // with the page's own copies, and the page already has the player's stylesheet.
+    {
+      ...basePack,
+      outDir: 'dist/elements',
+      entry: { element: 'src/elements/index.ts' },
+      deps: { neverBundle: external, alwaysBundle: [/\.css$/, /^@munsonlabs\/sigil/] },
+    },
+  ],
 }

@@ -55,7 +55,7 @@ export interface CaptionPainter {
 
 /**
  * A painter for captions on a `width` x `height` context in the caption look with `style` on top.
- * Each text's lines are wrapped once and remembered. The picker's preview paints with this same
+ * Each text's lines are wrapped once and remembered. The picker's crop overlay paints with this same
  * function, laid out at the export's size, so what it shows is what the clip gets.
  */
 export function createCaptionPainter(width: number, height: number, style: CaptionStyle = {}, options: CaptionPainterOptions = {}): CaptionPainter {

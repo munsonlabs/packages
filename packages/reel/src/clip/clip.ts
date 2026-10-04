@@ -1,293 +1,318 @@
-import { BufferTarget, CanvasSource, Conversion, Mp4OutputFormat, Output, QUALITY_HIGH, VideoSampleSink, type MetadataTags } from 'mediabunny'
+import {
+  BufferTarget,
+  CanvasSource,
+  Conversion,
+  Mp4OutputFormat,
+  Output,
+  QUALITY_HIGH,
+  VideoSampleSink,
+  type InputAudioTrack,
+  type InputVideoTrack,
+} from 'mediabunny'
 import { activeCues, defaultTrackIndex } from '@/captions/cues'
 import { loadCaptions } from '@/captions/fetch'
 import { createCaptionPainter } from '@/render/captions'
-import { planCrop } from '@/clip/crop'
+import { planCrop, type CropPlan } from '@/clip/crop'
 import { prepareEndCard, type PreparedEndCard } from '@/render/endcard'
 import { clipLink, originTags } from '@/clip/origin'
-import { ClipError } from '@/utils/errors'
-import { createImageCache } from '@/render/image'
+import { abortReason, ClipError } from '@/utils/errors'
+import { createImageCache, type ImageCache } from '@/render/image'
 import { createStampPainter } from '@/render/stamp'
 import { loadCaptionTrack } from '@/captions/load'
 import { inspect, noVideoEncoder, planOutput, selectTracks, type Inspected } from '@/clip/support'
 import { createWatermarkPainter } from '@/render/watermark'
-import type { CaptionCue, ClipOptions, ClipWarning } from '@/types'
+import type { CaptionCue, ClipOptions, ClipWarning, OutputPlan } from '@/types'
 
-function abortReason(signal: AbortSignal): unknown {
-  return signal.reason ?? new DOMException('The clip was aborted.', 'AbortError')
-}
+type Warn = (warning: ClipWarning) => void
+type Context = OffscreenCanvasRenderingContext2D
 
 /**
- * The cues a clip burns in: those passed (cues, WebVTT text, a `TextTrack`, or a WebVTT file's URL to
- * fetch), else the chosen caption track's (by default the default passed track), read only for
- * `[start, end)`.
+ * What was decided before any frame is read: the range, the crop, the tracks to read and the output
+ * plan.
  */
-async function clipCues(options: ClipOptions, inspected: Inspected, start: number, end: number): Promise<CaptionCue[]> {
+interface ClipPlan {
+  start: number
+  end: number
+  crop: CropPlan
+  video: InputVideoTrack
+  audio: InputAudioTrack | null
+  output: OutputPlan
+}
+
+async function planClip(options: ClipOptions, inspected: Inspected, warn: Warn): Promise<ClipPlan> {
+  const { info } = inspected
+  const start = Math.max(0, options.start ?? 0)
+  const end = Math.min(info.duration, options.end ?? info.duration)
+  if (!(end > start)) {
+    throw new RangeError(`reel: end (${end}) must be after start (${start}) and within the source (${info.duration}s).`)
+  }
+  const crop = planCrop(info.width, info.height, options.crop)
+  // The crop is planned on the largest track; the one read is the smallest whose crop window still
+  // holds the output's pixels, e.g. the 180p variant for a 180-pixel-high clip of a 1080p stream.
+  const need = {
+    width: Math.ceil((crop.outputWidth * info.width) / crop.width),
+    height: Math.ceil((crop.outputHeight * info.height) / crop.height),
+  }
+  const { video, audio } = await selectTracks(inspected, options.track ?? 'auto', need)
+  const sourceAudio = audio ? await audio.getCodec() : null
+  const output = await planOutput({ width: crop.outputWidth, height: crop.outputHeight, sourceAudio, audio: options.audio })
+  if (!output) {
+    throw noVideoEncoder(crop.outputWidth, crop.outputHeight)
+  }
+  if (output.audio === 'unavailable') {
+    warn({
+      reason: 'audio-unavailable',
+      target: 'audio',
+      message: `reel: the audio is left out. Clips are MP4 with AAC audio, and this browser has no AAC encoder for the source's ${sourceAudio} audio.`,
+    })
+  }
+  return { start, end, crop, video, audio, output }
+}
+
+async function clipCues(options: ClipOptions, inspected: Inspected, plan: ClipPlan, warn: Warn): Promise<CaptionCue[]> {
   const captions = options.captions
   if (!captions) {
     return []
   }
-  if (captions.cues !== undefined) {
-    return loadCaptions(captions.cues, { signal: options.signal })
-  }
-  const passed = captions.tracks ?? []
-  const id = captions.track ?? (passed.length > 0 ? `passed:${defaultTrackIndex(passed)}` : undefined)
-  if (id) {
-    return loadCaptionTrack(options.source, id, {
-      start,
-      end,
+  try {
+    if (captions.cues !== undefined) {
+      return await loadCaptions(captions.cues, { signal: options.signal })
+    }
+    const passed = captions.tracks ?? []
+    const id = captions.track ?? (passed.length > 0 ? `passed:${defaultTrackIndex(passed)}` : undefined)
+    if (!id) {
+      return []
+    }
+    return await loadCaptionTrack(options.source, id, {
+      start: plan.start,
+      end: plan.end,
       signal: options.signal,
       resolved: inspected.info.resolved,
       tracks: passed,
       cache: options.cache,
     })
+  } catch (error) {
+    // An unknown track id is the caller's mistake, not a file that failed to load.
+    if (options.signal?.aborted || error instanceof RangeError) {
+      throw error
+    }
+    const detail = (error instanceof Error ? error.message : String(error)).replace(/^reel: /, '')
+    warn({ reason: 'captions-unavailable', target: 'captions', message: `reel: the captions are left out. ${detail}` })
+    return []
   }
-  return []
 }
 
 /**
- * Cuts `[start, end)` out of a video, crops it to an aspect ratio, burns captions (and a watermark
- * and a logo stamp) into the picture, optionally adds an end card, and resolves with the encoded
- * file: always an MP4 (`video/mp4`) with H.264 video and AAC audio.
- *
- * Everything happens on the device. Mediabunny demuxes the source (reading only the byte ranges it
- * needs from a URL, and from an HLS stream only the smallest variant that covers the output) and WebCodecs decodes each frame; reel draws it cropped onto one reused
- * `OffscreenCanvas`, paints captions over it and hands the canvas to a `CanvasSource`, which encodes
- * it with backpressure. End card frames go through the same canvas after the clip. Audio runs beside
- * it as a composable Mediabunny `Conversion` into the same output: AAC is copied without re-encoding,
- * other audio encoded as AAC. Every decoded sample is closed as soon as it is drawn.
- *
- * Logos (the stamp's and the end card's) are loaded and checked before encoding starts; one that
- * cannot be loaded, or would taint the canvas, is left out and reported through `onWarning` (or
- * `console.warn`) rather than failing the clip. Captions are too: a caption file that cannot be
- * fetched or read, or an HLS subtitles rendition whose playlist or segments fail, leaves the clip
- * without captions and warns `'captions-unavailable'`. An unknown `captions.track` id still rejects,
- * with a `RangeError`. Audio that is not AAC, in a browser without an AAC encoder (Firefox), is left
- * out too: the clip is silent and `onWarning` gets `'audio-unavailable'`.
- *
- * Rejects with a {@link ClipError} when the source cannot be clipped (the same reasons `canClip`
- * reports), and with `signal.reason` when aborted.
+ * Everything painted over a clip frame after the video, and the card that follows the last one.
  */
-export async function createClip(options: ClipOptions): Promise<Blob> {
-  const { signal } = options
+interface Overlays {
+  paint: (ctx: Context, time: number) => void
+  card: PreparedEndCard | undefined
+  lastFrame: OffscreenCanvas
+}
+
+async function prepareOverlays(options: ClipOptions, inspected: Inspected, plan: ClipPlan, images: ImageCache, warn: Warn): Promise<Overlays> {
+  const { outputWidth: width, outputHeight: height } = plan.crop
+  const cues = await clipCues(options, inspected, plan, warn)
+  const paintCaptions = createCaptionPainter(width, height, options.captions?.style)
+  const paintWatermark = options.watermark?.text ? createWatermarkPainter(width, height, options.watermark) : null
+  const link = options.origin ? clipLink(options.origin, plan.start, plan.end) : null
+  const lastFrame = new OffscreenCanvas(width, height)
+  const [card, stampLogo] = await Promise.all([
+    options.endCard
+      ? prepareEndCard(options.endCard, { origin: options.origin, link, width, height, lastFrame, loadImage: images.load, warn })
+      : undefined,
+    options.stamp?.logo ? images.load(options.stamp.logo) : null,
+  ])
+  let paintStamp: ((ctx: Context) => void) | null = null
+  if (options.stamp && stampLogo?.ok) {
+    paintStamp = createStampPainter(width, height, stampLogo.bitmap, options.stamp)
+  } else if (stampLogo && !stampLogo.ok) {
+    warn({ reason: 'logo-unavailable', target: 'stamp', message: `reel: the stamp is left out. ${stampLogo.message}` })
+  }
+  return {
+    card,
+    lastFrame,
+    paint(ctx, time) {
+      if (cues.length > 0) {
+        paintCaptions(ctx, activeCues(cues, time))
+      }
+      paintWatermark?.(ctx)
+      paintStamp?.(ctx)
+    },
+  }
+}
+
+/**
+ * The MP4 being written: the video track reel draws into, and the audio Conversion beside it, if
+ * any.
+ */
+interface ClipOutput {
+  output: Output
+  videoSource: CanvasSource
+  conversion: Conversion | undefined
+}
+
+async function openOutput(options: ClipOptions, inspected: Inspected, plan: ClipPlan, canvas: OffscreenCanvas): Promise<ClipOutput> {
+  const output = new Output({ format: new Mp4OutputFormat({ fastStart: 'in-memory' }), target: new BufferTarget() })
+  const videoSource = new CanvasSource(canvas, { codec: 'avc', quality: QUALITY_HIGH })
+  output.addVideoTrack(videoSource)
+  let conversion: Conversion | undefined
+  const { audio } = plan
+  if ((plan.output.audio === 'copy' || plan.output.audio === 'encode') && audio) {
+    // AAC is copied packet for packet; anything else is decoded and encoded as AAC. Every track is
+    // offered and all but the chosen video's own audio discarded: 'primary' would take the input's
+    // primary audio, which for HLS belongs to the top variant, not the one read.
+    conversion = await Conversion.init({
+      input: inspected.input,
+      output,
+      composable: true,
+      tracks: 'all',
+      trim: { start: plan.start, end: plan.end },
+      video: { discard: true },
+      audio: (track) => (track === audio ? { codec: 'aac' } : { discard: true }),
+      showWarnings: false,
+    })
+  }
+  // Source tags are never carried over: they can hold things (location, device, a different
+  // title) that do not describe the clip. With an origin, the clip says where it came from.
+  output.setMetadataTags(options.origin && options.metadata !== false ? originTags(options.origin, plan.start, plan.end) : {})
+  return { output, videoSource, conversion }
+}
+
+/**
+ * Draws every frame of the clip, then the end card, into the canvas and encodes it. The crop is done by
+ * drawing the whole frame scaled and shifted so the canvas edges cut it, not with a source rectangle:
+ * WebKit's `drawImage(VideoFrame, sx, sy, sw, sh, ...)` ignores the source rectangle and draws the full
+ * frame (WebKit 26.5), which is also why Mediabunny's own `crop` option gives squashed, uncropped video
+ * in Safari. `sample.draw` applies the track's rotation, so a phone video arrives upright. Every sample
+ * is closed where it is drawn.
+ */
+async function encodeFrames(
+  plan: ClipPlan,
+  inspected: Inspected,
+  overlays: Overlays,
+  canvas: OffscreenCanvas,
+  videoSource: CanvasSource,
+  progress: (time: number) => void,
+  signal: AbortSignal | undefined,
+): Promise<void> {
+  const ctx = canvas.getContext('2d', { alpha: false })
+  if (!ctx) {
+    throw new ClipError('no-webcodecs', 'OffscreenCanvas has no 2D context here.')
+  }
+  const { start, end, crop, video } = plan
+  const { info } = inspected
+  const scaleX = canvas.width / crop.width
+  const scaleY = canvas.height / crop.height
+  let clipEnd = 0
+  let frameDuration = 1 / 30
+  for await (const sample of new VideoSampleSink(video).samples(start, end)) {
+    try {
+      if (signal?.aborted) {
+        break
+      }
+      const from = Math.max(start, sample.timestamp)
+      const to = Math.min(end, sample.timestamp + sample.duration)
+      if (to <= from) {
+        continue
+      }
+      // Drawn at the reference track's size, so a smaller variant fills the same crop window.
+      sample.draw(ctx, -crop.left * scaleX, -crop.top * scaleY, info.width * scaleX, info.height * scaleY)
+      overlays.paint(ctx, from)
+      await videoSource.add(from - start, to - from)
+      clipEnd = to - start
+      if (sample.duration > 1 / 120 && sample.duration < 1 / 10) {
+        frameDuration = sample.duration
+      }
+      progress(clipEnd)
+    } finally {
+      sample.close()
+    }
+  }
+
+  const { card, lastFrame } = overlays
+  if (card && !signal?.aborted) {
+    ;(lastFrame.getContext('2d') as Context).drawImage(canvas, 0, 0)
+    for (let time = 0; time < card.duration - 1e-6 && !signal?.aborted; time += frameDuration) {
+      card.draw(ctx, time)
+      await videoSource.add(clipEnd + time, Math.min(frameDuration, card.duration - time))
+      progress(clipEnd + time)
+    }
+  }
   if (signal?.aborted) {
     throw abortReason(signal)
   }
+  videoSource.close()
+}
+
+/**
+ * Cuts `[start, end)` out of a video, crops it, burns captions (plus watermark and stamp) into the
+ * picture, optionally adds an end card, and resolves with an MP4 (H.264 + AAC). Everything runs on the
+ * device: Mediabunny demuxes, WebCodecs decodes, reel draws each frame onto one reused canvas and a
+ * `CanvasSource` encodes it with backpressure; audio is a composable `Conversion` into the same output
+ * (AAC copied, anything else encoded as AAC). A logo, caption file or audio codec that cannot be used is
+ * left out with an `onWarning` (see `ClipWarning`), never failing the clip; an unknown `captions.track`
+ * id rejects with a `RangeError`. Rejects with a {@link ClipError} for the blockers `canClip` reports,
+ * and with `signal.reason` when aborted.
+ */
+export async function createClip(options: ClipOptions): Promise<Blob> {
+  const { signal } = options
+  const checkAborted = () => {
+    if (signal?.aborted) throw abortReason(signal)
+  }
+  checkAborted()
 
   const inspected = await inspect(options.source, options.cache)
-  const { input, info } = inspected
-  let conversion: Conversion | undefined
-  let output: Output | undefined
-  let card: PreparedEndCard | undefined
   const images = createImageCache()
-  const warn = (warning: ClipWarning) => {
-    if (options.onWarning) {
-      options.onWarning(warning)
-    } else {
-      console.warn(warning.message)
-    }
-  }
+  const warn: Warn = (warning) => (options.onWarning ? options.onWarning(warning) : console.warn(warning.message))
+  let opened: ClipOutput | undefined
   const running: Promise<unknown>[] = []
-  const onAbort = () => {
-    void conversion?.cancel()
-  }
+  const onAbort = () => void opened?.conversion?.cancel()
   signal?.addEventListener('abort', onAbort)
 
   try {
-    const start = Math.max(0, options.start ?? 0)
-    const end = Math.min(info.duration, options.end ?? info.duration)
-    if (!(end > start)) {
-      throw new RangeError(`reel: end (${end}) must be after start (${start}) and within the source (${info.duration}s).`)
-    }
+    const plan = await planClip(options, inspected, warn)
+    checkAborted()
+    const canvas = new OffscreenCanvas(plan.crop.outputWidth, plan.crop.outputHeight)
+    const overlays = await prepareOverlays(options, inspected, plan, images, warn)
+    checkAborted()
+    opened = await openOutput(options, inspected, plan, canvas)
+    checkAborted()
+    await opened.output.start()
 
-    const crop = planCrop(info.width, info.height, options.crop)
-    // The crop is planned on the largest track; the one read is the smallest whose crop window still
-    // holds the output's pixels, e.g. the 180p variant for a 180-pixel-high clip of a 1080p stream.
-    const need = {
-      width: Math.ceil((crop.outputWidth * info.width) / crop.width),
-      height: Math.ceil((crop.outputHeight * info.height) / crop.height),
-    }
-    const { video, audio } = await selectTracks(inspected, options.track ?? 'auto', need)
-    const sourceAudio = audio ? await audio.getCodec() : null
-    const plan = await planOutput({ width: crop.outputWidth, height: crop.outputHeight, sourceAudio, audio: options.audio })
-    if (!plan) {
-      throw noVideoEncoder(crop.outputWidth, crop.outputHeight)
-    }
-    if (plan.audio === 'unavailable') {
-      warn({
-        reason: 'audio-unavailable',
-        target: 'audio',
-        message: `reel: the audio is left out. Clips are MP4 with AAC audio, and this browser has no AAC encoder for the source's ${sourceAudio} audio.`,
-      })
-    }
-    if (signal?.aborted) {
-      throw abortReason(signal)
-    }
-
-    const { outputWidth: width, outputHeight: height } = crop
-    const canvas = new OffscreenCanvas(width, height)
-    const ctx = canvas.getContext('2d', { alpha: false })
-    if (!ctx) {
-      throw new ClipError('no-webcodecs', 'OffscreenCanvas has no 2D context here.')
-    }
-    let cues: CaptionCue[] = []
-    try {
-      cues = await clipCues(options, inspected, start, end)
-    } catch (error) {
-      // An unknown track id is the caller's mistake, not a file that failed to load.
-      if (signal?.aborted || error instanceof RangeError) {
-        throw error
-      }
-      const detail = (error instanceof Error ? error.message : String(error)).replace(/^reel: /, '')
-      warn({ reason: 'captions-unavailable', target: 'captions', message: `reel: the captions are left out. ${detail}` })
-    }
-    if (signal?.aborted) {
-      throw abortReason(signal)
-    }
-    const paintCaptions = createCaptionPainter(width, height, options.captions?.style)
-    const paintWatermark = options.watermark?.text ? createWatermarkPainter(width, height, options.watermark) : null
-    const link = options.origin ? clipLink(options.origin, start, end) : null
-    const lastFrame = new OffscreenCanvas(width, height)
-    const [prepared, stampLogo] = await Promise.all([
-      options.endCard
-        ? prepareEndCard(options.endCard, { origin: options.origin, link, width, height, lastFrame, loadImage: images.load, warn })
-        : undefined,
-      options.stamp?.logo ? images.load(options.stamp.logo) : null,
-    ])
-    card = prepared
-    let paintStamp: ((ctx: OffscreenCanvasRenderingContext2D) => void) | null = null
-    if (options.stamp && stampLogo?.ok) {
-      paintStamp = createStampPainter(width, height, stampLogo.bitmap, options.stamp)
-    } else if (stampLogo && !stampLogo.ok) {
-      warn({ reason: 'logo-unavailable', target: 'stamp', message: `reel: the stamp is left out. ${stampLogo.message}` })
-    }
-
-    const scaleX = width / crop.width
-    const scaleY = height / crop.height
-    const total = end - start + (card?.duration ?? 0)
-
-    // Source tags are never carried over: they can hold things (location, device, a different
-    // title) that do not describe the clip. With an origin, the clip says where it came from.
-    const writeOrigin = options.origin !== undefined && options.metadata !== false
-    const tags: MetadataTags = writeOrigin && options.origin ? originTags(options.origin, start, end) : {}
-
-    output = new Output({
-      format: new Mp4OutputFormat({ fastStart: 'in-memory' }),
-      target: new BufferTarget(),
-    })
-    const videoSource = new CanvasSource(canvas, { codec: 'avc', quality: QUALITY_HIGH })
-    output.addVideoTrack(videoSource)
-
-    if ((plan.audio === 'copy' || plan.audio === 'encode') && audio) {
-      // AAC is copied packet for packet; anything else is decoded and encoded as AAC. Every track is
-      // offered and all but the chosen video's own audio discarded: 'primary' would take the input's
-      // primary audio, which for HLS belongs to the top variant, not the one read.
-      const chosenAudio = audio
-      conversion = await Conversion.init({
-        input,
-        output,
-        composable: true,
-        tracks: 'all',
-        trim: { start, end },
-        video: { discard: true },
-        audio: (track) => (track === chosenAudio ? { codec: 'aac' } : { discard: true }),
-        showWarnings: false,
-      })
-    }
-    output.setMetadataTags(tags)
-    if (signal?.aborted) {
-      throw abortReason(signal)
-    }
-    await output.start()
-
-    const report = options.onProgress
+    const total = plan.end - plan.start + (overlays.card?.duration ?? 0)
     let reported = 0
     const progress = (time: number) => {
       const fraction = Math.min(0.999, time / total)
-      if (report && fraction > reported) {
+      if (options.onProgress && fraction > reported) {
         reported = fraction
-        report(fraction)
+        options.onProgress(fraction)
       }
     }
 
-    /**
-     * Draws every frame of the clip, then the end card, into the canvas and encodes it. The crop is
-     * done by drawing the whole frame scaled and shifted so the canvas edges cut it, not with a source
-     * rectangle: WebKit's `drawImage(VideoFrame, sx, sy, sw, sh, ...)` ignores the source rectangle
-     * and draws the full frame (verified in WebKit 26.5), which is also why Mediabunny's own `crop`
-     * option gives uncropped, squashed video in Safari. `sample.draw` applies the track's rotation, so
-     * a phone video arrives upright.
-     */
-    const pumpVideo = async () => {
-      let clipEnd = 0
-      let frameDuration = 1 / 30
-      for await (const sample of new VideoSampleSink(video).samples(start, end)) {
-        try {
-          if (signal?.aborted) {
-            break
-          }
-          const from = Math.max(start, sample.timestamp)
-          const to = Math.min(end, sample.timestamp + sample.duration)
-          if (to <= from) {
-            continue
-          }
-          // Drawn at the reference track's size, so a smaller variant fills the same crop window.
-          sample.draw(ctx, -crop.left * scaleX, -crop.top * scaleY, info.width * scaleX, info.height * scaleY)
-          if (cues.length > 0) {
-            paintCaptions(ctx, activeCues(cues, from))
-          }
-          paintWatermark?.(ctx)
-          paintStamp?.(ctx)
-          await videoSource.add(from - start, to - from)
-          clipEnd = to - start
-          if (sample.duration > 1 / 120 && sample.duration < 1 / 10) {
-            frameDuration = sample.duration
-          }
-          progress(clipEnd)
-        } finally {
-          sample.close()
-        }
-      }
-
-      if (card && !signal?.aborted) {
-        const lastCtx = lastFrame.getContext('2d') as OffscreenCanvasRenderingContext2D
-        lastCtx.drawImage(canvas, 0, 0)
-        for (let time = 0; time < card.duration - 1e-6 && !signal?.aborted; time += frameDuration) {
-          card.draw(ctx, time)
-          await videoSource.add(clipEnd + time, Math.min(frameDuration, card.duration - time))
-          progress(clipEnd + time)
-        }
-      }
-      if (signal?.aborted) {
-        throw abortReason(signal)
-      }
-      videoSource.close()
-    }
-
-    const videoRun = pumpVideo()
-    running.push(videoRun)
-    if (conversion) {
-      running.push(conversion.execute())
+    running.push(encodeFrames(plan, inspected, overlays, canvas, opened.videoSource, progress, signal))
+    if (opened.conversion) {
+      running.push(opened.conversion.execute())
     }
     await Promise.all(running)
-    await output.finalize()
+    await opened.output.finalize()
     // An abort that lands while the file is being finalised still rejects: the caller asked for no
-    // clip and waits to hear so.
-    if (signal?.aborted) {
-      throw abortReason(signal)
-    }
+    // clip and waits to hear so (the picker's cancel does).
+    checkAborted()
 
-    const buffer = (output.target as BufferTarget).buffer
+    const buffer = (opened.output.target as BufferTarget).buffer
     if (!buffer) {
       throw new Error('reel: the output was finalised without data.')
     }
-    report?.(1)
+    options.onProgress?.(1)
     return new Blob([buffer], { type: 'video/mp4' })
   } catch (error) {
     // Stop whatever is still running and wait for it to settle before the input is disposed, so no
     // pump is left reading a closed source. Cancelling surfaces as ConversionCanceledError or as the
     // output's own "has been canceled" error depending on where the pipeline was; after an abort,
     // either is just the abort.
+    const { conversion, output } = opened ?? {}
     if (conversion && (conversion.state === 'executing' || conversion.state === 'idle')) {
       await conversion.cancel()
     }
@@ -295,13 +320,11 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
       await output.cancel()
     }
     await Promise.allSettled(running)
-    if (signal?.aborted) {
-      throw abortReason(signal)
-    }
+    checkAborted()
     throw error
   } finally {
     signal?.removeEventListener('abort', onAbort)
     await images.dispose()
-    input.dispose()
+    inspected.input.dispose()
   }
 }

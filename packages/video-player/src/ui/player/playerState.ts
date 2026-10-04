@@ -10,6 +10,7 @@ export function createPlayerState(props: PlayerProps) {
   const vol = ref(resolveInitialVolume(props))
   const isMuted = ref(resolveInitialMuted(props.muted, !!(props.autoplay || props.playInView)))
   const progress = computed(() => (total.value ? (current.value / total.value) * 100 : 0))
+  const controlsOverride = ref<boolean | null>(null)
 
   return {
     isPlaying: ref(false),
@@ -46,6 +47,12 @@ export function createPlayerState(props: PlayerProps) {
     supportsPip: ref(false),
     isPipActive: ref(false),
     isNativeUi: ref(false),
+    controlsOverride,
+    /**
+     * Whether the HUD is rendered: the `controls` prop, unless `setControls()` has overridden it (a
+     * page tool that takes the picture over, such as a clip editor, hides the HUD for a while).
+     */
+    hasControls: computed(() => controlsOverride.value ?? props.controls !== false),
     /** Set by `setClipRange()` or a deep link (`#ml-t=42,52`); the scrubber highlights it. */
     clipRange: ref<ClipRange | null>(null),
     /**

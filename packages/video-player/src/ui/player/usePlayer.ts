@@ -24,6 +24,7 @@ export type UsePlayerReturn = PlayerState &
   UseClipRangeReturn & {
     fire: (type: StateChangeType, extras?: Partial<StateChangeEvent>) => void
     retry: () => void
+    setControls: (value: boolean | null) => void
     isBuffering: Ref<boolean>
     toggleAdMute: () => void
     isFullscreen: Ref<boolean>
@@ -92,6 +93,14 @@ export function usePlayer(
     forgoRestore: positionMemory.forgo,
   })
   useDeepLink(videoEl, props, state, { seek: controls.seek, setClipRange })
+
+  /**
+   * Overrides the `controls` prop: `false` hides the HUD, `true` shows it, `null` gives the prop back
+   * its say.
+   */
+  function setControls(value: boolean | null): void {
+    state.controlsOverride.value = value
+  }
 
   function retry(): void {
     if (!adapter) return
@@ -199,6 +208,7 @@ export function usePlayer(
     ...state,
     ...controls,
     setClipRange,
+    setControls,
     fire,
     retry,
     isBuffering: buffering.isBuffering,

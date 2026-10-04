@@ -161,6 +161,11 @@ A `use*` name is a promise that the function must be called during `setup()`, be
 
 ## Clip ranges and deep links
 
+`setControls(value)` on the handle (state `hasControls`) overrides the `controls` prop: `false` hides the
+HUD, `null` gives the prop back its say. `playerState.ts` holds `controlsOverride`; `VideoPlayer.vue`
+renders the overlay and the native play button from `hasControls`, never from the prop directly. Reel's
+picker hides the HUD while its crop window is over the picture and restores it on close.
+
 `ui/player/features/useClipRange.ts` owns `clipRange` (state on the handle, highlighted by
 `Scrubber`) and `setClipRange(range, { end })`, a handle method: what happens at the range's end
 (`'pause'` once, `'loop'` until the viewer seeks more than a second outside, which clears it,

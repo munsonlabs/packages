@@ -202,5 +202,5 @@ drawing the whole frame offset and scaled instead (see `test/browser/clip/webkit
 ```bash
 vp test                                                        # unit + chromium, webkit, firefox
 vp test --project browser --browser.name=webkit --reporter=verbose   # one engine, with the REEL_* evidence lines
-node scripts/make-fixture.mjs [count] [rotated] [ladder]      # regenerate the generated fixtures (ladder: the HLS variant + subtitles fixture)
+node scripts/make-fixture.mjs [count] [rotated] [ladder] [opus]  # regenerate the generated fixtures (ladder: HLS variants + subtitles; opus: non-AAC audio)
 ```

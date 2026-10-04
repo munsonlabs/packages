@@ -18,6 +18,24 @@ async function mountElement(tag: 'ml-video-card' | 'ml-video-player', entry: Rec
 }
 
 describe('custom elements', () => {
+  it('ml-video-player deep-link="<id>" answers a link naming it, from plain HTML attributes', async () => {
+    const original = `${location.pathname}${location.search}${location.hash}`
+    history.replaceState(null, '', '#ml-t=2,3&ml-player=hero')
+    const host = document.createElement('div')
+    host.innerHTML = `<ml-video-player src="${catalogue.plain.src}" muted deep-link="side"></ml-video-player><ml-video-player src="${catalogue.plain.src}" muted deep-link="hero" deep-link-end="loop"></ml-video-player>`
+    document.body.append(host)
+    try {
+      const [side, hero] = host.querySelectorAll<PlayerElement>('ml-video-player')
+      await waitFor(() => side.isLoaded && hero.isLoaded, 'both elements to load')
+      await waitFor(() => Math.abs(hero.currentTime - 2) < 0.2, 'the named element to seek')
+      expect(hero.clipRange).toEqual({ start: 2, end: 3 })
+      expect(side.clipRange).toBeNull()
+    } finally {
+      host.remove()
+      history.replaceState(null, '', original)
+    }
+  })
+
   it('ml-video-player exposes the handle on the element and plays through it', async () => {
     const { el, sink, video } = await mountElement('ml-video-player', { ...catalogue.plain, muted: true })
     await waitFor(() => el.isLoaded, 'the element to report loaded')

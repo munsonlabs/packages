@@ -74,7 +74,7 @@ function makeDeps() {
   return {
     fire: vi.fn(),
     pauseThisPlayer: vi.fn(),
-    positionMemory: { restoreOnce: vi.fn(), save: vi.fn(), clear: vi.fn() },
+    positionMemory: { restoreOnce: vi.fn(), save: vi.fn(), clear: vi.fn(), forgo: vi.fn() },
     quartiles: { checkQuartiles: vi.fn(), reset: vi.fn() },
     buffering: { isBuffering: ref(false), attachPlayerEvents: vi.fn(), reset: vi.fn() },
     fullscreen: {

@@ -10,22 +10,23 @@ const scissors =
 const media = (name: string) => new URL(`${import.meta.env.BASE_URL}media/${name}`, location.href).href
 
 const src = media('count-720p.mp4')
-/**
- * The clock's captions: two WebVTT files served next to this page, given by URL to the page's player
- * as its tracks and to the clip as the cues to burn in.
- */
 const tracks = [
   { src: media('clock.en.vtt'), kind: 'captions', srclang: 'en', label: 'English' },
   { src: media('clock.fr.vtt'), kind: 'captions', srclang: 'fr', label: 'Français' },
 ] as const
 const LENGTH = 10
+/**
+ * Where a clip comes from: this page, so the link reel writes into the clip comes back to the player
+ * named `article`, at the moment that was clipped.
+ */
+const origin = { url: location.href.split('#')[0], title: 'The clock that never stops', publisher: 'Reel demo', player: 'article' }
 
 const player = ref<PlayerHandle>()
 const action = shallowRef<CustomAction | null>(null)
 const unavailable = ref('')
 const progress = ref<number | null>(null)
 const captions = ref<string>(tracks[0].src)
-const clip = shallowRef<{ url: string; name: string } | null>(null)
+const clip = shallowRef<{ url: string; name: string; link: string; hash: string } | null>(null)
 const notice = ref('')
 
 onMounted(async () => {
@@ -47,24 +48,33 @@ async function clipThis(): Promise<void> {
   progress.value = 0
   notice.value = ''
   try {
-    const { createClip } = await import('@munsonlabs/reel')
+    const { clipLink, createClip } = await import('@munsonlabs/reel')
     const blob = await createClip({
       source: src,
       start,
       end,
       crop: { aspect: '9:16' },
-      // A WebVTT file's URL: fetched by reel, with only the cues inside the range drawn.
       captions: captions.value ? { cues: captions.value } : undefined,
+      // The origin goes into the MP4's metadata: title, publisher and the deep link back to this moment.
+      origin,
       onProgress: (fraction) => (progress.value = fraction),
       onWarning: (warning) => (notice.value = warning.message),
     })
+    const link = clipLink(origin, start, end)
     if (clip.value) URL.revokeObjectURL(clip.value.url)
-    clip.value = { url: URL.createObjectURL(blob), name: `clock-${start.toFixed(1)}-${end.toFixed(1)}.mp4` }
+    clip.value = { url: URL.createObjectURL(blob), name: `clock-${start.toFixed(1)}-${end.toFixed(1)}.mp4`, link, hash: new URL(link).hash }
   } catch (error) {
     notice.value = error instanceof Error ? error.message : String(error)
   } finally {
     progress.value = null
   }
+}
+
+/**
+ * Following the clip's own link back: the player answers the hash change and seeks.
+ */
+function backToMoment(link: string): void {
+  location.hash = new URL(link, location.href).hash
 }
 </script>
 
@@ -77,7 +87,15 @@ async function clipThis(): Promise<void> {
       the scissors in the player (or the button below) to cut a vertical clip of the moment you are watching, entirely in your browser.
     </p>
 
-    <VideoPlayer ref="player" :src="src" :tracks="[...tracks]" :action="action" label="The clock that never stops" />
+    <VideoPlayer
+      ref="player"
+      :src="src"
+      :tracks="[...tracks]"
+      :action="action"
+      label="The clock that never stops"
+      deep-link="article"
+      deep-link-end="loop"
+    />
 
     <div class="toolbar">
       <button type="button" class="clip" :disabled="!action || progress !== null" @click="clipThis">Clip this</button>
@@ -98,6 +116,10 @@ async function clipThis(): Promise<void> {
       <video :src="clip.url" controls playsinline />
       <p>
         <a :href="clip.url" :download="clip.name">Download {{ clip.name }}</a>
+        <template v-if="clip.link">
+          · <a :href="clip.link" @click.prevent="backToMoment(clip.link)">Back to this moment</a>
+          <code>{{ clip.hash }}</code>
+        </template>
       </p>
     </section>
 
@@ -114,6 +136,12 @@ async function clipThis(): Promise<void> {
       cues inside the range into the picture: white bold text on a dark box near the bottom, a longer caption (the clock's fifth) wrapping onto more
       lines, never losing a word. A caption file that will not load leaves the clip without captions and says so, rather than failing it.
     </p>
+    <p>
+      The player has <code>deep-link="article"</code> on, so a link ending in <code>#ml-t=4,9&amp;ml-player=article</code> opens this page scrolled to
+      it, at 0:04, looping the clipped range. That is the link <code>clipLink()</code> builds and <code>createClip()</code> writes into the clip's
+      metadata, with the title and publisher from <code>origin</code>, so a clip always points back at its moment.
+    </p>
+    <p>Try a link: <a href="#ml-t=4,9" @click.prevent="backToMoment(`${origin.url}#ml-t=4,9&ml-player=article`)">0:04 to 0:09</a>.</p>
   </article>
 </template>
 

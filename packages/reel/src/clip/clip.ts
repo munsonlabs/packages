@@ -3,6 +3,7 @@ import { activeCues, defaultTrackIndex } from '@/captions/cues'
 import { loadCaptions } from '@/captions/fetch'
 import { createCaptionPainter } from '@/render/captions'
 import { planCrop } from '@/clip/crop'
+import { originTags } from '@/clip/origin'
 import { ClipError } from '@/utils/errors'
 import { audioRequest, inspect, noVideoEncoder, planOutput } from '@/clip/support'
 import type { CaptionCue, ClipOptions, ClipWarning } from '@/types'
@@ -118,8 +119,9 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
     const total = end - start
 
     // Source tags are never carried over: they can hold things (location, device, a different
-    // title) that do not describe the clip.
-    const tags: MetadataTags = {}
+    // title) that do not describe the clip. With an origin, the clip says where it came from.
+    const writeOrigin = options.origin !== undefined && options.metadata !== false
+    const tags: MetadataTags = writeOrigin && options.origin ? originTags(options.origin, start, end) : {}
 
     output = new Output({
       format: new Mp4OutputFormat({ fastStart: 'in-memory' }),

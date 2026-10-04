@@ -1,6 +1,7 @@
 export { createClip } from '@/clip/clip'
 export { canClip, support, planOutput } from '@/clip/support'
 export { ClipError } from '@/utils/errors'
+export { clipLink } from '@/clip/origin'
 export { planCrop, parseAspect } from '@/clip/crop'
 export { parseVtt, isCaptionText, toCues } from '@/captions/cues'
 export { loadCaptions } from '@/captions/fetch'

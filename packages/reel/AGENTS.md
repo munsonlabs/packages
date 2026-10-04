@@ -15,6 +15,7 @@ import {
   createClip,
   canClip,
   support,
+  clipLink,
   ClipError,
   planCrop,
   planOutput,
@@ -33,6 +34,7 @@ import type {
   Support,
   CaptionCue,
   CaptionStyle,
+  ClipOrigin,
   CaptionInput,
   CaptionTrackSource,
 } from '@munsonlabs/reel'
@@ -52,6 +54,7 @@ src/
     clip.ts         createClip(): inspect → planCrop → planOutput → own video pump (VideoSampleSink → canvas →
                     CanvasSource), beside a composable Conversion for audio only
     crop.ts         parseAspect(), planCrop() (window + even output size), even()
+    origin.ts       clipLink() (Media Fragments #t=), originTags() (MP4 ilst atoms)
     support.ts      support(), canClip(), inspect() (opens, checks the primary video track decodes),
                     planOutput() (H.264 or nothing; the audio: copy, encode, none or unavailable)
   sources/
@@ -68,7 +71,7 @@ src/
                     wrapped once and remembered, every showing cue's lines stacked; layoutWidth/Height to lay out at
                     another size
   types/            every public type, documented; `index.ts` re-exports them all (the core's `export type *`)
-    clip.ts         ClipOptions, crop, OutputPlan, ClipWarning, ClipBlocker, CanClipResult, Support
+    clip.ts         ClipOptions, crop, OutputPlan, ClipWarning, ClipOrigin, ClipBlocker, CanClipResult, Support
     captions.ts     CaptionCue, CaptionInput, CaptionTrackSource, CaptionOptions
     render.ts       CaptionStyle (how captions are painted)
     sources.ts      ClipSource, SourceInfo
@@ -76,8 +79,8 @@ src/
   utils/
     errors.ts       ClipError { reason }
 scripts/make-fixture.mjs   regenerates the generated fixtures in Playwright Chromium (no ffmpeg needed)
-test/               unit specs (happy-dom), mirroring src/: clip/ (crop), sources/ (source), captions/ (cues,
-                    urls: text-or-URL, passed tracks, fetch)
+test/               unit specs (happy-dom), mirroring src/: clip/ (crop, origin), sources/ (source), captions/
+                    (cues, urls: text-or-URL, passed tracks, fetch)
 test/browser/       real-browser specs in Chromium, WebKit and Firefox, sorted by the same areas:
                     clip/, captions/, render/ (caption-style); the shared helpers.ts and media/ (the fixtures) stay at its root
 ```
@@ -117,7 +120,7 @@ on; inline comments only for a why the code cannot show.
   network error and Mediabunny's default backoff would retry it forever.
 - **`blob:` probing is a GET.** A `blob:` URL from a `MediaSource` cannot be fetched; one from a File
   can. HEAD on any `blob:` URL is a network error by spec, so it must stay a GET with the body cancelled.
-- **Source tags never reach the clip.** `tags` is always set, to `{}`.
+- **Source tags never reach the clip.** `tags` is always set: the origin's tags or `{}`.
 - **Output is MP4 with H.264 and AAC, only** (`planOutput`). No H.264 encoder at the clip's size is
   `no-video-encoder`. AAC audio is copied (no encoder needed); other audio is encoded as AAC where
   `canEncodeAudio('aac')` says so, else the clip is silent and warns `'audio-unavailable'`
@@ -130,7 +133,7 @@ on; inline comments only for a why the code cannot show.
 `vp test` runs the unit project (happy-dom) and the browser project. Shipkit's browser project has
 Chromium and WebKit; `vite.config.ts` appends Firefox. Install browsers once with
 `vp exec playwright install chromium webkit firefox`. Browser specs log `REEL_*` lines (support matrix,
-timings, caption pixel diffs, plans); run with `--reporter=verbose` to see them.
+timings, caption pixel diffs, plans, tags); run with `--reporter=verbose` to see them.
 
 WebKit runs after Chromium and Firefox, not beside them (its own `sequence.groupOrder` in `vite.config.ts`).
 All three encode H.264 with macOS's hardware encoder, which the machine shares; with every engine exporting

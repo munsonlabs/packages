@@ -56,6 +56,14 @@ export interface ClipOptions {
    * where this browser has no AAC encoder the clip is silent and `onWarning` gets `'audio-unavailable'`.
    */
   audio?: boolean
+  /** Where the clip came from. Used for {@link ClipOptions.metadata} and by `clipLink()`. */
+  origin?: ClipOrigin
+  /**
+   * Write the origin into the file's metadata (title, publisher, a deep link back to the moment and
+   * an encoder tag). Defaults to `true` when `origin` is given. When `false`, or with no origin, the
+   * clip carries no metadata from the source either.
+   */
+  metadata?: boolean
   /** Called with a fraction from 0 to 1 as the clip is written. */
   onProgress?: (fraction: number) => void
   /**
@@ -79,6 +87,20 @@ export interface ClipWarning {
   /** What was left out: the captions, or the audio. */
   target: 'captions' | 'audio'
   message: string
+}
+
+/** The page a clip was cut from, so the clip can point back at it. */
+export interface ClipOrigin {
+  /** The page or video URL the viewer was watching. */
+  url: string
+  title?: string
+  /** Who published the original, e.g. a site or channel name. */
+  publisher?: string
+  /**
+   * The id of the player the clip came from, its `deep-link="<id>"` in `@munsonlabs/video-player`,
+   * so the link names it (`&ml-player=<id>`) on a page with several players.
+   */
+  player?: string
 }
 
 /**

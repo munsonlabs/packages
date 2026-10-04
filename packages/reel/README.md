@@ -14,7 +14,7 @@ In-browser clip making with WebCodecs. Take the video someone is watching, trim 
 codec planning and clear reasons for when a source cannot be clipped.
 
 ```ts
-import { canClip, createClip } from '@munsonlabs/reel'
+import { canClip, createClip, clipLink } from '@munsonlabs/reel'
 
 const check = await canClip(videoElement) // or a URL, or a File/Blob
 if (!check.ok) {
@@ -28,11 +28,13 @@ const clip: Blob = await createClip({
   end: 52,
   crop: { aspect: '9:16', focus: 0.4 }, // focus: 0 = left edge, 1 = right edge
   captions: { cues: videoElement.textTracks[0] }, // style: { ... } overrides the boxed look near the bottom
+  origin: { url: location.href, title: document.title, publisher: 'Example' },
   onProgress: (fraction) => bar.update(fraction),
   onWarning: (warning) => console.info(warning.message), // e.g. captions or audio left out
   signal: controller.signal,
 })
 // clip.type is 'video/mp4': H.264 video, AAC audio
+clipLink(location.href, 42, 52) // 'https://…#t=42,52'
 ```
 
 ## API
@@ -43,10 +45,12 @@ const clip: Blob = await createClip({
 | `canClip(source, options?)`                                   | Reads only the header. Resolves `{ ok: true, info, plan }` or `{ ok: false, reason, message }`; never throws.                                                               |
 | `support()`                                                   | Probes `VideoEncoder`/`AudioEncoder`/`VideoDecoder.isConfigSupported` for the H.264 encoder and decoder and the AAC encoder, the only codecs clips use.                     |
 | `loadCaptions(input, { signal })`, `isCaptionText`            | Captions from cues, a `TextTrack`, WebVTT text, or a WebVTT file's URL (fetched; rejects with an `Error` when it cannot be fetched or is not WebVTT); the text-or-URL rule. |
+| `clipLink(origin, start, end)`                                | The origin URL with a Media Fragments `#t=start,end`.                                                                                                                       |
 | `planCrop`, `planOutput`, `parseVtt`, `toCues`, `parseAspect` | The pieces `createClip` is built from, exported for previews and tests.                                                                                                     |
 
 `createClip` options: `source`, `start`, `end`, `crop: { aspect, focus, height }`, `captions: { cues | tracks, style }`,
-`audio` (`false` drops it), `onProgress`, `onWarning`, `signal`.
+`audio` (`false` drops it), `origin`,
+`metadata` (default `true` with an origin), `onProgress`, `onWarning`, `signal`.
 
 ### Caption input
 
@@ -85,7 +89,10 @@ raise it with `position` and `margin`. `captions.style` is a `CaptionStyle` of o
   encoded as AAC. Where there is no AAC encoder (Firefox), a source with other audio gives a **silent**
   clip and `onWarning({ reason: 'audio-unavailable', target: 'audio', message })`;
   `canClip(...).plan.audio` is `'copy' | 'encode' | 'none' | 'unavailable'`.
-- No tags at all: the source's tags are never copied.
+- With an `origin`, clips get `©nam` (title), `©ART` + `©pub` (publisher), `©cmt` (deep link),
+  `©des`, `©day` and `©too` (encoder) atoms.
+  Without one (or with `metadata: false`), no tags at all: the source's tags are never copied.
+  Mediabunny cannot write XMP, so there is none.
 
 ### What cannot be clipped
 

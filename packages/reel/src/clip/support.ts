@@ -41,6 +41,10 @@ export async function planOutput(request: PlanRequest): Promise<OutputPlan | nul
   if (request.sourceAudio === 'aac') {
     return { audio: 'copy' }
   }
+  // Deliberately no Opus fallback: a non-AAC source in a browser without an AAC encoder (Firefox, Safari
+  // before 26, Linux Chromium) makes a silent clip. Opus-in-MP4 would keep the sound, since Firefox can
+  // encode Opus, but some social apps reject it. To bring it back for this case only, try
+  // canEncodeAudio('opus') before 'unavailable' and write Opus into the MP4.
   return { audio: (await canEncodeAudio('aac', { sampleRate: 48_000, numberOfChannels: 2 })) ? 'encode' : 'unavailable' }
 }
 

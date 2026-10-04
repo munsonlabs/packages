@@ -35,5 +35,9 @@ docs/dist
 test-results/
 playwright-report/
 
+# Vitest browser mode: screenshots and attachments it saves for a failed test
+__screenshots__/
+.vitest-attachments/
+
 # buildtools container env (BuildKit flags, no secrets)
 !buildtools/containers/.env

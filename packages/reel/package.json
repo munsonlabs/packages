@@ -1,0 +1,42 @@
+{
+  "name": "@munsonlabs/reel",
+  "version": "0.0.0",
+  "description": "Experimental: in-browser clip making with WebCodecs. Trim a video, crop it to 9:16 and export an MP4, all on the device.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/munsonlabs/packages.git",
+    "directory": "packages/reel"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "vp pack --watch",
+    "clean": "rm -rf dist",
+    "lint": "vp lint",
+    "fmt": "vp fmt",
+    "typecheck": "vp check --types",
+    "test:watch": "vp test --watch"
+  },
+  "dependencies": {
+    "mediabunny": "^1.61.0"
+  },
+  "devDependencies": {
+    "@munsonlabs/shipkit": "*"
+  }
+}

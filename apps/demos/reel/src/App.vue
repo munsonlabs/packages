@@ -39,6 +39,8 @@ async function clipThis(): Promise<void> {
       source: src,
       start,
       end,
+      // A 9:16 window at the crop's own resolution, centred; `focus` moves it.
+      crop: { aspect: '9:16' },
       onProgress: (fraction) => (progress.value = fraction),
       onWarning: (warning) => (notice.value = warning.message),
     })
@@ -58,8 +60,8 @@ async function clipThis(): Promise<void> {
     <p class="kicker">Reel demo · Experimental</p>
     <h1>The clock that never stops</h1>
     <p class="standfirst">
-      Twelve seconds of a drawn clock, a sweeping marker and a rising tone. Press the scissors in the player (or the button below) to cut a clip of
-      the moment you are watching, entirely in your browser.
+      Twelve seconds of a drawn clock, a sweeping marker and a rising tone. Press the scissors in the player (or the button below) to cut a vertical
+      clip of the moment you are watching, entirely in your browser.
     </p>
 
     <VideoPlayer ref="player" :src="src" :action="action" label="The clock that never stops" />
@@ -82,9 +84,13 @@ async function clipThis(): Promise<void> {
     <h2>How it works</h2>
     <p>
       The player is <code>@munsonlabs/video-player</code>; the scissors are its custom <code>action</code>. Pressing them takes ten seconds around the
-      moment you are at and hands them to <code>createClip()</code>: the video is decoded with WebCodecs and encoded to an MP4 with H.264 video and
-      AAC audio, all on this device. Nothing is uploaded. A source that cannot be clipped (an embed, DRM, a file without CORS) rejects with a
-      <code>ClipError</code> and its reason shows under the clip.
+      moment you are at and hands them to <code>createClip()</code>: the video is decoded with WebCodecs, cropped to 9:16 and encoded to an MP4 with
+      H.264 video and AAC audio, all on this device. Nothing is uploaded. A source that cannot be clipped (an embed, DRM, a file without CORS) rejects
+      with a <code>ClipError</code> and its reason shows under the clip.
+    </p>
+    <p>
+      The crop is a 9:16 window planned by <code>planCrop()</code>, centred on a focus point and clamped to the frame, at the window's own resolution
+      so nothing is upscaled. Each frame is drawn offset and scaled so the canvas edges cut it, which is correct in every engine.
     </p>
   </article>
 </template>

@@ -1,4 +1,5 @@
 import { BufferTarget, CanvasSource, Conversion, Mp4OutputFormat, Output, QUALITY_HIGH, VideoSampleSink, type MetadataTags } from 'mediabunny'
+import { planCrop } from '@/clip/crop'
 import { ClipError } from '@/utils/errors'
 import { audioRequest, inspect, noVideoEncoder, planOutput } from '@/clip/support'
 import type { ClipOptions, ClipWarning } from '@/types'
@@ -8,19 +9,11 @@ function abortReason(signal: AbortSignal): unknown {
 }
 
 /**
- * Rounds down to an even number, at least 2. H.264 encoders work in 4:2:0 and several reject odd
- * dimensions outright, so every output size passes through here.
- */
-function even(value: number): number {
-  return Math.max(2, Math.floor(value / 2) * 2)
-}
-
-/**
- * Cuts `[start, end)` out of a video and resolves with the encoded file: always an MP4
- * (`video/mp4`) with H.264 video and AAC audio.
+ * Cuts `[start, end)` out of a video, crops it to an aspect ratio and resolves with the encoded
+ * file: always an MP4 (`video/mp4`) with H.264 video and AAC audio.
  *
  * Everything happens on the device. Mediabunny demuxes the source (reading only the byte ranges it
- * needs from a URL) and WebCodecs decodes each frame; reel draws it onto one reused
+ * needs from a URL) and WebCodecs decodes each frame; reel draws it cropped onto one reused
  * `OffscreenCanvas` and hands the canvas to a `CanvasSource`, which encodes
  * it with backpressure. Audio runs beside
  * it as a composable Mediabunny `Conversion` into the same output: AAC is copied without re-encoding,
@@ -61,12 +54,11 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
       throw new RangeError(`reel: end (${end}) must be after start (${start}) and within the source (${info.duration}s).`)
     }
 
-    const width = even(info.width)
-    const height = even(info.height)
+    const crop = planCrop(info.width, info.height, options.crop)
     const sound = await audioRequest(audio)
-    const plan = await planOutput({ width, height, ...sound, audio: options.audio })
+    const plan = await planOutput({ width: crop.outputWidth, height: crop.outputHeight, ...sound, audio: options.audio })
     if (!plan) {
-      throw noVideoEncoder(width, height)
+      throw noVideoEncoder(crop.outputWidth, crop.outputHeight)
     }
     if (plan.audio === 'unavailable') {
       warn({
@@ -79,12 +71,15 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
       throw abortReason(signal)
     }
 
+    const { outputWidth: width, outputHeight: height } = crop
     const canvas = new OffscreenCanvas(width, height)
     const ctx = canvas.getContext('2d', { alpha: false })
     if (!ctx) {
       throw new ClipError('no-webcodecs', 'OffscreenCanvas has no 2D context here.')
     }
 
+    const scaleX = width / crop.width
+    const scaleY = height / crop.height
     const total = end - start
 
     // Source tags are never carried over: they can hold things (location, device, a different
@@ -128,8 +123,12 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
     }
 
     /**
-     * Draws every frame of the clip into the canvas and encodes it. `sample.draw` applies the track's
-     * rotation, so a phone video arrives upright.
+     * Draws every frame of the clip into the canvas and encodes it. The crop is
+     * done by drawing the whole frame scaled and shifted so the canvas edges cut it, not with a source
+     * rectangle: WebKit's `drawImage(VideoFrame, sx, sy, sw, sh, ...)` ignores the source rectangle
+     * and draws the full frame (verified in WebKit 26.5), which is also why Mediabunny's own `crop`
+     * option gives uncropped, squashed video in Safari. `sample.draw` applies the track's rotation, so
+     * a phone video arrives upright.
      */
     const pumpVideo = async () => {
       for await (const sample of new VideoSampleSink(video).samples(start, end)) {
@@ -142,7 +141,7 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
           if (to <= from) {
             continue
           }
-          sample.draw(ctx, 0, 0, width, height)
+          sample.draw(ctx, -crop.left * scaleX, -crop.top * scaleY, info.width * scaleX, info.height * scaleY)
           await videoSource.add(from - start, to - from)
           progress(to - start)
         } finally {

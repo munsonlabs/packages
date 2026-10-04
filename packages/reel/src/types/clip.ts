@@ -1,6 +1,32 @@
 import type { ClipSource } from '@/types/sources'
 
 /**
+ * A target aspect ratio as `'width:height'`, e.g. `'9:16'` for vertical shorts, or `'source'` to keep
+ * the frame uncropped.
+ */
+export type Aspect = '9:16' | '4:5' | '1:1' | '16:9' | 'source' | `${number}:${number}`
+
+/**
+ * Where the crop window sits inside the source frame. Each axis runs from 0 (left/top edge) to 1
+ * (right/bottom edge) and names the centre of the window, clamped so the window never leaves the
+ * frame. A plain number is the horizontal position, which is the only axis a 9:16 crop of a landscape
+ * video can move along.
+ */
+export type CropFocus = number | { x?: number; y?: number }
+
+export interface CropOptions {
+  /** Target aspect ratio. Defaults to `'9:16'`. */
+  aspect?: Aspect
+  /** Centre of the crop window. Defaults to the middle of the frame. */
+  focus?: CropFocus
+  /**
+   * Output height in pixels. Defaults to the height of the crop window itself, so nothing is upscaled;
+   * a 720p source gives a 404x720 9:16 clip. Set `1920` to always produce 1080x1920.
+   */
+  height?: number
+}
+
+/**
  * How a clip will be written, as {@link planOutput} plans it. Every clip is an MP4 with H.264 video and
  * AAC audio, so only the audio varies.
  */
@@ -20,6 +46,8 @@ export interface ClipOptions {
   start?: number
   /** End of the clip on the source's timeline, in seconds. Defaults to the end of the source. */
   end?: number
+  /** Crop window. Defaults to a centred 9:16 window at the crop's own resolution. */
+  crop?: CropOptions
   /**
    * Set to `false` to drop audio. Defaults to `true`: AAC is copied, other audio encoded as AAC, and
    * where this browser has no AAC encoder the clip is silent and `onWarning` gets `'audio-unavailable'`.

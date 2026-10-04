@@ -29,7 +29,8 @@ const projects = (baseTest.projects ?? []).map((project: any) => {
     ),
     { browser: 'firefox' as const, provider: playwright() },
   ]
-  return { ...project, test: { ...project.test, browser: { ...project.test.browser, instances } } }
+  // The global setup serves logos from another origin, with and without CORS headers.
+  return { ...project, test: { ...project.test, globalSetup: ['test/browser/global-setup.ts'], browser: { ...project.test.browser, instances } } }
 })
 
 /** Never in reel's own files: Mediabunny loads with the core. */

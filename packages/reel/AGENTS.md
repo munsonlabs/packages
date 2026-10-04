@@ -24,6 +24,11 @@ import {
   toCues,
   loadCaptions,
   parseAspect,
+  drawEndCard,
+  createQrCode,
+  drawQrCode,
+  readableUrl,
+  planStamp,
 } from '@munsonlabs/reel'
 import type {
   ClipOptions,
@@ -35,6 +40,12 @@ import type {
   CaptionCue,
   CaptionStyle,
   ClipOrigin,
+  EndCardOptions,
+  EndCardInfo,
+  StampOptions,
+  StampPosition,
+  ClipWarning,
+  ImageSource,
   CaptionInput,
   CaptionTrackSource,
 } from '@munsonlabs/reel'
@@ -52,7 +63,7 @@ src/
   index.ts          entry `.`: the core, framework-free
   clip/
     clip.ts         createClip(): inspect → planCrop → planOutput → own video pump (VideoSampleSink → canvas →
-                    CanvasSource), beside a composable Conversion for audio only
+                    CanvasSource) plus end card frames, beside a composable Conversion for audio only
     crop.ts         parseAspect(), planCrop() (window + even output size), even()
     origin.ts       clipLink() (Media Fragments #t=), originTags() (MP4 ilst atoms)
     support.ts      support(), canClip(), inspect() (opens, checks the primary video track decodes),
@@ -67,22 +78,30 @@ src/
                     WebVTT (isVttFile)), loadCaptions() (any CaptionInput). Core only
   render/           everything painted into the clip's frames (`captions/` gets the cues)
     captions.ts     the one caption look (white bold text on a translucent box near the bottom; CaptionStyle
-                    overrides merged over it), wrapText(), createCaptionPainter(): each text
+                    overrides merged over it), wrapText() (also the end card's), createCaptionPainter(): each text
                     wrapped once and remembered, every showing cue's lines stacked; layoutWidth/Height to lay out at
                     another size
+    endcard.ts      prepareEndCard() (defaults from origin, logo and QR loaded up front), drawEndCard()
+                    (logo, publisher, headline, readable address on a pill; QR only with qr: true)
+    qr.ts           createQrCode() (lazy `uqr`, ECC M), drawQrCode()
+    stamp.ts        planStamp() (corner + safe-area margins), createStampPainter(): the logo over every clip frame
+    watermark.ts    createWatermarkPainter(): the strip drawn over every clip frame
+    image.ts        loadImage() (<img crossOrigin=anonymous>, SVG rasterised, 1x1 taint test), createImageCache()
   types/            every public type, documented; `index.ts` re-exports them all (the core's `export type *`)
     clip.ts         ClipOptions, crop, OutputPlan, ClipWarning, ClipOrigin, ClipBlocker, CanClipResult, Support
     captions.ts     CaptionCue, CaptionInput, CaptionTrackSource, CaptionOptions
-    render.ts       CaptionStyle (how captions are painted)
+    render.ts       CaptionStyle (how captions are painted), end card, ImageSource, WatermarkOptions, StampOptions
     sources.ts      ClipSource, SourceInfo
     vite-env.d.ts   vite/client
   utils/
+    url.ts          readableUrl() (no scheme/www/query/hash, IDN to Unicode, middle-ellipsis to fit), middleEllipsis()
     errors.ts       ClipError { reason }
 scripts/make-fixture.mjs   regenerates the generated fixtures in Playwright Chromium (no ffmpeg needed)
 test/               unit specs (happy-dom), mirroring src/: clip/ (crop, origin), sources/ (source), captions/
-                    (cues, urls: text-or-URL, passed tracks, fetch)
+                    (cues, urls: text-or-URL, passed tracks, fetch), render/ (endcard: layout via a recording
+                    ctx), utils/ (url)
 test/browser/       real-browser specs in Chromium, WebKit and Firefox, sorted by the same areas:
-                    clip/, captions/, render/ (caption-style); the shared helpers.ts and media/ (the fixtures) stay at its root
+                    clip/, captions/, render/ (caption-style, endcard, stamp); the shared helpers.ts, global-setup.ts and media/ (the fixtures) stay at its root
 ```
 
 Docblocks follow sigil's convention: full sentences on what a function does and what callers can rely
@@ -98,15 +117,27 @@ on; inline comments only for a why the code cannot show.
 - **Every decoded sample is closed where it is drawn.** `pumpVideo` closes each `VideoSample` in a
   `finally`, including on `continue`, `break` and errors; `CanvasSource.add` copies the one reused
   `OffscreenCanvas` into a frame and Mediabunny closes that. `trackFrames()` in the browser helpers
-  asserts zero open frames after a clip and an abort.
-- **The video is reel's, the audio is Mediabunny's.** Audio stays a composable
+  asserts zero open frames after a clip, an abort and an end card.
+- **The video is reel's, the audio is Mediabunny's.** Video is not a Conversion track because the end
+  card needs frames after the source runs out, and a `process` hook cannot add frames after the last
+  sample without building them all at once (each a full-size `VideoFrame`). Audio stays a composable
   `Conversion` so copying AAC keeps working. Both write into one `Output`; on any failure both are
   cancelled and settled before the input is disposed.
+- **The end card is silent and loads nothing per frame.** Logo and QR are resolved in
+  `prepareEndCard`; `draw` runs once per card frame at the clip's frame rate. The QR code is opt-in
+  (`qr: true`; phone viewers cannot scan their own screen); `uqr` is only `import()`ed then, and is
+  kept external in the build like Mediabunny. The card shows the article (`origin.url`, readable), the
+  QR encodes the `#t=` deep link.
 - **Captions that will not load never fail a clip.** `createClip` loads the cues before encoding;
   any failure but an abort leaves the clip without captions and `onWarning` gets
   `'captions-unavailable'` (`target: 'captions'`). That covers a fetch or HTTP error, CORS, and a fetched
   body that is not WebVTT (`isVttFile`: no `WEBVTT` header). `loadCaptions`, called directly, still
   rejects (a plain `Error`). It is not a `ClipBlocker`.
+- **A logo never fails a clip.** Every logo (stamp and card) goes through `loadImage` in `render/image.ts`
+  before encoding: `<img crossOrigin="anonymous">`, then a 1x1 draw-and-read-back, because a tainted
+  canvas makes `CanvasSource`'s `VideoFrame` throw on every frame. Failure resolves `{ ok: false }`,
+  the logo is left out and `onWarning` gets `'logo-unavailable'`. `test/browser/global-setup.ts` serves logos from another
+  port, with and without CORS headers, to prove it in every engine.
 - **Crop in display orientation.** `inspect()` reports `getDisplayWidth/Height` (rotation applied),
   `planCrop` works in those pixels and `sample.draw` turns each frame upright, so a phone video's
   rotation ends up in the pixels and the clip has no rotation metadata (`rotation.spec.ts`).
@@ -124,7 +155,7 @@ on; inline comments only for a why the code cannot show.
 - **Output is MP4 with H.264 and AAC, only** (`planOutput`). No H.264 encoder at the clip's size is
   `no-video-encoder`. AAC audio is copied (no encoder needed); other audio is encoded as AAC where
   `canEncodeAudio('aac')` says so, else the clip is silent and warns `'audio-unavailable'`
-  (`target: 'audio'`), like captions. Firefox has
+  (`target: 'audio'`), like a logo or captions. Firefox has
   no AAC encoder, which is fine for AAC sources (copied) and silent for anything else there. No WebM,
   VP9/VP8/AV1 or Opus output; input formats are Mediabunny's and unchanged.
 

@@ -1,4 +1,5 @@
 import type { CaptionOptions } from '@/types/captions'
+import type { EndCardOptions, StampOptions, WatermarkOptions } from '@/types/render'
 import type { ClipSource, SourceInfo } from '@/types/sources'
 
 /**
@@ -64,11 +65,26 @@ export interface ClipOptions {
    * clip carries no metadata from the source either.
    */
   metadata?: boolean
+  /**
+   * Extra frames after the clip that point back at the original: logo, publisher, title and the
+   * article's address in large type, faded in over the clip's last frame. Every value defaults from
+   * `origin`; `true` means all defaults. A QR code of the deep link is opt-in (`qr: true`). The card is
+   * silent: the audio ends where the clip does.
+   */
+  endCard?: EndCardOptions | boolean
+  /** A thin strip of text, such as the site name, drawn over every frame of the clip (not the card). */
+  watermark?: WatermarkOptions
+  /**
+   * A logo drawn in a corner of every frame of the clip (not the end card, which has its own logo).
+   * The default placement clears the interface short-form apps draw over a vertical video.
+   */
+  stamp?: StampOptions
   /** Called with a fraction from 0 to 1 as the clip is written. */
   onProgress?: (fraction: number) => void
   /**
-   * Called for anything left out of a clip that was still made: captions that could not be loaded or
-   * read, or audio this browser cannot write as AAC. Without it, warnings go to `console.warn`.
+   * Called for anything left out of a clip that was still made: a logo that could not be loaded,
+   * captions that could not be loaded or read, or audio this browser cannot write as AAC. Without it,
+   * warnings go to `console.warn`.
    */
   onWarning?: (warning: ClipWarning) => void
   /** Aborts the clip; the returned promise then rejects with the signal's reason. */
@@ -78,14 +94,15 @@ export interface ClipOptions {
 /** Something left out of a clip that was still made. */
 export interface ClipWarning {
   /**
+   * `'logo-unavailable'`: a logo could not be loaded, or would have tainted the canvas.
    * `'captions-unavailable'`: the captions could not be loaded or read (a failed fetch or an HTTP
    * error, a cross-origin file without CORS headers, a file that is not WebVTT).
    * `'audio-unavailable'`: the source's audio is not AAC and this browser has no AAC encoder (Firefox),
    * so the clip is silent.
    */
-  reason: 'captions-unavailable' | 'audio-unavailable'
-  /** What was left out: the captions, or the audio. */
-  target: 'captions' | 'audio'
+  reason: 'logo-unavailable' | 'captions-unavailable' | 'audio-unavailable'
+  /** What was left out: the end card's logo, the stamp, the captions, or the audio. */
+  target: 'endCard' | 'stamp' | 'captions' | 'audio'
   message: string
 }
 

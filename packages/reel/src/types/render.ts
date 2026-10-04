@@ -5,23 +5,85 @@
  * its width, so a caption looks the same at every output size. Long cues wrap onto more lines.
  */
 export interface CaptionStyle {
-  /** CSS font family. Defaults to a system sans-serif stack. */
   fontFamily?: string
-  /** CSS font weight. Defaults to `700`. */
   fontWeight?: number | string
-  /** Font size as a fraction of the output height. Defaults to `0.045`. */
   size?: number
-  /** Text colour. Defaults to white. */
   color?: string
-  /** Box behind each line, or `null` for none. Defaults to translucent black, `'rgba(0, 0, 0, 0.6)'`. */
   background?: string | null
-  /** Vertical placement of the caption block. Defaults to `'bottom'`. */
   position?: 'top' | 'middle' | 'bottom'
-  /**
-   * Distance from the top or bottom edge to the block, as a fraction of the output height (unused for
-   * `'middle'`). Defaults to `0.14`.
-   */
   margin?: number
-  /** Widest a line may run before wrapping, as a fraction of the output width. Defaults to `0.86`. */
   maxWidth?: number
+}
+
+/**
+ * Colours and font of the end card.
+ */
+export interface EndCardTheme {
+  background?: string
+  color?: string
+  accent?: string
+  font?: string
+}
+
+/**
+ * An image reel can draw: anything `drawImage` takes, a `Blob`, or a URL (fetched, so CORS
+ * applies).
+ */
+export type ImageSource = CanvasImageSource | Blob | string | URL
+
+export interface EndCardOptions {
+  duration?: number
+  title?: string
+  displayUrl?: string
+  publisher?: string
+  cta?: string
+  logo?: ImageSource
+  theme?: EndCardTheme
+  draw?: (ctx: OffscreenCanvasRenderingContext2D, info: EndCardInfo) => void
+}
+
+/**
+ * Everything the end card renderer gets for one frame. Values are resolved: defaults applied, logo
+ * loaded.
+ */
+export interface EndCardInfo {
+  width: number
+  height: number
+  time: number
+  duration: number
+  progress: number
+  title: string | null
+  url: string | null
+  displayUrl: string | null
+  publisher: string | null
+  cta: string
+  logo: ImageBitmap | null
+  theme: Required<EndCardTheme>
+  lastFrame: OffscreenCanvas
+}
+
+export interface WatermarkOptions {
+  text: string
+  position?: 'top' | 'bottom'
+  background?: string
+  color?: string
+  size?: number
+  font?: string
+}
+
+/**
+ * A corner of the frame.
+ */
+export type StampPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
+
+/**
+ * A logo stamped over every frame of a clip. Sizes and margins are fractions of the output, so the
+ * stamp sits the same at 404x720 and 1080x1920.
+ */
+export interface StampOptions {
+  logo: ImageSource
+  position?: StampPosition
+  size?: number
+  margin?: number | { x?: number; y?: number }
+  opacity?: number
 }

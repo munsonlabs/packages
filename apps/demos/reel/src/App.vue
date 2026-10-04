@@ -21,6 +21,16 @@ const LENGTH = 10
  */
 const origin = { url: location.href.split('#')[0], title: 'The clock that never stops', publisher: 'Reel demo', player: 'article' }
 
+/**
+ * Brand every clip: the logo (served from this demo's public/) is stamped in the top-right corner of
+ * the clip, clear of the phone apps' buttons, and heads the end card. The card's call to action is a
+ * readable address; the demo lives on localhost, so it stands in a publisher's article address.
+ */
+const logo = `${import.meta.env.BASE_URL}logo.svg`
+const displayUrl = 'acme.news/2026/10/the-clock-that-never-stops'
+const withCard = ref(true)
+const withLogo = ref(true)
+
 const player = ref<PlayerHandle>()
 const action = shallowRef<CustomAction | null>(null)
 const unavailable = ref('')
@@ -57,6 +67,8 @@ async function clipThis(): Promise<void> {
       captions: captions.value ? { cues: captions.value } : undefined,
       // The origin goes into the MP4's metadata: title, publisher and the deep link back to this moment.
       origin,
+      endCard: withCard.value ? { logo, displayUrl } : undefined,
+      stamp: withLogo.value ? { logo, position: 'top-right' } : undefined,
       onProgress: (fraction) => (progress.value = fraction),
       onWarning: (warning) => (notice.value = warning.message),
     })
@@ -106,6 +118,8 @@ function backToMoment(link: string): void {
           <option value="">No captions</option>
         </select>
       </label>
+      <label class="source"><input v-model="withCard" type="checkbox" /> End card</label>
+      <label class="source"><input v-model="withLogo" type="checkbox" /> Logo on the clip</label>
       <span v-if="unavailable" class="note">Clipping is not available here: {{ unavailable }}</span>
       <span v-else-if="progress !== null" class="note">Exporting… {{ Math.round(progress * 100) }}%</span>
     </div>
@@ -140,6 +154,11 @@ function backToMoment(link: string): void {
       The player has <code>deep-link="article"</code> on, so a link ending in <code>#ml-t=4,9&amp;ml-player=article</code> opens this page scrolled to
       it, at 0:04, looping the clipped range. That is the link <code>clipLink()</code> builds and <code>createClip()</code> writes into the clip's
       metadata, with the title and publisher from <code>origin</code>, so a clip always points back at its moment.
+    </p>
+    <p>
+      With <em>End card</em> on, the clip ends with a silent card faded in over its last frame: the logo, the publisher, the headline and the
+      article's address in large type. With <em>Logo on the clip</em>, the same logo is stamped in the top-right corner of every frame, in a spot
+      TikTok, Reels and Shorts leave clear. A logo that cannot be loaded is left out with a note, never failing the clip.
     </p>
     <p>Try a link: <a href="#ml-t=4,9" @click.prevent="backToMoment(`${origin.url}#ml-t=4,9&ml-player=article`)">0:04 to 0:09</a>.</p>
   </article>

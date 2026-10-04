@@ -3,9 +3,13 @@ import { activeCues, defaultTrackIndex } from '@/captions/cues'
 import { loadCaptions } from '@/captions/fetch'
 import { createCaptionPainter } from '@/render/captions'
 import { planCrop } from '@/clip/crop'
-import { originTags } from '@/clip/origin'
+import { prepareEndCard, type PreparedEndCard } from '@/render/endcard'
+import { clipLink, originTags } from '@/clip/origin'
 import { ClipError } from '@/utils/errors'
+import { createImageCache } from '@/render/image'
+import { createStampPainter } from '@/render/stamp'
 import { audioRequest, inspect, noVideoEncoder, planOutput } from '@/clip/support'
+import { createWatermarkPainter } from '@/render/watermark'
 import type { CaptionCue, ClipOptions, ClipWarning } from '@/types'
 
 function abortReason(signal: AbortSignal): unknown {
@@ -32,20 +36,23 @@ async function clipCues(options: ClipOptions): Promise<CaptionCue[]> {
 }
 
 /**
- * Cuts `[start, end)` out of a video, crops it to an aspect ratio, burns captions into the picture,
- * and resolves with the encoded file: always an MP4 (`video/mp4`) with H.264 video and AAC audio.
+ * Cuts `[start, end)` out of a video, crops it to an aspect ratio, burns captions (and a watermark
+ * and a logo stamp) into the picture, optionally adds an end card, and resolves with the encoded
+ * file: always an MP4 (`video/mp4`) with H.264 video and AAC audio.
  *
  * Everything happens on the device. Mediabunny demuxes the source (reading only the byte ranges it
  * needs from a URL) and WebCodecs decodes each frame; reel draws it cropped onto one reused
  * `OffscreenCanvas`, paints captions over it and hands the canvas to a `CanvasSource`, which encodes
- * it with backpressure. Audio runs beside
+ * it with backpressure. End card frames go through the same canvas after the clip. Audio runs beside
  * it as a composable Mediabunny `Conversion` into the same output: AAC is copied without re-encoding,
  * other audio encoded as AAC. Every decoded sample is closed as soon as it is drawn.
  *
- * Captions are loaded before encoding starts; a caption file that cannot be fetched or read leaves
- * the clip without captions and is reported through `onWarning` (or `console.warn`) as
- * `'captions-unavailable'` rather than failing the clip. Audio that is not AAC, in a browser without an
- * AAC encoder (Firefox), is left out too: the clip is silent and `onWarning` gets `'audio-unavailable'`.
+ * Logos (the stamp's and the end card's) are loaded and checked before encoding starts; one that
+ * cannot be loaded, or would taint the canvas, is left out and reported through `onWarning` (or
+ * `console.warn`) rather than failing the clip. Captions are too: a caption file that cannot be
+ * fetched or read leaves the clip without captions and warns `'captions-unavailable'`. Audio that is
+ * not AAC, in a browser without an AAC encoder (Firefox), is left out too: the clip is silent and
+ * `onWarning` gets `'audio-unavailable'`.
  *
  * Rejects with a {@link ClipError} when the source cannot be clipped (the same reasons `canClip`
  * reports), and with `signal.reason` when aborted.
@@ -59,6 +66,8 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
   const { input, video, audio, info } = await inspect(options.source)
   let conversion: Conversion | undefined
   let output: Output | undefined
+  let card: PreparedEndCard | undefined
+  const images = createImageCache()
   const warn = (warning: ClipWarning) => {
     if (options.onWarning) {
       options.onWarning(warning)
@@ -113,10 +122,26 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
       warn({ reason: 'captions-unavailable', target: 'captions', message: `reel: the captions are left out. ${detail}` })
     }
     const paintCaptions = createCaptionPainter(width, height, options.captions?.style)
+    const paintWatermark = options.watermark?.text ? createWatermarkPainter(width, height, options.watermark) : null
+    const link = options.origin ? clipLink(options.origin, start, end) : null
+    const lastFrame = new OffscreenCanvas(width, height)
+    const [prepared, stampLogo] = await Promise.all([
+      options.endCard
+        ? prepareEndCard(options.endCard, { origin: options.origin, link, width, height, lastFrame, loadImage: images.load, warn })
+        : undefined,
+      options.stamp?.logo ? images.load(options.stamp.logo) : null,
+    ])
+    card = prepared
+    let paintStamp: ((ctx: OffscreenCanvasRenderingContext2D) => void) | null = null
+    if (options.stamp && stampLogo?.ok) {
+      paintStamp = createStampPainter(width, height, stampLogo.bitmap, options.stamp)
+    } else if (stampLogo && !stampLogo.ok) {
+      warn({ reason: 'logo-unavailable', target: 'stamp', message: `reel: the stamp is left out. ${stampLogo.message}` })
+    }
 
     const scaleX = width / crop.width
     const scaleY = height / crop.height
-    const total = end - start
+    const total = end - start + (card?.duration ?? 0)
 
     // Source tags are never carried over: they can hold things (location, device, a different
     // title) that do not describe the clip. With an origin, the clip says where it came from.
@@ -160,7 +185,7 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
     }
 
     /**
-     * Draws every frame of the clip into the canvas and encodes it. The crop is
+     * Draws every frame of the clip, then the end card, into the canvas and encodes it. The crop is
      * done by drawing the whole frame scaled and shifted so the canvas edges cut it, not with a source
      * rectangle: WebKit's `drawImage(VideoFrame, sx, sy, sw, sh, ...)` ignores the source rectangle
      * and draws the full frame (verified in WebKit 26.5), which is also why Mediabunny's own `crop`
@@ -168,6 +193,8 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
      * a phone video arrives upright.
      */
     const pumpVideo = async () => {
+      let clipEnd = 0
+      let frameDuration = 1 / 30
       for await (const sample of new VideoSampleSink(video).samples(start, end)) {
         try {
           if (signal?.aborted) {
@@ -182,10 +209,26 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
           if (cues.length > 0) {
             paintCaptions(ctx, activeCues(cues, from))
           }
+          paintWatermark?.(ctx)
+          paintStamp?.(ctx)
           await videoSource.add(from - start, to - from)
-          progress(to - start)
+          clipEnd = to - start
+          if (sample.duration > 1 / 120 && sample.duration < 1 / 10) {
+            frameDuration = sample.duration
+          }
+          progress(clipEnd)
         } finally {
           sample.close()
+        }
+      }
+
+      if (card && !signal?.aborted) {
+        const lastCtx = lastFrame.getContext('2d') as OffscreenCanvasRenderingContext2D
+        lastCtx.drawImage(canvas, 0, 0)
+        for (let time = 0; time < card.duration - 1e-6 && !signal?.aborted; time += frameDuration) {
+          card.draw(ctx, time)
+          await videoSource.add(clipEnd + time, Math.min(frameDuration, card.duration - time))
+          progress(clipEnd + time)
         }
       }
       if (signal?.aborted) {
@@ -231,6 +274,7 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
     throw error
   } finally {
     signal?.removeEventListener('abort', onAbort)
+    await images.dispose()
     input.dispose()
   }
 }

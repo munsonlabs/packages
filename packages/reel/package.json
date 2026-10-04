@@ -1,7 +1,7 @@
 {
   "name": "@munsonlabs/reel",
   "version": "0.0.0",
-  "description": "Experimental: in-browser clip making with WebCodecs. Trim a video, crop it to 9:16 and export an MP4, all on the device.",
+  "description": "Experimental: in-browser clip making with WebCodecs. Trim a video, crop it to 9:16, burn in captions and export an MP4, all on the device.",
   "license": "MIT",
   "repository": {
     "type": "git",

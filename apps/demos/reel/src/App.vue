@@ -11,21 +11,23 @@ const media = (name: string) => new URL(`${import.meta.env.BASE_URL}media/${name
 
 const src = media('count-720p.mp4')
 /**
- * A clip is ten seconds that start two seconds before the moment the viewer is at, held inside the video.
+ * The clock's captions: two WebVTT files served next to this page, given by URL to the page's player
+ * as its tracks and to the clip as the cues to burn in.
  */
+const tracks = [
+  { src: media('clock.en.vtt'), kind: 'captions', srclang: 'en', label: 'English' },
+  { src: media('clock.fr.vtt'), kind: 'captions', srclang: 'fr', label: 'Français' },
+] as const
 const LENGTH = 10
 
 const player = ref<PlayerHandle>()
 const action = shallowRef<CustomAction | null>(null)
 const unavailable = ref('')
 const progress = ref<number | null>(null)
+const captions = ref<string>(tracks[0].src)
 const clip = shallowRef<{ url: string; name: string } | null>(null)
 const notice = ref('')
 
-/**
- * Offer "Clip this" only when this browser can clip this source; otherwise say why. Reel and
- * Mediabunny are imported here, not with the page.
- */
 onMounted(async () => {
   const { canClip } = await import('@munsonlabs/reel')
   const check = await canClip(src)
@@ -51,6 +53,8 @@ async function clipThis(): Promise<void> {
       start,
       end,
       crop: { aspect: '9:16' },
+      // A WebVTT file's URL: fetched by reel, with only the cues inside the range drawn.
+      captions: captions.value ? { cues: captions.value } : undefined,
       onProgress: (fraction) => (progress.value = fraction),
       onWarning: (warning) => (notice.value = warning.message),
     })
@@ -69,17 +73,23 @@ async function clipThis(): Promise<void> {
     <p class="kicker">Reel demo · Experimental</p>
     <h1>The clock that never stops</h1>
     <p class="standfirst">
-      Twelve seconds of a drawn clock, a sweeping marker and a rising tone. Press the scissors in the player (or the button below) to cut a vertical
-      clip of the moment you are watching, entirely in your browser.
+      Twelve seconds of a drawn clock, a sweeping marker and a rising tone, with captions in two languages, English and French, as WebVTT files. Press
+      the scissors in the player (or the button below) to cut a vertical clip of the moment you are watching, entirely in your browser.
     </p>
 
-    <VideoPlayer ref="player" :src="src" :action="action" label="The clock that never stops" />
+    <VideoPlayer ref="player" :src="src" :tracks="[...tracks]" :action="action" label="The clock that never stops" />
 
     <div class="toolbar">
       <button type="button" class="clip" :disabled="!action || progress !== null" @click="clipThis">Clip this</button>
+      <label class="source">
+        Burn in
+        <select v-model="captions">
+          <option v-for="track in tracks" :key="track.src" :value="track.src">{{ track.label }}</option>
+          <option value="">No captions</option>
+        </select>
+      </label>
       <span v-if="unavailable" class="note">Clipping is not available here: {{ unavailable }}</span>
       <span v-else-if="progress !== null" class="note">Exporting… {{ Math.round(progress * 100) }}%</span>
-      <span v-else class="note">Reel and Mediabunny load when you press it.</span>
     </div>
 
     <section v-if="clip" class="result" aria-live="polite">
@@ -97,6 +107,12 @@ async function clipThis(): Promise<void> {
       <code>canClip()</code> says this browser can clip this file. Pressing them takes ten seconds around the moment you are at and hands them to
       <code>createClip()</code>: the video is decoded with WebCodecs, cropped to 9:16 and encoded to an MP4 with H.264 video and AAC audio, all on
       this device. Nothing is uploaded.
+    </p>
+    <p>
+      The clock's captions are two WebVTT files served next to this page, <code>media/clock.en.vtt</code> and <code>media/clock.fr.vtt</code>. The
+      page's player shows them as its tracks; the clip gets the chosen file's URL as <code>captions.cues</code>, and reel fetches it and burns the
+      cues inside the range into the picture: white bold text on a dark box near the bottom, a longer caption (the clock's fifth) wrapping onto more
+      lines, never losing a word. A caption file that will not load leaves the clip without captions and says so, rather than failing it.
     </p>
   </article>
 </template>

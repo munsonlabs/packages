@@ -3,7 +3,7 @@
 ## Package purpose
 
 Experimental, unpublished. Makes short clips in the browser: trim a source, crop it to an aspect
-ratio, export MP4 (H.264 + AAC), all with WebCodecs on the device. It
+ratio, burn captions into the picture, export MP4 (H.264 + AAC), all with WebCodecs on the device. It
 exists to answer whether a "clip this" feature for `@munsonlabs/video-player` is feasible. Its main
 runtime dependency is `mediabunny` (demux, decode/encode plumbing, mux), kept external in the build.
 The entry is framework-free.
@@ -11,8 +11,31 @@ The entry is framework-free.
 ## Public API
 
 ```ts
-import { createClip, canClip, support, ClipError, planCrop, planOutput, parseAspect } from '@munsonlabs/reel'
-import type { ClipOptions, ClipSource, CanClipResult, ClipBlocker, OutputPlan, Support } from '@munsonlabs/reel'
+import {
+  createClip,
+  canClip,
+  support,
+  ClipError,
+  planCrop,
+  planOutput,
+  parseVtt,
+  isCaptionText,
+  toCues,
+  loadCaptions,
+  parseAspect,
+} from '@munsonlabs/reel'
+import type {
+  ClipOptions,
+  ClipSource,
+  CanClipResult,
+  ClipBlocker,
+  OutputPlan,
+  Support,
+  CaptionCue,
+  CaptionStyle,
+  CaptionInput,
+  CaptionTrackSource,
+} from '@munsonlabs/reel'
 ```
 
 Member table and examples in README.md. Keep README, `src/index.ts` and `src/types/` in step.
@@ -33,16 +56,30 @@ src/
                     planOutput() (H.264 or nothing; the audio: copy, encode, none or unavailable)
   sources/
     source.ts       resolveSource() (<video>/URL/Blob → Blob | absolute URL, blockers), openInput(), readError()
+  captions/
+    cues.ts         parseVtt(), isCaptionText() (the text-or-URL rule), isVttFile() (a WEBVTT header), captionUrl(),
+                    toCues() (text | cues | TextTrack, no fetching), activeCues(),
+                    defaultTrackIndex(), asTrackList(). No fetch, no Mediabunny
+    fetch.ts        fetchCaptions() (signal; rejects with an Error on HTTP/CORS failure or a body that is not
+                    WebVTT (isVttFile)), loadCaptions() (any CaptionInput). Core only
+  render/           everything painted into the clip's frames (`captions/` gets the cues)
+    captions.ts     the one caption look (white bold text on a translucent box near the bottom; CaptionStyle
+                    overrides merged over it), wrapText(), createCaptionPainter(): each text
+                    wrapped once and remembered, every showing cue's lines stacked; layoutWidth/Height to lay out at
+                    another size
   types/            every public type, documented; `index.ts` re-exports them all (the core's `export type *`)
     clip.ts         ClipOptions, crop, OutputPlan, ClipWarning, ClipBlocker, CanClipResult, Support
+    captions.ts     CaptionCue, CaptionInput, CaptionTrackSource, CaptionOptions
+    render.ts       CaptionStyle (how captions are painted)
     sources.ts      ClipSource, SourceInfo
     vite-env.d.ts   vite/client
   utils/
     errors.ts       ClipError { reason }
 scripts/make-fixture.mjs   regenerates the generated fixtures in Playwright Chromium (no ffmpeg needed)
-test/               unit specs (happy-dom), mirroring src/: clip/ (crop), sources/ (source)
-test/browser/       real-browser specs in Chromium, WebKit and Firefox, sorted by the same areas: clip/;
-                    the shared helpers.ts and media/ (the fixtures) stay at its root
+test/               unit specs (happy-dom), mirroring src/: clip/ (crop), sources/ (source), captions/ (cues,
+                    urls: text-or-URL, passed tracks, fetch)
+test/browser/       real-browser specs in Chromium, WebKit and Firefox, sorted by the same areas:
+                    clip/, captions/, render/ (caption-style); the shared helpers.ts and media/ (the fixtures) stay at its root
 ```
 
 Docblocks follow sigil's convention: full sentences on what a function does and what callers can rely
@@ -62,6 +99,11 @@ on; inline comments only for a why the code cannot show.
 - **The video is reel's, the audio is Mediabunny's.** Audio stays a composable
   `Conversion` so copying AAC keeps working. Both write into one `Output`; on any failure both are
   cancelled and settled before the input is disposed.
+- **Captions that will not load never fail a clip.** `createClip` loads the cues before encoding;
+  any failure but an abort leaves the clip without captions and `onWarning` gets
+  `'captions-unavailable'` (`target: 'captions'`). That covers a fetch or HTTP error, CORS, and a fetched
+  body that is not WebVTT (`isVttFile`: no `WEBVTT` header). `loadCaptions`, called directly, still
+  rejects (a plain `Error`). It is not a `ClipBlocker`.
 - **Crop in display orientation.** `inspect()` reports `getDisplayWidth/Height` (rotation applied),
   `planCrop` works in those pixels and `sample.draw` turns each frame upright, so a phone video's
   rotation ends up in the pixels and the clip has no rotation metadata (`rotation.spec.ts`).
@@ -79,7 +121,7 @@ on; inline comments only for a why the code cannot show.
 - **Output is MP4 with H.264 and AAC, only** (`planOutput`). No H.264 encoder at the clip's size is
   `no-video-encoder`. AAC audio is copied (no encoder needed); other audio is encoded as AAC where
   `canEncodeAudio('aac')` says so, else the clip is silent and warns `'audio-unavailable'`
-  (`target: 'audio'`). Firefox has
+  (`target: 'audio'`), like captions. Firefox has
   no AAC encoder, which is fine for AAC sources (copied) and silent for anything else there. No WebM,
   VP9/VP8/AV1 or Opus output; input formats are Mediabunny's and unchanged.
 
@@ -88,7 +130,7 @@ on; inline comments only for a why the code cannot show.
 `vp test` runs the unit project (happy-dom) and the browser project. Shipkit's browser project has
 Chromium and WebKit; `vite.config.ts` appends Firefox. Install browsers once with
 `vp exec playwright install chromium webkit firefox`. Browser specs log `REEL_*` lines (support matrix,
-timings, plans); run with `--reporter=verbose` to see them.
+timings, caption pixel diffs, plans); run with `--reporter=verbose` to see them.
 
 WebKit runs after Chromium and Firefox, not beside them (its own `sequence.groupOrder` in `vite.config.ts`).
 All three encode H.264 with macOS's hardware encoder, which the machine shares; with every engine exporting
@@ -100,9 +142,15 @@ Chromium and Firefox never retry, so a real bug fails there at once.
 Headed (the default without `CI`), vitest runs one file per engine at a time; headless (`CI=1`) runs
 up to one fewer than the CPU count per engine.
 
+`caption-style.spec.ts` holds the caption look on a real canvas: the default is pixel-identical to a
+verbatim copy of the painter reel shipped first (the old `'subtitle'` look), overrides apply, and a long
+cue wraps onto more lines with every word kept. `clip.spec.ts` checks the burned-in band and that a clip
+whose captions fail to load (a 404 URL, a file that is not captions) is still made, warns
+`captions-unavailable` and has no captions.
+
 Fixtures: `flower.mp4` is copied from video-player (960x540 H.264 + AAC, 5.06s).
 `count-720p.mp4` (12s 1280x720 30fps H.264 + AAC) and `rotated-90.mp4`/`rotated-270.mp4` (2s, 640x480
 frames with a `tkhd` rotation matrix, displayed 480x640 with red/green/blue/yellow quadrants) are
 generated by `scripts/make-fixture.mjs [count] [rotated]`; tests
 never run the script. Assertions check outputs (dimensions, duration within 0.15s, codecs, the
-browser's own `<video>` accepting the file), never speed.
+browser's own `<video>` accepting the file, caption pixels), never speed.

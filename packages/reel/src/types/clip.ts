@@ -1,3 +1,4 @@
+import type { CaptionOptions } from '@/types/captions'
 import type { ClipSource, SourceInfo } from '@/types/sources'
 
 /**
@@ -48,6 +49,8 @@ export interface ClipOptions {
   end?: number
   /** Crop window. Defaults to a centred 9:16 window at the crop's own resolution. */
   crop?: CropOptions
+  /** Captions to burn into the picture. */
+  captions?: CaptionOptions
   /**
    * Set to `false` to drop audio. Defaults to `true`: AAC is copied, other audio encoded as AAC, and
    * where this browser has no AAC encoder the clip is silent and `onWarning` gets `'audio-unavailable'`.
@@ -56,8 +59,8 @@ export interface ClipOptions {
   /** Called with a fraction from 0 to 1 as the clip is written. */
   onProgress?: (fraction: number) => void
   /**
-   * Called for anything left out of a clip that was still made: audio this browser cannot write as
-   * AAC. Without it, warnings go to `console.warn`.
+   * Called for anything left out of a clip that was still made: captions that could not be loaded or
+   * read, or audio this browser cannot write as AAC. Without it, warnings go to `console.warn`.
    */
   onWarning?: (warning: ClipWarning) => void
   /** Aborts the clip; the returned promise then rejects with the signal's reason. */
@@ -67,12 +70,14 @@ export interface ClipOptions {
 /** Something left out of a clip that was still made. */
 export interface ClipWarning {
   /**
+   * `'captions-unavailable'`: the captions could not be loaded or read (a failed fetch or an HTTP
+   * error, a cross-origin file without CORS headers, a file that is not WebVTT).
    * `'audio-unavailable'`: the source's audio is not AAC and this browser has no AAC encoder (Firefox),
    * so the clip is silent.
    */
-  reason: 'audio-unavailable'
-  /** What was left out: the audio. */
-  target: 'audio'
+  reason: 'captions-unavailable' | 'audio-unavailable'
+  /** What was left out: the captions, or the audio. */
+  target: 'captions' | 'audio'
   message: string
 }
 

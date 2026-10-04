@@ -1,26 +1,50 @@
 import { BufferTarget, CanvasSource, Conversion, Mp4OutputFormat, Output, QUALITY_HIGH, VideoSampleSink, type MetadataTags } from 'mediabunny'
+import { activeCues, defaultTrackIndex } from '@/captions/cues'
+import { loadCaptions } from '@/captions/fetch'
+import { createCaptionPainter } from '@/render/captions'
 import { planCrop } from '@/clip/crop'
 import { ClipError } from '@/utils/errors'
 import { audioRequest, inspect, noVideoEncoder, planOutput } from '@/clip/support'
-import type { ClipOptions, ClipWarning } from '@/types'
+import type { CaptionCue, ClipOptions, ClipWarning } from '@/types'
 
 function abortReason(signal: AbortSignal): unknown {
   return signal.reason ?? new DOMException('The clip was aborted.', 'AbortError')
 }
 
 /**
- * Cuts `[start, end)` out of a video, crops it to an aspect ratio and resolves with the encoded
- * file: always an MP4 (`video/mp4`) with H.264 video and AAC audio.
+ * The cues a clip burns in: those passed (cues, WebVTT text, a `TextTrack`, or a WebVTT file's URL to
+ * fetch), else the default passed track's.
+ */
+async function clipCues(options: ClipOptions): Promise<CaptionCue[]> {
+  const captions = options.captions
+  if (!captions) {
+    return []
+  }
+  if (captions.cues !== undefined) {
+    return loadCaptions(captions.cues, { signal: options.signal })
+  }
+  const passed = captions.tracks ?? []
+  if (passed.length > 0) {
+    return loadCaptions(passed[defaultTrackIndex(passed)].src, { signal: options.signal })
+  }
+  return []
+}
+
+/**
+ * Cuts `[start, end)` out of a video, crops it to an aspect ratio, burns captions into the picture,
+ * and resolves with the encoded file: always an MP4 (`video/mp4`) with H.264 video and AAC audio.
  *
  * Everything happens on the device. Mediabunny demuxes the source (reading only the byte ranges it
  * needs from a URL) and WebCodecs decodes each frame; reel draws it cropped onto one reused
- * `OffscreenCanvas` and hands the canvas to a `CanvasSource`, which encodes
+ * `OffscreenCanvas`, paints captions over it and hands the canvas to a `CanvasSource`, which encodes
  * it with backpressure. Audio runs beside
  * it as a composable Mediabunny `Conversion` into the same output: AAC is copied without re-encoding,
  * other audio encoded as AAC. Every decoded sample is closed as soon as it is drawn.
  *
- * Audio that is not AAC, in a browser without an AAC encoder (Firefox), is left out rather than
- * failing the clip: the clip is silent and `onWarning` (or `console.warn`) gets `'audio-unavailable'`.
+ * Captions are loaded before encoding starts; a caption file that cannot be fetched or read leaves
+ * the clip without captions and is reported through `onWarning` (or `console.warn`) as
+ * `'captions-unavailable'` rather than failing the clip. Audio that is not AAC, in a browser without an
+ * AAC encoder (Firefox), is left out too: the clip is silent and `onWarning` gets `'audio-unavailable'`.
  *
  * Rejects with a {@link ClipError} when the source cannot be clipped (the same reasons `canClip`
  * reports), and with `signal.reason` when aborted.
@@ -77,6 +101,17 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
     if (!ctx) {
       throw new ClipError('no-webcodecs', 'OffscreenCanvas has no 2D context here.')
     }
+    let cues: CaptionCue[] = []
+    try {
+      cues = await clipCues(options)
+    } catch (error) {
+      if (signal?.aborted) {
+        throw error
+      }
+      const detail = (error instanceof Error ? error.message : String(error)).replace(/^reel: /, '')
+      warn({ reason: 'captions-unavailable', target: 'captions', message: `reel: the captions are left out. ${detail}` })
+    }
+    const paintCaptions = createCaptionPainter(width, height, options.captions?.style)
 
     const scaleX = width / crop.width
     const scaleY = height / crop.height
@@ -142,6 +177,9 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
             continue
           }
           sample.draw(ctx, -crop.left * scaleX, -crop.top * scaleY, info.width * scaleX, info.height * scaleY)
+          if (cues.length > 0) {
+            paintCaptions(ctx, activeCues(cues, from))
+          }
           await videoSource.add(from - start, to - from)
           progress(to - start)
         } finally {

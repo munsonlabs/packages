@@ -10,7 +10,7 @@
 > needs nothing but Mediabunny.
 
 In-browser clip making with WebCodecs. Take the video someone is watching, trim a segment, crop it to
-9:16 (or any aspect) and export an MP4 (H.264 + AAC), all on the device with no server. Containers are handled by [Mediabunny](https://mediabunny.dev); reel adds cropping,
+9:16 (or any aspect), burn captions into the picture and export an MP4 (H.264 + AAC), all on the device with no server. Containers are handled by [Mediabunny](https://mediabunny.dev); reel adds cropping, captions,
 codec planning and clear reasons for when a source cannot be clipped.
 
 ```ts
@@ -27,8 +27,9 @@ const clip: Blob = await createClip({
   start: 42,
   end: 52,
   crop: { aspect: '9:16', focus: 0.4 }, // focus: 0 = left edge, 1 = right edge
+  captions: { cues: videoElement.textTracks[0] }, // style: { ... } overrides the boxed look near the bottom
   onProgress: (fraction) => bar.update(fraction),
-  onWarning: (warning) => console.info(warning.message), // e.g. audio left out
+  onWarning: (warning) => console.info(warning.message), // e.g. captions or audio left out
   signal: controller.signal,
 })
 // clip.type is 'video/mp4': H.264 video, AAC audio
@@ -36,22 +37,48 @@ const clip: Blob = await createClip({
 
 ## API
 
-| Export                                  | Description                                                                                                                                             |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `createClip(options)`                   | Trim, crop, encode. Resolves a `Blob`; rejects with a `ClipError` (with `reason`) or the abort signal's reason.                                         |
-| `canClip(source, options?)`             | Reads only the header. Resolves `{ ok: true, info, plan }` or `{ ok: false, reason, message }`; never throws.                                           |
-| `support()`                             | Probes `VideoEncoder`/`AudioEncoder`/`VideoDecoder.isConfigSupported` for the H.264 encoder and decoder and the AAC encoder, the only codecs clips use. |
-| `planCrop`, `planOutput`, `parseAspect` | The pieces `createClip` is built from, exported for previews and tests.                                                                                 |
+| Export                                                        | Description                                                                                                                                                                 |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createClip(options)`                                         | Trim, crop, burn in captions, encode. Resolves a `Blob`; rejects with a `ClipError` (with `reason`) or the abort signal's reason.                                           |
+| `canClip(source, options?)`                                   | Reads only the header. Resolves `{ ok: true, info, plan }` or `{ ok: false, reason, message }`; never throws.                                                               |
+| `support()`                                                   | Probes `VideoEncoder`/`AudioEncoder`/`VideoDecoder.isConfigSupported` for the H.264 encoder and decoder and the AAC encoder, the only codecs clips use.                     |
+| `loadCaptions(input, { signal })`, `isCaptionText`            | Captions from cues, a `TextTrack`, WebVTT text, or a WebVTT file's URL (fetched; rejects with an `Error` when it cannot be fetched or is not WebVTT); the text-or-URL rule. |
+| `planCrop`, `planOutput`, `parseVtt`, `toCues`, `parseAspect` | The pieces `createClip` is built from, exported for previews and tests.                                                                                                     |
 
-`createClip` options: `source`, `start`, `end`, `crop: { aspect, focus, height }`,
+`createClip` options: `source`, `start`, `end`, `crop: { aspect, focus, height }`, `captions: { cues | tracks, style }`,
 `audio` (`false` drops it), `onProgress`, `onWarning`, `signal`.
+
+### Caption input
+
+`captions.cues` is cues, a `TextTrack`, the text of a WebVTT file, or a WebVTT file's URL (a `URL`, or a
+string), fetched with the clip's `signal`. Captions are WebVTT only: convert SRT to WebVTT first. **A string
+is text** when it starts with `WEBVTT` (after a BOM and whitespace), has a cue timing line
+(`00:01.000 --> 00:02.000`), holds whitespace, or is empty; **anything else is a URL**, relative to
+`document.baseURI` (`isCaptionText`). Captions that will not load never fail a clip: a file that cannot be
+fetched (HTTP error, CORS) or is not WebVTT (no `WEBVTT` header) leaves the clip without captions, with
+`onWarning({ reason: 'captions-unavailable', target: 'captions', message })` (or `console.warn`).
+`loadCaptions`, called directly, rejects when the file cannot be fetched or read.
+
+`captions.tracks` offers several, in video-player's `tracks` shape (`{ src, kind?, srclang?, label?,
+default? }`, each `src` a WebVTT file's URL or WebVTT text): the one marked `default` is burned in, else the
+first matching `navigator.language`, else the first. `cues` wins.
+
+### Caption style
+
+Captions have one look: white bold text (4.5% of the height) on a translucent dark box behind each line,
+14% above the bottom, wrapping at 86% of the width onto as many lines as a cue needs. It reads well on
+desktop and TV; a host posting to TikTok or Reels, whose own text covers roughly the bottom quarter, can
+raise it with `position` and `margin`. `captions.style` is a `CaptionStyle` of overrides, each optional:
+`fontFamily`, `fontWeight` (`700`), `size` (`0.045` of the height), `color` (white), `background`
+(`'rgba(0, 0, 0, 0.6)'`, or `null` for no box), `position` (`'top' | 'middle' | 'bottom'`), `margin`
+(`0.14` of the height) and `maxWidth` (`0.86` of the width).
 
 ### Output
 
 - The crop window is the largest one of the aspect that fits, at its own resolution (a 720p source
   gives 404x720); `crop.height: 1920` scales to 1080x1920.
 - Rotated sources (a phone's upright video is stored landscape with a rotation matrix) are cropped in
-  display orientation: the crop and focus work on the picture as it is seen, and the
+  display orientation: the crop, focus and captions all work on the picture as it is seen, and the
   clip carries the turn in its pixels, with no rotation metadata.
 - Always MP4 with H.264 video and AAC audio (`planOutput`); no H.264 encoder at the clip's size is
   `no-video-encoder`. AAC audio is **copied**, so an AAC source needs no AAC encoder; other audio is
@@ -76,10 +103,10 @@ const clip: Blob = await createClip({
 
 Real-browser suite through Playwright, all passing in Chromium 151, WebKit 26.5 and Firefox 153.
 
-| 10s of 1280x720 30fps H.264/AAC, 9:16 | Chromium | WebKit | Firefox |
-| ------------------------------------- | -------- | ------ | ------- |
-| 404x720 output                        | ~1.2s    | ~1.7s  | ~0.83s  |
-| 1080x1920 output                      | ~1.8s    | ~2.1s  | ~1.9s   |
+| 10s of 1280x720 30fps H.264/AAC, 9:16 + captions | Chromium | WebKit | Firefox |
+| ------------------------------------------------ | -------- | ------ | ------- |
+| 404x720 output                                   | ~1.2s    | ~1.7s  | ~0.83s  |
+| 1080x1920 output                                 | ~1.8s    | ~2.1s  | ~1.9s   |
 
 | Encoder (`isConfigSupported`) | Chromium | WebKit | Firefox |
 | ----------------------------- | -------- | ------ | ------- |

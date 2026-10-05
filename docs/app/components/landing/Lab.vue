@@ -4,7 +4,7 @@ const EXPERIMENTS: Array<{ name: string; branch: string; icon: string; descripti
     name: 'Splice',
     branch: 'feat/splice',
     icon: 'i-lucide-scissors',
-    to: 'https://feat-splice.munsonlabs.pages.dev/splice/getting-started/introduction',
+    to: '/splice/getting-started/introduction',
     description:
       'In-browser clip making with WebCodecs: trim, crop to 9:16, burn in captions, stamp your logo and add an end card that sends viewers back to the article. Plus a “clip this” editor.',
   },

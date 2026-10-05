@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@munsonlabs/sigil": "*",
+    "@munsonlabs/splice": "*",
     "@munsonlabs/video-player": "*",
     "better-sqlite3": "^12.6.2",
     "docus": "latest",

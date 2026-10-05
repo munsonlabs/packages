@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, useTemplateRef, watch, watchEffect } from 'vue'
+import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, useId, useTemplateRef, watch, watchEffect } from 'vue'
 import { Sigil } from '@munsonlabs/sigil/vue'
 import { useResolvedPlayer, type PlayerHandle } from '@munsonlabs/video-player'
 import { loadCore, type Core } from './features/loadCore'
@@ -30,6 +30,7 @@ const props = withDefaults(
     player?: PlayerHandle | null
     for?: string
     source?: SpliceSource | null
+    src?: string
     origin?: SpliceOrigin
     endCard?: EndCardOptions | false
     stamp?: StampOptions
@@ -42,6 +43,7 @@ const props = withDefaults(
     player: null,
     for: undefined,
     source: null,
+    src: undefined,
     origin: undefined,
     endCard: undefined,
     stamp: undefined,
@@ -51,11 +53,33 @@ const props = withDefaults(
   },
 )
 
-const emit = defineEmits<{
+type Events = {
   'update:open': [open: boolean]
   export: [detail: EditorExportDetail]
   error: [detail: EditorErrorDetail]
-}>()
+}
+
+const vueEmit = defineEmits<Events>()
+
+/**
+ * The custom element's host, or null when it's a Vue component. Not using useHost() because it
+ * warns in dev whenever the editor is used as a normal component.
+ */
+const host = (getCurrentInstance() as { ce?: HTMLElement } | null)?.ce ?? null
+
+/**
+ * Emits to Vue, or as <ml-splice-editor> fires a bubbling splice-* event with the payload in
+ * detail, since Vue's error event would clash with the DOM one. Opening and closing also toggle the
+ * open attribute and fire splice-open or splice-close.
+ */
+function emit<K extends keyof Events>(type: K, ...[detail]: Events[K]): void {
+  if (!host) return (vueEmit as (type: K, detail: Events[K][0]) => void)(type, detail)
+
+  const isOpen = type === 'update:open'
+  const name = isOpen ? (detail ? 'open' : 'close') : type
+  if (isOpen) host.toggleAttribute('open', detail as boolean)
+  host.dispatchEvent(new CustomEvent(`splice-${name}`, { detail: isOpen ? undefined : detail, bubbles: true, composed: true }))
+}
 
 /**
  * While the crop window is over the picture the browser's own captions are hidden, so the only ones
@@ -84,12 +108,13 @@ const labels = computed<EditorLabels>(() => ({ ...DEFAULT_LABELS, ...props.label
 const isEditing = computed(() => state.value === 'editing')
 
 /**
- * What we read: the source we were given, otherwise the player's own file. A blob: source is a
- * MediaSource (HLS through hls.js) with no file behind it, so the page has to pass the playlist
+ * What we read: the source or src we were given, otherwise the player's own file. A blob: source is
+ * a MediaSource (HLS through hls.js) with no file behind it, so the page has to pass the playlist
  * URL.
  */
 const clipSource = computed<SpliceSource | null>(() => {
   if (props.source) return props.source
+  if (props.src) return props.src
   const current = player.value?.mediaElement?.currentSrc
   return current && !current.startsWith('blob:') ? current : null
 })
@@ -277,7 +302,9 @@ onMounted(() => {
 })
 onBeforeUnmount(() => previewed?.classList.remove(PREVIEWING))
 
-defineExpose({ show, close, export: job.exportClip, cancel: job.cancel })
+if (host) watchEffect(() => (host.dataset.state = state.value))
+
+defineExpose({ show, close, export: job.exportClip, cancel: job.cancel, state: computed(() => state.value) })
 </script>
 
 <template>

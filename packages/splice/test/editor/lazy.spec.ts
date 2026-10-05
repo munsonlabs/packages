@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vite-plus/test'
 
 /**
- * The editor entry mustn't pull Mediabunny (about 157 KB gzipped) or the clip pipeline in statically:
+ * The editor entries mustn't pull Mediabunny (about 157 KB gzipped) or the clip pipeline in statically:
  * they load on the first open. The core entry, for its part, must stay framework-free: no Vue, no
  * player. This walks the static imports reachable from each entry, through `.ts` modules and the
  * `<script>` blocks of `.vue` components, and fails if any reaches what it mustn't.
@@ -53,14 +53,16 @@ function walk(module: string, seen = new Set<string>()): Set<string> {
 
 const getPackages = (reached: string[]) => reached.filter((name) => !/^[./]/.test(name))
 
-describe('the editor entry stays light', () => {
-  it('vue.ts reaches no heavy module statically', () => {
-    const reached = [...walk('/vue')]
-    expect(reached.filter((name) => heavy.some((pattern) => pattern.test(name)))).toEqual([])
-    expect(reached).toContain('/editor/SpliceEditor.vue')
-    expect(reached).toContain('/editor/RangeTimeline.vue')
-    expect(getPackages(reached).filter((name) => !editorPackages.includes(name) && !name.endsWith('.css'))).toEqual([])
-  })
+describe('the editor entries stay light', () => {
+  for (const entry of ['/vue', '/elements/index']) {
+    it(`${entry}.ts reaches no heavy module statically`, () => {
+      const reached = [...walk(entry)]
+      expect(reached.filter((name) => heavy.some((pattern) => pattern.test(name)))).toEqual([])
+      expect(reached).toContain('/editor/SpliceEditor.vue')
+      expect(reached).toContain('/editor/RangeTimeline.vue')
+      expect(getPackages(reached).filter((name) => !editorPackages.includes(name) && !name.endsWith('.css'))).toEqual([])
+    })
+  }
 
   it('loads the core through one dynamic import', () => {
     expect(files.get('/editor/features/loadCore')).toMatch(/import\('@\/index'\)/)

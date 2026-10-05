@@ -2,4 +2,4 @@
 '@munsonlabs/splice': patch
 ---
 
-Experimental first release. `createSplice()` turns part of a video into an MP4 clip in the browser. It can crop the clip and add captions, an end card, a logo and a watermark. `canSplice()` checks if a video can be clipped, and `createThumbnails()` makes thumbnails for a filmstrip. `@munsonlabs/splice/vue` adds `<SpliceEditor>`, a clip editor for `@munsonlabs/video-player`.
+Experimental first release. `createSplice()` turns part of a video into an MP4 clip in the browser. It can crop the clip and add captions, an end card, a logo and a watermark. `canSplice()` checks if a video can be clipped, and `createThumbnails()` makes thumbnails for a filmstrip. `@munsonlabs/splice/vue` adds `<SpliceEditor>`, a clip editor for `@munsonlabs/video-player`. `@munsonlabs/splice/element` adds the same editor as the `<ml-splice-editor>` web component.

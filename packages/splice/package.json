@@ -13,6 +13,7 @@
   ],
   "type": "module",
   "sideEffects": [
+    "./dist/elements/**",
     "./dist/**/*.css"
   ],
   "module": "./dist/index.mjs",
@@ -22,6 +23,11 @@
       "source": "./src/index.ts",
       "import": "./dist/index.mjs",
       "types": "./dist/index.d.mts"
+    },
+    "./element": {
+      "source": "./src/elements/index.ts",
+      "import": "./dist/elements/element.mjs",
+      "types": "./dist/elements/element.d.mts"
     },
     "./vue": {
       "source": "./src/vue.ts",

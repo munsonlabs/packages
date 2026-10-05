@@ -35,6 +35,9 @@ const afterTask = (command: string, extra = {}) => ({
   ...extra,
 })
 
+/** Never in splice's own files: Mediabunny loads with the core, and Vue and the player are the editor's peers. */
+const external = ['mediabunny', 'vue', '@munsonlabs/video-player']
+
 export default {
   ...baseConfig,
   run: {
@@ -45,11 +48,17 @@ export default {
     },
   },
   test: { ...baseTest, projects },
-  // The core and the Vue editor; the editor's styles land in dist/style.css (`./style`). Mediabunny
-  // loads with the core, and Vue and the player are the editor's peers.
-  pack: {
-    ...basePack,
-    entry: { index: 'src/index.ts', vue: 'src/vue.ts' },
-    deps: { ...basePack.deps, neverBundle: ['mediabunny', 'vue', '@munsonlabs/video-player'] },
-  },
+  pack: [
+    // The core and the Vue editor; the editor's styles land in dist/style.css (`./style`).
+    { ...basePack, entry: { index: 'src/index.ts', vue: 'src/vue.ts' }, deps: { ...basePack.deps, neverBundle: external } },
+    // As video-player's element builds do, the element carries its own sigil and its CSS inlined into
+    // the JS, so one import gives a working editor. Vue and the player stay external peers, shared with
+    // the page's own copies, and the page already has the player's stylesheet.
+    {
+      ...basePack,
+      outDir: 'dist/elements',
+      entry: { element: 'src/elements/index.ts' },
+      deps: { neverBundle: external, alwaysBundle: [/\.css$/, /^@munsonlabs\/sigil/] },
+    },
+  ],
 }

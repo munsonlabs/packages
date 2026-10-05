@@ -163,9 +163,9 @@ defineExpose(exposePlayerSurface(player))
 
             <AdOverlay v-if="player.isAdPlaying && !player.isNativeUi" />
 
-            <PlayerOverlay v-if="props.controls && !player.isNativeUi" />
+            <PlayerOverlay v-if="player.hasControls && !player.isNativeUi" />
 
-            <div v-if="props.controls && player.isNativeUi && !player.hasStarted" class="player__native-play">
+            <div v-if="player.hasControls && player.isNativeUi && !player.hasStarted" class="player__native-play">
               <PlayButton class="ppbtn ppbtn--lg" />
             </div>
 

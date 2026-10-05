@@ -22,7 +22,7 @@ import {
   VolumeSlider,
   TimeDisplay,
 } from '@munsonlabs/video-player'
-import { useForwardedPlayer } from '@munsonlabs/video-player'
+import { useForwardedPlayer, useResolvedPlayer } from '@munsonlabs/video-player'
 import type {
   PlayerProps,
   StateChangeEvent,
@@ -33,6 +33,7 @@ import type {
   ForwardedPlayer,
   PlayerMethodKey,
   UseForwardedPlayerReturn,
+  ResolvedPlayerProps,
 } from '@munsonlabs/video-player'
 import '@munsonlabs/video-player/style'
 ```
@@ -47,6 +48,7 @@ import '@munsonlabs/video-player/style'
 | `registerPlatform()`                                                                                                                                                                         | Teaches the player a new platform (URL matcher + embed adapter or source resolver) without forking — see the docs site's Platforms page                                                                                                                                                 |
 | `PlayButton`/`MuteButton`/`FullscreenButton`/`LoopButton`/`PipButton`/`CaptionsButton`/`QualityButton`/`PlaybackRateButton`/`Buffering`/`Scrubber`/`VolumeSlider`/`TimeDisplay`/`Transcript` | Headless control primitives for building a custom HUD (`:controls="false"`). Each resolves its player in this order: a `player` prop, then a `for` element id, then the enclosing `<VideoPlayer>` via context — so a control nested in the player's default slot needs no wiring at all |
 | `useForwardedPlayer()`                                                                                                                                                                       | Curated forward of a template-ref'd `VideoPlayer`'s controls/state for a wrapper component's own `defineExpose` — the same mechanism `VideoCard`/`VideoStage` use internally                                                                                                            |
+| `useResolvedPlayer(props)`                                                                                                                                                                   | For controls built outside the package: resolves `player`, then `for`, then the enclosing `VideoPlayer`. Returns a ref to the handle (`ResolvedPlayerProps`: `player?`, `for?`)                                                                                                         |
 | `resolvePlatform(url)`                                                                                                                                                                       | The platform key plus `embed: true/false` in one lookup                                                                                                                                                                                                                                 |
 | `parseDeepLink(location)`                                                                                                                                                                    | Reads `#ml-t=start,end` plus `&ml-player=<id>` from the hash (only) into `{ start, end, target }`; what the `deepLink` prop uses                                                                                                                                                        |
 | `HideMarker`                                                                                                                                                                                 | Slotless sentinel — while it's in the viewport, a pinned `VideoStage` tucks off to a sliver instead of covering it, see the docs site's Components page                                                                                                                                 |
@@ -158,6 +160,11 @@ A `use*` name is a promise that the function must be called during `setup()`, be
 | `stageRegistry`         | `hasStage` (mount count, read by `VideoCard` to know whether to hand off to a stage) and `isStageTucked` (shared ref `HideMarker` sets and `VideoStage` reads directly) — lives at `src/registries/stageRegistry.ts`                                                                                                                                                          |
 
 ## Clip ranges and deep links
+
+`setControls(value)` on the handle (state `hasControls`) overrides the `controls` prop: `false` hides the
+HUD, `null` gives the prop back its say. `playerState.ts` holds `controlsOverride`; `VideoPlayer.vue`
+renders the overlay and the native play button from `hasControls`, never from the prop directly. Reel's
+picker hides the HUD while its crop window is over the picture and restores it on close.
 
 `ui/player/features/useClipRange.ts` owns `clipRange` (state on the handle, highlighted by
 `Scrubber`) and `setClipRange(range, { end })`, a handle method: what happens at the range's end

@@ -123,3 +123,16 @@ describe('auto-save', () => {
     expect(savePosition).toHaveBeenCalledWith(URL, 51)
   })
 })
+
+describe('forgo', () => {
+  it('skips the restore, as when a deep link has chosen where playback starts', () => {
+    vi.mocked(getPosition).mockReturnValue(42)
+    const { result } = withSetup(() => usePositionMemory(URL, () => makeAdapter(0), ref(false)))
+    const adapter = makeAdapter(0)
+
+    result.forgo()
+    result.restoreOnce(adapter)
+
+    expect(adapter.setCurrentTime).not.toHaveBeenCalled()
+  })
+})

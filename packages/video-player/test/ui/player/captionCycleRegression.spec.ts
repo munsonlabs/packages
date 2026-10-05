@@ -63,7 +63,7 @@ function setup() {
   const { attachPlayerEvents } = createPlayerEvents(state, {
     fire: vi.fn(),
     pauseThisPlayer: vi.fn(),
-    positionMemory: { restoreOnce: vi.fn(), save: vi.fn(), clear: vi.fn() },
+    positionMemory: { restoreOnce: vi.fn(), save: vi.fn(), clear: vi.fn(), forgo: vi.fn() },
     quartiles: { checkQuartiles: vi.fn(), reset: vi.fn() },
     buffering: { isBuffering: ref(false), attachPlayerEvents: vi.fn(), reset: vi.fn() },
     fullscreen: { isFullscreen: ref(false), isFullscreenPending: ref(false), toggleFullscreen: vi.fn(), attachPlayerEvents: vi.fn() },
@@ -130,7 +130,7 @@ describe('several renditions of one language', () => {
     const { attachPlayerEvents } = createPlayerEvents(state, {
       fire: vi.fn(),
       pauseThisPlayer: vi.fn(),
-      positionMemory: { restoreOnce: vi.fn(), save: vi.fn(), clear: vi.fn() },
+      positionMemory: { restoreOnce: vi.fn(), save: vi.fn(), clear: vi.fn(), forgo: vi.fn() },
       quartiles: { checkQuartiles: vi.fn(), reset: vi.fn() },
       buffering: { isBuffering: ref(false), attachPlayerEvents: vi.fn(), reset: vi.fn() },
       fullscreen: { isFullscreen: ref(false), isFullscreenPending: ref(false), toggleFullscreen: vi.fn(), attachPlayerEvents: vi.fn() },

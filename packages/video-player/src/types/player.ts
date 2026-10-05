@@ -108,6 +108,34 @@ export interface PlayerProps {
   loop?: boolean
   /** Native `<video preload>`. `'none'` also holds hls.js back until first play. Embeds ignore it. */
   preload?: PreloadMode
+  /**
+   * Answer a page URL that points at a moment: `#t=42,52`, `#ml-t=42,52` or `?ml-t=42,52`. `true` takes
+   * links without an `ml-player` id (the first such player on the page wins); a string is this
+   * player's id and also takes links with `ml-player=<id>`. The player scrolls into view, seeks to the
+   * start and highlights the range on the scrubber.
+   */
+  deepLink?: boolean | string
+  /** What happens when a deep-linked range ends: pause once (default), loop until the viewer seeks away, or play on. */
+  deepLinkEnd?: DeepLinkEnd
+}
+
+/** What playback does at the end of a clip range: pause once, loop until the viewer seeks away, or play on. */
+export type ClipRangeEnd = 'pause' | 'loop' | 'continue'
+
+export type DeepLinkEnd = ClipRangeEnd
+
+/**
+ * A stretch of the media in seconds, highlighted on the scrubber and held by `setClipRange()`'s `end`
+ * behaviour; `end` is `null` for an open range like the deep link `#t=42`, which is only highlighted.
+ */
+export interface ClipRange {
+  start: number
+  end: number | null
+}
+
+export interface ClipRangeOptions {
+  /** What happens when playback reaches the range's end. Defaults to `'pause'`. */
+  end?: ClipRangeEnd
 }
 
 export type PinCorner = 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'

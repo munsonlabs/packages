@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref, shallowRef } from 'vue'
-import { VideoPlayer, type PlayerHandle } from '@munsonlabs/video-player'
+import { VideoPlayer, type CustomAction, type PlayerHandle } from '@munsonlabs/video-player'
+import { SpliceEditor, type EditorErrorDetail, type EditorExportDetail } from '@munsonlabs/splice/vue'
 import { resolveMedia } from './helpers'
 import { ThePlan } from './components'
+
+const scissors =
+  '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg>'
 
 const sources = {
   clock: {
@@ -26,24 +30,19 @@ const requested = new URLSearchParams(location.search).get('source')
 const sourceId: SourceId = requested && requested in sources ? (requested as SourceId) : 'clock'
 const { src, title, intro, captions } = sources[sourceId]
 const tracks = captions ? [{ src: captions, kind: 'captions', srclang: 'en', label: 'English' } as const] : []
-const LENGTH = 5
-const CROP = { aspect: '9:16' } as const
+
 const origin = { url: location.href.split('#')[0], title, publisher: 'Splice demo', player: 'demo' }
 const logo = resolveMedia('logo.svg')
-const displayUrl = `acme.news/2026/10/${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+const endCard = { logo, displayUrl: `acme.news/2026/10/${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}` }
+const stamp = { logo, position: 'top-right' } as const
 const watermark = { text: 'Clipped from acme.news', position: 'bottom' } as const
-const withCard = ref(true)
-const withLogo = ref(true)
-const player = ref<PlayerHandle>()
-const strip = ref<HTMLCanvasElement | null>(null)
-const THUMBNAILS = 10
-const thumbnailTimes: number[] = []
-const progress = ref<number | null>(null)
-const clip = shallowRef<{ url: string; name: string; link: string; hash: string } | null>(null)
-const notice = ref('')
-const unavailable = ref('')
 
-let controller: AbortController | null = null
+const player = ref<PlayerHandle>()
+const action = shallowRef<CustomAction | null>(null)
+const open = ref(false)
+const unavailable = ref('')
+const notice = ref('')
+const clip = shallowRef<{ link: string; hash: string } | null>(null)
 
 function switchSource(event: Event): void {
   const url = new URL(location.href)
@@ -53,87 +52,31 @@ function switchSource(event: Event): void {
 }
 
 onMounted(async () => {
-  const { canSplice, createThumbnails } = await import('@munsonlabs/splice')
-  const check = await canSplice(src, { crop: CROP })
-  const canvas = strip.value
-  const ctx = canvas?.getContext('2d')
-
-  if (!check.ok) unavailable.value = check.message
-  if (!check.ok || !canvas || !ctx) return
-
-  const tileWidth = canvas.width / THUMBNAILS
-  await createThumbnails({
-    source: src,
-    count: THUMBNAILS,
-    onThumbnail: (index, image, time) => {
-      thumbnailTimes[index] = time
-      ctx.drawImage(image, index * tileWidth, 0, tileWidth, canvas.height)
-    },
-  })
+  const { canSplice } = await import('@munsonlabs/splice')
+  const check = await canSplice(src, { crop: { aspect: '9:16' } })
+  if (check.ok) action.value = { icon: scissors, label: 'Clip this', onClick: () => (open.value = true) }
+  else unavailable.value = check.message
 })
 
-function seekThumbnail(event: MouseEvent): void {
-  const canvas = strip.value
-  if (!canvas) return
-
-  const box = canvas.getBoundingClientRect()
-  const index = Math.min(THUMBNAILS - 1, Math.floor(((event.clientX - box.left) / box.width) * THUMBNAILS))
-  const time = thumbnailTimes[index]
-  if (time !== undefined) player.value?.seek(time)
+function onError(detail: EditorErrorDetail): void {
+  notice.value = detail.message
 }
 
-async function runSplice(): Promise<void> {
-  const handle = player.value
-  if (!handle || !(handle.duration > 0) || progress.value !== null) return
-  handle.pause()
-  const start = Math.max(0, Math.min(handle.currentTime, handle.duration - LENGTH))
-  const end = Math.min(handle.duration, start + LENGTH)
-  progress.value = 0
+function onExport(detail: EditorExportDetail): void {
   notice.value = ''
-  controller = new AbortController()
-
-  try {
-    const { createClipLink, createSplice } = await import('@munsonlabs/splice')
-    const blob = await createSplice({
-      source: src,
-      start,
-      end,
-      crop: CROP,
-      captions,
-      origin,
-      endCard: withCard.value ? { logo, displayUrl } : undefined,
-      stamp: withLogo.value ? { logo, position: 'top-right' } : undefined,
-      watermark,
-      signal: controller.signal,
-      onProgress: (fraction) => (progress.value = fraction),
-      onWarning: (message) => (notice.value = message),
-    })
-    if (clip.value) URL.revokeObjectURL(clip.value.url)
-    const link = createClipLink(origin, start, end)
-    const hash = new URL(link).hash
-    clip.value = { url: URL.createObjectURL(blob), name: `${sourceId}-${start.toFixed(1)}-${end.toFixed(1)}.mp4`, link, hash }
-  } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') notice.value = 'Splice cancelled.'
-    else notice.value = error instanceof Error ? error.message : String(error)
-  } finally {
-    progress.value = null
-    controller = null
-  }
+  clip.value = detail.link ? { link: detail.link, hash: new URL(detail.link).hash } : null
 }
 
 function backToMoment(link: string): void {
+  open.value = false
   location.hash = new URL(link).hash
-}
-
-function cancelSplice(): void {
-  controller?.abort()
 }
 </script>
 
 <template>
   <main>
     <h1>Splice Demo</h1>
-    <p>{{ intro }} Press Run Splice to cut five vertical seconds from the moment you are watching, entirely in your browser.</p>
+    <p>{{ intro }} Press the scissors in the player (or the button below) to cut a vertical clip of any moment, entirely in your browser.</p>
 
     <label class="source">
       Source
@@ -143,47 +86,45 @@ function cancelSplice(): void {
     </label>
 
     <div class="player">
-      <VideoPlayer ref="player" :src="src" :tracks="tracks" :label="title" deep-link="demo" deep-link-end="loop" />
-      <canvas ref="strip" class="strip" width="1600" height="90" aria-label="Thumbnails; click to seek" @click="seekThumbnail" />
+      <VideoPlayer ref="player" :src="src" :tracks="tracks" :label="title" :action="action" deep-link="demo" deep-link-end="loop" />
     </div>
 
     <div class="toolbar">
-      <button v-if="progress === null" :disabled="!!unavailable" @click="runSplice">Run Splice</button>
-      <button v-else @click="cancelSplice">Cancel ({{ Math.round(progress * 100) }}%)</button>
-      <label><input v-model="withCard" type="checkbox" /> End card</label>
-      <label><input v-model="withLogo" type="checkbox" /> Logo on the clip</label>
+      <button :disabled="!action || open" @click="open = true">Clip this</button>
       <span v-if="unavailable" class="note">Splicing is not available here: {{ unavailable }}</span>
     </div>
 
-    <p class="note" aria-live="polite">{{ notice }}</p>
+    <SpliceEditor
+      v-model:open="open"
+      :player="player"
+      :source="src"
+      :origin="origin"
+      :end-card="endCard"
+      :stamp="stamp"
+      :watermark="watermark"
+      @export="onExport"
+      @error="onError"
+    />
 
-    <section v-if="clip" class="result" aria-live="polite">
-      <h2>Your clip</h2>
-      <video :src="clip.url" controls playsinline />
-      <p>
-        <a :href="clip.url" :download="clip.name">Download {{ clip.name }}</a>
-      </p>
-      <p class="note">
-        Its metadata links back to this moment:
-        <a :href="clip.link" @click.prevent="backToMoment(clip.link)">{{ clip.hash }}</a>
-      </p>
-    </section>
+    <p class="note" aria-live="polite">{{ notice }}</p>
+    <p v-if="clip" class="note">
+      The clip's metadata links back to this moment:
+      <a :href="clip.link" @click.prevent="backToMoment(clip.link)">{{ clip.hash }}</a>
+    </p>
 
     <h2>How it works</h2>
     <p>
-      The player is <code>@munsonlabs/video-player</code>. Run Splice is offered once <code>canSplice()</code> says this browser can splice the file,
-      and hands five seconds of it to <code>createSplice()</code>: the video is decoded with WebCodecs, cropped to 9:16, has its captions burned in
-      and is encoded to an MP4 with H.264 video and AAC audio, all on this device. Nothing is uploaded. Cancelling aborts it through an
-      <code>AbortSignal</code>. With an <code>origin</code>, the clip's MP4 metadata carries the page's title, publisher and a
-      <code>#ml-t=</code> link back to the clipped moment. The player has <code>deep-link="demo"</code> on, so following that link seeks to the range
-      and loops it. The core API is framework agnostic, built on web standards and Mediabunny. The strip under the player comes from
-      <code>createThumbnails()</code>: ten keyframes, each painted as it lands; click one to seek there.
+      The player is <code>@munsonlabs/video-player</code>; the scissors are its custom <code>action</code>, offered once <code>canSplice()</code> says
+      this browser can splice the file. They open <code>&lt;SpliceEditor&gt;</code> under the player, which takes the player over as its preview: the
+      clip loops, a 9:16 window shows what the clip keeps (drag it to reframe), and the timeline's filmstrip comes from
+      <code>createThumbnails()</code>. Export hands it all to <code>createSplice()</code>: decoded with WebCodecs, cropped, with the captions on show
+      burned in, and encoded to an MP4 with H.264 video and AAC audio, all on this device. Nothing is uploaded.
     </p>
     <p>
-      With <em>End card</em> on, the clip ends with a silent card faded in over its last frame: the logo, the publisher, the title and the article's
-      address. With <em>Logo on the clip</em>, the logo is stamped in the top-right corner of every frame, in a spot TikTok, Reels and Shorts leave
-      clear. A band across the bottom of every frame names the site it came from. A logo that can't be loaded is left out with a note, never failing
-      the clip.
+      The clip ends with a silent end card faded in over its last frame (the logo, the publisher, the title and the article's address), the logo is
+      stamped in the top-right corner of every frame, where TikTok, Reels and Shorts leave space, and a band across the bottom of every frame names
+      the site it came from. With an <code>origin</code>, the clip's MP4 metadata carries a <code>#ml-t=</code> link back to the clipped moment; the
+      player has <code>deep-link="demo"</code> on, so following it seeks to the range and loops it.
     </p>
 
     <ThePlan />
@@ -220,16 +161,6 @@ h2 {
   margin: 20px 0;
 }
 
-.strip {
-  display: block;
-  width: 100%;
-  height: 56px;
-  margin-top: 8px;
-  border-radius: 8px;
-  background: #1f2328;
-  cursor: pointer;
-}
-
 .source {
   display: flex;
   gap: 8px;
@@ -247,13 +178,5 @@ h2 {
   min-height: 1.6em;
   color: #9aa3ad;
   font-size: 0.9rem;
-}
-
-.result video {
-  display: block;
-  max-width: 100%;
-  max-height: 420px;
-  border-radius: 10px;
-  background: #000;
 }
 </style>

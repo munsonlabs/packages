@@ -92,7 +92,7 @@ function parseTimestamp(value: string): number | null {
  * Strips cue markup like <v Speaker>, <i> and karaoke timestamps, and decodes the few entities
  * WebVTT allows, leaving the plain text we draw.
  */
-function stripCueMarkup(text: string): string {
+export function stripCueMarkup(text: string): string {
   return text
     .replace(/<[^>]*>/g, '')
     .replace(/&lt;/g, '<')

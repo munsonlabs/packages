@@ -1,5 +1,4 @@
-import base from '@munsonlabs/shipkit/vite/base.config'
-import { resolve } from 'node:path'
+import base from '@munsonlabs/shipkit/vite/vue.config'
 import { playwright } from 'vite-plus/test/browser-playwright'
 
 const { pack: basePack = {}, test: baseTest = {}, ...baseConfig } = base as any
@@ -26,20 +25,31 @@ const projects = (baseTest.projects ?? []).map((project: any) => {
   return { ...project, test: { ...project.test, globalSetup: ['test/browser/global-setup.ts'], browser: { ...project.test.browser, instances } } }
 })
 
+/**
+ * The editor is built on @munsonlabs/video-player and draws the player's sigil icons, so every task
+ * waits for both to build.
+ */
+const afterTask = (command: string, extra = {}) => ({
+  command,
+  dependsOn: ['@munsonlabs/sigil#build', '@munsonlabs/video-player#build'],
+  ...extra,
+})
+
 export default {
   ...baseConfig,
-  resolve: { alias: { ...baseConfig.resolve?.alias, '@test': resolve(import.meta.dirname, 'test') } },
   run: {
     tasks: {
-      build: { command: 'vp pack' },
-      check: { command: 'vp check' },
-      test: { command: 'vp test', cache: false },
+      build: afterTask('vp pack'),
+      check: afterTask('vp check'),
+      test: afterTask('vp test', { cache: false }),
     },
   },
   test: { ...baseTest, projects },
+  // The core and the Vue editor; the editor's styles land in dist/style.css (`./style`). Mediabunny
+  // loads with the core, and Vue and the player are the editor's peers.
   pack: {
     ...basePack,
-    entry: { index: 'src/index.ts' },
-    deps: { ...basePack.deps, neverBundle: ['mediabunny'] },
+    entry: { index: 'src/index.ts', vue: 'src/vue.ts' },
+    deps: { ...basePack.deps, neverBundle: ['mediabunny', 'vue', '@munsonlabs/video-player'] },
   },
 }

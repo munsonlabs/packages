@@ -4,12 +4,12 @@ type Todo = { label: string; detail?: string; done: boolean }
 
 const todos = ref<Todo[]>([
   { label: 'Play the source video', done: true },
-  { label: 'Choose a region', done: false },
+  { label: 'Choose a region', done: true },
   { label: 'Splice videos', done: false },
   { label: 'Burn in captions', done: true },
   { label: 'Handle or drop the audio', done: true },
   { label: 'Export and download', done: true },
-  { label: 'Then the UI', done: false },
+  { label: 'Then the UI', done: true },
 ])
 </script>
 

@@ -1,0 +1,40 @@
+import type { EditorLabels } from '@/types/editor'
+
+export const DEFAULT_LABELS: EditorLabels = {
+  title: 'Clip this moment',
+  close: 'Close',
+  crop: 'Crop position',
+  cropHint: 'Drag to reframe',
+  start: 'Clip start',
+  end: 'Clip end',
+  play: 'Play',
+  pause: 'Pause',
+  mute: 'Mute',
+  unmute: 'Unmute',
+  captions: 'Captions',
+  captionsOff: 'Off',
+  endCard: 'End card with a link back',
+  logo: 'Logo on the clip',
+  captionPosition: 'Caption position',
+  positionTop: 'Top',
+  positionMiddle: 'Middle',
+  positionBottom: 'Bottom',
+  export: 'Export clip',
+  cancel: 'Cancel',
+  preparing: 'Preparing…',
+  exporting: 'Exporting…',
+  cancelled: 'Export cancelled.',
+  done: 'Your clip is ready.',
+  download: 'Download',
+  share: 'Share',
+  copyLink: 'Copy link',
+  copied: 'Copied',
+  copyFailed: 'Could not copy the link.',
+  again: 'Edit again',
+}
+
+export const CLIP_LENGTH = 10
+export const SHORTEST_CLIP = 1
+export const LONGEST_CLIP = 60
+export const TIMELINE_SPAN = 90
+export const END_GAP = 0.05

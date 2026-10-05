@@ -1,7 +1,7 @@
 {
   "name": "@munsonlabs/splice",
   "version": "0.0.0",
-  "description": "In-browser video splicer making usng WebCodecs.",
+  "description": "In-browser clip making with WebCodecs: trim, crop, caption and export an MP4 on the device, with a clip editor built on @munsonlabs/video-player.",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -12,7 +12,9 @@
     "dist"
   ],
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/**/*.css"
+  ],
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "exports": {
@@ -20,6 +22,15 @@
       "source": "./src/index.ts",
       "import": "./dist/index.mjs",
       "types": "./dist/index.d.mts"
+    },
+    "./vue": {
+      "source": "./src/vue.ts",
+      "import": "./dist/vue.mjs",
+      "types": "./dist/vue.d.mts"
+    },
+    "./style": {
+      "types": "./src/types/style.d.ts",
+      "import": "./dist/style.css"
     }
   },
   "publishConfig": {
@@ -33,9 +44,24 @@
     "test:watch": "vp test --watch"
   },
   "dependencies": {
+    "@munsonlabs/sigil": "*",
     "mediabunny": "^1.61.0"
   },
   "devDependencies": {
-    "@munsonlabs/shipkit": "*"
+    "@munsonlabs/shipkit": "*",
+    "@munsonlabs/video-player": "*",
+    "vue": "3.5.42"
+  },
+  "peerDependencies": {
+    "@munsonlabs/video-player": "*",
+    "vue": ">=3"
+  },
+  "peerDependenciesMeta": {
+    "@munsonlabs/video-player": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
   }
 }

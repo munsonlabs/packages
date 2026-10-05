@@ -165,6 +165,7 @@ src/
     Transport.vue   video-player's headless controls (play, clip-relative time, mute, captions) on the player handle
     ExportPanel.vue the end-card and logo toggles, the caption position radios, export, progress and cancel
     ClipResult.vue  the finished clip: player, Share (Web Share, else download), Download, Copy caption, Edit again
+    picker.css      the shared look of every picker component (the `--reel-*` properties) and `.reel-previewing`; imported by ReelPicker.vue
     types.ts        PickerState, PickerApi, the event details (the picker's own; exported by /vue and /element only)
     features/
       frameClock.ts useFrameClock(): the player's time per presented frame (requestVideoFrameCallback on the

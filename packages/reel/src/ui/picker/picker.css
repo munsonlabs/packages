@@ -1,0 +1,145 @@
+/*
+ * The picker's shared look. Every colour, radius and font comes from a `--reel-*` custom property
+ * with a fallback, so a page themes it by setting them on the picker or any ancestor.
+ */
+.reel-picker {
+  --_bg: var(--reel-bg, #10241a);
+  --_surface: var(--reel-surface, #173426);
+  --_fg: var(--reel-fg, #f4f7f5);
+  --_muted: var(--reel-muted, #a9bdb2);
+  --_accent: var(--reel-accent, #e2a32e);
+  --_accent-fg: var(--reel-accent-fg, #1b1405);
+  --_range: var(--reel-range, rgba(226, 163, 46, 0.35));
+  --_radius: var(--reel-radius, 14px);
+  --_focus: var(--reel-focus, #ffd36b);
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  margin: 12px 0;
+  border-radius: var(--_radius);
+  background: var(--_bg);
+  color: var(--_fg);
+  font-family: var(--reel-font, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif);
+}
+
+.reel-picker :focus-visible {
+  outline: 3px solid var(--_focus);
+  outline-offset: 2px;
+}
+
+.reel-picker .reel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--_surface);
+}
+
+.reel-picker .reel-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.reel-picker .reel-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: calc(var(--_radius) / 1.6);
+  background: var(--_surface);
+  color: var(--_fg);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.reel-picker .reel-button--primary {
+  background: var(--_accent);
+  color: var(--_accent-fg);
+}
+
+.reel-picker .reel-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.reel-picker .reel-close {
+  padding: 6px;
+  font-size: var(--reel-icon-size, 20px);
+}
+
+.reel-picker .reel-icon {
+  display: contents;
+}
+
+.reel-picker .reel-icon svg,
+.reel-picker .reel-close svg {
+  display: block;
+  width: 1em;
+  height: 1em;
+}
+
+.reel-picker .reel-body {
+  display: grid;
+  gap: 14px;
+  padding: 16px 18px 18px;
+}
+
+.reel-picker .reel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.reel-picker .reel-status {
+  margin: 0;
+  min-height: 1.3em;
+  color: var(--_muted);
+  font-size: 0.9rem;
+}
+
+.reel-picker .reel-status[data-kind='error'] {
+  color: var(--reel-error, #ff9b8f);
+}
+
+.reel-picker .reel-notes {
+  display: grid;
+  gap: 4px;
+}
+
+.reel-picker .reel-notes:empty {
+  display: none;
+}
+
+.reel-picker .reel-note {
+  margin: 0;
+  color: var(--_muted);
+  font-size: 0.85rem;
+}
+
+.reel-picker .reel-result {
+  display: grid;
+  gap: 14px;
+}
+
+.reel-picker .reel-result video {
+  max-height: 60dvh;
+  justify-self: start;
+}
+
+/*
+ * The player's shell while the crop window is over it: the browser draws none of the player's
+ * captions, reel's window draws the clip's. Firefox and Chromium honour `::cue`'s visibility; WebKit
+ * hides the whole cue container.
+ */
+.reel-previewing video::cue {
+  visibility: hidden;
+}
+
+.reel-previewing video::-webkit-media-text-track-container {
+  display: none;
+}

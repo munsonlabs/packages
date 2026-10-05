@@ -5,10 +5,10 @@ import { useResolvedPlayer, type PlayerHandle } from '@munsonlabs/video-player'
 import { planCrop } from '@/clip/crop'
 import type { CaptionStyle, ClipOrigin, ClipSource, EndCardOptions, PlaylistCache, WatermarkOptions } from '@/types'
 import { useTrackCues } from '@/ui/picker/features/trackCues'
-import { useExport } from '@/ui/picker/features/export'
+import { useExport, type ClipRequest, type Reporter } from '@/ui/picker/features/export'
 import { useFrameClock } from '@/ui/picker/features/frameClock'
 import { loadCore, type Core } from '@/ui/picker/features/core'
-import { formatShareCaption, getPickerDefaults } from '@/registries/pickerDefaults'
+import { endCardFor, formatShareCaption, getPickerDefaults } from '@/registries/pickerDefaults'
 import { initialRange, timelineWindow, type Range, type RangeLimits } from '@/ui/picker/features/range'
 import type { CaptionPosition, PickerState, ReelCopyDetail, ReelErrorDetail, ReelExportDetail, ShareResult } from '@/ui/picker/types'
 import ClipResult from '@/ui/picker/ClipResult.vue'
@@ -16,6 +16,7 @@ import CropOverlay from '@/ui/picker/CropOverlay.vue'
 import ExportPanel from '@/ui/picker/ExportPanel.vue'
 import RangeTimeline from '@/ui/picker/RangeTimeline.vue'
 import Transport from '@/ui/picker/Transport.vue'
+import '@/ui/picker/picker.css'
 
 /**
  * The "clip this" editor, inline on the page's `@munsonlabs/video-player`. The player is the preview:
@@ -39,7 +40,7 @@ const props = withDefaults(
   { open: false, player: null, for: undefined, source: null, src: undefined, origin: undefined, endCard: undefined, watermark: undefined },
 )
 
-const vueEmit = defineEmits<{
+type Events = {
   'update:open': [open: boolean]
   open: []
   close: []
@@ -50,7 +51,9 @@ const vueEmit = defineEmits<{
   download: [detail: ReelExportDetail]
   copy: [detail: ReelCopyDetail]
   error: [detail: ReelErrorDetail]
-}>()
+}
+
+const vueEmit = defineEmits<Events>()
 
 /**
  * As `<ml-reel-picker>`, the host element: events go out as bubbling `reel-*` CustomEvents with the
@@ -59,10 +62,9 @@ const vueEmit = defineEmits<{
  */
 // Not `useHost()`: it warns in development whenever the picker is used as a plain Vue component.
 const host = (getCurrentInstance() as { ce?: HTMLElement } | null)?.ce ?? null
-type Emits = Parameters<typeof vueEmit>
-function emit(...[type, detail]: Emits): void {
+function emit<K extends keyof Events>(type: K, ...[detail]: Events[K]): void {
   if (!host) {
-    ;(vueEmit as (type: Emits[0], detail?: Emits[1]) => void)(type, detail)
+    ;(vueEmit as (type: K, detail: Events[K][0]) => void)(type, detail)
     return
   }
   if (type === 'update:open') {
@@ -118,8 +120,11 @@ const filmstrip = ref<'ready' | 'unavailable'>()
 const withCard = ref(true)
 const withLogo = ref(false)
 const captionPosition = ref<CaptionPosition>('bottom')
-const opening = ref(0)
-let loads: AbortController | null = null
+/**
+ * One per opening. Closing aborts it, which stops what the opening still has in flight (the core's
+ * checks, the filmstrip, caption loads) and tells each step after an `await` not to carry on.
+ */
+let session: AbortController | null = null
 let playlists: PlaylistCache | null = null
 
 const editing = computed(() => state.value === 'editing')
@@ -157,20 +162,21 @@ const playhead = computed(() => (editing.value ? previewTime.value : null))
 
 const message = (error: unknown) => (error instanceof Error ? error.message : String(error))
 
-function setStatus(text: string, kind: 'info' | 'error' = 'info'): void {
-  status.value = { text, kind }
-}
-
-function fail(reason: string, text: string, shown = text): void {
-  setStatus(shown, 'error')
-  emit('error', { reason, message: text, fatal: true })
+const report: Reporter = {
+  status: (text) => (status.value = { text, kind: 'info' }),
+  fail: (reason, text, shown = text) => {
+    status.value = { text: shown, kind: 'error' }
+    emit('error', { reason, message: text, fatal: true })
+  },
+  warn: (reason, text) => emit('error', { reason, message: text, fatal: false }),
+  clear: (key) => note(key, null),
 }
 
 function note(key: string, text: string | null, error?: { reason: string; message: string }): void {
   notes.value = notes.value.filter((item) => item.key !== key)
   if (text === null) return
   notes.value.push({ key, text })
-  if (error) emit('error', { ...error, fatal: false })
+  if (error) report.warn(error.reason, error.message)
 }
 
 const captions = useTrackCues({
@@ -178,7 +184,7 @@ const captions = useTrackCues({
   source: () => clipSource.value,
   window: () => limits.value,
   playlists: () => playlists,
-  signal: () => loads?.signal ?? null,
+  signal: () => session?.signal ?? null,
   active: () => state.value === 'editing' || state.value === 'exporting',
   report: (error) =>
     error === null
@@ -187,36 +193,53 @@ const captions = useTrackCues({
 })
 const previewCues = captions.previewCues
 
+/**
+ * What an export would clip now: the range, the crop, the toggles and the defaults as they stand.
+ */
+function request(): ClipRequest | null {
+  const source = clipSource.value
+  if (!source) return null
+  const shared = defaults.value
+  return {
+    source,
+    ...range.value,
+    crop: { aspect: '9:16', focus: { ...focus.value }, height: shared.height },
+    captionStyle: captionStyle.value,
+    endCard: withCard.value ? endCardFor(props.endCard, shared) : undefined,
+    stamp: stamp.value && shared.logo ? { ...stamp.value, logo: shared.logo } : undefined,
+    watermark: props.watermark ?? shared.watermark,
+    origin: props.origin,
+    cache: playlists ?? undefined,
+    stallTimeout: shared.stallTimeout,
+  }
+}
+
 const job = useExport({
   state,
   player: () => player.value,
-  source: () => clipSource.value,
   defaults: () => defaults.value,
-  range: () => range.value,
-  focus: () => focus.value,
-  captionStyle: () => captionStyle.value,
-  stamp: () => stamp.value,
-  withCard: () => withCard.value,
-  props: () => props,
-  playlists: () => playlists,
+  request,
   burnInCues: captions.burnInCues,
-  root: () => root.value,
-  setStatus,
-  clearCaptionsNote: () => note('captions', null),
-  fail,
-  emit: (type, detail) => emit(type, detail),
-  emitCancel: () => emit('cancel'),
-  emitWarning: (reason, message) => emit('error', { reason, message, fatal: false }),
+  report,
+  onExport: (detail) => emit('export', detail),
+  onCancel: () => emit('cancel'),
 })
 const { progress, result, filename, warning, stalled } = job
+
+function editAgain(): void {
+  job.editAgain()
+  void nextTick(() => root.value?.querySelector<HTMLElement>('.reel-handle')?.focus())
+}
 
 function show(): void {
   if (state.value !== 'closed') return
   defaults.value = getPickerDefaults()
   state.value = 'loading'
+  session = new AbortController()
+  const { signal } = session
   emit('update:open', true)
   emit('open')
-  void prepare(++opening.value)
+  void prepare(signal)
 }
 
 /**
@@ -226,10 +249,9 @@ function show(): void {
 function close(): void {
   if (state.value === 'closed') return
   state.value = 'closed'
-  opening.value++
   job.abort()
-  loads?.abort(new DOMException('The picker was closed.', 'AbortError'))
-  loads = null
+  session?.abort(new DOMException('The picker was closed.', 'AbortError'))
+  session = null
   playlists?.clear()
   playlists = null
   player.value?.setClipRange(null)
@@ -238,31 +260,29 @@ function close(): void {
   emit('close')
 }
 
-async function prepare(token: number): Promise<void> {
+async function prepare(signal: AbortSignal): Promise<void> {
   const shared = defaults.value
-  setStatus(shared.labels.preparing)
+  report.status(shared.labels.preparing)
   result.value = null
   focus.value = { x: 0.5, y: 0.5 }
   notes.value = []
   filmstrip.value = undefined
   captions.reset()
-  loads = new AbortController()
-  const signal = loads.signal
   // Props set in the same tick as the opening (an element's properties, then `show()`) reach this
   // component on the next render.
   await nextTick()
-  if (token !== opening.value) return
+  if (signal.aborted) return
 
   const handle = player.value
   const source = clipSource.value
   if (!handle) {
     state.value = 'blocked'
-    fail('no-player', 'There is no player to clip: give the picker its `player` (or `for`) first.')
+    report.fail('no-player', 'There is no player to clip: give the picker its `player` (or `for`) first.')
     return
   }
   if (!source) {
     state.value = 'blocked'
-    fail('no-source', 'There is no file to clip: the player plays a MediaSource, so pass the stream’s URL as `source`.')
+    report.fail('no-source', 'There is no file to clip: the player plays a MediaSource, so pass the stream’s URL as `source`.')
     return
   }
   handle.pause()
@@ -272,14 +292,14 @@ async function prepare(token: number): Promise<void> {
   captionPosition.value = shared.captionStyle.position ?? 'bottom'
 
   const core = await loadCore()
-  if (token !== opening.value) return
+  if (signal.aborted) return
   playlists?.clear()
   playlists = core.createPlaylistCache()
   const check = await core.canClip(source, { crop: { aspect: '9:16' }, cache: playlists })
-  if (token !== opening.value) return
+  if (signal.aborted) return
   if (!check.ok) {
     state.value = 'blocked'
-    fail(check.reason, check.message)
+    report.fail(check.reason, check.message)
     return
   }
 
@@ -289,17 +309,17 @@ async function prepare(token: number): Promise<void> {
   const view = timelineWindow(range.value, duration, shared.span)
   limits.value = { ...view, shortest: Math.min(shared.shortest, duration), longest: shared.longest }
   state.value = 'editing'
-  setStatus('')
+  report.status('')
   // The panel has the player's controls while the window is over its picture; the HUD would sit under it.
   handle.setControls(false)
   handle.setClipRange(range.value, { end: 'loop' })
   handle.seek(range.value.start)
   job.play()
   await nextTick()
-  await loadFilmstrip(core, source, view, token, signal)
+  await loadFilmstrip(core, source, view, signal)
 }
 
-async function loadFilmstrip(core: Core, source: ClipSource, view: { min: number; max: number }, token: number, signal: AbortSignal): Promise<void> {
+async function loadFilmstrip(core: Core, source: ClipSource, view: { min: number; max: number }, signal: AbortSignal): Promise<void> {
   const strip = timeline.value
   if (!strip) return
   const slots = strip.tiles()
@@ -314,12 +334,12 @@ async function loadFilmstrip(core: Core, source: ClipSource, view: { min: number
       signal,
       cache: playlists ?? undefined,
       onTile: (index, image) => {
-        if (token === opening.value) slots.draw(index, image)
+        if (!signal.aborted) slots.draw(index, image)
       },
     })
-    if (token === opening.value) filmstrip.value = 'ready'
+    if (!signal.aborted) filmstrip.value = 'ready'
   } catch (error) {
-    if (signal.aborted || token !== opening.value) return
+    if (signal.aborted) return
     filmstrip.value = 'unavailable'
     note('thumbnails', labels.value.thumbnailsUnavailable, {
       reason: 'thumbnails-unavailable',
@@ -451,155 +471,7 @@ defineExpose({
       @share="emit('share', $event)"
       @download="emit('download', $event)"
       @copy="emit('copy', $event)"
-      @again="job.editAgain"
+      @again="editAgain"
     />
   </section>
 </template>
-
-<style>
-/*
- * The picker's shared look. Every colour, radius and font comes from a `--reel-*` custom property
- * with a fallback, so a page themes it by setting them on the picker or any ancestor.
- */
-.reel-picker {
-  --_bg: var(--reel-bg, #10241a);
-  --_surface: var(--reel-surface, #173426);
-  --_fg: var(--reel-fg, #f4f7f5);
-  --_muted: var(--reel-muted, #a9bdb2);
-  --_accent: var(--reel-accent, #e2a32e);
-  --_accent-fg: var(--reel-accent-fg, #1b1405);
-  --_range: var(--reel-range, rgba(226, 163, 46, 0.35));
-  --_radius: var(--reel-radius, 14px);
-  --_focus: var(--reel-focus, #ffd36b);
-  box-sizing: border-box;
-  display: block;
-  width: 100%;
-  margin: 12px 0;
-  border-radius: var(--_radius);
-  background: var(--_bg);
-  color: var(--_fg);
-  font-family: var(--reel-font, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif);
-}
-
-.reel-picker :focus-visible {
-  outline: 3px solid var(--_focus);
-  outline-offset: 2px;
-}
-
-.reel-picker .reel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 18px;
-  border-bottom: 1px solid var(--_surface);
-}
-
-.reel-picker .reel-title {
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 700;
-}
-
-.reel-picker .reel-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 16px;
-  border: 0;
-  border-radius: calc(var(--_radius) / 1.6);
-  background: var(--_surface);
-  color: var(--_fg);
-  font: inherit;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.reel-picker .reel-button--primary {
-  background: var(--_accent);
-  color: var(--_accent-fg);
-}
-
-.reel-picker .reel-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.reel-picker .reel-close {
-  padding: 6px;
-  font-size: var(--reel-icon-size, 20px);
-}
-
-.reel-picker .reel-icon {
-  display: contents;
-}
-
-.reel-picker .reel-icon svg,
-.reel-picker .reel-close svg {
-  display: block;
-  width: 1em;
-  height: 1em;
-}
-
-.reel-picker .reel-body {
-  display: grid;
-  gap: 14px;
-  padding: 16px 18px 18px;
-}
-
-.reel-picker .reel-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.reel-picker .reel-status {
-  margin: 0;
-  min-height: 1.3em;
-  color: var(--_muted);
-  font-size: 0.9rem;
-}
-
-.reel-picker .reel-status[data-kind='error'] {
-  color: var(--reel-error, #ff9b8f);
-}
-
-.reel-picker .reel-notes {
-  display: grid;
-  gap: 4px;
-}
-
-.reel-picker .reel-notes:empty {
-  display: none;
-}
-
-.reel-picker .reel-note {
-  margin: 0;
-  color: var(--_muted);
-  font-size: 0.85rem;
-}
-
-.reel-picker .reel-result {
-  display: grid;
-  gap: 14px;
-}
-
-.reel-picker .reel-result video {
-  max-height: 60dvh;
-  justify-self: start;
-}
-
-/*
- * The player's shell while the crop window is over it: the browser draws none of the player's
- * captions, reel's window draws the clip's. Firefox and Chromium honour `::cue`'s visibility; WebKit
- * hides the whole cue container.
- */
-.reel-previewing video::cue {
-  visibility: hidden;
-}
-
-.reel-previewing video::-webkit-media-text-track-container {
-  display: none;
-}
-</style>

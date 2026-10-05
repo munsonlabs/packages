@@ -45,6 +45,7 @@ export interface ClipOptions {
   stamp?: StampOptions
   onProgress?: (fraction: number) => void
   onWarning?: (warning: ClipWarning) => void
+  stallTimeout?: number
   signal?: AbortSignal
   cache?: PlaylistCache
 }
@@ -84,6 +85,14 @@ export type ClipBlocker =
   | 'no-video'
   | 'undecodable-video'
   | 'no-video-encoder'
+
+/**
+ * Why `createClip` failed with a `ClipError`: one of the {@link ClipBlocker}s `canClip` also reports, or
+ * `'encoder-stalled'`: the H.264 encoder took frames and stopped producing output or errors (seen with
+ * macOS's hardware encoder under load), so the export was abandoned after `stallTimeout`. That one is
+ * about this attempt, not the source; trying again usually works.
+ */
+export type ClipErrorReason = ClipBlocker | 'encoder-stalled'
 
 export type CanClipResult = { ok: true; info: SourceInfo; plan: OutputPlan } | { ok: false; reason: ClipBlocker; message: string }
 

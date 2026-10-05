@@ -8,6 +8,8 @@ defineProps<{
   hasLogo: boolean
   hasCaptions: boolean
   labels: PickerLabels
+  /** The last export failed in a way trying again may fix: the button says so. */
+  retry?: boolean
 }>()
 
 const emit = defineEmits<{ export: []; cancel: [] }>()
@@ -44,7 +46,7 @@ const positionLabel = { top: 'positionTop', middle: 'positionMiddle', bottom: 'p
     </div>
     <div v-else class="reel-actions">
       <button type="button" class="reel-button reel-button--primary reel-export-button" :disabled="state !== 'editing'" @click="emit('export')">
-        {{ labels.export }}
+        {{ retry ? labels.retry : labels.export }}
       </button>
     </div>
   </div>

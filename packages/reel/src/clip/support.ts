@@ -3,7 +3,7 @@ import { planCrop } from '@/clip/crop'
 import { ClipError } from '@/utils/errors'
 import { openInput, readError, resolveSource } from '@/sources/source'
 import { canDecodeCandidate, canDecodeTrack, listVideoCandidates, pairedAudio, rankCandidates, type VideoCandidate } from '@/sources/tracks'
-import type { CanClipResult, ClipSource, CropOptions, OutputPlan, PlaylistCache, SourceInfo, TrackChoice } from '@/types'
+import type { CanClipResult, ClipBlocker, ClipSource, CropOptions, OutputPlan, PlaylistCache, SourceInfo, TrackChoice } from '@/types'
 
 export function hasWebCodecs(): boolean {
   return (
@@ -170,7 +170,8 @@ export async function canClip(
     return { ok: true, info, plan }
   } catch (error) {
     const clipError = error instanceof ClipError ? error : readError(error, '')
-    return { ok: false, reason: clipError.reason, message: clipError.message }
+    // canClip encodes nothing, so its errors are always blockers, never 'encoder-stalled'.
+    return { ok: false, reason: clipError.reason as ClipBlocker, message: clipError.message }
   } finally {
     inspected?.input.dispose()
   }

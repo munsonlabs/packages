@@ -52,9 +52,30 @@ function focusOf(focus: CropFocus | undefined): { x: number; y: number } {
 }
 
 /**
+ * The frame every clip is at least as big as by default, as `[short side, long side]`: 1080x1920 for
+ * 9:16, turned for landscape. A crop window smaller than that is scaled up to it, because a clip is
+ * watched full screen on a phone and everything reel paints on it (captions, end card, stamp,
+ * watermark) is drawn at the output's size: at a 720p source's native 404x720, that text would be
+ * upscaled about 2.7x by the phone and look soft.
+ */
+const DEFAULT_FRAME: readonly [number, number] = [1080, 1920]
+
+/**
+ * The height of the largest frame of `aspect` (width / height) that fits {@link DEFAULT_FRAME}, turned
+ * to match the aspect's orientation: 1920 for 9:16, 1080 for 16:9 and 1:1, 1350 for 4:5.
+ */
+function defaultHeight(aspect: number): number {
+  const [short, long] = DEFAULT_FRAME
+  const [boxWidth, boxHeight] = aspect > 1 ? [long, short] : [short, long]
+  return Math.min(boxHeight, boxWidth / aspect)
+}
+
+/**
  * The largest window of the requested aspect inside the frame, centred on the focus point and clamped
- * to the frame, and the even output size it is scaled to (the window's own height unless `height` asks
- * for more, so nothing is upscaled by default). Whole pixels throughout.
+ * to the frame, and the even output size it is scaled to. Without `height`, that is the window's own
+ * size or the largest frame of its aspect that fits 1080x1920 (1920x1080 for landscape), whichever is
+ * bigger: small sources are scaled up, larger windows never scaled down. `height` sets it outright, in
+ * either direction. Whole pixels throughout.
  */
 export function planCrop(sourceWidth: number, sourceHeight: number, options: CropOptions = {}): CropPlan {
   const ratio = parseAspect(options.aspect ?? '9:16')
@@ -73,7 +94,9 @@ export function planCrop(sourceWidth: number, sourceHeight: number, options: Cro
   const left = Math.round(Math.min(sourceWidth - width, Math.max(0, focus.x * sourceWidth - width / 2)))
   const top = Math.round(Math.min(sourceHeight - height, Math.max(0, focus.y * sourceHeight - height / 2)))
 
-  const outputHeight = even(options.height ?? height)
+  // The requested aspect, not the rounded window's, so 9:16 of 1080p is 1080x1920 rather than 1078x1918.
+  const aspect = ratio ? ratio[0] / ratio[1] : sourceWidth / sourceHeight
+  const outputHeight = even(options.height ?? Math.max(height, defaultHeight(aspect)))
   const outputWidth = even((outputHeight * width) / height)
 
   return { left, top, width, height, outputWidth, outputHeight }

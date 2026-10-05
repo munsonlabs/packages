@@ -1,5 +1,6 @@
 import {
   BufferTarget,
+  canEncodeVideo,
   CanvasSource,
   Conversion,
   Mp4OutputFormat,
@@ -21,6 +22,7 @@ import { createStampPainter } from '@/render/stamp'
 import { loadCaptionTrack } from '@/captions/load'
 import { inspect, noVideoEncoder, planOutput, selectTracks, type Inspected } from '@/clip/support'
 import { createWatermarkPainter } from '@/render/watermark'
+import { closeEncoder, createEncoderWatchdog, STALL_TIMEOUT, type EncoderWatchdog } from '@/clip/watchdog'
 import type { CaptionCue, ClipOptions, ClipWarning, OutputPlan } from '@/types'
 
 type Warn = (warning: ClipWarning) => void
@@ -48,7 +50,8 @@ async function planClip(options: ClipOptions, inspected: Inspected, warn: Warn):
   }
   const crop = planCrop(info.width, info.height, options.crop)
   // The crop is planned on the largest track; the one read is the smallest whose crop window still
-  // holds the output's pixels, e.g. the 180p variant for a 180-pixel-high clip of a 1080p stream.
+  // holds the output's pixels, e.g. the 180p variant for a 180-pixel-high clip of a 1080p stream. At
+  // the default 1080x1920 that is the largest variant unless the stream goes past 1920 high.
   const need = {
     width: Math.ceil((crop.outputWidth * info.width) / crop.width),
     height: Math.ceil((crop.outputHeight * info.height) / crop.height),
@@ -153,9 +156,18 @@ interface ClipOutput {
   conversion: Conversion | undefined
 }
 
-async function openOutput(options: ClipOptions, inspected: Inspected, plan: ClipPlan, canvas: OffscreenCanvas): Promise<ClipOutput> {
+type Acceleration = 'no-preference' | 'prefer-software'
+
+async function openOutput(
+  options: ClipOptions,
+  inspected: Inspected,
+  plan: ClipPlan,
+  canvas: OffscreenCanvas,
+  hardwareAcceleration: Acceleration,
+  watchdog: EncoderWatchdog,
+): Promise<ClipOutput> {
   const output = new Output({ format: new Mp4OutputFormat({ fastStart: 'in-memory' }), target: new BufferTarget() })
-  const videoSource = new CanvasSource(canvas, { codec: 'avc', quality: QUALITY_HIGH })
+  const videoSource = new CanvasSource(canvas, { codec: 'avc', quality: QUALITY_HIGH, hardwareAcceleration, onEncodedPacket: watchdog.packet })
   output.addVideoTrack(videoSource)
   let conversion: Conversion | undefined
   const { audio } = plan
@@ -194,6 +206,7 @@ async function encodeFrames(
   overlays: Overlays,
   canvas: OffscreenCanvas,
   videoSource: CanvasSource,
+  watchdog: EncoderWatchdog,
   progress: (time: number) => void,
   signal: AbortSignal | undefined,
 ): Promise<void> {
@@ -201,6 +214,10 @@ async function encodeFrames(
   if (!ctx) {
     throw new ClipError('no-webcodecs', 'OffscreenCanvas has no 2D context here.')
   }
+  // Frames are usually scaled up (a 720p crop to 1080x1920): the default 'low' is a plain bilinear
+  // filter, 'high' a smoother one. `sample.draw` saves and restores around its own transform, so these hold.
+  ctx.imageSmoothingEnabled = true
+  ctx.imageSmoothingQuality = 'high'
   const { start, end, crop, video } = plan
   const { info } = inspected
   const scaleX = canvas.width / crop.width
@@ -220,7 +237,7 @@ async function encodeFrames(
       // Drawn at the reference track's size, so a smaller variant fills the same crop window.
       sample.draw(ctx, -crop.left * scaleX, -crop.top * scaleY, info.width * scaleX, info.height * scaleY)
       overlays.paint(ctx, from)
-      await videoSource.add(from - start, to - from)
+      await watchdog.frame(videoSource.add(from - start, to - from))
       clipEnd = to - start
       if (sample.duration > 1 / 120 && sample.duration < 1 / 10) {
         frameDuration = sample.duration
@@ -236,14 +253,75 @@ async function encodeFrames(
     ;(lastFrame.getContext('2d') as Context).drawImage(canvas, 0, 0)
     for (let time = 0; time < card.duration - 1e-6 && !signal?.aborted; time += frameDuration) {
       card.draw(ctx, time)
-      await videoSource.add(clipEnd + time, Math.min(frameDuration, card.duration - time))
+      await watchdog.frame(videoSource.add(clipEnd + time, Math.min(frameDuration, card.duration - time)))
       progress(clipEnd + time)
     }
   }
   if (signal?.aborted) {
     throw abortReason(signal)
   }
+  // Closing starts the encoder's flush, which is waiting on the encoder too.
   videoSource.close()
+  watchdog.hold()
+}
+
+/** One attempt at writing the clip's MP4, with its own output, encoder and watchdog. */
+async function writeClip(
+  options: ClipOptions,
+  inspected: Inspected,
+  plan: ClipPlan,
+  overlays: Overlays,
+  canvas: OffscreenCanvas,
+  hardwareAcceleration: Acceleration,
+  progress: (time: number) => void,
+  attempt: { opened?: ClipOutput },
+): Promise<Blob> {
+  const { signal } = options
+  const watchdog = createEncoderWatchdog(options.stallTimeout)
+  const running: Promise<unknown>[] = []
+  try {
+    const opened = (attempt.opened = await openOutput(options, inspected, plan, canvas, hardwareAcceleration, watchdog))
+    if (signal?.aborted) throw abortReason(signal)
+    await opened.output.start()
+    running.push(encodeFrames(plan, inspected, overlays, canvas, opened.videoSource, watchdog, progress, signal))
+    if (opened.conversion) {
+      running.push(opened.conversion.execute())
+    }
+    await Promise.race([Promise.all(running), watchdog.stalled])
+    await watchdog.wait(opened.output.finalize())
+    // An abort that lands while the file is being finalised still rejects: the caller asked for no
+    // clip and waits to hear so (the picker's cancel does).
+    if (signal?.aborted) throw abortReason(signal)
+
+    const buffer = (opened.output.target as BufferTarget).buffer
+    if (!buffer) {
+      throw new Error('reel: the output was finalised without data.')
+    }
+    return new Blob([buffer], { type: 'video/mp4' })
+  } catch (error) {
+    // Stop whatever is still running and wait for it to settle before the input is disposed, so no
+    // pump is left reading a closed source. Cancelling surfaces as ConversionCanceledError or as the
+    // output's own "has been canceled" error depending on where the pipeline was; after an abort,
+    // either is just the abort. A stalled encoder is closed first: its flush would otherwise hold
+    // the output (and every frame in it) forever.
+    const { conversion, output, videoSource } = attempt.opened ?? {}
+    if (watchdog.hasStalled && videoSource) {
+      closeEncoder(videoSource)
+    }
+    if (conversion && (conversion.state === 'executing' || conversion.state === 'idle')) {
+      await conversion.cancel()
+    }
+    if (output && output.state !== 'canceled' && output.state !== 'finalized') {
+      // After a stall, cancelling waits on the flush that closing the encoder rejected.
+      await output.cancel().catch((cancelError: unknown) => {
+        if (!watchdog.hasStalled) throw cancelError
+      })
+    }
+    await Promise.allSettled(running)
+    throw error
+  } finally {
+    watchdog.dispose()
+  }
 }
 
 /**
@@ -253,8 +331,10 @@ async function encodeFrames(
  * `CanvasSource` encodes it with backpressure; audio is a composable `Conversion` into the same output
  * (AAC copied, anything else encoded as AAC). A logo, caption file or audio codec that cannot be used is
  * left out with an `onWarning` (see `ClipWarning`), never failing the clip; an unknown `captions.track`
- * id rejects with a `RangeError`. Rejects with a {@link ClipError} for the blockers `canClip` reports,
- * and with `signal.reason` when aborted.
+ * id rejects with a `RangeError`. An H.264 encoder that holds frames without output for `stallTimeout`
+ * seconds is abandoned; the clip is tried once more with a software encoder where the browser has one,
+ * else (or if that stalls too) it rejects with a {@link ClipError} `'encoder-stalled'`. Rejects with a
+ * {@link ClipError} for the blockers `canClip` reports, and with `signal.reason` when aborted.
  */
 export async function createClip(options: ClipOptions): Promise<Blob> {
   const { signal } = options
@@ -262,13 +342,15 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
     if (signal?.aborted) throw abortReason(signal)
   }
   checkAborted()
+  if (options.stallTimeout !== undefined && !(options.stallTimeout > 0)) {
+    throw new RangeError(`reel: stallTimeout must be a positive number of seconds (or Infinity), got ${options.stallTimeout}.`)
+  }
 
   const inspected = await inspect(options.source, options.cache)
   const images = createImageCache()
   const warn: Warn = (warning) => (options.onWarning ? options.onWarning(warning) : console.warn(warning.message))
-  let opened: ClipOutput | undefined
-  const running: Promise<unknown>[] = []
-  const onAbort = () => void opened?.conversion?.cancel()
+  const attempt: { opened?: ClipOutput } = {}
+  const onAbort = () => void attempt.opened?.conversion?.cancel()
   signal?.addEventListener('abort', onAbort)
 
   try {
@@ -277,12 +359,10 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
     const canvas = new OffscreenCanvas(plan.crop.outputWidth, plan.crop.outputHeight)
     const overlays = await prepareOverlays(options, inspected, plan, images, warn)
     checkAborted()
-    opened = await openOutput(options, inspected, plan, canvas)
-    checkAborted()
-    await opened.output.start()
 
     const total = plan.end - plan.start + (overlays.card?.duration ?? 0)
     let reported = 0
+    // A second attempt starts over; the bar holds until it passes where the first one stopped.
     const progress = (time: number) => {
       const fraction = Math.min(0.999, time / total)
       if (options.onProgress && fraction > reported) {
@@ -291,40 +371,46 @@ export async function createClip(options: ClipOptions): Promise<Blob> {
       }
     }
 
-    running.push(encodeFrames(plan, inspected, overlays, canvas, opened.videoSource, progress, signal))
-    if (opened.conversion) {
-      running.push(opened.conversion.execute())
+    let blob: Blob
+    try {
+      blob = await writeClip(options, inspected, plan, overlays, canvas, 'no-preference', progress, attempt)
+    } catch (error) {
+      if (!isStall(error) || signal?.aborted || !(await canEncodeSoftware(plan, options.stallTimeout ?? STALL_TIMEOUT))) {
+        throw error
+      }
+      // Usually the hardware encoder; a software one is slower but does not share its fate.
+      checkAborted()
+      blob = await writeClip(options, inspected, plan, overlays, canvas, 'prefer-software', progress, attempt)
     }
-    await Promise.all(running)
-    await opened.output.finalize()
-    // An abort that lands while the file is being finalised still rejects: the caller asked for no
-    // clip and waits to hear so (the picker's cancel does).
     checkAborted()
-
-    const buffer = (opened.output.target as BufferTarget).buffer
-    if (!buffer) {
-      throw new Error('reel: the output was finalised without data.')
-    }
     options.onProgress?.(1)
-    return new Blob([buffer], { type: 'video/mp4' })
+    return blob
   } catch (error) {
-    // Stop whatever is still running and wait for it to settle before the input is disposed, so no
-    // pump is left reading a closed source. Cancelling surfaces as ConversionCanceledError or as the
-    // output's own "has been canceled" error depending on where the pipeline was; after an abort,
-    // either is just the abort.
-    const { conversion, output } = opened ?? {}
-    if (conversion && (conversion.state === 'executing' || conversion.state === 'idle')) {
-      await conversion.cancel()
-    }
-    if (output && output.state !== 'canceled' && output.state !== 'finalized') {
-      await output.cancel()
-    }
-    await Promise.allSettled(running)
     checkAborted()
     throw error
   } finally {
     signal?.removeEventListener('abort', onAbort)
     await images.dispose()
     inspected.input.dispose()
+  }
+}
+
+function isStall(error: unknown): boolean {
+  return error instanceof ClipError && error.reason === 'encoder-stalled'
+}
+
+/**
+ * Whether a software H.264 encoder takes the clip's size. In Firefox, Mediabunny answers by encoding a
+ * test frame, which an encoder in the same trouble would never finish, so the answer is bounded too.
+ */
+async function canEncodeSoftware(plan: ClipPlan, seconds: number): Promise<boolean> {
+  const { outputWidth: width, outputHeight: height } = plan.crop
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const probe = canEncodeVideo('avc', { width, height, quality: QUALITY_HIGH, hardwareAcceleration: 'prefer-software' }).catch(() => false)
+  const giveUp = new Promise<boolean>((resolve) => (timer = setTimeout(() => resolve(false), Math.min(seconds, STALL_TIMEOUT) * 1000)))
+  try {
+    return await Promise.race([probe, giveUp])
+  } finally {
+    clearTimeout(timer)
   }
 }

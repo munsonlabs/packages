@@ -29,6 +29,10 @@ export interface PickerLabels {
   preparing: string
   exporting: string
   cancelled: string
+  /** Shown when the video encoder stopped responding mid-export (`'encoder-stalled'`); the export button then reads `retry`. */
+  exportStalled: string
+  /** The export button after a stalled export. */
+  retry: string
   done: string
   download: string
   share: string
@@ -68,6 +72,7 @@ export interface PickerDefaults {
   longest: number
   span: number
   height?: number
+  stallTimeout?: number
   endCard: EndCardOptions | true
   captionStyle: CaptionStyle
   watermark?: WatermarkOptions
@@ -105,6 +110,8 @@ const defaults: PickerDefaults = {
     preparing: 'Preparing…',
     exporting: 'Exporting…',
     cancelled: 'Export cancelled.',
+    exportStalled: 'The export stalled. Try again.',
+    retry: 'Try again',
     done: 'Your clip is ready.',
     download: 'Download',
     share: 'Share',

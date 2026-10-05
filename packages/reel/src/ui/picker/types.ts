@@ -21,7 +21,8 @@ export interface ReelExportDetail {
 }
 
 /**
- * `detail` of the `reel-error` event: a `ClipBlocker` code, `'export-failed'`, `'no-player'` or
+ * `detail` of the `reel-error` event: a `ClipBlocker` code, `'encoder-stalled'` (the encoder stopped
+ * mid-export; the dialog says so and offers to try again), `'export-failed'`, `'no-player'` or
  * `'no-source'` (fatal: nothing was made), or one of the non-fatal reasons, where the picker carries
  * on without something optional: `'logo-unavailable'` (the clip was made without the logo),
  * `'thumbnails-unavailable'` (the filmstrip stays plain), `'captions-unavailable'` (the chosen

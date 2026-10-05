@@ -161,8 +161,8 @@ function setStatus(text: string, kind: 'info' | 'error' = 'info'): void {
   status.value = { text, kind }
 }
 
-function fail(reason: string, text: string): void {
-  setStatus(text, 'error')
+function fail(reason: string, text: string, shown = text): void {
+  setStatus(shown, 'error')
   emit('error', { reason, message: text, fatal: true })
 }
 
@@ -208,7 +208,7 @@ const job = useExport({
   emitCancel: () => emit('cancel'),
   emitWarning: (reason, message) => emit('error', { reason, message, fatal: false }),
 })
-const { progress, result, filename, warning } = job
+const { progress, result, filename, warning, stalled } = job
 
 function show(): void {
   if (state.value !== 'closed') return
@@ -428,6 +428,7 @@ defineExpose({
         :has-logo="Boolean(defaults.logo)"
         :has-captions="hasCaptions"
         :labels="labels"
+        :retry="stalled"
         @export="job.exportClip"
         @cancel="job.cancel"
       />

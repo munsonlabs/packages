@@ -40,6 +40,7 @@ import type {
   ClipSource,
   CanClipResult,
   ClipBlocker,
+  ClipErrorReason,
   OutputPlan,
   CaptionCue,
   CaptionStyle,
@@ -96,9 +97,11 @@ src/
                     defines <ml-reel-picker> on import (unless ?defer)
   clip/
     clip.ts         createClip() in steps: planClip() (range, crop, tracks, output plan), clipCues(), prepareOverlays()
-                    (caption, watermark and stamp painters, the end card), openOutput() (Output, CanvasSource, the audio
-                    Conversion), encodeFrames() (the video pump: VideoSampleSink → canvas → CanvasSource, then card frames)
-    crop.ts         parseAspect(), planCrop() (window + even output size), even()
+                    (caption, watermark and stamp painters, the end card), then writeClip() per attempt: openOutput()
+                    (Output, CanvasSource, the audio Conversion), encodeFrames() (the video pump: VideoSampleSink →
+                    canvas → CanvasSource, then card frames), finalize; a stall retries once with 'prefer-software'
+    watchdog.ts     createEncoderWatchdog() (the stall clock), STALL_TIMEOUT (15s), closeEncoder() (Mediabunny's private encoder)
+    crop.ts         parseAspect(), planCrop() (window + even output size: at least the aspect's fit in 1080x1920), even()
     origin.ts       clipLink() (#ml-t=start,end plus &ml-player=<id> from origin.player), originTags() (MP4 ilst atoms)
     support.ts      canClip(), inspect() (opens, lists video tracks, picks the largest decodable as the
                     reference; HLS reads playlists only), selectTracks() (the track to read + its paired audio),
@@ -176,7 +179,7 @@ src/
       range.ts      pure range maths: initialRange, timelineWindow, moveHandle, shiftRange, formatTime (m:ss.t)
   utils/
     url.ts          readableUrl() (no scheme/www/query/hash, IDN to Unicode, middle-ellipsis to fit), middleEllipsis()
-    errors.ts       ClipError { reason }, abortReason() (a signal's reason, else an AbortError)
+    errors.ts       ClipError { reason: ClipErrorReason }, abortReason() (a signal's reason, else an AbortError)
 scripts/make-fixture.mjs   regenerates the generated fixtures in Playwright Chromium (no ffmpeg needed)
 test/               unit specs (happy-dom), mirroring src/: clip/ (crop, origin), sources/ (playlists: the cache,
                     source), captions/ (cues, urls: text-or-URL, passed tracks, fetch), render/ (endcard: layout via a
@@ -198,6 +201,23 @@ detail. Block comments are always the multi-line form, never `/** one line */`.
   source rectangle (pinned by `test/browser/clip/webkit-drawimage.spec.ts`), so Mediabunny's own `crop`
   option and `drawWithFit({ crop })` give squashed, uncropped video in Safari. Do not "simplify" back
   to them; the focus test in `clip.spec.ts` catches it in WebKit only.
+- **Clips are drawn at the size they are seen.** `planCrop`'s default output is the largest frame of the
+  aspect that fits 1080x1920 (1920x1080 landscape), or the window's own size if bigger; it is computed from
+  the requested aspect, not the rounded window, so 9:16 of 1080p is 1080x1920, not 1078x1918. Every painter
+  (captions, card, stamp, watermark) draws at the output's size, never at the source's and scaled, and
+  frames are scaled with `imageSmoothingQuality = 'high'`. `crop.height` overrides either way. The picker's
+  overlay lays out at `planCrop`'s output too, so it follows. `clip.spec.ts` and `endcard.spec.ts` measure
+  text edge sharpness against the native size scaled up (about 2x); don't drop the default to native.
+- **An encoder that stalls fails the clip, never hangs it.** `writeClip` races every `videoSource.add`, the
+  wait on the pumps and `finalize()` against an `EncoderWatchdog`: frames handed over minus packets out
+  (`onEncodedPacket`), timed only while reel waits on the encoder (an add, or the flush after
+  `videoSource.close()`), restarting at each packet, so a slow source never counts. On a stall,
+  `closeEncoder` closes Mediabunny's private `VideoEncoder` (a finalising Output cannot be cancelled and its
+  stalled flush holds the lock) and fires a `dequeue` so a frame held by backpressure is released; then the
+  usual cancel. One retry with `hardwareAcceleration: 'prefer-software'` if `canEncodeVideo` (bounded: in
+  Firefox it encodes a test frame) says so, else `ClipError('encoder-stalled')`. `watchdog.spec.ts` (browser)
+  simulates both stall shapes with `stallVideoEncoders()` in the helpers and checks frames and encoders
+  are closed; it warms Mediabunny's memoised encoder probes first, since Firefox's would stall too.
 - **Every decoded sample is closed where it is drawn.** `encodeFrames` closes each `VideoSample` in a
   `finally`, including on `continue`, `break` and errors; `CanvasSource.add` copies the one reused
   `OffscreenCanvas` into a frame and Mediabunny closes that. `trackFrames()` in the browser helpers
@@ -314,7 +334,9 @@ timings, caption pixel diffs, plans, tags); run with `--reporter=verbose` to see
 WebKit runs after Chromium and Firefox, not beside them (its own `sequence.groupOrder` in `vite.config.ts`).
 All three encode H.264 with macOS's hardware encoder, which the machine shares; with every engine exporting
 at once it runs short, and then Chromium's `VideoEncoder` fails with "Encoding error." while WebKit's takes
-frames and never outputs or errors, hanging the spec until its timeout. CPU load alone does not do this.
+frames and never outputs or errors. That used to hang the spec until its timeout; now `createClip`'s watchdog
+fails it after 15s (after a software retry), still a failure. CPU load alone does not do this. Clips are
+1080x1920 by default, so specs about something other than size pass an explicit `crop.height` (540 for flower).
 WebKit alone retries a failed spec twice (`retry: 2` on its instance): that stall, and native MPEG-TS HLS
 reporting "Media failed to decode" now and then in Playwright's WebKit, are its environment, not reel.
 Chromium and Firefox never retry, so a real bug fails there at once.

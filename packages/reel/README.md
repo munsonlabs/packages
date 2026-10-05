@@ -59,8 +59,7 @@ clipLink(location.href, 42, 52) // 'https://…#ml-t=42,52'
 | `planCrop`, `planOutput`, `parseVtt`, `toCues`, `parseAspect`   | The pieces `createClip` is built from, exported for previews and tests.                                                                                                                                                                                 |
 
 `createClip` options: `source`, `start`, `end`, `crop: { aspect, focus, height }`, `captions: { cues | tracks + track, style }`, `track`,
-`audio` (`false` drops it), `origin`,
-`metadata` (default `true` with an origin), `endCard`, `stamp`, `watermark`, `onProgress`, `onWarning`, `signal`, `cache`.
+`audio` (`false` drops it), `origin`, `metadata` (default `true` with an origin), `endCard`, `stamp`, `watermark`, `onProgress`, `onWarning`, `stallTimeout` (seconds, default `15`), `signal`, `cache`.
 
 ### Caption input
 
@@ -132,8 +131,15 @@ clip (not the card).
 
 ### Output
 
-- The crop window is the largest one of the aspect that fits, at its own resolution (a 720p source
-  gives 404x720); `crop.height: 1920` scales to 1080x1920.
+- The crop window is the largest one of the aspect that fits. The output is the largest frame of that
+  aspect that fits 1080x1920 (1920x1080 for landscape), or the window's own size if bigger: 9:16 of 720p
+  or 1080p is 1080x1920, 1:1 is 1080x1080. Small sources are scaled up (with high-quality smoothing)
+  because captions, the end card, the stamp and the watermark are drawn at the output's size, and a
+  clip is watched full screen on a phone. `crop.height` overrides it either way.
+- An H.264 encoder that takes frames and never outputs or errors (macOS's hardware encoder under load)
+  fails the clip instead of hanging it: after `stallTimeout` seconds without output while reel waits on
+  it, the encoder is closed and the clip retried once with a software encoder where there is one, else
+  `createClip` rejects with a `ClipError` whose reason is `'encoder-stalled'`.
 - Rotated sources (a phone's upright video is stored landscape with a rotation matrix) are cropped in
   display orientation: the crop, focus and captions all work on the picture as it is seen, and the
   clip carries the turn in its pixels, with no rotation metadata.

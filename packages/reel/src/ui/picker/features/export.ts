@@ -23,7 +23,8 @@ export interface ExportDeps {
   root: () => HTMLElement | null
   setStatus: (text: string) => void
   clearCaptionsNote: () => void
-  fail: (reason: string, message: string) => void
+  /** A fatal error: `reel-error` with `message`; the status line shows `shown`, else the message. */
+  fail: (reason: string, message: string, shown?: string) => void
   emit: (type: 'export', detail: ReelExportDetail) => void
   emitCancel: () => void
   emitWarning: (reason: string, message: string) => void
@@ -44,6 +45,8 @@ export function useExport(deps: ExportDeps) {
   const result = shallowRef<ReelExportDetail | null>(null)
   const filename = ref('')
   const warning = ref('')
+  /** The last export stalled: the export button offers to try again. */
+  const stalled = ref(false)
   let job: AbortController | null = null
   let resumePlaying = false
 
@@ -90,6 +93,7 @@ export function useExport(deps: ExportDeps) {
     deps.state.value = 'exporting'
     deps.setStatus(shared.labels.exporting)
     progress.value = 0
+    stalled.value = false
     deps.clearCaptionsNote()
     const { start, end } = deps.range()
     const stamp = deps.stamp()
@@ -109,6 +113,7 @@ export function useExport(deps: ExportDeps) {
         watermark: watermark ?? shared.watermark,
         origin,
         cache: deps.playlists() ?? undefined,
+        stallTimeout: shared.stallTimeout,
         onProgress: (fraction) => (progress.value = fraction),
         onWarning: (item) => warnings.push(item),
         signal: own.signal,
@@ -126,7 +131,11 @@ export function useExport(deps: ExportDeps) {
         deps.emitCancel()
         return
       }
-      deps.fail((error as { reason?: string }).reason ?? 'export-failed', error instanceof Error ? error.message : String(error))
+      const reason = (error as { reason?: string }).reason ?? 'export-failed'
+      const message = error instanceof Error ? error.message : String(error)
+      // The encoder gave up mid-export; the same export usually works the second time.
+      stalled.value = reason === 'encoder-stalled'
+      deps.fail(reason, message, stalled.value ? shared.labels.exportStalled : undefined)
     } finally {
       if (job === own) job = null
     }
@@ -143,6 +152,7 @@ export function useExport(deps: ExportDeps) {
     job?.abort(new DOMException('The picker was closed.', 'AbortError'))
     job = null
     result.value = null
+    stalled.value = false
   }
 
   function editAgain(): void {
@@ -151,5 +161,5 @@ export function useExport(deps: ExportDeps) {
     void nextTick(() => deps.root()?.querySelector<HTMLElement>('.reel-handle')?.focus())
   }
 
-  return { progress, result, filename, warning, exportClip, cancel, abort, editAgain, play }
+  return { progress, result, filename, warning, stalled, exportClip, cancel, abort, editAgain, play }
 }

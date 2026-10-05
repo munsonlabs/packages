@@ -1,0 +1,41 @@
+{
+  "name": "@munsonlabs/splice",
+  "version": "0.0.0",
+  "description": "In-browser video splicer making usng WebCodecs.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/munsonlabs/packages.git",
+    "directory": "packages/splice"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "vp pack --watch",
+    "clean": "rm -rf dist",
+    "lint": "vp lint",
+    "fmt": "vp fmt",
+    "test:watch": "vp test --watch"
+  },
+  "dependencies": {
+    "mediabunny": "^1.61.0"
+  },
+  "devDependencies": {
+    "@munsonlabs/shipkit": "*"
+  }
+}

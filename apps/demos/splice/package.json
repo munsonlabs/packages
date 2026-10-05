@@ -1,0 +1,20 @@
+{
+  "name": "splice-demo",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "preview": "vp preview",
+    "lint": "vp lint",
+    "fmt": "vp fmt"
+  },
+  "dependencies": {
+    "@munsonlabs/splice": "*",
+    "@munsonlabs/video-player": "*",
+    "hls.js": "^1.6.16"
+  },
+  "devDependencies": {
+    "@munsonlabs/shipkit": "*"
+  }
+}

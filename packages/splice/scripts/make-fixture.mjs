@@ -15,13 +15,18 @@
  *   `X-TIMESTAMP-MAP=MPEGTS:945000,LOCAL:00:00:00.000`, so a cue written at `00:00:01.000` belongs at
  *   1.5s on the clip timeline. `broken.m3u8` is the same master with the small variant's segments
  *   missing, to make thumbnails fail while the source itself still checks out.
+ * - `clock/`: the example the demo and the docs play, written to the demo (the docs serve it from
+ *   there). The same 12 seconds as `count-720p.mp4` as HLS, in 1280x720 and 640x360 variants of
+ *   H.264 + AAC in 2-second MPEG-TS segments, with English captions as a WebVTT subtitles rendition
+ *   (`DEFAULT=YES`). Like `ladder/`, the media starts at 10s and the captions carry
+ *   `X-TIMESTAMP-MAP=MPEGTS:900000`.
  * - `flower-opus.mp4`: the first 3 seconds of `flower.mp4` with its H.264 video copied and its audio
  *   encoded as Opus, a source whose audio is not AAC (splice's clips are AAC, so that audio is either
  *   encoded as AAC or, without an AAC encoder, left out).
  *
  * There is no ffmpeg in the toolchain, so the files are made the same way splice makes clips: Mediabunny
  * driving WebCodecs, here inside Playwright's Chromium. They are committed, so tests never depend on
- * this script; rerun it only to change a fixture: `node scripts/make-fixture.mjs [count] [rotated] [ladder] [opus]`
+ * this script; rerun it only to change a fixture: `node scripts/make-fixture.mjs [count] [rotated] [ladder] [clock] [opus]`
  * (no argument makes all of them).
  */
 import { chromium } from 'playwright'
@@ -314,6 +319,154 @@ if (make('ladder')) {
     await writeFile(dir(`subs/${language}.m3u8`), playlist.join('\n'))
   }
   console.log(`wrote ${dir('master.m3u8')}, broken.m3u8 and subs/`)
+}
+
+if (make('clock')) {
+  const roots = ['../../../apps/demos/splice/public/media/clock/']
+  const write = async (name, body) => {
+    for (const root of roots) {
+      const path = fileURLToPath(new URL(`${root}${name}`, import.meta.url))
+      await mkdir(fileURLToPath(new URL('.', new URL(`${root}${name}`, import.meta.url))), { recursive: true })
+      await writeFile(path, body)
+    }
+  }
+  const variants = [
+    { name: '360p', width: 640, height: 360, bitrate: 600_000 },
+    { name: '720p', width: 1280, height: 720, bitrate: 1_500_000 },
+  ]
+  const seconds = 12
+  const offset = 10
+  const codecs = {}
+  for (const variant of variants) {
+    const files = await page.evaluate(
+      async ({ variant, seconds, offset }) => {
+        const mb = await import('/mediabunny.mjs')
+        const { width, height } = variant
+        const fps = 30
+        const sampleRate = 48000
+        const targets = new Map()
+        const canvas = new OffscreenCanvas(width, height)
+        const ctx = canvas.getContext('2d')
+        const output = new mb.Output({
+          format: new mb.HlsOutputFormat({
+            segmentFormat: new mb.MpegTsOutputFormat(),
+            targetDuration: 2,
+            getPlaylistPath: () => 'playlist.m3u8',
+            getSegmentPath: (info) => `seg${info.n - 1}.m2ts`,
+          }),
+          target: new mb.PathedTarget('master.m3u8', (request) => {
+            const target = new mb.BufferTarget()
+            targets.set(request.path, target)
+            return target
+          }),
+        })
+        const video = new mb.CanvasSource(canvas, { codec: 'avc', bitrate: variant.bitrate, keyFrameInterval: 2 })
+        const audio = new mb.AudioSampleSource({ codec: 'aac', bitrate: 128_000 })
+        output.addVideoTrack(video, { frameRate: fps })
+        output.addAudioTrack(audio)
+        await output.start()
+
+        const scale = height / 720
+        for (let i = 0; i < fps * seconds; i++) {
+          const t = i / fps
+          const gradient = ctx.createLinearGradient(0, 0, width, height)
+          gradient.addColorStop(0, `hsl(${(t * 30) % 360} 70% 35%)`)
+          gradient.addColorStop(1, `hsl(${(t * 30 + 120) % 360} 70% 25%)`)
+          ctx.fillStyle = gradient
+          ctx.fillRect(0, 0, width, height)
+          ctx.strokeStyle = 'rgba(255,255,255,0.25)'
+          for (let x = 0; x <= width; x += 160 * scale) {
+            ctx.beginPath()
+            ctx.moveTo(x, 0)
+            ctx.lineTo(x, height)
+            ctx.stroke()
+          }
+          ctx.fillStyle = '#ffd400'
+          ctx.beginPath()
+          ctx.arc((t / seconds) * width, height / 2 + Math.sin(t * 3) * 200 * scale, 40 * scale, 0, Math.PI * 2)
+          ctx.fill()
+          ctx.fillStyle = '#fff'
+          ctx.font = `bold ${Math.round(120 * scale)}px sans-serif`
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'middle'
+          ctx.fillText(t.toFixed(2), width / 2, height / 2)
+          await video.add(offset + t, 1 / fps)
+        }
+
+        for (let s = 0; s < seconds; s++) {
+          const frequency = 220 + s * 55
+          const data = new Float32Array(sampleRate * 2)
+          for (let n = 0; n < sampleRate; n++) {
+            const value = 0.2 * Math.sin((2 * Math.PI * frequency * n) / sampleRate)
+            data[n] = value
+            data[sampleRate + n] = value
+          }
+          const sample = new mb.AudioSample({ data, format: 'f32-planar', numberOfChannels: 2, sampleRate, timestamp: offset + s })
+          await audio.add(sample)
+          sample.close()
+        }
+
+        await output.finalize()
+        const result = {}
+        for (const [path, target] of targets) {
+          const bytes = new Uint8Array(target.buffer)
+          let binary = ''
+          for (let i = 0; i < bytes.length; i += 0x8000) {
+            binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
+          }
+          result[path] = btoa(binary)
+        }
+        return result
+      },
+      { variant, seconds, offset },
+    )
+    const master = Buffer.from(files['master.m3u8'], 'base64').toString()
+    codecs[variant.name] = /CODECS="([^"]+)"/.exec(master)?.[1]
+    for (const [path, base64] of Object.entries(files)) {
+      if (path !== 'master.m3u8') await write(`${variant.name}/${path}`, Buffer.from(base64, 'base64'))
+    }
+    console.log(`wrote clock/${variant.name} (${Object.keys(files).length - 1} files, ${codecs[variant.name]})`)
+  }
+
+  const cues = [
+    'The clock starts at zero.',
+    'A gold marker sweeps across the frame.',
+    'Every frame is drawn, none are filmed.',
+    'The tone climbs a step each second.',
+    'Halfway there, and this caption is long enough to wrap onto several lines, and it keeps every word.',
+    'Pick a range, drag the crop, export.',
+  ]
+  const stamp = (s) => `00:00:${String(s).padStart(2, '0')}.000`
+  const vtt = cues.map((text, i) => `${stamp(i * 2)} --> ${stamp(i * 2 + 2)}\n${text}`).join('\n\n')
+  await write('subs/en.vtt', `WEBVTT\nX-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000\n\n${vtt}\n`)
+  await write(
+    'subs/en.m3u8',
+    [
+      '#EXTM3U',
+      '#EXT-X-VERSION:3',
+      `#EXT-X-TARGETDURATION:${seconds}`,
+      '#EXT-X-MEDIA-SEQUENCE:0',
+      '#EXT-X-PLAYLIST-TYPE:VOD',
+      `#EXTINF:${seconds}.0,`,
+      'en.vtt',
+      '#EXT-X-ENDLIST',
+      '',
+    ].join('\n'),
+  )
+  await write(
+    'master.m3u8',
+    [
+      '#EXTM3U',
+      '#EXT-X-VERSION:3',
+      '#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID="subs",LANGUAGE="en",NAME="English",DEFAULT=YES,AUTOSELECT=YES,FORCED=NO,URI="subs/en.m3u8"',
+      `#EXT-X-STREAM-INF:BANDWIDTH=1700000,RESOLUTION=1280x720,CODECS="${codecs['720p']}",SUBTITLES="subs"`,
+      '720p/playlist.m3u8',
+      `#EXT-X-STREAM-INF:BANDWIDTH=750000,RESOLUTION=640x360,CODECS="${codecs['360p']}",SUBTITLES="subs"`,
+      '360p/playlist.m3u8',
+      '',
+    ].join('\n'),
+  )
+  console.log('wrote clock/master.m3u8 and clock/subs/ to the demo')
 }
 
 if (make('opus')) {

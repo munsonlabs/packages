@@ -10,26 +10,23 @@ const scissors =
 
 const sources = {
   clock: {
-    label: 'The clock (MP4 with captions)',
-    src: resolveMedia('count-720p.mp4'),
+    label: 'The clock (HLS with captions)',
+    src: resolveMedia('clock/master.m3u8'),
     title: 'The clock that never stops',
-    intro: 'Twelve seconds of a drawn clock, a sweeping marker and a rising tone, with WebVTT captions.',
-    captions: resolveMedia('clock.en.vtt'),
+    intro: 'Twelve seconds of a drawn clock, a sweeping marker and a rising tone, as HLS with English captions.',
   },
   bunny: {
     label: 'Big Buck Bunny (HLS, five variants)',
     src: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
     title: 'Big Buck Bunny',
     intro: 'Ten minutes of HLS in five variants, 240p to 1080p. The filmstrip reads a small one; the clip reads the smallest that fills it.',
-    captions: undefined,
   },
 } as const
 type SourceId = keyof typeof sources
 
 const requested = new URLSearchParams(location.search).get('source')
 const sourceId: SourceId = requested && requested in sources ? (requested as SourceId) : 'clock'
-const { src, title, intro, captions } = sources[sourceId]
-const tracks = captions ? [{ src: captions, kind: 'captions', srclang: 'en', label: 'English' } as const] : []
+const { src, title, intro } = sources[sourceId]
 
 const originUrl = new URL(location.href)
 originUrl.hash = ''
@@ -97,7 +94,7 @@ function backToMoment(link: string): void {
     </label>
 
     <div class="player">
-      <VideoPlayer ref="player" :src="src" :tracks="tracks" :label="title" :action="action" deep-link="demo" deep-link-end="loop" />
+      <VideoPlayer ref="player" :src="src" :label="title" :action="action" deep-link="demo" deep-link-end="loop" />
     </div>
 
     <div class="toolbar">

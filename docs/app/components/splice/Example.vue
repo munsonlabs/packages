@@ -3,10 +3,10 @@ import type { Component } from 'vue'
 import type { CustomAction, PlayerHandle } from '@munsonlabs/video-player'
 import type { EditorErrorDetail, EditorExportDetail } from '@munsonlabs/splice/vue'
 
-// The docs' own files: the sample from public/media/splice/, and the splice mark as the clip's logo,
-// stamped in a corner and heading the end card.
+// The docs' own files: the clock from public/media/splice/, HLS with English captions on by default,
+// and the splice mark as the clip's logo, stamped in a corner and heading the end card.
 const base = useRuntimeConfig().app.baseURL
-const flowerUrl = `${base}media/splice/flower.mp4`
+const clockUrl = `${base}media/splice/clock/master.m3u8`
 const logoUrl = `${base}brand/marks/splice.svg`
 const stamp = { logo: logoUrl }
 const endCard = { logo: logoUrl, displayUrl: 'munsonlabs.pages.dev/splice' }
@@ -24,7 +24,12 @@ const note = ref('')
 const link = ref('')
 
 // The page itself, so the clip's #ml-t= link reopens this player at the moment.
-const origin = computed(() => ({ url: location.href.split('#')[0], title: 'A flower opens', publisher: 'Munson Labs docs', player: 'flower' }))
+const origin = computed(() => ({
+  url: location.href.split('#')[0],
+  title: 'The clock that never stops',
+  publisher: 'Munson Labs docs',
+  player: 'clock',
+}))
 
 onMounted(async () => {
   const loading = Promise.all([
@@ -44,7 +49,7 @@ onMounted(async () => {
   Player.value = playerModule.VideoPlayer as Component
   Editor.value = editorModule.SpliceEditor as Component
 
-  const check = await canSplice(flowerUrl, { crop: { aspect: '9:16' } })
+  const check = await canSplice(clockUrl, { crop: { aspect: '9:16' } })
   if (check.ok) action.value = { icon: scissors, label: 'Clip this', onClick: () => (open.value = true) }
   else failed.value = check.message
 })
@@ -67,10 +72,10 @@ function onError(detail: EditorErrorDetail): void {
           :is="Player"
           v-if="Player"
           ref="player"
-          :src="flowerUrl"
+          :src="clockUrl"
           :action="action"
-          label="A flower opens"
-          deep-link="flower"
+          label="The clock that never stops"
+          deep-link="clock"
           deep-link-end="loop"
         />
         <p v-else class="splice-example__note">Loading player…</p>
@@ -79,7 +84,7 @@ function onError(detail: EditorErrorDetail): void {
           v-if="Editor"
           v-model:open="open"
           :player="player"
-          :source="flowerUrl"
+          :source="clockUrl"
           :origin="origin"
           :stamp="stamp"
           :end-card="endCard"

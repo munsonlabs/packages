@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, useId, useTemplateRef, watch, watchEffect } from 'vue'
+import { computed, nextTick, onMounted, ref, useId, useTemplateRef, watch } from 'vue'
 import { Sigil } from '@munsonlabs/sigil/vue'
 import { useResolvedPlayer, type PlayerHandle } from '@munsonlabs/video-player'
 import { loadCore, type Core } from './features/loadCore'
+import { useElementHost, type EditorEvents } from './features/useElementHost'
 import { useExport } from './features/useExport'
 import { useFrameClock } from './features/useFrameClock'
+import { usePreviewing } from './features/usePreviewing'
 import { useShownCues } from './features/useShownCues'
 import { formatShareCaption } from './features/caption'
-import { createInitialRange, getTimelineWindow, type Range, type RangeLimits } from './features/range'
+import { planRange, type Range, type RangeLimits } from './features/range'
 import { CLIP_LENGTH, DEFAULT_LABELS, END_GAP, LONGEST_CLIP, SHARE_CAPTION, SHORTEST_CLIP, TIMELINE_SPAN } from './labels'
+import { ERROR_FILMSTRIP, ERROR_NO_FILE, ERROR_NO_PLAYER } from '@/constants'
 import ClipResult from './ClipResult.vue'
 import CropOverlay from './CropOverlay.vue'
 import ExportPanel from './ExportPanel.vue'
@@ -24,7 +27,7 @@ import type {
   StampOptions,
   WatermarkOptions,
 } from '@/types/splice'
-import type { EditorErrorDetail, EditorExportDetail, EditorLabels, EditorState, ShareCaption } from '@/types/editor'
+import type { EditorLabels, EditorState, ShareCaption } from '@/types/editor'
 import './editor.css'
 
 /**
@@ -56,60 +59,21 @@ const props = withDefaults(
     labels?: Partial<EditorLabels>
   }>(),
   {
-    open: false,
-    player: null,
-    for: undefined,
-    source: null,
-    src: undefined,
-    origin: undefined,
+    /**
+     * endCard can be false, which makes Vue treat it as a Boolean prop and turn a missing value
+     * into false. This keeps it undefined.
+     */
     endCard: undefined,
-    stamp: undefined,
-    watermark: undefined,
     captionPosition: 'bottom',
-    captionStyle: undefined,
     clipLength: CLIP_LENGTH,
     shortestClip: SHORTEST_CLIP,
     longestClip: LONGEST_CLIP,
     timelineSpan: TIMELINE_SPAN,
-    height: undefined,
     shareCaption: SHARE_CAPTION,
-    labels: undefined,
   },
 )
 
-type Events = {
-  'update:open': [open: boolean]
-  export: [detail: EditorExportDetail]
-  error: [detail: EditorErrorDetail]
-}
-
-const vueEmit = defineEmits<Events>()
-
-/**
- * The custom element's host, or null when it's a Vue component. Not using useHost() because it
- * warns in dev whenever the editor is used as a normal component.
- */
-const host = (getCurrentInstance() as { ce?: HTMLElement } | null)?.ce ?? null
-
-/**
- * Emits to Vue, or as <ml-splice-editor> fires a bubbling splice-* event with the payload in
- * detail, since Vue's error event would clash with the DOM one. Opening and closing also toggle the
- * open attribute and fire splice-open or splice-close.
- */
-function emit<K extends keyof Events>(type: K, ...[detail]: Events[K]): void {
-  if (!host) return (vueEmit as (type: K, detail: Events[K][0]) => void)(type, detail)
-
-  const isOpen = type === 'update:open'
-  const name = isOpen ? (detail ? 'open' : 'close') : type
-  if (isOpen) host.toggleAttribute('open', detail as boolean)
-  host.dispatchEvent(new CustomEvent(`splice-${name}`, { detail: isOpen ? undefined : detail, bubbles: true, composed: true }))
-}
-
-/**
- * While the crop window is over the picture the browser's own captions are hidden, so the only ones
- * you see are the clip's.
- */
-const PREVIEWING = 'splice-previewing'
+const vueEmit = defineEmits<EditorEvents>()
 
 const titleId = useId()
 const root = useTemplateRef<HTMLElement>('root')
@@ -126,21 +90,15 @@ const withCard = ref(true)
 const withLogo = ref(true)
 const captionPosition = ref<CaptionPosition>('bottom')
 let session: AbortController | null = null
-let previewed: HTMLElement | null = null
 
+const emit = useElementHost(vueEmit, state)
 const labels = computed<EditorLabels>(() => ({ ...DEFAULT_LABELS, ...props.labels }))
 const isEditing = computed(() => state.value === 'editing')
+const stamp = computed(() => (withLogo.value ? props.stamp : null))
 
-/**
- * What we read: the source or src we were given, otherwise the player's own file. A blob: source is
- * a MediaSource (HLS through hls.js) with no file behind it, so the page has to pass the playlist
- * URL.
- */
 const clipSource = computed<SpliceSource | null>(() => {
-  if (props.source) return props.source
-  if (props.src) return props.src
   const current = player.value?.mediaElement?.currentSrc
-  return current && !current.startsWith('blob:') ? current : null
+  return props.source || props.src || (current && !current.startsWith('blob:') ? current : null)
 })
 
 const shell = computed(() => {
@@ -148,7 +106,6 @@ const shell = computed(() => {
   return (media?.closest('[data-ml-video-player]')?.parentElement as HTMLElement | null) ?? null
 })
 const isOverlaying = computed(() => (state.value === 'editing' || state.value === 'exporting') && shell.value !== null)
-const stamp = computed(() => (withLogo.value ? props.stamp : null))
 
 const time = useFrameClock(
   () => player.value,
@@ -159,6 +116,7 @@ const cues = useShownCues(
   () => player.value,
   () => isOverlaying.value,
 )
+usePreviewing(() => (isOverlaying.value ? shell.value : null))
 
 const setStatus = (text: string, isError = false) => (status.value = { text, isError })
 
@@ -230,6 +188,10 @@ function block(message: string): void {
   emit('error', { message, fatal: true })
 }
 
+/**
+ * Gets the editor ready on the moment the player is at. Checks the source can be spliced, works out
+ * the range, then takes over the player as the preview and loads the filmstrip.
+ */
 async function prepare(signal: AbortSignal): Promise<void> {
   setStatus(labels.value.preparing)
   result.value = null
@@ -242,8 +204,8 @@ async function prepare(signal: AbortSignal): Promise<void> {
 
   const handle = player.value
   const source = clipSource.value
-  if (!handle) return block('There is no player to clip: give the editor its `player` (or `for`) first.')
-  if (!source) return block('There is no file to clip: the player plays a MediaSource, so pass the stream’s URL as `source`.')
+  if (!handle) return block(ERROR_NO_PLAYER)
+  if (!source) return block(ERROR_NO_FILE)
 
   handle.pause()
   const at = handle.currentTime
@@ -257,10 +219,10 @@ async function prepare(signal: AbortSignal): Promise<void> {
   if (!check.ok) return block(check.message)
 
   const { duration, width, height } = check.info
+  const plan = planRange(at, duration, props)
   size.value = { width, height }
-  range.value = createInitialRange(at, duration, Math.min(props.clipLength, props.longestClip))
-  const view = getTimelineWindow(range.value, duration, props.timelineSpan)
-  limits.value = { ...view, shortest: Math.min(props.shortestClip, duration), longest: props.longestClip }
+  range.value = plan.range
+  limits.value = plan.limits
   state.value = 'editing'
   setStatus('')
 
@@ -269,35 +231,27 @@ async function prepare(signal: AbortSignal): Promise<void> {
   handle.seek(at)
   job.play()
   await nextTick()
-  await loadFilmstrip(core, source, view, signal)
+  await loadFilmstrip(core, source, signal)
 }
 
 /**
  * Fills the timeline's filmstrip, drawing each thumbnail as it arrives. If it fails the strip stays
  * blank and we report a non-fatal error.
  */
-async function loadFilmstrip(core: Core, source: SpliceSource, view: { min: number; max: number }, signal: AbortSignal): Promise<void> {
+async function loadFilmstrip(core: Core, source: SpliceSource, signal: AbortSignal): Promise<void> {
   const strip = timeline.value
   if (!strip) return
   const slots = strip.createFilmstrip()
+  const { min: start, max: end } = limits.value
+  const onThumbnail = (index: number, image: CanvasImageSource) => {
+    if (!signal.aborted) slots.draw(index, image)
+  }
 
-  await core
-    .createThumbnails({
-      source,
-      start: view.min,
-      end: view.max,
-      count: strip.THUMBNAILS,
-      width: 96,
-      signal,
-      onThumbnail: (index, image) => {
-        if (!signal.aborted) slots.draw(index, image)
-      },
-    })
-    .catch((error) => {
-      if (signal.aborted) return
-      const message = error instanceof Error ? error.message : String(error)
-      emit('error', { message: `The filmstrip's thumbnails could not be made. (${message})`, fatal: false })
-    })
+  await core.createThumbnails({ source, start, end, count: strip.THUMBNAILS, width: 96, signal, onThumbnail }).catch((error) => {
+    if (signal.aborted) return
+    const message = error instanceof Error ? error.message : String(error)
+    emit('error', { message: ERROR_FILMSTRIP(message), fatal: false })
+  })
 }
 
 function setRange(next: Range, seekTo: number): void {
@@ -317,13 +271,6 @@ function editAgain(): void {
   void nextTick(() => root.value?.querySelector<HTMLElement>('.splice-handle')?.focus())
 }
 
-watchEffect(() => {
-  const next = isOverlaying.value ? shell.value : null
-  if (previewed === next) return
-  previewed?.classList.remove(PREVIEWING)
-  next?.classList.add(PREVIEWING)
-  previewed = next
-})
 watch(
   () => props.open,
   (open) => (open ? show() : close()),
@@ -331,9 +278,6 @@ watch(
 onMounted(() => {
   if (props.open) show()
 })
-onBeforeUnmount(() => previewed?.classList.remove(PREVIEWING))
-
-if (host) watchEffect(() => (host.dataset.state = state.value))
 
 defineExpose({ show, close, export: job.exportClip, cancel: job.cancel, state: computed(() => state.value) })
 </script>

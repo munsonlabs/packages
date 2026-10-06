@@ -10,6 +10,13 @@ export interface RangeLimits {
   longest: number
 }
 
+export interface RangeOptions {
+  clipLength: number
+  shortestClip: number
+  longestClip: number
+  timelineSpan: number
+}
+
 const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value))
 
 /**
@@ -38,6 +45,16 @@ export function getTimelineWindow(range: Range, duration: number, span: number):
   const centre = (range.start + range.end) / 2
   const min = clamp(centre - width / 2, 0, duration - width)
   return { min, max: min + width }
+}
+
+/**
+ * Plans the first range around time, plus the limits the handles can move within.
+ */
+export function planRange(time: number, duration: number, options: RangeOptions): { range: Range; limits: RangeLimits } {
+  const { clipLength, shortestClip, longestClip, timelineSpan } = options
+  const range = createInitialRange(time, duration, Math.min(clipLength, longestClip))
+  const view = getTimelineWindow(range, duration, timelineSpan)
+  return { range, limits: { ...view, shortest: Math.min(shortestClip, duration), longest: longestClip } }
 }
 
 /**

@@ -19,6 +19,10 @@ export const ERROR_CAPTIONS_UNREACHABLE = (url: string) =>
 export const ERROR_CAPTIONS_STATUS = (url: string, status: number) => `The captions at ${url} could not be loaded: the server answered ${status}.`
 export const ERROR_CAPTIONS_NOT_VTT = (url: string) => `The file at ${url} is not WebVTT captions (it has no WEBVTT header).`
 
+export const ERROR_NO_PLAYER = 'There is no player to clip: give the editor its `player` (or `for`) first.'
+export const ERROR_NO_FILE = 'There is no file to clip: the player plays a MediaSource, so pass the stream’s URL as `source`.'
+export const ERROR_FILMSTRIP = (detail: string) => `The filmstrip's thumbnails could not be made. (${detail})`
+
 export const WARNING_CAPTIONS_UNAVAILABLE = (detail: string) => `The captions are left out. ${detail}`
 
 export const CAPTION_FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'

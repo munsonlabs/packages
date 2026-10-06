@@ -1,11 +1,12 @@
 <script setup lang="ts">
-const EXPERIMENTS = [
+const EXPERIMENTS: Array<{ name: string; branch: string; icon: string; description: string; to?: string }> = [
   {
-    name: 'Blueprint',
-    branch: 'blueprint-layers',
-    icon: 'i-lucide-layers',
+    name: 'Splice',
+    branch: 'feat/splice',
+    icon: 'i-lucide-scissors',
+    to: 'https://feat-splice.munsonlabs.pages.dev/splice/getting-started/introduction',
     description:
-      'Composable UI blueprints: headless logic plus an ordered tree of named parts. A script loaded later can reorder, wrap or replace parts without copying the logic.',
+      'In-browser clip making with WebCodecs: trim, crop to 9:16, burn in captions, stamp your logo and add an end card that sends viewers back to the article. Plus a “clip this” editor.',
   },
   {
     name: 'Dye',
@@ -29,8 +30,8 @@ const EXPERIMENTS = [
         :key="item.name"
         :icon="item.icon"
         :description="item.description"
-        :to="`https://github.com/munsonlabs/packages/tree/${item.branch}`"
-        target="_blank"
+        :to="item.to ?? `https://github.com/munsonlabs/packages/tree/${item.branch}`"
+        :target="item.to?.startsWith('/') ? undefined : '_blank'"
       >
         <template #title>
           <span class="flex flex-wrap items-center gap-2">

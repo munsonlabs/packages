@@ -31,7 +31,18 @@ const sourceId: SourceId = requested && requested in sources ? (requested as Sou
 const { src, title, intro, captions } = sources[sourceId]
 const tracks = captions ? [{ src: captions, kind: 'captions', srclang: 'en', label: 'English' } as const] : []
 
-const origin = { url: location.href.split('#')[0], title, publisher: 'Splice demo', player: 'demo' }
+const originUrl = new URL(location.href)
+originUrl.hash = ''
+originUrl.searchParams.set('utm_source', 'splice')
+originUrl.searchParams.set('utm_medium', 'social')
+originUrl.searchParams.set('utm_campaign', 'clip')
+
+const origin = {
+  url: originUrl.href,
+  title,
+  publisher: 'Splice demo',
+  player: 'demo',
+}
 const logo = resolveMedia('logo.svg')
 const endCard = { logo, displayUrl: `acme.news/2026/10/${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}` }
 const stamp = { logo, position: 'top-right' } as const

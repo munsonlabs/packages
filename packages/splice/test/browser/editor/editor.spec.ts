@@ -273,6 +273,31 @@ describe('<SpliceEditor>', () => {
     delete (navigator as { clipboard?: unknown }).clipboard
   })
 
+  it('keeps the filmstrip through Edit again', async () => {
+    await openEditing()
+    const canvas = part<HTMLCanvasElement>('.splice-timeline canvas')
+    const readPixels = () => {
+      const { width, height } = canvas
+      return canvas.getContext('2d')!.getImageData(0, 0, width, height).data
+    }
+    // Placeholder tiles are faint and see-through; a thumbnail is opaque.
+    const isPainted = () => {
+      const pixels = readPixels()
+      const row = Math.floor(canvas.height / 2) * canvas.width
+      const slots = Array.from({ length: 10 }, (_, slot) => Math.floor(((slot + 0.5) * canvas.width) / 10))
+      return slots.every((x) => pixels[(row + x) * 4 + 3] === 255)
+    }
+    await waitFor(isPainted, 'every thumbnail')
+    const before = readPixels()
+
+    await harness.export()
+    part<HTMLButtonElement>('.splice-again').click()
+    await waitFor(() => harness.state === 'editing', 'editing again')
+
+    expect(part('.splice-timeline canvas')).toBe(canvas)
+    expect(readPixels()).toEqual(before)
+  })
+
   it('copies a caption with the link back to the moment, and says so', async () => {
     await openEditing()
     await harness.export()

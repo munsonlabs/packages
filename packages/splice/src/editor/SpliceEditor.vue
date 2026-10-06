@@ -310,7 +310,7 @@ defineExpose({ show, close, export: job.exportClip, cancel: job.cancel, state: c
       </button>
     </header>
 
-    <div v-if="state !== 'done'" class="splice-body">
+    <div v-show="state !== 'done'" class="splice-body">
       <RangeTimeline
         ref="timeline"
         :range="range"

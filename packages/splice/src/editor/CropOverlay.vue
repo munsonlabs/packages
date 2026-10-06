@@ -135,7 +135,7 @@ function onKeydown(event: KeyboardEvent): void {
 .splice-crop {
   position: absolute;
   box-sizing: border-box;
-  border: 2px solid var(--splice-accent, #e2a32e);
+  border: 2px solid var(--splice-accent, var(--ml-video-accent, #3b82f6));
   /* Everything outside the window is dimmed: what the clip leaves out. */
   box-shadow: 0 0 0 200vmax var(--splice-scrim, rgba(0, 0, 0, 0.55));
   cursor: grab;
@@ -152,7 +152,7 @@ function onKeydown(event: KeyboardEvent): void {
 }
 
 .splice-crop:focus-visible {
-  outline: 3px solid var(--splice-focus, #ffd36b);
+  outline: 2px solid var(--splice-focus, #fff);
   outline-offset: 2px;
 }
 
@@ -163,7 +163,9 @@ function onKeydown(event: KeyboardEvent): void {
   transform: translateX(-50%);
   padding: 3px 8px;
   border-radius: 99px;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   color: #fff;
   font: 600 0.7rem var(--splice-font, system-ui, sans-serif);
   white-space: nowrap;

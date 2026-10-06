@@ -8,6 +8,7 @@ import { useExport } from './features/useExport'
 import { useFrameClock } from './features/useFrameClock'
 import { usePreviewing } from './features/usePreviewing'
 import { useShownCues } from './features/useShownCues'
+import { registerIcons } from './icons'
 import { formatShareCaption } from './features/caption'
 import { planRange, type Range, type RangeLimits } from './features/range'
 import { CLIP_LENGTH, DEFAULT_LABELS, END_GAP, LONGEST_CLIP, SHARE_CAPTION, SHORTEST_CLIP, TIMELINE_SPAN } from './labels'
@@ -74,6 +75,8 @@ const props = withDefaults(
 )
 
 const vueEmit = defineEmits<EditorEvents>()
+
+registerIcons()
 
 const titleId = useId()
 const root = useTemplateRef<HTMLElement>('root')
@@ -319,20 +322,22 @@ defineExpose({ show, close, export: job.exportClip, cancel: job.cancel, state: c
         @change="setRange"
         @seek="seekPreview"
       />
-      <Transport :player="player" :range="range" :disabled="!isEditing" :labels="labels" />
-      <ExportPanel
-        v-model:with-card="withCard"
-        v-model:with-logo="withLogo"
-        v-model:caption-position="captionPosition"
-        :state="state"
-        :progress="progress"
-        :has-card="endCard !== false"
-        :has-logo="Boolean(props.stamp)"
-        :has-captions="cues.length > 0"
-        :labels="labels"
-        @export="job.exportClip"
-        @cancel="job.cancel"
-      />
+      <div class="splice-toolbar">
+        <Transport :player="player" :range="range" :disabled="!isEditing" :labels="labels" />
+        <ExportPanel
+          v-model:with-card="withCard"
+          v-model:with-logo="withLogo"
+          v-model:caption-position="captionPosition"
+          :state="state"
+          :progress="progress"
+          :has-card="endCard !== false"
+          :has-logo="Boolean(props.stamp)"
+          :has-captions="cues.length > 0"
+          :labels="labels"
+          @export="job.exportClip"
+          @cancel="job.cancel"
+        />
+      </div>
       <p class="splice-status splice-editor-status" role="status" aria-live="polite" :data-kind="status.isError ? 'error' : 'info'">
         {{ status.text }}
       </p>

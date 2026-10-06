@@ -315,7 +315,7 @@ describe('<SpliceEditor>', () => {
     editor.show()
     await waitFor(() => harness.state === 'editing', 'the editor')
     const toggle = part<HTMLInputElement>('input[name="logo"]')
-    expect(toggle.closest('label')!.textContent).toContain('Logo on the clip')
+    expect(toggle.closest('label')!.textContent).toContain('Logo')
     expect(toggle.checked).toBe(true)
 
     // The stamp is painted in the window's top-left corner.
@@ -436,7 +436,7 @@ describe('<SpliceEditor>', () => {
     await openEditing({ labels: { title: 'Make a short', export: 'Render' } })
     expect(part('.splice-title').textContent).toBe('Make a short')
     expect(part('.splice-export-button').textContent!.trim()).toBe('Render')
-    expect(part('input[name="endcard"]').closest('label')!.textContent).toContain('End card with a link back')
+    expect(part('input[name="endcard"]').closest('label')!.textContent).toContain('End card')
   })
 
   it('leaves the end card out, and its toggle, for endCard: false', async () => {

@@ -41,8 +41,8 @@ const captionsName = computed(() => {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 6px;
-  font-size: var(--splice-icon-size, 20px);
+  gap: 2px 4px;
+  font-size: var(--splice-icon-size, 18px);
 }
 
 /* The player's stylesheet may not reach the panel, so the buttons are styled whole here. */
@@ -73,7 +73,7 @@ const captionsName = computed(() => {
 }
 
 .splice-transport :deep(.ml-video-control-btn:focus-visible) {
-  outline: 3px solid var(--_focus);
+  outline: 2px solid var(--_focus);
   outline-offset: 2px;
 }
 

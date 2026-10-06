@@ -12,8 +12,8 @@ const sources = {
 }
 const files = new Map(Object.entries(sources).map(([path, code]) => [path.replace('../../src', '').replace(/\.ts$/, ''), code]))
 const heavy = [/^mediabunny$/, /^hls\.js$/, /^\/splice\/splice$/, /^\/splice\/source$/, /^\/splice\/thumbnails$/, /^\/splice\/check$/, /^\/index$/]
-/** The only packages the editor entry may reach statically: Vue, the player, and sigil for the close icon. */
-const editorPackages = ['vue', '@munsonlabs/video-player', '@munsonlabs/sigil/vue']
+/** The only packages the editor entry may reach statically: Vue, the player, and sigil for the icons. */
+const editorPackages = ['vue', '@munsonlabs/video-player', '@munsonlabs/sigil', '@munsonlabs/sigil/vue']
 
 /** A `.vue` file's script blocks; a `.ts` file whole. */
 function readScript(code: string): string {

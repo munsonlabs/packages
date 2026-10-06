@@ -3,15 +3,15 @@
  * with a fallback, so a page themes it by setting them on the editor or any ancestor.
  */
 .splice-editor {
-  --_bg: var(--splice-bg, #10241a);
-  --_surface: var(--splice-surface, #173426);
-  --_fg: var(--splice-fg, #f4f7f5);
-  --_muted: var(--splice-muted, #a9bdb2);
-  --_accent: var(--splice-accent, #e2a32e);
-  --_accent-fg: var(--splice-accent-fg, #1b1405);
-  --_range: var(--splice-range, rgba(226, 163, 46, 0.35));
-  --_radius: var(--splice-radius, 14px);
-  --_focus: var(--splice-focus, #ffd36b);
+  --_bg: var(--splice-bg, rgb(10, 10, 14));
+  --_surface: var(--splice-surface, rgba(255, 255, 255, 0.1));
+  --_fg: var(--splice-fg, #fff);
+  --_muted: var(--splice-muted, rgba(255, 255, 255, 0.6));
+  --_accent: var(--splice-accent, var(--ml-video-accent, #3b82f6));
+  --_accent-fg: var(--splice-accent-fg, #fff);
+  --_range: var(--splice-range, color-mix(in srgb, var(--_accent) 35%, transparent));
+  --_radius: var(--splice-radius, var(--ml-video-radius, 12px));
+  --_focus: var(--splice-focus, #fff);
   box-sizing: border-box;
   display: block;
   width: 100%;
@@ -23,7 +23,7 @@
 }
 
 .splice-editor :focus-visible {
-  outline: 3px solid var(--_focus);
+  outline: 2px solid var(--_focus);
   outline-offset: 2px;
 }
 
@@ -32,13 +32,13 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 18px;
+  padding: 8px 10px 8px 14px;
   border-bottom: 1px solid var(--_surface);
 }
 
 .splice-editor .splice-title {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 700;
 }
 
@@ -46,14 +46,18 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 16px;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
   border: 0;
   border-radius: calc(var(--_radius) / 1.6);
   background: var(--_surface);
   color: var(--_fg);
   font: inherit;
+  font-size: 0.85rem;
   font-weight: 600;
   text-decoration: none;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -68,8 +72,9 @@
 }
 
 .splice-editor .splice-close {
-  padding: 6px;
-  font-size: var(--splice-icon-size, 20px);
+  width: 32px;
+  padding: 0;
+  font-size: var(--splice-icon-size, 18px);
 }
 
 .splice-editor .splice-icon {
@@ -82,23 +87,54 @@
   height: 1em;
 }
 
+.splice-editor .splice-button .splice-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.splice-editor .splice-close .splice-icon svg {
+  width: 1em;
+  height: 1em;
+}
+
 .splice-editor .splice-body {
   display: grid;
-  gap: 14px;
-  padding: 16px 18px 18px;
+  gap: 10px;
+  padding: 12px 14px 14px;
+}
+
+.splice-editor .splice-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.splice-editor .splice-toolbar > :last-child {
+  flex: 1 1 auto;
+  justify-content: flex-end;
 }
 
 .splice-editor .splice-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 6px;
 }
 
 .splice-editor .splice-status {
   margin: 0;
-  min-height: 1.3em;
   color: var(--_muted);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+}
+
+/* An empty status takes no room but stays in place, so what's put in it later is still announced. */
+.splice-editor .splice-status:empty {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
 }
 
 .splice-editor .splice-status[data-kind='error'] {
@@ -108,11 +144,6 @@
 .splice-editor .splice-result {
   display: grid;
   gap: 14px;
-}
-
-.splice-editor .splice-result video {
-  max-height: 60dvh;
-  justify-self: start;
 }
 
 /*

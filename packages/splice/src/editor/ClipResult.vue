@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { Sigil } from '@munsonlabs/sigil/vue'
 import type { EditorExportDetail, EditorLabels } from '@/types/editor'
 
 const props = defineProps<{
@@ -88,10 +89,18 @@ onBeforeUnmount(() => {
       <p class="splice-status" role="status">{{ labels.done }}</p>
       <p v-if="warning" class="splice-status splice-warning" data-kind="error">{{ warning }}</p>
       <div class="splice-actions">
-        <button ref="shareButton" type="button" class="splice-button splice-button--primary splice-share" @click="share">{{ labels.share }}</button>
-        <a ref="downloadLink" class="splice-button splice-download" :href="url" :download="filename">{{ labels.download }}</a>
-        <button v-if="caption" type="button" class="splice-button splice-copy" @click="copyCaption">{{ labels.copyCaption }}</button>
-        <button type="button" class="splice-button splice-again" @click="emit('again')">{{ labels.again }}</button>
+        <button ref="shareButton" type="button" class="splice-button splice-button--primary splice-share" @click="share">
+          <Sigil name="share" library="splice" class="splice-icon" /><span>{{ labels.share }}</span>
+        </button>
+        <a ref="downloadLink" class="splice-button splice-download" :href="url" :download="filename">
+          <Sigil name="download" library="splice" class="splice-icon" /><span>{{ labels.download }}</span>
+        </a>
+        <button v-if="caption" type="button" class="splice-button splice-copy" @click="copyCaption">
+          <Sigil name="copy" library="splice" class="splice-icon" /><span>{{ labels.copyCaption }}</span>
+        </button>
+        <button type="button" class="splice-button splice-again" @click="emit('again')">
+          <Sigil name="again" library="splice" class="splice-icon" /><span>{{ labels.again }}</span>
+        </button>
       </div>
       <p class="splice-status splice-copy-status" role="status" aria-live="polite">{{ copyStatus }}</p>
     </div>
@@ -99,9 +108,26 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+.splice-result {
+  grid-template-columns: auto 1fr;
+  align-items: start;
+}
+
 .splice-result video {
-  width: 100%;
+  height: min(320px, 50dvh);
+  max-width: 100%;
   border-radius: calc(var(--_radius) / 1.4);
   background: #000;
+}
+
+.splice-side {
+  display: grid;
+  gap: 10px;
+}
+
+@media (max-width: 480px) {
+  .splice-result {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

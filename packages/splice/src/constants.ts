@@ -58,4 +58,11 @@ export const END_CARD_CTA = 'Watch the full video at'
 export const END_CARD_THEME = { background: '#10241a', color: '#ffffff', accent: '#e2a32e' }
 
 export const STALL_TIMEOUT = 15
+export const AVC_LEVELS = [
+  [8192, 0x28],
+  [8704, 0x2a],
+  [22080, 0x32],
+  [36864, 0x33],
+  [139264, 0x3c],
+] as const
 export const MIN_FRAME = [1080, 1920] as const

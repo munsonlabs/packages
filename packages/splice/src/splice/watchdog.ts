@@ -2,6 +2,8 @@ import type { CanvasSource } from 'mediabunny'
 import { ERROR_ENCODER_STALLED, STALL_TIMEOUT } from '@/constants'
 import type { EncoderWatchdog } from '@/types/internal'
 
+export class EncoderStallError extends Error {}
+
 /**
  * Watches for an H.264 encoder that takes frames and then just goes quiet, no output and no error.
  * macOS's hardware encoder does this under load, and without this the clip would hang forever. The
@@ -22,7 +24,7 @@ export function createEncoderWatchdog(): EncoderWatchdog {
         const idle = performance.now() - Math.max(lastPacket, waitStart)
         if (idle < limit) return
         hasStalled = true
-        reject(new Error(ERROR_ENCODER_STALLED(STALL_TIMEOUT)))
+        reject(new EncoderStallError(ERROR_ENCODER_STALLED(STALL_TIMEOUT)))
       }, 1000)
     })
 

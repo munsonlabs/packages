@@ -49,6 +49,8 @@ export interface EncoderWatchdog {
   readonly hasStalled: boolean
 }
 
+export type AvcProfile = 'high' | 'baseline'
+
 export interface Pipeline {
   ctx: OffscreenCanvasRenderingContext2D
   videoSource: CanvasSource

@@ -1,8 +1,8 @@
 import { BufferTarget, CanvasSource, Conversion, Mp4OutputFormat, Output, QUALITY_HIGH, VideoSampleSink } from 'mediabunny'
 import type { Input, InputAudioTrack, MetadataTags } from 'mediabunny'
-import { END_CARD_FRAME } from '@/constants'
+import { AVC_LEVELS, END_CARD_FRAME } from '@/constants'
 import { closeEncoder, createEncoderWatchdog } from './watchdog'
-import type { ClipPlan, ClipRange, EncodeVideoOptions, EncoderWatchdog, EndCard, OpenedSource, Pipeline, Scope } from '@/types/internal'
+import type { AvcProfile, ClipPlan, ClipRange, EncodeVideoOptions, EncoderWatchdog, EndCard, OpenedSource, Pipeline, Scope } from '@/types/internal'
 
 /**
  * Creates the in-memory MP4 the clip gets written to, with videoSource as the video track and tags
@@ -30,14 +30,26 @@ export function readOutput(output: Output): Blob {
  * Creates the canvas frames get drawn onto and the H.264 CanvasSource that encodes it, pinging the
  * watchdog on every packet. The same canvas is reused for the whole clip.
  */
-export function createVideoEncoder(width: number, height: number, watchdog: EncoderWatchdog) {
+export function createVideoEncoder(width: number, height: number, watchdog: EncoderWatchdog, profile: AvcProfile = 'high') {
   const canvas = new OffscreenCanvas(width, height)
   const ctx = canvas.getContext('2d', { alpha: false })!
-  const videoSource = new CanvasSource(canvas, { codec: 'avc', quality: QUALITY_HIGH, onEncodedPacket: watchdog.packet })
+  const fullCodecString = profile === 'baseline' ? getBaselineCodec(width, height) : undefined
+  const videoSource = new CanvasSource(canvas, { codec: 'avc', quality: QUALITY_HIGH, fullCodecString, onEncodedPacket: watchdog.packet })
 
   ctx.imageSmoothingEnabled = true
   ctx.imageSmoothingQuality = 'high'
   return { ctx, videoSource }
+}
+
+/**
+ * Builds the codec string for H.264's Baseline profile at the lowest level that fits the clip.
+ * Mediabunny always asks for High, which some encoders take and then never answer, like Safari in
+ * the iOS Simulator. Baseline is the fallback that still works there.
+ */
+function getBaselineCodec(width: number, height: number): string {
+  const macroblocks = Math.ceil(width / 16) * Math.ceil(height / 16)
+  const level = AVC_LEVELS.find(([most]) => macroblocks <= most)?.[1] ?? AVC_LEVELS[AVC_LEVELS.length - 1][1]
+  return `avc1.4200${level.toString(16)}`
 }
 
 /**
@@ -136,9 +148,10 @@ export async function createPipeline(
   plan: ClipPlan,
   { start, end }: ClipRange,
   tags: MetadataTags,
+  profile: AvcProfile,
 ): Promise<Pipeline> {
   const watchdog = createEncoderWatchdog()
-  const { ctx, videoSource } = createVideoEncoder(plan.width, plan.height, watchdog)
+  const { ctx, videoSource } = createVideoEncoder(plan.width, plan.height, watchdog, profile)
   const output = createOutput(videoSource, tags)
   scope.onError(() => output.cancel())
 

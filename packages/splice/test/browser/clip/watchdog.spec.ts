@@ -46,12 +46,27 @@ describe('a stalled video encoder', () => {
 
       expect(error).toBeInstanceOf(Error)
       expect((error as Error).message).toContain('stopped responding')
-      // Noticed within a second or so of the timeout; the rest is the export's own work.
-      expect(elapsed).toBeLessThan(1 + 1.5 + 8)
+      // Both tries, High then Baseline, each noticed within a second or so of the timeout; the rest is
+      // the export's own work.
+      expect(elapsed).toBeLessThan(2 * (1 + 1.5) + 8)
+      expect(stall.made.some(({ config }) => config?.codec.startsWith('avc1.42'))).toBe(true)
       expect(frames.open, 'VideoFrames left open').toBe(0)
       expect(stall.made.map(({ encoder }) => encoder.state)).toEqual(stall.made.map(() => 'closed'))
     })
   }
+
+  it('tries again with the Baseline profile when only High stalls, as in the iOS Simulator', { timeout: 60_000 }, async () => {
+    const source = await loadSource()
+    const stall = stallVideoEncoders('flush', (config) => config.codec.startsWith('avc1.64'))
+    restore.push(stall.restore)
+    const progress: number[] = []
+
+    const clip = await createSplice({ source, start: 0, end: 2, crop: { aspect: '9:16' }, onProgress: (fraction) => progress.push(fraction) })
+    expect((await probe(clip)).video).toMatchObject({ width: 1080, height: 1920 })
+    expect(stall.made.map(({ config }) => config?.codec.slice(0, 7))).toEqual(['avc1.64', 'avc1.42'])
+    expect(progress).toEqual([...progress].sort((a, b) => a - b))
+    expect(progress.at(-1)).toBe(1)
+  })
 
   it('leaves a working encoder alone, however short the timeout', { timeout: 60_000 }, async () => {
     const clip = await createSplice({ source: await loadSource(), start: 0, end: 2, crop: { aspect: '9:16' } })

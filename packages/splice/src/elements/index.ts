@@ -1,46 +1,12 @@
 import { defineCustomElement } from 'vue'
-import type { PlayerHandle } from '@munsonlabs/video-player'
 import SpliceEditor from '@/editor/SpliceEditor.vue'
-import type { CaptionPosition, CaptionStyle, EndCardOptions, SpliceOrigin, SpliceSource, StampOptions, WatermarkOptions } from '@/types/splice'
-import type { EditorLabels, EditorState, ShareCaption } from '@/types/editor'
-
-/**
- * <ml-splice-editor> is SpliceEditor as a custom element, without a shadow root like video-player's
- * elements. It clips the player named by the for attribute (an <ml-video-player> id) or set as the
- * player property. Strings and numbers go in as attributes, objects and functions as properties. It
- * fires bubbling splice-open, splice-close, splice-export and splice-error events, reflects open
- * and keeps its state on data-state.
- */
-export interface SpliceEditorElement extends HTMLElement {
-  player: PlayerHandle | null
-  for: string | undefined
-  source: SpliceSource | null
-  src: string | undefined
-  origin: SpliceOrigin | undefined
-  endCard: EndCardOptions | false | undefined
-  stamp: StampOptions | undefined
-  watermark: WatermarkOptions | undefined
-  captionPosition: CaptionPosition
-  captionStyle: CaptionStyle | undefined
-  clipLength: number
-  shortestClip: number
-  longestClip: number
-  timelineSpan: number
-  height: number | undefined
-  shareCaption: ShareCaption
-  labels: Partial<EditorLabels> | undefined
-  open: boolean
-  readonly state: EditorState
-  show(): void
-  close(): void
-  export(): Promise<void>
-  cancel(): void
-}
+import type { SpliceEditorElement as SpliceEditorElementType } from '@/types/element'
 
 export const SpliceEditorElement = defineCustomElement(SpliceEditor, { shadowRoot: false }) as unknown as {
-  new (): SpliceEditorElement
-  prototype: SpliceEditorElement
+  new (): SpliceEditorElementType
+  prototype: SpliceEditorElementType
 }
+export type SpliceEditorElement = SpliceEditorElementType
 
 const EMBEDDED_STYLE = '__INLINE_CSS(style.css)__'
 
@@ -63,4 +29,4 @@ export function defineSpliceEditor(tag = 'ml-splice-editor'): void {
 const isDeferred = typeof import.meta.url === 'string' && new URL(import.meta.url).searchParams.has('defer')
 if (!isDeferred) defineSpliceEditor()
 
-export * from '@/vue'
+export type * from '@/types/editor'

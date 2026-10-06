@@ -9,6 +9,7 @@ export interface SpliceOptions {
   crop?: CropOptions
   captions?: CaptionInput
   captionPosition?: CaptionPosition
+  captionStyle?: CaptionStyle
   origin?: SpliceOrigin
   endCard?: EndCardOptions
   stamp?: StampOptions
@@ -67,6 +68,16 @@ export interface CaptionCue {
 export type CaptionInput = CaptionCue[] | string | URL
 
 export type CaptionPosition = 'top' | 'middle' | 'bottom'
+
+export interface CaptionStyle {
+  fontFamily?: string
+  fontWeight?: number | string
+  size?: number
+  color?: string
+  background?: string | null
+  margin?: number
+  maxWidth?: number
+}
 
 export interface CropOptions {
   aspect: `${number}:${number}`

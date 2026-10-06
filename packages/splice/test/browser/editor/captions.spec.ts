@@ -169,3 +169,16 @@ describe('<SpliceEditor> caption position', () => {
     expect(readChosen()).toBe('middle')
   })
 })
+
+describe('<SpliceEditor> caption style', () => {
+  it('previews the captions in the style it’s given', async () => {
+    await harness.open({ endCard: false, captionStyle: { color: '#ff00ff', background: null } }, { time: 1, tracks: createTwoTracks() })
+    const canvas = () => part<HTMLCanvasElement>('.splice-crop canvas.splice-preview')
+    const hasMagenta = () => {
+      const data = canvas().getContext('2d')!.getImageData(0, 0, canvas().width, canvas().height).data
+      for (let i = 0; i < data.length; i += 4) if (data[i] > 180 && data[i + 1] < 100 && data[i + 2] > 180 && data[i + 3] > 200) return true
+      return false
+    }
+    await waitFor(hasMagenta, 'magenta captions over the picture')
+  })
+})

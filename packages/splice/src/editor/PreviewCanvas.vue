@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { createCaptionPainter, createStampPainter, createWatermarkPainter } from '@/splice/render'
 import { loadImage } from '@/splice/image'
-import type { CaptionCue, CaptionPosition, StampOptions, WatermarkOptions } from '@/types/splice'
+import type { CaptionCue, CaptionPosition, CaptionStyle, StampOptions, WatermarkOptions } from '@/types/splice'
 import type { Painter } from '@/types/internal'
 
 const props = defineProps<{
@@ -10,6 +10,7 @@ const props = defineProps<{
   height: number
   cues: CaptionCue[]
   captionPosition: CaptionPosition
+  captionStyle?: CaptionStyle
   time: number | null
   stamp?: StampOptions | null
   watermark?: WatermarkOptions
@@ -21,9 +22,9 @@ let frame: OffscreenCanvas | null = null
 let observer: ResizeObserver | null = null
 
 const paint = computed<Painter>(() => {
-  const { width, height, cues, captionPosition, watermark, stamp } = props
+  const { width, height, cues, captionPosition, captionStyle, watermark, stamp } = props
   const painters = [
-    createCaptionPainter(width, height, cues, captionPosition),
+    createCaptionPainter(width, height, cues, captionPosition, captionStyle),
     watermark && createWatermarkPainter(width, height, watermark),
     stamp && logo.value && createStampPainter(width, height, logo.value, stamp),
   ].filter((painter): painter is Painter => !!painter)

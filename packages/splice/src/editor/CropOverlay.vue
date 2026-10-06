@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { planCrop } from '@/splice/crop'
 import PreviewCanvas from './PreviewCanvas.vue'
-import type { CaptionCue, CaptionPosition, StampOptions, WatermarkOptions } from '@/types/splice'
+import type { CaptionCue, CaptionPosition, CaptionStyle, StampOptions, WatermarkOptions } from '@/types/splice'
 
 const props = defineProps<{
   size: { width: number; height: number }
@@ -11,6 +11,7 @@ const props = defineProps<{
   hint: string
   cues: CaptionCue[]
   captionPosition: CaptionPosition
+  captionStyle?: CaptionStyle
   time: number | null
   stamp?: StampOptions | null
   watermark?: WatermarkOptions
@@ -112,6 +113,7 @@ function onKeydown(event: KeyboardEvent): void {
         :height="plan.height"
         :cues="cues"
         :caption-position="captionPosition"
+        :caption-style="captionStyle"
         :time="time"
         :stamp="stamp"
         :watermark="watermark"

@@ -13,7 +13,16 @@ import CropOverlay from './CropOverlay.vue'
 import ExportPanel from './ExportPanel.vue'
 import RangeTimeline from './RangeTimeline.vue'
 import Transport from './Transport.vue'
-import type { CaptionPosition, EndCardOptions, SpliceOptions, SpliceOrigin, SpliceSource, StampOptions, WatermarkOptions } from '@/types/splice'
+import type {
+  CaptionPosition,
+  CaptionStyle,
+  EndCardOptions,
+  SpliceOptions,
+  SpliceOrigin,
+  SpliceSource,
+  StampOptions,
+  WatermarkOptions,
+} from '@/types/splice'
 import type { EditorErrorDetail, EditorExportDetail, EditorLabels, EditorState } from '@/types/editor'
 import './editor.css'
 
@@ -36,6 +45,7 @@ const props = withDefaults(
     stamp?: StampOptions
     watermark?: WatermarkOptions
     captionPosition?: CaptionPosition
+    captionStyle?: CaptionStyle
     labels?: Partial<EditorLabels>
   }>(),
   {
@@ -49,6 +59,7 @@ const props = withDefaults(
     stamp: undefined,
     watermark: undefined,
     captionPosition: 'bottom',
+    captionStyle: undefined,
     labels: undefined,
   },
 )
@@ -163,6 +174,7 @@ function request(): SpliceOptions | null {
     crop: { aspect: '9:16', focus: { ...focus.value } },
     captions: cues.value.length ? cues.value : undefined,
     captionPosition: captionPosition.value,
+    captionStyle: props.captionStyle,
     endCard: withCard.value && props.endCard !== false ? (props.endCard ?? {}) : undefined,
     stamp: stamp.value ?? undefined,
     watermark: props.watermark,
@@ -318,6 +330,7 @@ defineExpose({ show, close, export: job.exportClip, cancel: job.cancel, state: c
         :hint="labels.cropHint"
         :cues="cues"
         :caption-position="captionPosition"
+        :caption-style="captionStyle"
         :time="time"
         :stamp="stamp"
         :watermark="watermark"

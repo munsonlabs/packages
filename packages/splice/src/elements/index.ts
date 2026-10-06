@@ -1,7 +1,7 @@
 import { defineCustomElement } from 'vue'
 import type { PlayerHandle } from '@munsonlabs/video-player'
 import SpliceEditor from '@/editor/SpliceEditor.vue'
-import type { CaptionPosition, EndCardOptions, SpliceOrigin, SpliceSource, StampOptions, WatermarkOptions } from '@/types/splice'
+import type { CaptionPosition, CaptionStyle, EndCardOptions, SpliceOrigin, SpliceSource, StampOptions, WatermarkOptions } from '@/types/splice'
 import type { EditorLabels, EditorState } from '@/types/editor'
 
 /**
@@ -21,6 +21,7 @@ export interface SpliceEditorElement extends HTMLElement {
   stamp: StampOptions | undefined
   watermark: WatermarkOptions | undefined
   captionPosition: CaptionPosition
+  captionStyle: CaptionStyle | undefined
   labels: Partial<EditorLabels> | undefined
   open: boolean
   readonly state: EditorState

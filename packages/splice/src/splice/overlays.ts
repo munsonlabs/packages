@@ -31,7 +31,7 @@ export async function createOverlays(options: SpliceOptions, plan: ClipPlan): Pr
   ])
 
   const painters = [
-    createCaptionPainter(width, height, cues, options.captionPosition),
+    createCaptionPainter(width, height, cues, options.captionPosition, options.captionStyle),
     watermark && createWatermarkPainter(width, height, watermark),
     stamp && stampLogo && createStampPainter(width, height, stampLogo, stamp),
   ].filter((painter): painter is Painter => !!painter)

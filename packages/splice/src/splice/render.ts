@@ -13,7 +13,7 @@ import {
   WATERMARK_COLOR,
   WATERMARK_SIZE,
 } from '@/constants'
-import type { CaptionCue, CaptionPosition, StampOptions, WatermarkOptions } from '@/types/splice'
+import type { CaptionCue, CaptionPosition, CaptionStyle, StampOptions, WatermarkOptions } from '@/types/splice'
 import type { Painter } from '@/types/internal'
 
 /**
@@ -21,14 +21,29 @@ import type { Painter } from '@/types/internal'
  * a dark box per line, at the bottom, top or middle, and style can change any of that. Sizes are
  * fractions of the frame so captions look the same at any output size.
  */
-export function createCaptionPainter(width: number, height: number, cues: CaptionCue[], position: CaptionPosition = 'bottom'): Painter {
-  const fontSize = Math.max(8, Math.round(height * CAPTION_SIZE))
-  const font = `700 ${fontSize}px ${CAPTION_FONT}`
+export function createCaptionPainter(
+  width: number,
+  height: number,
+  cues: CaptionCue[],
+  position: CaptionPosition = 'bottom',
+  style: CaptionStyle = {},
+): Painter {
+  const {
+    fontFamily = CAPTION_FONT,
+    fontWeight = 700,
+    size = CAPTION_SIZE,
+    color = CAPTION_COLOR,
+    background = CAPTION_BACKGROUND,
+    margin: marginFraction = CAPTION_MARGIN,
+    maxWidth: widthFraction = CAPTION_MAX_WIDTH,
+  } = style
+  const fontSize = Math.max(8, Math.round(height * size))
+  const font = `${fontWeight} ${fontSize}px ${fontFamily}`
   const lineHeight = Math.round(fontSize * CAPTION_LINE_HEIGHT)
   const padX = Math.round(fontSize * 0.4)
   const padY = Math.round(fontSize * 0.15)
-  const maxWidth = width * CAPTION_MAX_WIDTH
-  const margin = Math.round(height * CAPTION_MARGIN)
+  const maxWidth = width * widthFraction
+  const margin = Math.round(height * marginFraction)
   const centreX = width / 2
   const wrapped = new Map<string, string[]>()
 
@@ -56,9 +71,11 @@ export function createCaptionPainter(width: number, height: number, cues: Captio
       const centreY = top + index * lineHeight + lineHeight / 2
       const lineWidth = ctx.measureText(line).width
 
-      ctx.fillStyle = CAPTION_BACKGROUND
-      ctx.fillRect(centreX - lineWidth / 2 - padX, centreY - lineHeight / 2 + padY / 2, lineWidth + padX * 2, lineHeight - padY)
-      ctx.fillStyle = CAPTION_COLOR
+      if (background) {
+        ctx.fillStyle = background
+        ctx.fillRect(centreX - lineWidth / 2 - padX, centreY - lineHeight / 2 + padY / 2, lineWidth + padX * 2, lineHeight - padY)
+      }
+      ctx.fillStyle = color
       ctx.fillText(line, centreX, centreY)
     })
     ctx.restore()

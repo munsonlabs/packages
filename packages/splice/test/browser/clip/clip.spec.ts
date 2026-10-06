@@ -116,6 +116,33 @@ describe('createSplice on flower.mp4 (960x540 H.264 + AAC, 5.06s)', () => {
     expect(changed(await readThirds(bottom))).toEqual([false, false, true])
   })
 
+  it('styles the captions: colour, size and no box', async () => {
+    const source = await flower()
+    const crop = { aspect: '16:9', height: 540 } as const
+    const cues = [{ start: 0, end: 1, text: 'STYLED CAPTION' }]
+    const clip = (captionStyle?: Parameters<typeof createSplice>[0]['captionStyle']) =>
+      createSplice({ source, start: 0, end: 1, audio: false, crop, captions: cues, captionStyle })
+    // One at a time: several exports at once overwhelm WebKit's shared hardware encoder.
+    const plain = await createSplice({ source, start: 0, end: 1, audio: false, crop })
+    const boxed = await clip()
+    const unboxed = await clip({ color: '#ff00ff', background: null })
+    const bigger = await clip({ color: '#ff00ff', background: null, size: 0.09 })
+
+    const countMagenta = (image: ImageData) => {
+      let count = 0
+      for (let i = 0; i < image.data.length; i += 4) if (image.data[i] > 180 && image.data[i + 1] < 100 && image.data[i + 2] > 180) count++
+      return count
+    }
+    const [plainFrame, boxedFrame, unboxedFrame, biggerFrame] = await Promise.all([plain, boxed, unboxed, bigger].map((blob) => pixelsAt(blob, 0.5)))
+
+    expect(countMagenta(boxedFrame)).toBe(0)
+    expect(countMagenta(unboxedFrame)).toBeGreaterThan(300)
+    expect(countMagenta(biggerFrame)).toBeGreaterThan(countMagenta(unboxedFrame) * 2)
+    // No box: only the letters change, less than a box behind them does.
+    const rows: [number, number] = [Math.round(540 * 0.74), Math.round(540 * 0.86)]
+    expect(changedFraction(unboxedFrame, plainFrame, ...rows)).toBeLessThan(changedFraction(boxedFrame, plainFrame, ...rows))
+  })
+
   it('paints captions at the output size, 1080x1920 by default, sharper than the native size scaled up', async () => {
     const source = await flower()
     const cues = [{ start: 0, end: 1, text: 'Painted at the size it is shown' }]

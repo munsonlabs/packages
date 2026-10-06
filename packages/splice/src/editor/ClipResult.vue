@@ -5,6 +5,7 @@ import type { EditorExportDetail, EditorLabels } from '@/types/editor'
 const props = defineProps<{
   result: EditorExportDetail
   title?: string
+  caption: string
   warning: string
   labels: EditorLabels
 }>()
@@ -28,13 +29,16 @@ const filename = computed(() => {
 })
 
 /**
- * Shares the clip and its link with the Web Share API. Most desktop browsers can't share files, so
- * it downloads instead, and cancelling the share sheet does nothing.
+ * Shares the clip and its caption with the Web Share API. Most desktop browsers can't share files,
+ * so it downloads instead, and cancelling the share sheet does nothing. Lots of apps throw away the
+ * text that comes with a file, so the caption goes on the clipboard too. That has to happen before
+ * the sheet opens or the browser won't allow it.
  */
 async function share(): Promise<void> {
   const file = new File([props.result.blob], filename.value, { type: props.result.blob.type })
-  const data: ShareData = { files: [file], title: props.title, url: props.result.link ?? undefined }
+  const data: ShareData = { files: [file], title: props.title, text: props.caption || undefined }
   const canShare = typeof navigator.share === 'function' && navigator.canShare?.(data)
+  const copying = props.caption ? writeCaption() : Promise.resolve(false)
 
   const shared = canShare
     ? await navigator.share(data).then(
@@ -44,20 +48,29 @@ async function share(): Promise<void> {
     : null
   const isDismissed = shared instanceof DOMException && shared.name === 'AbortError'
   if (shared !== 'shared' && !isDismissed) downloadLink.value?.click()
+  if (!isDismissed && (await copying)) announce(props.labels.captionCopied)
 }
 
 /**
- * Copies the link back to the moment and says so for a few seconds.
+ * Copies the caption and its link, and says so for a few seconds.
  */
-async function copyLink(): Promise<void> {
-  const link = props.result.link ?? ''
-  const copied = await navigator.clipboard
-    ?.writeText(link)
-    .then(() => true)
-    .catch(() => false)
+async function copyCaption(): Promise<void> {
+  const copied = await writeCaption()
+  announce(copied ? props.labels.copied : props.labels.copyFailed)
+}
 
+/**
+ * Puts the caption on the clipboard. Returns false if there's no clipboard or we're not allowed to
+ * use it.
+ */
+function writeCaption(): Promise<boolean> {
+  const write = navigator.clipboard?.writeText(props.caption)
+  return write ? write.then(() => true).catch(() => false) : Promise.resolve(false)
+}
+
+function announce(message: string): void {
   clearTimeout(copiedTimer)
-  copyStatus.value = copied ? props.labels.copied : props.labels.copyFailed
+  copyStatus.value = message
   copiedTimer = setTimeout(() => (copyStatus.value = ''), 4000)
 }
 
@@ -77,7 +90,7 @@ onBeforeUnmount(() => {
       <div class="splice-actions">
         <button ref="shareButton" type="button" class="splice-button splice-button--primary splice-share" @click="share">{{ labels.share }}</button>
         <a ref="downloadLink" class="splice-button splice-download" :href="url" :download="filename">{{ labels.download }}</a>
-        <button v-if="result.link" type="button" class="splice-button splice-copy" @click="copyLink">{{ labels.copyLink }}</button>
+        <button v-if="caption" type="button" class="splice-button splice-copy" @click="copyCaption">{{ labels.copyCaption }}</button>
         <button type="button" class="splice-button splice-again" @click="emit('again')">{{ labels.again }}</button>
       </div>
       <p class="splice-status splice-copy-status" role="status" aria-live="polite">{{ copyStatus }}</p>

@@ -25,11 +25,22 @@ export interface EditorLabels {
   done: string
   download: string
   share: string
-  copyLink: string
+  copyCaption: string
   copied: string
+  captionCopied: string
   copyFailed: string
   again: string
 }
+
+export interface ShareCaptionInfo {
+  title: string
+  url: string
+  publisher: string
+  start: number
+  end: number
+}
+
+export type ShareCaption = string | ((info: ShareCaptionInfo) => string)
 
 export type EditorState = 'closed' | 'loading' | 'editing' | 'blocked' | 'exporting' | 'done'
 

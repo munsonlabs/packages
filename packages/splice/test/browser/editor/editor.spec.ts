@@ -3,7 +3,7 @@ import { userEvent } from 'vite-plus/test/browser'
 import flowerUrl from '@test/browser/media/flower.mp4?url'
 import opusUrl from '@test/browser/media/flower-opus.mp4?url'
 import { override } from '@munsonlabs/sigil'
-import type { EditorErrorDetail, EditorExportDetail } from '@/types/editor'
+import type { EditorErrorDetail, EditorExportDetail, ShareCaptionInfo } from '@/types/editor'
 import { EditorHarness, sleep, waitFor } from '@test/browser/editor-harness'
 
 // A short range on the 5s fixture, so both handles have room to move; and a quick stall.
@@ -247,39 +247,61 @@ describe('<SpliceEditor>', () => {
     delete (navigator as { canShare?: unknown }).canShare
   })
 
-  it('shares the file and the deep link where the Web Share API takes files', async () => {
+  it('shares the file with its caption and the deep link where the Web Share API takes files', async () => {
     await openEditing()
     await harness.export()
     const share = vi.fn(async (_data: ShareData) => {})
     Object.defineProperty(navigator, 'canShare', { configurable: true, value: () => true })
     Object.defineProperty(navigator, 'share', { configurable: true, value: share })
+    const writeText = vi.fn(async (_text: string) => {})
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } })
 
     part<HTMLButtonElement>('.splice-share').click()
     await waitFor(() => share.mock.calls.length > 0, 'the share')
+    const caption = 'A flower opens\n\nhttps://example.com/watch/flower#ml-t=1.3,3.3'
     const data = share.mock.calls[0][0]
-    expect(data.url).toBe('https://example.com/watch/flower#ml-t=1.3,3.3')
+    expect(data.text).toBe(caption)
     expect(data.title).toBe('A flower opens')
     expect(data.files?.[0]).toBeInstanceOf(File)
     expect(data.files?.[0].type).toMatch(/^video\//)
+    // Apps that drop the text still get the caption from the clipboard.
+    expect(writeText).toHaveBeenCalledWith(caption)
+    await waitFor(() => part('.splice-copy-status').textContent === 'The caption is copied, to paste with your post.', 'the announcement')
 
     delete (navigator as { canShare?: unknown }).canShare
     delete (navigator as { share?: unknown }).share
+    delete (navigator as { clipboard?: unknown }).clipboard
   })
 
-  it('copies the link back to the moment, and says so', async () => {
+  it('copies a caption with the link back to the moment, and says so', async () => {
     await openEditing()
     await harness.export()
     const writeText = vi.fn(async (_text: string) => {})
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } })
 
+    expect(part('.splice-copy').textContent).toBe('Copy caption with link')
     part<HTMLButtonElement>('.splice-copy').click()
     await waitFor(() => part('.splice-copy-status').textContent === 'Copied', 'the announcement')
-    expect(writeText).toHaveBeenCalledWith('https://example.com/watch/flower#ml-t=1.3,3.3')
+    expect(writeText).toHaveBeenCalledWith('A flower opens\n\nhttps://example.com/watch/flower#ml-t=1.3,3.3')
     expect(part('.splice-copy-status').getAttribute('aria-live')).toBe('polite')
 
     writeText.mockRejectedValueOnce(new DOMException('Write permission denied.', 'NotAllowedError'))
     part<HTMLButtonElement>('.splice-copy').click()
-    await waitFor(() => part('.splice-copy-status').textContent === 'Could not copy the link.', 'the failure')
+    await waitFor(() => part('.splice-copy-status').textContent === 'Could not copy the caption.', 'the failure')
+
+    // From the shareCaption template, the blank lines of an empty title gone, or a function.
+    harness.props.origin = { ...origin, title: '' }
+    harness.props.shareCaption = '{title}\n\n{publisher}: {url}'
+    await tick()
+    part<HTMLButtonElement>('.splice-copy').click()
+    await waitFor(() => writeText.mock.calls.length > 2, 'the template copy')
+    expect(writeText).toHaveBeenLastCalledWith('Example News: https://example.com/watch/flower#ml-t=1.3,3.3')
+
+    harness.props.shareCaption = (info: ShareCaptionInfo) => `Watch from ${info.start}s: ${info.url}`
+    await tick()
+    part<HTMLButtonElement>('.splice-copy').click()
+    await waitFor(() => writeText.mock.calls.length > 3, 'the function copy')
+    expect(writeText).toHaveBeenLastCalledWith('Watch from 1.3s: https://example.com/watch/flower#ml-t=1.3,3.3')
     delete (navigator as { clipboard?: unknown }).clipboard
   })
 

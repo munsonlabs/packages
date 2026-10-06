@@ -2,7 +2,7 @@ import { defineCustomElement } from 'vue'
 import type { PlayerHandle } from '@munsonlabs/video-player'
 import SpliceEditor from '@/editor/SpliceEditor.vue'
 import type { CaptionPosition, CaptionStyle, EndCardOptions, SpliceOrigin, SpliceSource, StampOptions, WatermarkOptions } from '@/types/splice'
-import type { EditorLabels, EditorState } from '@/types/editor'
+import type { EditorLabels, EditorState, ShareCaption } from '@/types/editor'
 
 /**
  * <ml-splice-editor> is SpliceEditor as a custom element, without a shadow root like video-player's
@@ -27,6 +27,7 @@ export interface SpliceEditorElement extends HTMLElement {
   longestClip: number
   timelineSpan: number
   height: number | undefined
+  shareCaption: ShareCaption
   labels: Partial<EditorLabels> | undefined
   open: boolean
   readonly state: EditorState

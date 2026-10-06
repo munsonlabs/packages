@@ -27,9 +27,10 @@ export const DEFAULT_LABELS: EditorLabels = {
   done: 'Your clip is ready.',
   download: 'Download',
   share: 'Share',
-  copyLink: 'Copy link',
+  copyCaption: 'Copy caption with link',
   copied: 'Copied',
-  copyFailed: 'Could not copy the link.',
+  captionCopied: 'The caption is copied, to paste with your post.',
+  copyFailed: 'Could not copy the caption.',
   again: 'Edit again',
 }
 
@@ -37,4 +38,5 @@ export const CLIP_LENGTH = 10
 export const SHORTEST_CLIP = 1
 export const LONGEST_CLIP = 60
 export const TIMELINE_SPAN = 90
+export const SHARE_CAPTION = '{title}\n\n{url}'
 export const END_GAP = 0.05

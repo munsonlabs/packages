@@ -6,8 +6,9 @@ import { loadCore, type Core } from './features/loadCore'
 import { useExport } from './features/useExport'
 import { useFrameClock } from './features/useFrameClock'
 import { useShownCues } from './features/useShownCues'
+import { formatShareCaption } from './features/caption'
 import { createInitialRange, getTimelineWindow, type Range, type RangeLimits } from './features/range'
-import { CLIP_LENGTH, DEFAULT_LABELS, END_GAP, LONGEST_CLIP, SHORTEST_CLIP, TIMELINE_SPAN } from './labels'
+import { CLIP_LENGTH, DEFAULT_LABELS, END_GAP, LONGEST_CLIP, SHARE_CAPTION, SHORTEST_CLIP, TIMELINE_SPAN } from './labels'
 import ClipResult from './ClipResult.vue'
 import CropOverlay from './CropOverlay.vue'
 import ExportPanel from './ExportPanel.vue'
@@ -23,7 +24,7 @@ import type {
   StampOptions,
   WatermarkOptions,
 } from '@/types/splice'
-import type { EditorErrorDetail, EditorExportDetail, EditorLabels, EditorState } from '@/types/editor'
+import type { EditorErrorDetail, EditorExportDetail, EditorLabels, EditorState, ShareCaption } from '@/types/editor'
 import './editor.css'
 
 /**
@@ -51,6 +52,7 @@ const props = withDefaults(
     longestClip?: number
     timelineSpan?: number
     height?: number
+    shareCaption?: ShareCaption
     labels?: Partial<EditorLabels>
   }>(),
   {
@@ -70,6 +72,7 @@ const props = withDefaults(
     longestClip: LONGEST_CLIP,
     timelineSpan: TIMELINE_SPAN,
     height: undefined,
+    shareCaption: SHARE_CAPTION,
     labels: undefined,
   },
 )
@@ -169,6 +172,12 @@ const job = useExport({
   onExport: (detail) => emit('export', detail),
 })
 const { progress, result, warning } = job
+
+const caption = computed(() => {
+  const { title = '', publisher = '' } = props.origin ?? {}
+  const { start = 0, end = 0, link } = result.value ?? {}
+  return formatShareCaption(props.shareCaption, { title, publisher, url: link ?? '', start, end })
+})
 
 /**
  * Builds the options for an export from what's set right now: the range, the crop, the captions
@@ -390,6 +399,7 @@ defineExpose({ show, close, export: job.exportClip, cancel: job.cancel, state: c
       class="splice-body"
       :result="result"
       :title="origin?.title"
+      :caption="caption"
       :warning="warning"
       :labels="labels"
       @again="editAgain"

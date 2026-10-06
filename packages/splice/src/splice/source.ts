@@ -1,6 +1,6 @@
 import { ALL_FORMATS, BlobSource, HlsInputFormat, Input, UrlSource } from 'mediabunny'
 import { runScoped } from '@/utils/scope'
-import { ERROR_NO_VIDEO_TRACK, ERROR_UNDECODABLE_VIDEO } from '@/constants'
+import { ERROR_ENCRYPTED_VIDEO, ERROR_MEDIA_SOURCE, ERROR_MEDIA_STREAM, ERROR_NO_VIDEO_TRACK, ERROR_UNDECODABLE_VIDEO } from '@/constants'
 import type { SourceInfo, SpliceSource } from '@/types/splice'
 import type { OpenedSource, SelectedTracks, VideoTrackInfo } from '@/types/internal'
 
@@ -10,7 +10,7 @@ import type { OpenedSource, SelectedTracks, VideoTrackInfo } from '@/types/inter
  * HLS. If anything fails the input is disposed.
  */
 export async function openSource(source: SpliceSource): Promise<OpenedSource> {
-  const resolved = resolveSource(source)
+  const resolved = await resolveSource(source)
   const input = createInput(resolved)
 
   return runScoped(async (scope) => {
@@ -104,11 +104,36 @@ async function findDecodable(tracks: VideoTrackInfo[], isHls: boolean): Promise<
   return undefined
 }
 
-function resolveSource(source: SpliceSource): Blob | string {
+async function resolveSource(source: SpliceSource): Promise<Blob | string> {
   if (source instanceof Blob) return source
   if (typeof source === 'string') return source
   if (source instanceof URL) return source.href
-  return source.currentSrc || source.src
+  return readVideoUrl(source)
+}
+
+/**
+ * Gets a <video>'s file URL, refusing the cases where there's no file to read: encrypted media, a
+ * live MediaStream, or a MediaSource like hls.js and dash.js use, whose blob: URL can't be fetched.
+ */
+async function readVideoUrl(video: HTMLVideoElement): Promise<string> {
+  const url = video.currentSrc || video.src
+  const isStream = typeof MediaStream !== 'undefined' && video.srcObject instanceof MediaStream
+  const isMediaSource = (Boolean(video.srcObject) && !isStream) || (url.startsWith('blob:') && !(await isFileUrl(url)))
+
+  if (video.mediaKeys) throw new Error(ERROR_ENCRYPTED_VIDEO)
+  if (isStream) throw new Error(ERROR_MEDIA_STREAM)
+  if (isMediaSource) throw new Error(ERROR_MEDIA_SOURCE)
+  return url
+}
+
+/**
+ * Checks whether a blob: URL was made from a file. One made from a MediaSource can't be fetched,
+ * and fetching is the only way to tell. The body is cancelled without reading it.
+ */
+async function isFileUrl(url: string): Promise<boolean> {
+  const response = await fetch(url).catch(() => null)
+  void response?.body?.cancel()
+  return response?.ok ?? false
 }
 
 /**

@@ -1,4 +1,8 @@
 export const ERROR_NO_VIDEO_TRACK = 'The source has no video track.'
+export const ERROR_ENCRYPTED_VIDEO = 'The video is encrypted (DRM), so its frames can’t be read.'
+export const ERROR_MEDIA_STREAM = 'The video is a live MediaStream (a camera, screen or call), not a file.'
+export const ERROR_MEDIA_SOURCE =
+  'The video is fed by a MediaSource (such as hls.js or dash.js), so there’s no file behind it. Pass the stream’s URL as the source instead.'
 export const ERROR_UNREACHABLE = (url: string) =>
   `Could not fetch ${url}. If it is on another origin it must send Access-Control-Allow-Origin (and allow Range requests).`
 export const ERROR_UNDECODABLE_VIDEO = (codec: string | null) => `This browser cannot decode the source's ${codec ?? 'unknown'} video.`

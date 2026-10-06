@@ -26,8 +26,8 @@
     },
     "./element": {
       "source": "./src/elements/index.ts",
-      "import": "./dist/elements/element.mjs",
-      "types": "./dist/elements/element.d.mts"
+      "import": "./dist/elements/index.mjs",
+      "types": "./dist/elements/index.d.mts"
     },
     "./vue": {
       "source": "./src/vue.ts",
@@ -43,7 +43,7 @@
     "access": "public"
   },
   "scripts": {
-    "dev": "vp pack --watch",
+    "dev": "AUTO_ENTRIES=1 vp pack --watch",
     "clean": "rm -rf dist",
     "lint": "vp lint",
     "fmt": "vp fmt",

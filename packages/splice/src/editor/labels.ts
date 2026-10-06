@@ -15,6 +15,7 @@ export const DEFAULT_LABELS: EditorLabels = {
   captionsOff: 'Off',
   endCard: 'End card',
   logo: 'Logo',
+  shape: 'Shape',
   captionPosition: 'Caption position',
   positionTop: 'Top',
   positionMiddle: 'Middle',
@@ -34,6 +35,7 @@ export const DEFAULT_LABELS: EditorLabels = {
   again: 'Edit again',
 }
 
+export const ASPECTS = ['9:16'] as const
 export const CLIP_LENGTH = 10
 export const SHORTEST_CLIP = 1
 export const LONGEST_CLIP = 60

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Sigil } from '@munsonlabs/sigil/vue'
 import type { EditorLabels, EditorState } from '@/types/editor'
-import type { CaptionPosition } from '@/types/splice'
+import type { CaptionPosition, CropOptions } from '@/types/splice'
 
 defineProps<{
   state: EditorState
@@ -9,6 +9,7 @@ defineProps<{
   hasCard: boolean
   hasLogo: boolean
   hasCaptions: boolean
+  aspects: CropOptions['aspect'][]
   labels: EditorLabels
 }>()
 
@@ -17,12 +18,19 @@ const emit = defineEmits<{ export: []; cancel: [] }>()
 const withCard = defineModel<boolean>('withCard', { required: true })
 const withLogo = defineModel<boolean>('withLogo', { required: true })
 const captionPosition = defineModel<CaptionPosition>('captionPosition', { required: true })
+const aspect = defineModel<CropOptions['aspect']>('aspect', { required: true })
 
 const POSITIONS = [
   { value: 'top', label: 'positionTop', icon: 'caption-top' },
   { value: 'middle', label: 'positionMiddle', icon: 'caption-middle' },
   { value: 'bottom', label: 'positionBottom', icon: 'caption-bottom' },
 ] as const
+
+const ASPECT_ICONS: Record<string, string> = {
+  '9:16': 'aspect-portrait',
+  '4:5': 'aspect-post',
+  '1:1': 'aspect-square',
+}
 </script>
 
 <template>
@@ -36,9 +44,17 @@ const POSITIONS = [
         <input v-model="withLogo" type="checkbox" name="logo" :disabled="state !== 'editing'" />
         <Sigil name="logo" library="splice" class="splice-icon" /><span>{{ labels.logo }}</span>
       </label>
-      <fieldset v-if="hasCaptions" class="splice-position" :disabled="state !== 'editing'">
+      <fieldset v-if="aspects.length > 1" class="splice-segmented splice-shape" :disabled="state !== 'editing'">
+        <legend>{{ labels.shape }}</legend>
+        <label v-for="option in aspects" :key="option" class="splice-segmented__option" :title="option">
+          <input v-model="aspect" type="radio" name="aspect" :value="option" :aria-label="option" />
+          <Sigil v-if="ASPECT_ICONS[option]" :name="ASPECT_ICONS[option]" library="splice" class="splice-icon" />
+          <span v-else class="splice-shape__ratio">{{ option }}</span>
+        </label>
+      </fieldset>
+      <fieldset v-if="hasCaptions" class="splice-segmented splice-position" :disabled="state !== 'editing'">
         <legend>{{ labels.captionPosition }}</legend>
-        <label v-for="position in POSITIONS" :key="position.value" class="splice-position__option" :title="labels[position.label]">
+        <label v-for="position in POSITIONS" :key="position.value" class="splice-segmented__option" :title="labels[position.label]">
           <input v-model="captionPosition" type="radio" name="caption-position" :value="position.value" :aria-label="labels[position.label]" />
           <Sigil :name="position.icon" library="splice" class="splice-icon" />
         </label>
@@ -80,7 +96,7 @@ const POSITIONS = [
 }
 
 .splice-chip,
-.splice-position__option {
+.splice-segmented__option {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -95,26 +111,26 @@ const POSITIONS = [
 }
 
 .splice-chip:has(input:checked),
-.splice-position__option:has(input:checked) {
+.splice-segmented__option:has(input:checked) {
   color: var(--_fg);
   box-shadow: inset 0 0 0 1.5px var(--_accent);
 }
 
 .splice-chip:has(input:focus-visible),
-.splice-position__option:has(input:focus-visible) {
+.splice-segmented__option:has(input:focus-visible) {
   outline: 2px solid var(--_focus);
   outline-offset: 2px;
 }
 
 .splice-chip:has(input:disabled),
-.splice-position:disabled .splice-position__option {
+.splice-segmented:disabled .splice-segmented__option {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
 /* The chip is the control; the input stays for the keyboard and screen readers. */
 .splice-chip input,
-.splice-position__option input {
+.splice-segmented__option input {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -123,7 +139,7 @@ const POSITIONS = [
   pointer-events: none;
 }
 
-.splice-position {
+.splice-segmented {
   display: inline-flex;
   gap: 2px;
   margin: 0;
@@ -131,7 +147,7 @@ const POSITIONS = [
   border: 0;
 }
 
-.splice-position legend {
+.splice-segmented legend {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -140,21 +156,26 @@ const POSITIONS = [
   white-space: nowrap;
 }
 
-.splice-position__option {
+.splice-segmented__option {
   padding: 0 8px;
   font-size: var(--splice-icon-size, 18px);
 }
 
-.splice-position__option:first-of-type {
+.splice-segmented__option:first-of-type {
   border-radius: calc(var(--_radius) / 1.6) 4px 4px calc(var(--_radius) / 1.6);
 }
 
-.splice-position__option:not(:first-of-type, :last-of-type) {
+.splice-segmented__option:not(:first-of-type, :last-of-type) {
   border-radius: 4px;
 }
 
-.splice-position__option:last-of-type {
+.splice-segmented__option:last-of-type {
   border-radius: 4px calc(var(--_radius) / 1.6) calc(var(--_radius) / 1.6) 4px;
+}
+
+.splice-shape__ratio {
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .splice-export-button,

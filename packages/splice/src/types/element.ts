@@ -1,5 +1,14 @@
 import type { PlayerHandle } from '@munsonlabs/video-player'
-import type { CaptionPosition, CaptionStyle, EndCardOptions, SpliceOrigin, SpliceSource, StampOptions, WatermarkOptions } from '@/types/splice'
+import type {
+  CaptionPosition,
+  CaptionStyle,
+  CropOptions,
+  EndCardOptions,
+  SpliceOrigin,
+  SpliceSource,
+  StampOptions,
+  WatermarkOptions,
+} from '@/types/splice'
 import type { EditorLabels, EditorState, ShareCaption } from '@/types/editor'
 
 export interface SpliceEditorElement extends HTMLElement {
@@ -13,6 +22,8 @@ export interface SpliceEditorElement extends HTMLElement {
   watermark: WatermarkOptions | undefined
   captionPosition: CaptionPosition
   captionStyle: CaptionStyle | undefined
+  aspect: CropOptions['aspect'] | undefined
+  aspects: CropOptions['aspect'][]
   clipLength: number
   shortestClip: number
   longestClip: number

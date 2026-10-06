@@ -5,6 +5,9 @@ const STROKE = 'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-wid
 
 export const ICONS: Record<string, string> = {
   again: `<svg ${STROKE}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>`,
+  'aspect-portrait': `<svg ${STROKE}><rect x="7" y="2" width="10" height="20" rx="2"/></svg>`,
+  'aspect-post': `<svg ${STROKE}><rect x="4.8" y="3" width="14.4" height="18" rx="2"/></svg>`,
+  'aspect-square': `<svg ${STROKE}><rect x="3" y="3" width="18" height="18" rx="2"/></svg>`,
   cancel: `<svg ${STROKE}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`,
   'caption-bottom': `<svg ${STROKE}><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 16h10"/></svg>`,
   'caption-middle': `<svg ${STROKE}><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 12h10"/></svg>`,

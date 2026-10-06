@@ -13,6 +13,7 @@ export interface EditorLabels {
   captionsOff: string
   endCard: string
   logo: string
+  shape: string
   captionPosition: string
   positionTop: string
   positionMiddle: string

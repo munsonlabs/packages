@@ -112,6 +112,55 @@ describe('<SpliceEditor>', () => {
     expect(vi.mocked(createSplice).mock.lastCall?.[0].crop).toMatchObject({ aspect: '9:16', height: 720 })
   })
 
+  it('crops to the aspect it is given', async () => {
+    await openEditing({ endCard: false, aspect: '1:1' })
+    const box = part('.splice-crop').getBoundingClientRect()
+    expect(box.width / box.height).toBeCloseTo(1, 1)
+
+    const { createSplice } = await import('@/index')
+    vi.mocked(createSplice).mockResolvedValueOnce(new Blob([], { type: 'video/mp4' }))
+    part<HTMLButtonElement>('.splice-export-button').click()
+    await waitFor(() => of('export').length > 0, 'the export')
+    expect(vi.mocked(createSplice).mock.lastCall?.[0].crop).toMatchObject({ aspect: '1:1' })
+  })
+
+  it('offers the shapes it is given, crops and exports to the one picked, and keeps it through Edit again', async () => {
+    await openEditing({ endCard: false, aspects: ['9:16', '4:5', '1:1'] })
+    const options = () => [...document.querySelectorAll<HTMLInputElement>('input[name="aspect"]')]
+    expect(options().map((input) => input.value)).toEqual(['9:16', '4:5', '1:1'])
+    expect(options().find((input) => input.checked)?.value).toBe('9:16')
+
+    options()[2].click()
+    await tick()
+    const box = part('.splice-crop').getBoundingClientRect()
+    expect(box.width / box.height).toBeCloseTo(1, 1)
+
+    const { createSplice } = await import('@/index')
+    vi.mocked(createSplice).mockResolvedValueOnce(new Blob([], { type: 'video/mp4' }))
+    part<HTMLButtonElement>('.splice-export-button').click()
+    await waitFor(() => harness.state === 'done', 'the finished clip')
+    expect(vi.mocked(createSplice).mock.lastCall?.[0].crop).toMatchObject({ aspect: '1:1' })
+
+    part<HTMLButtonElement>('.splice-again').click()
+    await waitFor(() => harness.state === 'editing', 'editing again')
+    expect(options().find((input) => input.checked)?.value).toBe('1:1')
+  })
+
+  it('crops to 9:16 with no shape picker by default', async () => {
+    await openEditing()
+    expect(document.querySelector('input[name="aspect"]')).toBeNull()
+    const box = part('.splice-crop').getBoundingClientRect()
+    expect(box.width / box.height).toBeCloseTo(9 / 16, 1)
+  })
+
+  it('starts in the first of the shapes it is given', async () => {
+    await openEditing({ aspects: ['1:1', '9:16'] })
+    const chosen = document.querySelector<HTMLInputElement>('input[name="aspect"]:checked')
+    expect(chosen?.value).toBe('1:1')
+    const box = part('.splice-crop').getBoundingClientRect()
+    expect(box.width / box.height).toBeCloseTo(1, 1)
+  })
+
   it('drags a handle and slides the selection with the pointer', async () => {
     await openEditing()
     const box = part('.splice-timeline').getBoundingClientRect()

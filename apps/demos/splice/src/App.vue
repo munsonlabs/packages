@@ -106,6 +106,7 @@ function backToMoment(link: string): void {
       v-model:open="open"
       :player="player"
       :source="src"
+      :aspects="['9:16', '4:5', '1:1']"
       :origin="origin"
       :end-card="endCard"
       :stamp="stamp"

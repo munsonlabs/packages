@@ -2,10 +2,11 @@
 import { computed, ref } from 'vue'
 import { planCrop } from '@/splice/crop'
 import PreviewCanvas from './PreviewCanvas.vue'
-import type { CaptionCue, CaptionPosition, CaptionStyle, StampOptions, WatermarkOptions } from '@/types/splice'
+import type { CaptionCue, CaptionPosition, CaptionStyle, CropOptions, StampOptions, WatermarkOptions } from '@/types/splice'
 
 const props = defineProps<{
   size: { width: number; height: number }
+  aspect: CropOptions['aspect']
   disabled: boolean
   label: string
   hint: string
@@ -24,8 +25,11 @@ const FOCUS_STEP = 0.05
 const root = ref<HTMLElement | null>(null)
 let last: { x: number; y: number } | null = null
 
-const plan = computed(() => planCrop(props.size.width, props.size.height, { aspect: '9:16', focus: focus.value }))
-const isLandscape = computed(() => props.size.width / props.size.height > 9 / 16)
+const plan = computed(() => planCrop(props.size.width, props.size.height, { aspect: props.aspect, focus: focus.value }))
+const isLandscape = computed(() => {
+  const [width, height] = props.aspect.split(':').map(Number)
+  return props.size.width / props.size.height > width / height
+})
 
 const windowSize = computed(() => {
   const { width, height, draw } = plan.value

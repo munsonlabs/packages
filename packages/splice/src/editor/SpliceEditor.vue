@@ -11,7 +11,7 @@ import { useShownCues } from './features/useShownCues'
 import { registerIcons } from './icons'
 import { formatShareCaption } from './features/caption'
 import { planRange, type Range, type RangeLimits } from './features/range'
-import { CLIP_LENGTH, DEFAULT_LABELS, END_GAP, LONGEST_CLIP, SHARE_CAPTION, SHORTEST_CLIP, TIMELINE_SPAN } from './labels'
+import { ASPECTS, CLIP_LENGTH, DEFAULT_LABELS, END_GAP, LONGEST_CLIP, SHARE_CAPTION, SHORTEST_CLIP, TIMELINE_SPAN } from './labels'
 import { ERROR_FILMSTRIP, ERROR_NO_FILE, ERROR_NO_PLAYER } from '@/constants'
 import ClipResult from './ClipResult.vue'
 import CropOverlay from './CropOverlay.vue'
@@ -21,6 +21,7 @@ import Transport from './Transport.vue'
 import type {
   CaptionPosition,
   CaptionStyle,
+  CropOptions,
   EndCardOptions,
   SpliceOptions,
   SpliceOrigin,
@@ -33,7 +34,7 @@ import './editor.css'
 
 /**
  * The clip editor. It sits inline on the page's video player and uses it as the preview: opening
- * pauses it, loops the range with setClipRange and draws the 9:16 crop window over the picture. The
+ * pauses it, loops the range with setClipRange and draws the crop window over the picture. The
  * range, toggles, export and finished clip live in this panel. It burns in whichever captions the
  * viewer has on and only loads splice's core when it first opens. Errors show in the panel and go
  * out as an error event, it never throws.
@@ -51,6 +52,8 @@ const props = withDefaults(
     watermark?: WatermarkOptions
     captionPosition?: CaptionPosition
     captionStyle?: CaptionStyle
+    aspect?: CropOptions['aspect']
+    aspects?: CropOptions['aspect'][]
     clipLength?: number
     shortestClip?: number
     longestClip?: number
@@ -66,6 +69,8 @@ const props = withDefaults(
      */
     endCard: undefined,
     captionPosition: 'bottom',
+    aspect: undefined,
+    aspects: () => [...ASPECTS],
     clipLength: CLIP_LENGTH,
     shortestClip: SHORTEST_CLIP,
     longestClip: LONGEST_CLIP,
@@ -92,6 +97,7 @@ const status = ref({ text: '', isError: false })
 const withCard = ref(true)
 const withLogo = ref(true)
 const captionPosition = ref<CaptionPosition>('bottom')
+const shape = ref<CropOptions['aspect']>('9:16')
 let session: AbortController | null = null
 
 const emit = useElementHost(vueEmit, state)
@@ -151,7 +157,7 @@ function request(): SpliceOptions | null {
   return {
     source,
     ...range.value,
-    crop: { aspect: '9:16', focus: { ...focus.value }, height: props.height },
+    crop: { aspect: shape.value, focus: { ...focus.value }, height: props.height },
     captions: cues.value.length ? cues.value : undefined,
     captionPosition: captionPosition.value,
     captionStyle: props.captionStyle,
@@ -215,9 +221,10 @@ async function prepare(signal: AbortSignal): Promise<void> {
   withCard.value = props.endCard !== false
   withLogo.value = Boolean(props.stamp)
   captionPosition.value = props.captionPosition
+  shape.value = props.aspect ?? props.aspects[0] ?? ASPECTS[0]
 
   const core = await loadCore()
-  const check = await core.canSplice(source, { crop: { aspect: '9:16', height: props.height } })
+  const check = await core.canSplice(source, { crop: { aspect: shape.value, height: props.height } })
   if (signal.aborted) return
   if (!check.ok) return block(check.message)
 
@@ -291,6 +298,7 @@ defineExpose({ show, close, export: job.exportClip, cancel: job.cancel, state: c
       <CropOverlay
         v-model:focus="focus"
         :size="size"
+        :aspect="shape"
         :disabled="!isEditing"
         :label="labels.crop"
         :hint="labels.cropHint"
@@ -328,6 +336,8 @@ defineExpose({ show, close, export: job.exportClip, cancel: job.cancel, state: c
           v-model:with-card="withCard"
           v-model:with-logo="withLogo"
           v-model:caption-position="captionPosition"
+          v-model:aspect="shape"
+          :aspects="aspects"
           :state="state"
           :progress="progress"
           :has-card="endCard !== false"

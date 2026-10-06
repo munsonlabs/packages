@@ -153,6 +153,11 @@ describe('<ml-splice-editor>', () => {
     expect(editor.captionPosition).toBe('top')
   })
 
+  it('takes the clip length, the clip limits, the timeline span and the height as numbers from attributes', async () => {
+    const { editor } = await mountPage('clip-length="15" shortest-clip="2" longest-clip="30" timeline-span="120" height="720"')
+    expect([editor.clipLength, editor.shortestClip, editor.longestClip, editor.timelineSpan, editor.height]).toEqual([15, 2, 30, 120, 720])
+  })
+
   it('reports a player that isn’t on the page as a fatal splice-error', async () => {
     await import('@/elements')
     host = document.createElement('div')

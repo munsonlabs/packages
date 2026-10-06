@@ -46,6 +46,11 @@ const props = withDefaults(
     watermark?: WatermarkOptions
     captionPosition?: CaptionPosition
     captionStyle?: CaptionStyle
+    clipLength?: number
+    shortestClip?: number
+    longestClip?: number
+    timelineSpan?: number
+    height?: number
     labels?: Partial<EditorLabels>
   }>(),
   {
@@ -60,6 +65,11 @@ const props = withDefaults(
     watermark: undefined,
     captionPosition: 'bottom',
     captionStyle: undefined,
+    clipLength: CLIP_LENGTH,
+    shortestClip: SHORTEST_CLIP,
+    longestClip: LONGEST_CLIP,
+    timelineSpan: TIMELINE_SPAN,
+    height: undefined,
     labels: undefined,
   },
 )
@@ -105,7 +115,7 @@ const player = useResolvedPlayer(props)
 
 const state = ref<EditorState>('closed')
 const range = ref<Range>({ start: 0, end: 0 })
-const limits = ref<RangeLimits>({ min: 0, max: 0, shortest: SHORTEST_CLIP, longest: LONGEST_CLIP })
+const limits = ref<RangeLimits>({ min: 0, max: 0, shortest: props.shortestClip, longest: props.longestClip })
 const focus = ref({ x: 0.5, y: 0.5 })
 const size = ref({ width: 16, height: 9 })
 const status = ref({ text: '', isError: false })
@@ -171,7 +181,7 @@ function request(): SpliceOptions | null {
   return {
     source,
     ...range.value,
-    crop: { aspect: '9:16', focus: { ...focus.value } },
+    crop: { aspect: '9:16', focus: { ...focus.value }, height: props.height },
     captions: cues.value.length ? cues.value : undefined,
     captionPosition: captionPosition.value,
     captionStyle: props.captionStyle,
@@ -233,15 +243,15 @@ async function prepare(signal: AbortSignal): Promise<void> {
   captionPosition.value = props.captionPosition
 
   const core = await loadCore()
-  const check = await core.canSplice(source, { crop: { aspect: '9:16' } })
+  const check = await core.canSplice(source, { crop: { aspect: '9:16', height: props.height } })
   if (signal.aborted) return
   if (!check.ok) return block(check.message)
 
   const { duration, width, height } = check.info
   size.value = { width, height }
-  range.value = createInitialRange(at, duration, CLIP_LENGTH)
-  const view = getTimelineWindow(range.value, duration, TIMELINE_SPAN)
-  limits.value = { ...view, shortest: Math.min(SHORTEST_CLIP, duration), longest: LONGEST_CLIP }
+  range.value = createInitialRange(at, duration, Math.min(props.clipLength, props.longestClip))
+  const view = getTimelineWindow(range.value, duration, props.timelineSpan)
+  limits.value = { ...view, shortest: Math.min(props.shortestClip, duration), longest: props.longestClip }
   state.value = 'editing'
   setStatus('')
 

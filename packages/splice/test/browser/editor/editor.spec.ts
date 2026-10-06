@@ -12,6 +12,12 @@ vi.mock('@/editor/labels', async (importOriginal) => ({
   CLIP_LENGTH: 2,
   LONGEST_CLIP: 3,
 }))
+// The core as the editor loads it, its createSplice watched (and still run) so a test can check what
+// the editor asked for without encoding.
+vi.mock('@/index', async (importOriginal) => {
+  const core = await importOriginal<typeof import('@/index')>()
+  return { ...core, createSplice: vi.fn(core.createSplice) }
+})
 vi.mock('@/constants', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/constants')>()), STALL_TIMEOUT: 1 }))
 
 /** Lets Vue render what the last event changed, as it does between real events. */
@@ -87,6 +93,23 @@ describe('<SpliceEditor>', () => {
     await userEvent.keyboard('{ArrowLeft}{ArrowLeft}')
     expect(harness.range.end).toBe(2.3)
     expect(harness.player.clipRange).toEqual({ start: 0.3, end: 2.3 })
+  })
+
+  it('takes the clip length, the shortest and longest clip and the output height from its props', async () => {
+    await openEditing({ endCard: false, clipLength: 4, shortestClip: 2, longestClip: 4, height: 720 })
+    expect(harness.range.end - harness.range.start).toBeCloseTo(4, 5)
+
+    const end = part('.splice-handle[data-handle="end"]')
+    end.focus()
+    await userEvent.keyboard('{ArrowLeft}'.repeat(8))
+    expect(harness.range.end - harness.range.start).toBeCloseTo(2, 5) // stops at the shortest clip
+
+    // The core's own tests cover a crop's height; here it's enough that the editor asks for it.
+    const { createSplice } = await import('@/index')
+    vi.mocked(createSplice).mockResolvedValueOnce(new Blob([], { type: 'video/mp4' }))
+    part<HTMLButtonElement>('.splice-export-button').click()
+    await waitFor(() => of('export').length > 0, 'the export')
+    expect(vi.mocked(createSplice).mock.lastCall?.[0].crop).toMatchObject({ aspect: '9:16', height: 720 })
   })
 
   it('drags a handle and slides the selection with the pointer', async () => {

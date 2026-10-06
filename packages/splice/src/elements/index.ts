@@ -22,6 +22,11 @@ export interface SpliceEditorElement extends HTMLElement {
   watermark: WatermarkOptions | undefined
   captionPosition: CaptionPosition
   captionStyle: CaptionStyle | undefined
+  clipLength: number
+  shortestClip: number
+  longestClip: number
+  timelineSpan: number
+  height: number | undefined
   labels: Partial<EditorLabels> | undefined
   open: boolean
   readonly state: EditorState

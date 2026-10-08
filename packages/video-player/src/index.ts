@@ -77,6 +77,7 @@ export type { PlayerMethodKey, PlayerStateKey } from '@/ui/player/playerSurface'
 export { exposePlayerOnElement } from '@/utils/exposePlayerOnElement'
 export type {
   CaptionTrackInfo,
+  ChapterInfo,
   QualityLevelInfo,
   PlaybackAdapter,
   AdapterCaptions,

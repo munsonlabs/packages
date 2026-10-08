@@ -1,19 +1,21 @@
 <script setup lang="ts">
-import { inject } from 'vue'
+import { computed, inject } from 'vue'
 import { PlayerKey, PlaylistKey, HudKey, ActionKey, injectStrict } from '@/ui/player/playerContext'
 import { usePlayerAction } from '@/ui/overlay/usePlayerAction'
 import { cyclePlaybackRate, playbackRateLabel, cycleCaptionTrack, captionTrackLabel, cycleQuality, qualityLabel } from '@/utils/playerActions'
+import { findChapter } from '@/utils/chapters'
 import Icon from '@/ui/shared/Icon.vue'
 import MoreMenuRow from '@/ui/overlay/MoreMenuRow.vue'
 
 defineProps<{ compact: boolean }>()
 
-defineEmits<{ back: [] }>()
+defineEmits<{ back: []; chapters: [] }>()
 
 const player = injectStrict(PlayerKey)
 const hud = injectStrict(HudKey)
 const playlist = injectStrict(PlaylistKey)
 const { isCustom, customAction } = usePlayerAction(inject(ActionKey, undefined), player, playlist)
+const currentChapter = computed(() => findChapter(player.chapters, player.currentTime))
 </script>
 
 <template>
@@ -49,6 +51,8 @@ const { isCustom, customAction } = usePlayerAction(inject(ActionKey, undefined),
       :value="captionTrackLabel(player)"
       @click="cycleCaptionTrack(player)"
     />
+
+    <MoreMenuRow v-if="player.chapters.length" label="Chapters" icon="chapters" :value="currentChapter?.title" @click="$emit('chapters')" />
 
     <MoreMenuRow
       v-if="player.supportsQuality"

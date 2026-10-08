@@ -2,6 +2,7 @@ import type Hls from 'hls.js'
 import type { MediaPlayerClass } from 'dashjs'
 import { createEmitter } from '@/adapters/emitter'
 import { createCaptionSupport } from '@/adapters/native/captionSupport'
+import { createChapterSupport } from '@/adapters/native/chapterSupport'
 import { createQualitySupport, type QualityEngineAdapter } from '@/adapters/native/qualitySupport'
 import { createFullscreenSupport } from '@/adapters/native/fullscreenSupport'
 import { createPipSupport } from '@/adapters/native/pipSupport'
@@ -205,6 +206,7 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
   for (const [name, fn] of forwarders) videoEl.addEventListener(name, fn)
 
   const captionSupport = createCaptionSupport(videoEl, forwardEvent('captionschange'), options.captionLine)
+  const chapterSupport = createChapterSupport(videoEl, forwardEvent('chapterschange'))
   const qualitySupport = createQualitySupport(() => {
     if (hls) return hlsQualityEngine(hls)
     if (dash) return dashQualityEngine(dash)
@@ -269,6 +271,9 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
       active: captionSupport.getActiveCaptionTrack,
       select: captionSupport.setCaptionTrack,
     },
+    chapters: {
+      list: chapterSupport.getChapters,
+    },
     quality: {
       levels: qualitySupport.getQualityLevels,
       current: qualitySupport.getCurrentQuality,
@@ -291,6 +296,7 @@ export function createNativeAdapter(videoEl: HTMLVideoElement, options: NativeAd
       dash?.destroy()
       for (const [name, fn] of forwarders) videoEl.removeEventListener(name, fn)
       captionSupport.dispose()
+      chapterSupport.dispose()
       fullscreenSupport.dispose()
       pipSupport.dispose()
       emitter.dispose()

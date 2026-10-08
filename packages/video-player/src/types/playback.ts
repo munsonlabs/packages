@@ -11,6 +11,12 @@ export interface CaptionTrackInfo {
   language: string
 }
 
+export interface ChapterInfo {
+  start: number
+  end: number
+  title: string
+}
+
 export interface QualityLevelInfo {
   index: number
   height: number
@@ -33,6 +39,10 @@ export interface AdapterCaptions {
   /** Can't be inferred from our own select() calls - a `default`-attribute track can be shown by the browser directly. */
   active(): number | null
   select(index: number | null): void
+}
+
+export interface AdapterChapters {
+  list(): ChapterInfo[]
 }
 
 export interface AdapterQuality {
@@ -66,6 +76,7 @@ export type PlaybackEvent =
   | 'canplay'
   | 'qualitychange'
   | 'captionschange'
+  | 'chapterschange'
   | 'pipchange'
   | 'adstart'
   | 'adend'
@@ -97,6 +108,7 @@ export interface PlaybackAdapter {
   /** A method, not a static property - some SDKs (YouTube) only know this after their own async ready callback fires. */
   supportsPlaybackRate(): boolean
   captions?: AdapterCaptions
+  chapters?: AdapterChapters
   quality?: AdapterQuality
   pip?: AdapterPip
   /** Embeds hide a placeholder <video> behind their iframe and reveal it on first play; native playback has nothing to reveal. */

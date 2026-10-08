@@ -14,6 +14,7 @@ import TimeDisplay from '@/ui/controls/TimeDisplay.vue'
 import VolumePanel from '@/ui/overlay/VolumePanel.vue'
 import VolumeIcon from '@/ui/overlay/VolumeIcon.vue'
 import MoreMenu from '@/ui/overlay/MoreMenu.vue'
+import ChaptersMenu from '@/ui/overlay/ChaptersMenu.vue'
 import Spinner from '@/ui/shared/Spinner.vue'
 import Icon from '@/ui/shared/Icon.vue'
 import '@/ui/styles/playPauseButton.css'
@@ -26,6 +27,7 @@ const action = inject(ActionKey)
 
 const showVolume = ref(false)
 const showMore = ref(false)
+const showChapters = ref(false)
 const popupEl = ref<HTMLElement | null>(null)
 const contentEl = ref<HTMLElement | null>(null)
 const compact = useElementCompact(popupEl)
@@ -57,6 +59,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   showVolume.value = false
   showMore.value = false
+  showChapters.value = false
   player.fire('controlsclose', { element: popupEl.value })
   document.removeEventListener('click', onDocumentClick, true)
   document.removeEventListener('touchend', onDocumentTouchEnd, true)
@@ -107,8 +110,12 @@ function onMoreClick(): void {
         <VolumePanel @back="swapPanel(() => (showVolume = false))" />
       </template>
 
+      <template v-else-if="showChapters">
+        <ChaptersMenu @back="swapPanel(() => (showChapters = false))" />
+      </template>
+
       <template v-else-if="showMore">
-        <MoreMenu :compact="compact" @back="swapPanel(() => (showMore = false))" />
+        <MoreMenu :compact="compact" @back="swapPanel(() => (showMore = false))" @chapters="swapPanel(() => (showChapters = true))" />
       </template>
 
       <template v-else>

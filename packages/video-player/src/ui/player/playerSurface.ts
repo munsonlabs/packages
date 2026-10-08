@@ -48,6 +48,7 @@ export const PLAYER_STATE_KEYS = [
   'supportsCaptions',
   'captionTracks',
   'activeCaptionIndex',
+  'chapters',
   'supportsQuality',
   'qualityLevels',
   'currentQualityHeight',

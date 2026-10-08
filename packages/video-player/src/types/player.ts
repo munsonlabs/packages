@@ -73,7 +73,7 @@ export interface HeaderBiddingConfig {
 export interface CaptionTrackDef {
   /** A WebVTT file URL — <track> only understands VTT, not SRT or other subtitle formats. */
   src: string
-  kind?: 'captions' | 'subtitles'
+  kind?: 'captions' | 'subtitles' | 'chapters'
   srclang?: string
   label?: string
   default?: boolean

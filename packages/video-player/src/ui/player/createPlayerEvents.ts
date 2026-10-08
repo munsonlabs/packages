@@ -41,6 +41,7 @@ export function createPlayerEvents(state: PlayerState, deps: PlayerEventsDeps): 
     supportsCaptions,
     captionTracks,
     activeCaptionIndex,
+    chapters,
     supportsQuality,
     qualityLevels,
     currentQualityHeight,
@@ -86,6 +87,12 @@ export function createPlayerEvents(state: PlayerState, deps: PlayerEventsDeps): 
 
     refreshCaptionTracks()
     player.on('captionschange', refreshCaptionTracks)
+
+    const refreshChapters = () => {
+      chapters.value = player.chapters?.list() ?? []
+    }
+    refreshChapters()
+    player.on('chapterschange', refreshChapters)
 
     function refreshQuality(): void {
       qualityLevels.value = player.quality?.levels() ?? []

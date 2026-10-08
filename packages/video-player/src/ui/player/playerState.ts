@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue'
-import type { CaptionTrackInfo, QualityLevelInfo } from '@/types/playback'
+import type { CaptionTrackInfo, ChapterInfo, QualityLevelInfo } from '@/types/playback'
 import type { PlayerProps } from '@/types/player'
 import { resolveInitialMuted, resolveInitialVolume } from '@/ui/player/adapterMount'
 
@@ -39,6 +39,7 @@ export function createPlayerState(props: PlayerProps) {
     supportsCaptions: ref(false),
     captionTracks: ref<CaptionTrackInfo[]>([]),
     activeCaptionIndex: ref<number | null>(null),
+    chapters: ref<ChapterInfo[]>([]),
     supportsQuality: ref(false),
     qualityLevels: ref<QualityLevelInfo[]>([]),
     currentQualityHeight: ref<number | null>(null),

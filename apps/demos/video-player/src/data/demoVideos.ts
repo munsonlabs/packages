@@ -46,6 +46,16 @@ export const videos: VideoEntry[] = [
     poster: 'https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg',
   },
   {
+    label: 'Big Buck Bunny (chapters + captions)',
+    src: 'https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4#chapters',
+    poster: 'https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg',
+    tracks: [
+      { src: './media/captions/bbb-chapters.vtt', kind: 'chapters', srclang: 'en', label: 'Chapters' },
+      { src: './media/captions/bbb-en.vtt', kind: 'captions', srclang: 'en', label: 'English', default: true },
+      { src: './media/captions/bbb-fr.vtt', kind: 'captions', srclang: 'fr', label: 'Français' },
+    ],
+  },
+  {
     label: 'HLS test stream (bipbop)',
     src: 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8',
     poster: 'https://img.youtube.com/vi/aqz-KE-bpKQ/0.jpg',

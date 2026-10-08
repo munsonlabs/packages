@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { fileIncludeHook } from './app/utils/fileInclude'
 
 const baseURL = (process.env.NUXT_APP_BASE_URL || '/').replace(/\/?$/, '/')
@@ -16,6 +17,14 @@ export default defineNuxtConfig({
   },
   hooks: {
     'content:file:beforeParse': fileIncludeHook,
+  },
+  nitro: {
+    publicAssets: [
+      {
+        dir: fileURLToPath(new URL('../apps/demos/video-player/public/media/captions', import.meta.url)),
+        baseURL: '/media/video-player/captions',
+      },
+    ],
   },
   components: [
     { path: '~/components/player', pathPrefix: false },

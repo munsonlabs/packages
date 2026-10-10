@@ -67,10 +67,15 @@ export function createLibrary(kit, definitions, options = {}) {
  * @property {string} [publishedAt]
  */
 
+/** A library entry that is at least shaped like a definition: anything else can't be validated. */
+const isDefinition = (entry) => !!entry && typeof entry === 'object' && typeof entry.root === 'object' && entry.root !== null
+
 /**
  * Reads a library (or a bare array of definitions) for this app's kit: validates each
- * definition against the kit, and keeps only the ones that render as written. Widgets with only warnings are kept. Throws `LibraryError` for something that isn't
- * a library, or one from a newer version than this loom understands.
+ * definition against the kit, and keeps only the ones that render as written. Widgets with only
+ * warnings are kept; entries that aren't definitions at all are skipped like any other. Throws
+ * `LibraryError` for something that isn't a library, or one from a newer version than this loom
+ * understands.
  *
  * @param {Kit} kit
  * @param {unknown} input
@@ -97,16 +102,23 @@ export function loadLibrary(kit, input) {
 
   const widgets = []
   const skipped = []
-  for (const definition of library.widgets) {
-    const issues = validateDefinition(kit, definition)
-    if (hasErrors(issues)) skipped.push({ id: definition.id, name: definition.name, issues: issues.filter((i) => i.severity !== 'warning') })
-    else widgets.push(definition)
-  }
+  const definitions = []
+  library.widgets.forEach((entry, index) => {
+    if (!isDefinition(entry)) {
+      const { id, name } = entry ?? {}
+      skipped.push({ id: typeof id === 'string' ? id : `#${index + 1}`, name, issues: [{ message: 'Not a widget definition: it needs a root' }] })
+      return
+    }
+    definitions.push(entry)
+    const issues = validateDefinition(kit, entry)
+    if (hasErrors(issues)) skipped.push({ id: entry.id, name: entry.name, issues: issues.filter((i) => i.severity !== 'warning') })
+    else widgets.push(entry)
+  })
 
   // Worked out from the widgets themselves, so a hand-edited file can't misreport it.
   const missing = {
-    sources: union(library.widgets.map(sourcesUsed)).filter((id) => !kit.sources[id]),
-    blocks: union(library.widgets.map(blocksUsed)).filter((type) => !kit.blocks[type]),
+    sources: union(definitions.map(sourcesUsed)).filter((id) => !kit.sources[id]),
+    blocks: union(definitions.map(blocksUsed)).filter((type) => !kit.blocks[type]),
   }
 
   return {

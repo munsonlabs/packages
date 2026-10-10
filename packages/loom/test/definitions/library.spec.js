@@ -79,6 +79,17 @@ describe('loadLibrary', () => {
     expect(loaded.skipped.map((s) => s.issues[0].message)).toEqual(['Unsupported version 1, expected 2'])
   })
 
+  it('skips entries that are not widget definitions, without counting them as missing', () => {
+    const loaded = loadLibrary(kit, [mini, { id: 'broken', name: 'Broken', root: null }, 'nope', null])
+    expect(loaded.widgets.map((w) => w.id)).toEqual(['mini'])
+    expect(loaded.skipped.map((s) => [s.id, s.name, s.issues[0].message])).toEqual([
+      ['broken', 'Broken', 'Not a widget definition: it needs a root'],
+      ['#3', undefined, 'Not a widget definition: it needs a root'],
+      ['#4', undefined, 'Not a widget definition: it needs a root'],
+    ])
+    expect(loaded.missing).toEqual({ sources: [], blocks: [] })
+  })
+
   it('refuses things that are not libraries, and newer formats', () => {
     expect(() => loadLibrary(kit, 'not json')).toThrow(LibraryError)
     expect(() => loadLibrary(kit, { hello: 'world' })).toThrow('Not a widget library')

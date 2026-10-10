@@ -55,7 +55,9 @@ export function useCanvasDrag(options) {
     if (!el || !id || id === options.rootId()) return
     pressed = { id, label: options.labelFor(id), x: e.clientX, y: e.clientY }
     window.addEventListener('pointermove', onPointerMove)
-    window.addEventListener('pointerup', onPointerUp, { once: true })
+    window.addEventListener('pointerup', onPointerUp)
+    // The browser can take the pointer away mid-drag (to scroll, say): that ends it without a drop.
+    window.addEventListener('pointercancel', cancel)
   }
 
   function onPointerMove(e) {
@@ -114,7 +116,6 @@ export function useCanvasDrag(options) {
   }
 
   function onPointerUp() {
-    window.removeEventListener('pointermove', onPointerMove)
     const drag = dragging.value
     const drop = target.value
     if (drag) {
@@ -126,8 +127,11 @@ export function useCanvasDrag(options) {
     cancel()
   }
 
+  /** Ends the press or drag without dropping, and stops listening. */
   function cancel() {
     window.removeEventListener('pointermove', onPointerMove)
+    window.removeEventListener('pointerup', onPointerUp)
+    window.removeEventListener('pointercancel', cancel)
     pressed = undefined
     dragging.value = undefined
     document.body.style.userSelect = ''

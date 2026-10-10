@@ -30,9 +30,9 @@ const groups = [
 
 const byGroup = (group) => tokens.filter((t) => t.group === group)
 const inherited = (t) => props.theme.values[t.name] ?? props.theme.values[tokenVar(t.name)] ?? t.default
-/** What a colour is in the dark counterpart: this widget's override if it sets one (it applies to both), else the dark theme's. */
 /** What the dark counterpart gives, before this widget's overrides. */
 const darkInherited = (t) => props.dark?.values[t.name] ?? props.dark?.values[tokenVar(t.name)] ?? inherited(t)
+/** What a colour is in the dark counterpart: this widget's override if it sets one (it applies to both), else the dark theme's. */
 const inDark = (t) => {
   const own = value(t)
   const pair = parseLightDark(own)

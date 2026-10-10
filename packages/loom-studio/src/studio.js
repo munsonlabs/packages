@@ -37,7 +37,7 @@ export function createStudio(definition, props, events) {
   const stage = ref()
 
   /** Which popovers and dialogs are open. */
-  const open = reactive({ variants: false, theme: false, issues: false, calls: false, export: false, import: false })
+  const open = reactive({ variants: false, theme: false, issues: false, calls: false, palette: false, export: false, import: false })
 
   const history = useHistory(definition)
   const variants = useVariantEditing(definition, history.change)

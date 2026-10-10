@@ -132,6 +132,11 @@ export function pathTo(root, id) {
   return []
 }
 
+/** Every node, depth first, with its depth. */
+export function listNodes(root, depth = 0) {
+  return [{ node: root, depth }, ...(root.children ?? []).flatMap((child) => listNodes(child, depth + 1))]
+}
+
 /** @typedef {'before' | 'after' | 'inside'} DropPosition */
 
 /**

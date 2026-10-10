@@ -11,7 +11,7 @@ src/
   renderer.js    what every node of one widget shares: its sources, path → value, tap → action
   types/         the shapes of everything: definitions, kits, blocks
   kit/           making a kit, sharing it with widgets, and finding things in it
-  blocks/        the 5 built-in blocks, one file each (what it accepts, the HTML it draws, its CSS)
+  blocks/        the 15 built-in blocks, one file each (what it accepts, the HTML it draws, its CSS)
   definitions/   working with definitions: bindings, validation
   theme/         the variable defaults and the shared CSS
 ```

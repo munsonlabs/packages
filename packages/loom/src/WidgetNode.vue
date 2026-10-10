@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { builtinBlocks } from './blocks/builtin'
 import { useRenderer } from './renderer'
 
 /**
@@ -30,7 +31,8 @@ const values = computed(() => {
 })
 
 const onClick = computed(() => clickHandler(props.node, props.locals))
-const classes = computed(() => [onClick.value && 'is-clickable'])
+// Built-in blocks add their own `w-*` class; a kit's block gets one here.
+const classes = computed(() => [!(props.node.type in builtinBlocks) && `w-${props.node.type.toLowerCase()}`, onClick.value && 'is-clickable'])
 </script>
 
 <template>

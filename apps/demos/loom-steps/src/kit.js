@@ -1,5 +1,6 @@
 import { computed, reactive } from 'vue'
-import { createKit, defineSource } from '@munsonlabs/loom'
+import { createKit, defineBlock, defineSource } from '@munsonlabs/loom'
+import Highlight from './Highlight.vue'
 
 /** The data: a few articles, as an app might fetch them. Nothing here knows about loom. */
 export const articles = [
@@ -8,6 +9,9 @@ export const articles = [
     title: 'Why the tides are getting higher',
     summary: 'Sea levels are rising a little faster each decade. Here is what that means for the coast.',
     section: 'Science',
+    author: 'Ada Lovell',
+    rating: 4.5,
+    progress: 35,
     minutes: 6,
     image: 'https://picsum.photos/seed/tides/640/360',
     tags: ['Climate', 'Coasts', 'Maps'],
@@ -17,6 +21,9 @@ export const articles = [
     title: 'A loaf a day: a year of sourdough',
     summary: 'Three hundred and sixty-five loaves later, one baker on what actually matters.',
     section: 'Food',
+    author: 'Sam Baker',
+    rating: 4,
+    progress: 0,
     minutes: 4,
     image: 'https://picsum.photos/seed/sourdough/640/360',
     tags: ['Baking'],
@@ -25,6 +32,9 @@ export const articles = [
     id: 'chess',
     title: 'The chess club that never closes',
     section: 'Local',
+    author: 'Mo Khan',
+    rating: 3,
+    progress: 100,
     minutes: 3,
   },
 ]
@@ -38,6 +48,9 @@ export function useArticle(article) {
     image: computed(() => article().image),
     readTime: computed(() => `${article().minutes} min read`),
     tags: computed(() => article().tags ?? []),
+    author: computed(() => article().author),
+    rating: computed(() => article().rating),
+    progress: computed(() => article().progress),
   }
 }
 
@@ -52,6 +65,9 @@ export const articleSource = defineSource({
     image: { type: 'string' },
     readTime: { type: 'string' },
     tags: { type: 'list', item: { '': 'string' } },
+    author: { type: 'string' },
+    rating: { type: 'number' },
+    progress: { type: 'number', description: 'How much has been read, out of 100' },
   },
   setup: (ctx) => useArticle(() => ctx.data),
 })
@@ -84,4 +100,15 @@ export const readingSource = defineSource({
 })
 
 /** The demo's kit: everything the chapters' widgets can read and do. It grows chapter by chapter. */
-export const kit = createKit({ sources: [articleSource, readingSource] })
+/** A block of the kit's own: any Vue component, described like the built-ins so editors and the validator know it. */
+export const highlightBlock = defineBlock({
+  type: 'Highlight',
+  label: 'Highlight',
+  icon: 'i-lucide-highlighter',
+  description: 'Text with a marker pen behind it.',
+  container: false,
+  props: { text: { type: 'string', label: 'Text', default: '', accepts: ['string'] } },
+  component: Highlight,
+})
+
+export const kit = createKit({ sources: [articleSource, readingSource], blocks: [highlightBlock] })

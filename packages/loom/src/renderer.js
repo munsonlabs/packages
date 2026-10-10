@@ -48,6 +48,10 @@ export function createRenderer({ kit, sourceContext }) {
       const value = arg ? readValue(arg, locals) : undefined
       // No argument means none at all: passing the event would land in parameters like `openArticle(story?)`.
       const run = () => (typeof fn === 'function' ? (arg ? fn(value) : fn()) : undefined)
+
+      const isLink = node.type === 'Link'
+      // A link with somewhere to go still goes there, alongside its action.
+      if (isLink && !e.currentTarget.getAttribute('href')) e.preventDefault()
       run()
     }
   }

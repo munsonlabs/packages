@@ -26,7 +26,10 @@ export const spec = {
   props: {
     items: { type: 'string', label: 'Items', default: '', accepts: ['list'] },
     limit: { type: 'number', label: 'Limit', default: 0 },
-    direction: { type: 'enum', label: 'Direction', options: ['column', 'row'], default: 'column' },
+    layout: { type: 'enum', label: 'Layout', options: ['stack', 'grid', 'carousel'], default: 'stack' },
+    direction: { type: 'enum', label: 'Direction (stack)', options: ['column', 'row'], default: 'column' },
+    columns: { type: 'number', label: 'Columns (grid)', default: 2 },
+    itemWidth: { type: 'string', label: 'Item width (carousel)', default: '80%' },
     gap: { type: 'string', label: 'Gap', default: 'var(--w-gap)' },
   },
 }
@@ -34,7 +37,7 @@ export const spec = {
 
 <script setup>
 import { computed } from 'vue'
-import { blockProps } from './shared'
+import { blockProps, gridColumns } from './shared'
 
 /**
  * Renders its default slot once per item, passing `{ item, repeat }`: what `item.*` and
@@ -47,11 +50,19 @@ const items = computed(() => {
   const all = Array.isArray(props.items) ? props.items : []
   return Number(props.limit) > 0 ? all.slice(0, Number(props.limit)) : all
 })
+const layout = computed(() => (props.layout === 'grid' || props.layout === 'carousel' ? props.layout : 'stack'))
+const style = computed(() =>
+  layout.value === 'grid'
+    ? { ...gridColumns(props.columns, ''), gap: props.gap }
+    : layout.value === 'carousel'
+      ? { gap: props.gap, '--loom-item-width': props.itemWidth }
+      : { flexDirection: props.direction, gap: props.gap },
+)
 const position = (i) => repeatPosition(i, items.value.length)
 </script>
 
 <template>
-  <div v-if="items.length" class="w-repeat" :style="{ flexDirection: props.direction, gap: props.gap }">
+  <div v-if="items.length" class="w-repeat" :class="[`is-${layout}`, { 'is-snapping': layout === 'carousel' }]" :style="style">
     <div v-for="(item, i) in items" :key="i" class="w-repeat-item">
       <slot :item="item" :repeat="position(i)" />
     </div>

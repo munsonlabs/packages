@@ -53,7 +53,7 @@ describe('taps', () => {
     const kit = makeKit()
     const on = (type, event = 'click') => ({ ...productCard, root: { id: 'r', type, on: { [event]: 'shop.open' } } })
     expect(validateDefinition(kit, on('Stack'))).toEqual([])
-    expect(validateDefinition(kit, on('Repeat')).map((i) => i.message)).toEqual(["Repeat can't be tapped"])
+    expect(validateDefinition(kit, on('Badge')).map((i) => i.message)).toEqual(["Badge can't be tapped"])
     expect(validateDefinition(kit, on('Stack', 'hover')).map((i) => i.message)).toEqual(['Widgets only handle "click", not "hover"'])
   })
 })

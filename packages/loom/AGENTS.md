@@ -2,7 +2,7 @@
 
 ## Package purpose
 
-Renders widget **definitions** (JSON trees of blocks) against a **kit** (an app's sources and actions). It is deliberately domain-free: nothing here may know about stories, products or any app's data. App-specific code lives in kits. Its only internal dependency is `@munsonlabs/shipkit` (tooling).
+Renders widget **definitions** (JSON trees of blocks) against a **kit** (an app's sources and blocks). It is deliberately domain-free: nothing here may know about stories, products or any app's data. App-specific code lives in kits. Its only internal dependency is `@munsonlabs/shipkit` (tooling).
 
 ## Public API
 
@@ -21,7 +21,7 @@ src/
   renderer.js    createRenderer: lazy sources, readValue(path, locals), clickHandler (runs actions)
   types/         definition.js, blocks.js, kit.js: every shape, no runtime code
   kit/           createKit.js, provide.js (provideKit/inject*), lookup.js (blockDefaults)
-  blocks/        builtin/ (the 5 built-ins, one SFC each: spec, template, CSS; index.js gathers builtinBlocks)
+  blocks/        builtin/ (the 15 built-ins, one SFC each: spec, template, CSS; index.js gathers builtinBlocks)
   definitions/   paths.js, validate.js
   theme/         styles.css
 test/            mirrors src/; fixtures.js (a small shop kit) is imported as @test/fixtures
@@ -41,4 +41,4 @@ test/            mirrors src/; fixtures.js (a small shop kit) is imported as @te
 
 ## Testing
 
-`vp test` (happy-dom). Tests mirror `src/` (see `test/README.md`): `widget.spec.js` for rendering, actions and kits; `blocks/` and `definitions/` for the rest. Use the shop kit in `test/fixtures.js`; never import from the demos.
+`vp test` (happy-dom). Tests mirror `src/` (see `test/README.md`): `widget.spec.js` for rendering, actions, kits and custom blocks; `blocks/` and `definitions/` for the rest. Use the shop kit in `test/fixtures.js`; never import from the demos.

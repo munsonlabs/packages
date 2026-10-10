@@ -13,10 +13,14 @@
   --w-muted: #71717a;
   --w-accent: #c2410c;
   --w-accent-contrast: #ffffff;
+  --w-border: #e4e4e7;
+  --w-alert: #dc2626;
+  --w-success: #16a34a;
 
   /* Type */
   --w-font: system-ui, sans-serif;
   --w-font-heading: inherit;
+  --w-text-xs: 0.72rem;
   --w-text-sm: 0.82rem;
   --w-text-md: 0.95rem;
   --w-text-lg: 1.05rem;
@@ -32,6 +36,7 @@
 
   /* Shape */
   --w-radius-none: 0px;
+  --w-radius-md: 12px;
   --w-radius-full: 999px;
   --w-shadow-none: none;
 
@@ -46,10 +51,13 @@
   --w-caption-size: var(--w-text-sm);
   --w-title-weight: var(--w-weight-bold);
   --w-title-font: var(--w-font-heading);
+  --w-link: var(--w-accent);
   --w-image-radius: var(--w-radius);
   --w-image-bg: var(--w-surface);
   --w-button-radius: var(--w-radius-full);
   --w-button-padding: var(--w-space-1) var(--w-space-3);
+  --w-rating: #f59e0b;
+  --w-progress-height: 6px;
 }
 
 .w-root {
@@ -76,4 +84,39 @@
 
 .is-clickable {
   cursor: pointer;
+}
+
+.w-grid,
+.w-repeat.is-grid {
+  display: grid;
+  min-width: 0;
+}
+
+/* Carousels scroll sideways; a Repeat's items are display: contents, so its slides are its grandchildren. */
+.w-carousel,
+.w-repeat.is-carousel {
+  display: flex;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.w-carousel::-webkit-scrollbar,
+.w-repeat.is-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.w-carousel > *,
+.w-repeat.is-carousel > .w-repeat-item > * {
+  flex: 0 0 var(--loom-item-width);
+  min-width: 0;
+}
+
+.is-snapping {
+  scroll-snap-type: x mandatory;
+}
+
+.is-snapping > *,
+.is-snapping > .w-repeat-item > * {
+  scroll-snap-align: start;
 }

@@ -12,17 +12,17 @@ Loom has two entry points. An app needs only the first; editors use the second a
 What an app needs: make a kit, validate definitions, render widgets.
 
 ```js
-import { createKit, defineSource, provideKit, validateDefinition, Widget } from '@munsonlabs/loom'
+import { createKit, defineSource, defineBlock, provideKit, validateDefinition, Widget } from '@munsonlabs/loom'
 import '@munsonlabs/loom/style.css'
 ```
 
 ### Kits
 
-| Export                      | Does                                                    |
-| --------------------------- | ------------------------------------------------------- |
-| `createKit(options)`        | A kit from `sources`. Throws on clashing names.         |
-| `defineSource`              | Identity helper that types its argument.                |
-| `provideKit(kit, context?)` | The default kit and context for every `<Widget>` below. |
+| Export                        | Does                                                         |
+| ----------------------------- | ------------------------------------------------------------ |
+| `createKit(options)`          | A kit from `sources` and `blocks`. Throws on clashing names. |
+| `defineSource`, `defineBlock` | Identity helpers: they return their argument.                |
+| `provideKit(kit, context?)`   | The default kit and context for every `<Widget>` below.      |
 
 ### `<Widget>`
 

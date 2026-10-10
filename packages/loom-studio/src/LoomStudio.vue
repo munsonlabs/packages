@@ -88,6 +88,11 @@ defineShortcuts({
   cursor: default;
 }
 
+.loom-stage.is-dragging,
+.loom-stage.is-dragging [data-node-id] {
+  cursor: grabbing;
+}
+
 .loom-stage.is-editing [data-node-id]:hover {
   outline: 1px dashed var(--ui-primary);
   outline-offset: 3px;

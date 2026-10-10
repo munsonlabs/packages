@@ -7,6 +7,7 @@ The editor for [`@munsonlabs/loom`](../loom) widgets. Canvas first, no sidebars:
 ```
 
 - **Click to edit**: content, actions, visibility and style, with a breadcrumb to the element's containers and its add/move/nest/duplicate/delete actions
+- **Drag to move**: before, after or into a container, anywhere in the tree (only among siblings while editing a variant)
 - **Bind to anything the kit provides**: every source's fields, grouped, filtered to the types that fit
 - **Variants**: pick one to edit it; changes become overrides with reset-to-base markers, moves become its order, delete hides
 - **Preview** with your own sample data at four widths, let the rules pick the variant, and **Try** the widget for real: every call it makes to `context` is logged

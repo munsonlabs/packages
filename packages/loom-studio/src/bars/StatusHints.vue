@@ -8,7 +8,7 @@ const s = useStudio()
 
 <template>
   <p class="pointer-events-none absolute top-5 left-1/2 -translate-x-1/2 text-xs text-dimmed">
-    <template v-if="s.preview.mode === 'edit'">Click anything to edit it</template>
+    <template v-if="s.preview.mode === 'edit'">Click anything to edit it · drag to move it</template>
     <template v-else>Trying it: clicks run the widget's actions</template>
   </p>
 

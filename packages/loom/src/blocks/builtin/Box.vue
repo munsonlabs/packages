@@ -7,13 +7,13 @@ export const spec = {
   container: true,
   clickable: true,
   props: {
-    background: { type: 'string', label: 'Background', default: 'var(--w-surface)' },
-    padding: { type: 'string', label: 'Padding', default: 'var(--w-space-3)' },
-    radius: { type: 'string', label: 'Radius', default: 'var(--w-radius-md)' },
-    shadow: { type: 'string', label: 'Shadow', default: 'var(--w-shadow-none)' },
+    background: { type: 'string', label: 'Background', default: 'var(--w-surface)', tokenScale: 'color' },
+    padding: { type: 'string', label: 'Padding', default: 'var(--w-space-3)', tokenScale: 'space' },
+    radius: { type: 'string', label: 'Radius', default: 'var(--w-radius-md)', tokenScale: 'radius' },
+    shadow: { type: 'string', label: 'Shadow', default: 'var(--w-shadow-none)', tokenScale: 'shadow' },
     border: { type: 'boolean', label: 'Border', default: false },
     direction: { type: 'enum', label: 'Direction', options: ['column', 'row'], default: 'column' },
-    gap: { type: 'string', label: 'Gap', default: 'var(--w-gap)' },
+    gap: { type: 'string', label: 'Gap', default: 'var(--w-gap)', tokenScale: 'space' },
     align: { type: 'enum', label: 'Align', options: ['stretch', 'start', 'center', 'end'], default: 'stretch' },
   },
 }

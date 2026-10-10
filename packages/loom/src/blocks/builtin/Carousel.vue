@@ -7,7 +7,7 @@ export const spec = {
   container: true,
   props: {
     itemWidth: { type: 'string', label: 'Item width', default: '80%' },
-    gap: { type: 'string', label: 'Gap', default: 'var(--w-gap)' },
+    gap: { type: 'string', label: 'Gap', default: 'var(--w-gap)', tokenScale: 'space' },
     snap: { type: 'boolean', label: 'Snap', default: true },
   },
 }

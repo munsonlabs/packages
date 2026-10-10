@@ -14,6 +14,7 @@
  * @property {string[]} [options]
  * @property {unknown} [default]
  * @property {ValueType[]} [accepts] Field types this prop can be bound to. Omitted means static only.
+ * @property {TokenScale} [tokenScale] A token scale editors offer steps from, e.g. `space` for a gap: `var(--w-space-3)`.
  */
 
 /**

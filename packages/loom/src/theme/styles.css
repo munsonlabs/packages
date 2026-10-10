@@ -1,8 +1,8 @@
 /*
- * The default of every `--w-*` variable, the widget root, and the rules several blocks share. The
- * defaults are declared at zero specificity, so a definition's vars, set inline on the widget root,
- * override them without a fight. Each block draws the rest in its SFC's `<style>`, reading the same
- * variables.
+ * The default of every design token (see tokens.js), the widget root, and the rules several blocks
+ * share. The defaults are declared at zero specificity, so a kit's theme, a definition's vars and a
+ * variant's vars, all set inline on the widget root, override them without a fight. Each block
+ * draws the rest in its SFC's `<style>`, reading the same tokens.
  */
 
 :where(.w-root) {
@@ -25,6 +25,7 @@
   --w-text-md: 0.95rem;
   --w-text-lg: 1.05rem;
   --w-text-xl: 1.35rem;
+  --w-text-2xl: 1.75rem;
   --w-weight-medium: 600;
   --w-weight-bold: 700;
 
@@ -33,12 +34,21 @@
   --w-space-1: 4px;
   --w-space-2: 8px;
   --w-space-3: 12px;
+  --w-space-4: 16px;
+  --w-space-5: 20px;
+  --w-space-6: 24px;
+  --w-space-7: 32px;
+  --w-space-8: 48px;
 
   /* Shape */
   --w-radius-none: 0px;
+  --w-radius-sm: 6px;
   --w-radius-md: 12px;
+  --w-radius-lg: 18px;
   --w-radius-full: 999px;
   --w-shadow-none: none;
+  --w-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.08), 0 1px 3px rgb(0 0 0 / 0.06);
+  --w-shadow-md: 0 4px 12px rgb(0 0 0 / 0.1), 0 2px 4px rgb(0 0 0 / 0.06);
 
   /* Roles: what blocks read, pointing at the scales */
   --w-gap: var(--w-space-2);

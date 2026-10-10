@@ -1,21 +1,13 @@
 <script setup>
 import { computed } from 'vue'
+import { describeCondition, describeMatch } from '../dialogs/conditions'
 import { useStudio } from '../studio'
 
 /** Top left: the widget's name, the data it renders for, and the host app's own controls (the `actions` slot). */
 const s = useStudio()
 
-const OPS = { equals: 'is', in: 'is one of', includes: 'contains', exists: 'is set' }
-const NEGATED = { equals: 'is not', in: 'is not one of', includes: "doesn't contain", exists: "isn't set" }
-const valueText = (v) => (Array.isArray(v) ? v.map(valueText).join(', ') : typeof v === 'string' ? v : JSON.stringify(v))
-
-/** One line per condition, as the badge's tooltip reads them. */
-const conditions = computed(() =>
-  (s.definition.match ?? []).map((c) => {
-    const negated = c.path.startsWith('!')
-    return `${c.path.replace(/^!/, '')} ${(negated ? NEGATED : OPS)[c.op] ?? c.op}${c.op === 'exists' ? '' : ` ${valueText(c.value)}`}`
-  }),
-)
+/** One phrase per condition, as the badge's tooltip reads them. */
+const conditions = computed(() => (s.definition.match ?? []).map(describeCondition))
 </script>
 
 <template>
@@ -32,7 +24,7 @@ const conditions = computed(() =>
     />
     <UTooltip :text="conditions.length ? `Renders when ${conditions.join(' and ')}` : 'Renders for any data'">
       <UBadge
-        :label="conditions.length ? conditions[0] + (conditions.length > 1 ? ` +${conditions.length - 1}` : '') : 'Any data'"
+        :label="describeMatch(s.definition.match)"
         icon="i-lucide-filter"
         color="neutral"
         variant="soft"

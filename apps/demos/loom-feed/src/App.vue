@@ -244,7 +244,7 @@ const published = computed(() => {
       </template>
     </UModal>
 
-    <UModal v-model:open="pasteOpen" title="Paste a library" description="A library's JSON, the whole file or a list of widgets.">
+    <UModal v-model:open="pasteOpen" title="Paste a library" description="The JSON from the studio's Export, the whole library or a list of widgets.">
       <template #body>
         <UTextarea v-model="pasted" :rows="12" autoresize class="w-full font-mono text-xs" placeholder='{ "format": "loom-library", … }' />
       </template>

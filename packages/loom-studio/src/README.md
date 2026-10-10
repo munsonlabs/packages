@@ -12,7 +12,7 @@ src/
   preview/         how it's previewed: sample, width, theme, scheme, rules, Try, and the call log
   panels/          the forms inside popovers: Inspector, styles, tokens, variants
   bars/            the floating toolbars around the canvas
-  dialogs/         Export, Import
+  dialogs/         ⌘K, Export, Import
 ```
 
 ## How it fits together
@@ -29,7 +29,7 @@ src/
    | `s.preview`   | `preview/usePreview.js`        | `s.preview.sampleIndex`, `s.preview.mode`         |
    | `s.callLog`   | `preview/useCallLog.js`        | `s.callLog.calls`                                 |
    | `s.drag`      | `canvas/useCanvasDrag.js`      | `s.drag.dragging`                                 |
-   | `s.open`      | `studio.js`                    | `s.open.theme`, `s.open.export`                   |
+   | `s.open`      | `studio.js`                    | `s.open.palette`, `s.open.export`                 |
 
    Plus `s.props`, `s.definition`, `s.issues` and `s.errors`, and a few actions that join several parts (`toggleMode`, `selectIssue`, `publish`).
 
@@ -39,5 +39,5 @@ src/
 
 - **Every change goes through `s.history.change(fn)` or `s.history.checkpoint(next)`** (`editing/useHistory.js`), which works on a copy and keeps the previous version for undo. Never change the definition in place.
 - **Editing a variant never touches the base.** `editing/useTreeEditing.js` turns changes into the smallest override, moves into `order`, and delete into `hidden`.
-- **No sidebars.** Everything opens where you're working: popovers and bars. It's a product decision.
+- **No sidebars.** Everything opens where you're working: popovers, bars, ⌘K. It's a product decision.
 - **Nuxt UI by auto-import only.** Components like `UButton` aren't imported; the host app's Nuxt UI plugin scans this package. See `AGENTS.md`.

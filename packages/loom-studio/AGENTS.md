@@ -2,7 +2,7 @@
 
 ## Package purpose
 
-`<LoomStudio>`, the editor for `@munsonlabs/loom` definitions, built with Nuxt UI. Canvas first: the widget fills the screen, editing happens in a popover anchored to the clicked element, and everything else lives in floating bars. **No sidebars**: that is a product decision, keep it.
+`<LoomStudio>`, the editor for `@munsonlabs/loom` definitions, built with Nuxt UI. Canvas first: the widget fills the screen, editing happens in a popover anchored to the clicked element, and everything else lives in floating bars, popovers and a ⌘K palette. **No sidebars**: that is a product decision, keep it.
 
 ## Nuxt UI
 
@@ -21,7 +21,7 @@ src/
   preview/         usePreview (sample, width, theme, scheme, rules, mode), useCallLog, logCalls
   panels/          inspector/ (Inspector + one component per tab), StyleEditor, TokensEditor, TokenInput, KeyValueEditor, VariantsPanel, OverrideMark, options.js: props in, events out, no studio
   bars/            IdentityBar, DocumentBar, ThemePopover, IssuesPopover, PreviewBar, StatusHints, CallsLog
-  dialogs/         ExportModal, ImportModal
+  dialogs/         CommandPalette, ExportModal, ImportModal
 test/              mirrors src/; fixtures.js has a tiny kit and inScope()
 ```
 
@@ -34,6 +34,10 @@ Components in `canvas/`, `bars/` and `dialogs/` take what they need from `useStu
 - The popover anchors to the element found by `[data-node-id]` in the stage, relocated after every render (`locate()`). A node that isn't rendered (hidden in the variant, or its `if` false) anchors to its nearest rendered ancestor instead, and the popover says why (`offscreen`).
 - **Drag and drop** works on loom's DOM, not ours: `useCanvasDrag` turns a press past 5px into a drag, finds the `[data-node-id]` under the pointer, and picks before/after/inside from where the pointer sits (containers take `inside` in their middle half; the flow direction comes from the nearest Stack/Repeat). On the base it calls `moveNodeTo` (checked by `canMoveTo`); in a variant it only reorders siblings, saved as `order`. The click that ends a drag is swallowed so it doesn't reselect.
 - `clone` is JSON-based on purpose: `structuredClone` throws on Vue's reactive proxies.
+
+## Palette actions
+
+⌘K actions (`dialogs/CommandPalette.vue`) run from `then()`, after the palette closes, with its focus return suppressed (`onCloseAutoFocus`): handing focus back to the page would read as focus leaving the element editor and close it.
 
 ## Checking
 

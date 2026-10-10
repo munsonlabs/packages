@@ -16,6 +16,7 @@ const s = useStudio()
         variant="soft"
         class="loom-bar rounded-full"
         :disabled="s.props.context === undefined"
+        data-tour="calls"
       />
       <template #content>
         <div class="max-h-80 w-[28rem] overflow-y-auto p-2 font-mono text-xs">

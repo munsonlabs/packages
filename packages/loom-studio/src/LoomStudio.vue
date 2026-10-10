@@ -12,6 +12,7 @@ import ExportModal from './dialogs/ExportModal.vue'
 import ImportModal from './dialogs/ImportModal.vue'
 import LayersPanel from './layers/LayersPanel.vue'
 import { createStudio, provideStudio } from './studio'
+import TourPopover from './tour/TourPopover.vue'
 
 /**
  * The editor. It builds the studio's shared state (`studio.js`), provides it to the parts
@@ -27,6 +28,8 @@ const props = defineProps({
   samples: { type: Array, required: true },
   /** What the kit's sources get as `context` in the preview. Every function called on it is logged. */
   context: { default: undefined },
+  /** Starts the guided tour on a first visit (remembered per browser). The help button replays it either way. */
+  tour: { type: Boolean, default: true },
   /** Every widget in the app's library, in order: offered as one file in Export. */
   library: Array,
 })
@@ -55,7 +58,8 @@ defineShortcuts({
   meta_arrowup: () => studio.editing.moveBy(-1),
   meta_arrowdown: () => studio.editing.moveBy(1),
   escape: () => {
-    if (studio.selection.popoverOpen) studio.selection.popoverOpen = false
+    if (studio.tour.open) studio.tour.finish()
+    else if (studio.selection.popoverOpen) studio.selection.popoverOpen = false
     else if (studio.selection.selectedId) studio.selection.select(undefined)
   },
 })
@@ -73,6 +77,7 @@ defineShortcuts({
     <CallsLog />
 
     <ElementPopover />
+    <TourPopover />
 
     <CommandPalette />
     <ExportModal />
@@ -81,6 +86,12 @@ defineShortcuts({
 </template>
 
 <style>
+/* The tour rings what it points at; outlines follow each element's own radius. */
+[data-tour-active] {
+  outline: 2px solid var(--ui-primary) !important;
+  outline-offset: 4px !important;
+}
+
 .loom-bar {
   background: color-mix(in oklab, var(--ui-bg) 88%, transparent);
   backdrop-filter: blur(12px);

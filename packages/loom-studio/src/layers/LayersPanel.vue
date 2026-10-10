@@ -86,7 +86,7 @@ function on(id, action) {
 </script>
 
 <template>
-  <aside class="loom-bar absolute top-16 bottom-16 left-3 z-10 flex w-72 flex-col overflow-hidden rounded-xl">
+  <aside class="loom-bar absolute top-16 bottom-16 left-3 z-10 flex w-72 flex-col overflow-hidden rounded-xl" data-tour="layers-panel">
     <div class="flex items-center gap-2 border-b border-default px-3 py-2">
       <UIcon name="i-lucide-layers" class="size-4 text-primary" />
       <span class="text-sm font-medium">Layers</span>

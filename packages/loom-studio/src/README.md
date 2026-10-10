@@ -14,12 +14,13 @@ src/
   panels/          the forms inside popovers: Inspector, styles, tokens, variants
   bars/            the floating toolbars around the canvas
   dialogs/         ⌘K, Export, Import, New widget
+  tour/            the guided tour: its steps, its logic, its card
 ```
 
 ## How it fits together
 
-1. `LoomStudio.vue` calls `createStudio(definition, props, events)` (`studio.js`), which calls each composable (`useHistory`, `useVariantEditing`, `useSelection`, `useTreeEditing`, `usePreview`, `useCallLog`, `useCanvasDrag`) and returns one reactive object.
-2. It passes that object down with `provideStudio`. Every component in `canvas/`, `layers/`, `bars/` and `dialogs/` starts with `const s = useStudio()` and uses only what it needs. The object is grouped by owner, so it's clear where each thing comes from:
+1. `LoomStudio.vue` calls `createStudio(definition, props, events)` (`studio.js`), which calls each composable (`useHistory`, `useVariantEditing`, `useSelection`, `useTreeEditing`, `usePreview`, `useCallLog`, `useCanvasDrag`, `useStudioTour`) and returns one reactive object.
+2. It passes that object down with `provideStudio`. Every component in `canvas/`, `layers/`, `bars/`, `dialogs/` and `tour/` starts with `const s = useStudio()` and uses only what it needs. The object is grouped by owner, so it's clear where each thing comes from:
 
    | On the studio | Comes from                     | For example                                       |
    | ------------- | ------------------------------ | ------------------------------------------------- |
@@ -30,6 +31,7 @@ src/
    | `s.preview`   | `preview/usePreview.js`        | `s.preview.sampleIndex`, `s.preview.mode`         |
    | `s.callLog`   | `preview/useCallLog.js`        | `s.callLog.calls`                                 |
    | `s.drag`      | `canvas/useCanvasDrag.js`      | `s.drag.dragging`                                 |
+   | `s.tour`      | `tour/useStudioTour.js`        | `s.tour.start()`                                  |
    | `s.open`      | `studio.js`                    | `s.open.palette`, `s.open.export`                 |
 
    Plus `s.props`, `s.definition`, `s.issues` and `s.errors`, and a few actions that join several parts (`toggleMode`, `selectIssue`, `publish`).

@@ -1,7 +1,7 @@
 import { effectScope, ref } from 'vue'
-import { createKit, defineKind } from '@munsonlabs/loom'
+import { createKit, defineKind, defineTheme, lightTheme } from '@munsonlabs/loom'
 
-/** A small kit: notes and photos. */
+/** A small kit: notes and photos, a light theme with a dark partner. */
 export const kit = createKit({
   sources: [{ id: 'note', label: 'Note', fields: { title: { type: 'string' } }, setup: () => ({ title: 'Hi' }) }],
   kinds: [
@@ -17,6 +17,10 @@ export const kit = createKit({
       matches: (d) => d.type === 'photo',
       starter: () => ({ root: { id: 'r', type: 'Stack' } }),
     }),
+  ],
+  themes: [
+    defineTheme({ ...lightTheme, id: 'brand', label: 'Brand', dark: 'brand-dark' }),
+    defineTheme({ id: 'brand-dark', label: 'Brand dark', values: {} }),
   ],
 })
 

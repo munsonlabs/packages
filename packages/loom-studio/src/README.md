@@ -9,7 +9,7 @@ src/
   studio.js        createStudio: wires the composables below into one object; useStudio() reads it
   editing/         changing the definition: undo, variants, tree edits, the pure tree helpers
   canvas/          the widget on screen: selection, the element popover
-  preview/         how it's previewed: sample, width, theme, rules
+  preview/         how it's previewed: sample, width, theme, scheme, rules
   panels/          the forms inside popovers: Inspector, styles, tokens, variants
   bars/            the floating toolbars around the canvas
   dialogs/         Export, Import

@@ -8,10 +8,10 @@ const s = useStudio()
 <template>
   <UPopover v-model:open="s.open.issues" :content="{ align: 'end', sideOffset: 8 }">
     <UButton
-      :icon="s.errors ? 'i-lucide-triangle-alert' : 'i-lucide-check'"
+      :icon="s.errors ? 'i-lucide-triangle-alert' : s.issues.length ? 'i-lucide-moon-star' : 'i-lucide-check'"
       :label="s.issues.length ? String(s.issues.length) : undefined"
       size="sm"
-      :color="s.errors ? 'error' : 'success'"
+      :color="s.errors ? 'error' : s.issues.length ? 'warning' : 'success'"
       variant="ghost"
       class="rounded-full"
       :aria-label="s.issues.length ? `${s.issues.length} issues` : 'Valid'"
@@ -23,15 +23,26 @@ const s = useStudio()
           v-for="(issue, i) in s.issues"
           :key="i"
           type="button"
-          class="flex items-start gap-1.5 rounded px-2 py-1 text-left text-xs text-error hover:bg-error/10"
+          class="flex items-start gap-1.5 rounded px-2 py-1 text-left text-xs"
+          :class="issue.severity === 'warning' ? 'text-warning hover:bg-warning/10' : 'text-error hover:bg-error/10'"
           @click="s.selectIssue(issue)"
         >
-          <UIcon name="i-lucide-triangle-alert" class="mt-0.5 size-3 shrink-0" />
+          <UIcon :name="issue.severity === 'warning' ? 'i-lucide-moon-star' : 'i-lucide-triangle-alert'" class="mt-0.5 size-3 shrink-0" />
           <span>
             <UBadge v-if="issue.variant" :label="s.variants.variantLabel(issue.variant)" color="warning" variant="subtle" size="sm" class="mr-1" />
             <code v-if="issue.nodeId">#{{ issue.nodeId }}</code> {{ issue.message }}
           </span>
         </button>
+        <UButton
+          v-if="s.issues.some((i) => i.severity === 'warning')"
+          label="These colours are deliberate"
+          icon="i-lucide-lock"
+          size="xs"
+          color="warning"
+          variant="soft"
+          class="self-start"
+          @click="s.history.change((d) => (d.fixedColors = true))"
+        />
       </div>
     </template>
   </UPopover>

@@ -13,9 +13,18 @@ const s = useStudio()
     </UTooltip>
     <template #content>
       <div class="max-h-[75vh] w-[30rem] overflow-y-auto p-3">
+        <USwitch
+          :model-value="!!s.definition.fixedColors"
+          label="Fixed colours"
+          description="This widget looks the same in light and dark, so its own colours are deliberate."
+          size="xs"
+          class="mb-3"
+          @update:model-value="s.history.change((d) => ($event ? (d.fixedColors = true) : delete d.fixedColors))"
+        />
         <TokensEditor
           :vars="s.definition.vars ?? {}"
-          :theme="s.preview.theme"
+          :theme="s.preview.panelTheme"
+          :dark="s.preview.darkTheme"
           @change="(vars) => s.history.change((d) => (d.vars = Object.keys(vars).length ? vars : undefined))"
         />
       </div>

@@ -151,6 +151,22 @@ function move(index, delta) {
         />
       </UFormField>
 
+      <UFormField label="…in" size="xs">
+        <div class="flex gap-1">
+          <UButton
+            v-for="scheme in ['light', 'dark']"
+            :key="scheme"
+            :label="scheme"
+            :icon="scheme === 'dark' ? 'i-lucide-moon' : 'i-lucide-sun'"
+            size="xs"
+            :color="v.when?.scheme === scheme ? 'primary' : 'neutral'"
+            :variant="v.when?.scheme === scheme ? 'soft' : 'outline'"
+            @click="setRule(v, { scheme: v.when?.scheme === scheme ? undefined : scheme })"
+          />
+          <span v-if="!v.when?.scheme" class="self-center pl-1 text-[11px] text-muted">either mode</span>
+        </div>
+      </UFormField>
+
       <UFormField label="…and the widget is" size="xs">
         <div class="flex gap-1">
           <UTooltip v-for="s in sizes" :key="s.size" :text="s.hint">
@@ -188,7 +204,9 @@ function move(index, delta) {
         </div>
       </details>
 
-      <p v-if="!v.when?.if && !v.when?.size?.length" class="text-[11px] text-warning">No rule: only renders when the host pins it.</p>
+      <p v-if="!v.when?.if && !v.when?.size?.length && !v.when?.scheme" class="text-[11px] text-warning">
+        No rule: only renders when the host pins it.
+      </p>
     </div>
 
     <UButton label="Add variant" icon="i-lucide-plus" color="neutral" variant="outline" block @click="add" />

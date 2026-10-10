@@ -1,6 +1,6 @@
 import { computed, ref, watch } from 'vue'
-import { getKind, getTheme } from '@munsonlabs/loom'
-import { BASE_VARIANT, widthToSize } from '@munsonlabs/loom/editor'
+import { getKind } from '@munsonlabs/loom'
+import { BASE_VARIANT, themeForScheme, usePreferredScheme, widthToSize } from '@munsonlabs/loom/editor'
 
 /** The canvas widths the preview offers. */
 export const viewports = [
@@ -14,6 +14,12 @@ export const viewports = [
 
 export const viewportHint = (width) => (width ? `${width}px · ${widthToSize(width)}` : 'Full width')
 
+export const schemeOptions = {
+  auto: { label: 'Auto', icon: 'i-lucide-sun-moon', next: 'light' },
+  light: { label: 'Light', icon: 'i-lucide-sun', next: 'dark' },
+  dark: { label: 'Dark', icon: 'i-lucide-moon', next: 'auto' },
+}
+
 /**
  * @typedef {object} Options
  * @property {() => Kit} kit
@@ -22,8 +28,9 @@ export const viewportHint = (width) => (width ? `${width}px · ${widthToSize(wid
  */
 
 /**
- * How the widget is previewed: with which sample data, at what width, in which theme, and
- * whether its variants' rules pick the variant. None of it is saved in the definition.
+ * How the widget is previewed: with which sample data, at what width, in which theme and
+ * colour scheme, and whether its variants' rules pick the variant. None of it is saved in the
+ * definition.
  *
  * @param {Options} options
  */
@@ -66,9 +73,27 @@ export function usePreview({ kit, samples, definition }) {
 
   /** Which of the kit's themes the preview uses. Themes belong to the kit; a widget only overrides tokens. */
   const themeId = ref(kit().themes[0]?.id)
-  const themeOptions = computed(() => kit().themes.map((t) => ({ label: t.label, value: t.id })))
+  /** A theme another names as its dark counterpart is reached through the scheme switch, not listed. */
+  const themeOptions = computed(() =>
+    kit()
+      .themes.filter((t) => !kit().themes.some((other) => other.dark === t.id))
+      .map((t) => ({ label: t.label, value: t.id })),
+  )
+
+  /** Light, dark, or the device's: the preview's colour scheme, independent of the studio's own. */
+  const previewScheme = ref('auto')
+  const device = usePreferredScheme()
+  const activeScheme = computed(() => (previewScheme.value === 'auto' ? device.value : previewScheme.value))
+  const cycleScheme = () => (previewScheme.value = schemeOptions[previewScheme.value].next)
+
   /** The theme the preview renders with. */
-  const theme = computed(() => getTheme(kit(), themeId.value))
+  const theme = computed(() => themeForScheme(kit(), themeId.value, activeScheme.value))
+  /** The theme panel reads light first, with the dark counterpart (if any) beside it. */
+  const panelTheme = computed(() => themeForScheme(kit(), themeId.value, 'light'))
+  const darkTheme = computed(() => {
+    const dark = themeForScheme(kit(), themeId.value, 'dark')
+    return dark.id === panelTheme.value.id ? undefined : dark
+  })
 
   return {
     kind,
@@ -82,6 +107,11 @@ export function usePreview({ kit, samples, definition }) {
     matchedVariant,
     themeId,
     themeOptions,
+    previewScheme,
+    activeScheme,
+    cycleScheme,
     theme,
+    panelTheme,
+    darkTheme,
   }
 }

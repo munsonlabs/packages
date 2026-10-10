@@ -48,6 +48,16 @@ describe('useTreeEditing', () => {
     expect(childIds(definition.value.root)).toEqual(['title', 'body', 'more'])
   })
 
+  it('in a variant: nesting is off too, so the base keeps its structure', () => {
+    const { definition, variants, selection, editing } = setup()
+    variants.variantId.value = 'small'
+    selection.select('link')
+    editing.outdent()
+    expect(childIds(definition.value.root)).toEqual(['title', 'body', 'more'])
+    expect(childIds(definition.value.root.children[2])).toEqual(['link'])
+    expect(definition.value.variants[0].overrides).toBeUndefined()
+  })
+
   it('edits a node directly on the base, and as the smallest override in a variant', () => {
     const { definition, variants, selection, editing } = setup()
     selection.select('body')

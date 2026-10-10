@@ -175,6 +175,36 @@ describe('createKit', () => {
       'built-in',
     )
   })
+
+  it('only counts the built-ins themselves as built-in, not names every object has', () => {
+    const Any = defineComponent({ render: () => null })
+    const kit = createKit({ blocks: [{ type: 'toString', label: 'T', description: '', container: false, props: {}, component: Any }] })
+    expect(Object.keys(kit.blocks)).toContain('toString')
+  })
+
+  it('renders a kit block whose name every object has, and finds nothing for one it lacks', () => {
+    const Shout = defineComponent({ props: { text: { type: String, default: '' } }, setup: (p) => () => h('strong', p.text) })
+    const block = {
+      type: 'toString',
+      label: 'T',
+      description: '',
+      container: false,
+      props: { text: { type: 'string', label: 'Text', default: 'hi' } },
+      component: Shout,
+    }
+    const root = {
+      id: 'r',
+      type: 'Stack',
+      children: [
+        { id: 's', type: 'toString' },
+        { id: 'v', type: 'valueOf' },
+      ],
+    }
+    const wrapper = mount(Widget, { props: { kit: createKit({ blocks: [block] }), definition: { version: 2, id: 'w', name: 'W', root }, data: {} } })
+    expect(wrapper.find('[data-node-id="s"]').text()).toBe('hi')
+    expect(wrapper.find('[data-node-id="v"]').exists()).toBe(false)
+    expect(createKit().sources.toString).toBeUndefined()
+  })
 })
 
 describe('a kit guard', () => {

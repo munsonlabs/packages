@@ -174,6 +174,9 @@ export function tokenVars(values) {
  * @typedef {object} Theme
  * @property {string} id
  * @property {string} label
+ * @property {string} [dark] The id of its dark partner, for a light theme: `<Widget scheme="dark">` switches to it, and back.
+ * @property {'light' | 'dark'} [scheme] Only for a dark theme no light theme names as its `dark`. A theme named as another's `dark`
+ *   is dark; anything else is light.
  * @property {Record<string, string>} values Token name (`accent`, `space-2`, `--w-accent`…) → value. Any CSS works, including a host's own `var(--…)`.
  */
 
@@ -183,4 +186,22 @@ export function tokenVars(values) {
 export const defineTheme = (theme) => theme
 
 /** The defaults, as a theme: light, neutral, an orange accent. */
-export const lightTheme = defineTheme({ id: 'light', label: 'Light', values: {} })
+export const lightTheme = defineTheme({ id: 'light', label: 'Light', dark: 'dark', values: {} })
+
+export const darkTheme = defineTheme({
+  id: 'dark',
+  label: 'Dark',
+  // Dark on its own too, when a kit uses it without lightTheme.
+  scheme: 'dark',
+  values: {
+    bg: '#18181b',
+    surface: '#27272a',
+    text: '#fafafa',
+    muted: '#a1a1aa',
+    accent: '#fb923c',
+    'accent-contrast': '#1c1917',
+    border: '#3f3f46',
+    alert: '#f87171',
+    success: '#4ade80',
+  },
+})

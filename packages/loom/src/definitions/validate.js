@@ -1,5 +1,6 @@
 import { DEFINITION_VERSION } from '../types'
 import { parsePath, pathType } from './paths'
+import { themeScheme } from '../theme/scheme'
 import { applyVariant, BASE_VARIANT } from './variants'
 import { validateMatch } from './match'
 
@@ -8,7 +9,11 @@ import { validateMatch } from './match'
  * @property {string} [nodeId]
  * @property {string} [variant] Set when the issue only exists in this variant.
  * @property {string} message
+ * @property {'warning'} [severity] Warnings render fine but probably aren't what was meant. Unset means an error.
  */
+
+/** Colours a theme's light and dark versions are expected to change; a widget setting them opts out of that. */
+const SCHEME_COLOURS = ['bg', 'surface', 'text', 'muted', 'border', 'accent-contrast']
 
 const SIZES = ['sm', 'md', 'lg']
 
@@ -46,7 +51,33 @@ export function validateDefinition(kit, definition) {
   for (const id of definition.uses ?? []) if (!kit.sources[id]) issues.push({ message: `Uses "${id}", which this kit doesn't have` })
   issues.push(...validateTree(kit, definition))
   issues.push(...validateVariants(kit, definition, issues))
+  issues.push(...schemeWarnings(kit, definition))
   return issues
+}
+
+/** A value that already differs by scheme: CSS's `light-dark(light, dark)`. */
+const isSchemeAware = (value) => /\blight-dark\(/.test(value)
+
+/**
+ * Whether an issue list has anything that stops the widget rendering as written.
+ *
+ * @param {ValidationIssue[]} issues
+ */
+export const hasErrors = (issues) => issues.some((i) => i.severity !== 'warning')
+
+/**
+ * Warns when a widget pins a colour its kit's dark themes change, so it won't follow dark mode.
+ * `fixedColors` says that's deliberate (an always-dark video tile), and silences it.
+ */
+function schemeWarnings(kit, definition) {
+  if (definition.fixedColors || !kit.themes.some((t) => themeScheme(kit, t) === 'dark')) return []
+  const warn = (vars, variant) =>
+    SCHEME_COLOURS.filter((name) => vars?.[`--w-${name}`] !== undefined && !isSchemeAware(vars[`--w-${name}`])).map((name) => ({
+      variant,
+      severity: 'warning',
+      message: `Sets --w-${name} itself, so it won't change in dark mode. Leave it to the theme, give it a dark value with light-dark(), or mark the widget's colours as fixed.`,
+    }))
+  return [...warn(definition.vars), ...(definition.variants ?? []).flatMap((v) => (v.when?.scheme ? [] : warn(v.vars, v.id)))]
 }
 
 function validateVariants(kit, definition, baseIssues) {
@@ -66,6 +97,7 @@ function validateVariants(kit, definition, baseIssues) {
       else if (type === 'action') at(`Can't use action "${rule.if}" as a rule`)
     }
     for (const size of rule?.size ?? []) if (!SIZES.includes(size)) at(`Unknown size "${size}"`)
+    if (rule?.scheme && rule.scheme !== 'light' && rule.scheme !== 'dark') at(`Unknown scheme "${String(rule.scheme)}"`)
 
     for (const [nodeId, override] of Object.entries(variant.overrides ?? {})) {
       const node = findNode(definition.root, nodeId)

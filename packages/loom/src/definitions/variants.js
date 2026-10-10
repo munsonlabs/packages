@@ -105,6 +105,7 @@ export function applyVariant(definition, variantId) {
 /**
  * @typedef {object} MatchContext
  * @property {number} [width]
+ * @property {ColorScheme} [scheme] The colour scheme the widget renders in.
  * @property {(path: string) => unknown} readValue Reads a value path in the widget's root scope.
  */
 
@@ -120,6 +121,7 @@ export function ruleMatches(rule, ctx) {
   if (rule.size?.length) checks.push(ctx.width != null && rule.size.includes(widthToSize(ctx.width)))
   if (rule.minWidth != null) checks.push(ctx.width != null && ctx.width >= rule.minWidth)
   if (rule.maxWidth != null) checks.push(ctx.width != null && ctx.width <= rule.maxWidth)
+  if (rule.scheme) checks.push(ctx.scheme === rule.scheme)
   return checks.length > 0 && checks.every(Boolean)
 }
 

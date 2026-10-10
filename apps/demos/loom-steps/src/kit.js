@@ -1,5 +1,5 @@
 import { computed, reactive } from 'vue'
-import { createKit, defineBlock, defineSource, defineTheme, lightTheme } from '@munsonlabs/loom'
+import { createKit, darkTheme, defineBlock, defineSource, defineTheme, lightTheme } from '@munsonlabs/loom'
 import Highlight from './Highlight.vue'
 
 /** The data: a few articles, as an app might fetch them. Nothing here knows about loom. */
@@ -142,6 +142,7 @@ export const inkTheme = defineTheme({
 export const kit = createKit({
   sources: [articleSource, readingSource],
   blocks: [highlightBlock],
-  themes: [lightTheme, sepiaTheme, inkTheme],
+  // lightTheme names darkTheme as its dark partner, so widgets follow the device's light or dark setting.
+  themes: [lightTheme, darkTheme, sepiaTheme, inkTheme],
   describe: (data) => data.title,
 })

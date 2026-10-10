@@ -18,7 +18,7 @@ src/
   studio.js        createStudio wires the composables into one reactive object; useStudio() reads it
   editing/         tree.js (pure), useHistory, useVariantEditing, useTreeEditing
   canvas/          StudioCanvas.vue, ElementPopover.vue, useSelection
-  preview/         usePreview (sample, width, theme, rules)
+  preview/         usePreview (sample, width, theme, scheme, rules)
   panels/          inspector/ (Inspector + one component per tab), StyleEditor, TokensEditor, TokenInput, KeyValueEditor, VariantsPanel, OverrideMark, options.js: props in, events out, no studio
   bars/            IdentityBar, DocumentBar, ThemePopover, IssuesPopover, PreviewBar, StatusHints
   dialogs/         ExportModal, ImportModal

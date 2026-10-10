@@ -2,7 +2,7 @@
   "name": "@munsonlabs/loom-studio",
   "version": "0.0.0",
   "private": true,
-  "description": "A canvas-first Nuxt UI editor for @munsonlabs/loom widgets: click anything to edit it, and bind it to your composables.",
+  "description": "A canvas-first Nuxt UI editor for @munsonlabs/loom widgets: click anything to edit it, bind it to your composables, and design variants for every case.",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -39,10 +39,12 @@
   "devDependencies": {
     "@munsonlabs/shipkit": "*",
     "@nuxt/ui": "^4.11.1",
+    "@vueuse/core": "^14.4.0",
     "vue": "3.5.42"
   },
   "peerDependencies": {
     "@nuxt/ui": ">=4",
+    "@vueuse/core": ">=13",
     "vue": ">=3"
   }
 }

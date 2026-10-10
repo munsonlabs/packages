@@ -54,7 +54,7 @@ export function createStudio(definition, props, events) {
 
   // --- Validation
   const issues = computed(() => validateDefinition(props.kit, definition.value))
-  /** Errors stop publishing. */
+  /** Errors stop publishing; warnings (a colour that won't follow dark mode) don't. */
   const errors = computed(() => hasErrors(issues.value))
   function selectIssue(issue) {
     if (issue.variant) variants.variantId.value = issue.variant
@@ -75,7 +75,7 @@ export function createStudio(definition, props, events) {
     selection,
     /** The actions on the selected element. */
     editing,
-    /** Sample, width, theme and Rules. */
+    /** Sample, width, theme, scheme and Rules. */
     preview,
     issues,
     errors,

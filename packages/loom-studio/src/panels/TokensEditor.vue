@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { scaleForRole, tokens, tokenVar } from '@munsonlabs/loom/editor'
+import { parseLightDark, scaleForRole, tokens, tokenVar } from '@munsonlabs/loom/editor'
 import KeyValueEditor from './KeyValueEditor.vue'
 import TokenInput from './TokenInput.vue'
 
@@ -15,6 +15,8 @@ const props = defineProps({
   theme: { type: Object, required: true },
   /** Labels the overrides: "this widget", "Compact". */
   scope: String,
+  /** The theme's dark counterpart, when it has one: its colours are shown beside the light ones. */
+  dark: Object,
 })
 const emit = defineEmits(['change'])
 
@@ -28,12 +30,23 @@ const groups = [
 
 const byGroup = (group) => tokens.filter((t) => t.group === group)
 const inherited = (t) => props.theme.values[t.name] ?? props.theme.values[tokenVar(t.name)] ?? t.default
+/** What a colour is in the dark counterpart: this widget's override if it sets one (it applies to both), else the dark theme's. */
+/** What the dark counterpart gives, before this widget's overrides. */
+const darkInherited = (t) => props.dark?.values[t.name] ?? props.dark?.values[tokenVar(t.name)] ?? inherited(t)
+const inDark = (t) => {
+  const own = value(t)
+  const pair = parseLightDark(own)
+  return pair?.[1] ?? own ?? props.dark?.values[t.name] ?? props.dark?.values[tokenVar(t.name)] ?? t.default
+}
 const overridden = (t) => tokenVar(t.name) in props.vars
 const value = (t) => props.vars[tokenVar(t.name)]
 const count = (group) => byGroup(group).filter(overridden).length
 
 /** A colour to show for a value, following one level of `var(--w-…)`. */
 function paint(raw) {
+  // A light/dark pair shows its light half here; the dark column shows the other.
+  const pair = parseLightDark(raw)
+  if (pair) return paint(pair[0])
   const name = raw?.match(/^var\(--w-([a-z0-9-]+)\)$/)?.[1]
   if (!name) return raw ?? 'transparent'
   const t = tokens.find((x) => x.name === name)
@@ -64,7 +77,9 @@ function setOthers(next) {
 <template>
   <div class="flex flex-col gap-2">
     <p class="text-xs text-muted">
-      Starting from the <strong class="text-default">{{ theme.label }}</strong> theme. Changes here apply to {{ scope ?? 'this widget' }} only.
+      Starting from the <strong class="text-default">{{ theme.label }}</strong> theme<template v-if="dark"
+        >, with <strong class="text-default">{{ dark.label }}</strong> beside each colour</template
+      >. Changes here apply to {{ scope ?? 'this widget' }} only, in light and dark alike: press the moon on a colour to give it its own dark value.
     </p>
 
     <details v-for="group in groups" :key="group.id" :open="group.open" class="group rounded-md border border-default">
@@ -97,7 +112,21 @@ function setOthers(next) {
                 />
               </template>
             </UPopover>
-            <TokenInput :model-value="value(t)" scale="color" :placeholder="inherited(t)" @update:model-value="set(t, $event)" />
+            <TokenInput
+              :model-value="value(t)"
+              scale="color"
+              :placeholder="inherited(t)"
+              :seed="[inherited(t), darkInherited(t)]"
+              @update:model-value="set(t, $event)"
+            />
+            <UTooltip
+              v-if="dark"
+              :text="`In ${dark.label}: ${inDark(t)}${overridden(t) && !parseLightDark(value(t)) ? ' (this override applies in dark too; the moon gives it its own dark value)' : ''}`"
+            >
+              <span class="flex size-6 shrink-0 items-center justify-center rounded-md bg-neutral-900 ring ring-default">
+                <span class="size-3.5 rounded-sm" :style="{ background: paint(inDark(t)) }" />
+              </span>
+            </UTooltip>
           </template>
           <TokenInput
             v-else-if="t.group === 'roles' && scaleForRole[t.name]"

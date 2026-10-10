@@ -1,9 +1,13 @@
 import { effectScope, ref } from 'vue'
-import { createKit } from '@munsonlabs/loom'
+import { createKit, defineTheme, lightTheme } from '@munsonlabs/loom'
 
-/** A small kit: one source. */
+/** A small kit: one source, a light theme with a dark partner. */
 export const kit = createKit({
   sources: [{ id: 'note', label: 'Note', fields: { title: { type: 'string' } }, setup: () => ({ title: 'Hi' }) }],
+  themes: [
+    defineTheme({ ...lightTheme, id: 'brand', label: 'Brand', dark: 'brand-dark' }),
+    defineTheme({ id: 'brand-dark', label: 'Brand dark', values: {} }),
+  ],
 })
 
 export const card = () => ({

@@ -5,7 +5,7 @@ import { useStudio } from '../studio'
 import IssuesPopover from './IssuesPopover.vue'
 import ThemePopover from './ThemePopover.vue'
 
-/** Top right: the studio's own appearance, undo and redo, theme, issues, export and publish. */
+/** Top right: the studio's own appearance, undo and redo, theme, ⌘K, issues, export and publish. */
 const s = useStudio()
 
 /** The studio's own light or dark appearance (Nuxt UI's colour mode), separate from the preview's. */
@@ -58,6 +58,18 @@ const cycleAppearance = () => (appearance.store.value = appearanceOptions[appear
     </UTooltip>
 
     <ThemePopover />
+
+    <UTooltip text="Everything" :kbds="['meta', 'k']">
+      <UButton
+        icon="i-lucide-search"
+        size="sm"
+        color="neutral"
+        variant="ghost"
+        class="rounded-full"
+        aria-label="Command palette"
+        @click="s.open.palette = true"
+      />
+    </UTooltip>
 
     <IssuesPopover />
 

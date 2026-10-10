@@ -7,6 +7,7 @@ import PreviewBar from './bars/PreviewBar.vue'
 import StatusHints from './bars/StatusHints.vue'
 import ElementPopover from './canvas/ElementPopover.vue'
 import StudioCanvas from './canvas/StudioCanvas.vue'
+import CommandPalette from './dialogs/CommandPalette.vue'
 import ExportModal from './dialogs/ExportModal.vue'
 import ImportModal from './dialogs/ImportModal.vue'
 import { createStudio, provideStudio } from './studio'
@@ -36,6 +37,7 @@ provideStudio(studio)
 
 // Plain handlers don't fire while an input has focus, so Backspace in a field stays a keystroke.
 defineShortcuts({
+  meta_k: () => (studio.open.palette = true),
   meta_z: studio.history.undo,
   meta_shift_z: studio.history.redo,
   meta_d: studio.editing.duplicate,
@@ -62,6 +64,7 @@ defineShortcuts({
 
     <ElementPopover />
 
+    <CommandPalette />
     <ExportModal />
     <ImportModal />
   </div>

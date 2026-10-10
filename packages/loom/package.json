@@ -1,0 +1,49 @@
+{
+  "name": "@munsonlabs/loom",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Widgets as data: JSON trees of blocks bound to your own composables. Render them with <Widget>.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/munsonlabs/packages.git",
+    "directory": "packages/loom"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "./dist/**/*.css"
+  ],
+  "module": "./dist/index.mjs",
+  "exports": {
+    ".": {
+      "source": "./src/index.js",
+      "import": "./dist/index.mjs"
+    },
+    "./style.css": {
+      "source": "./src/theme/styles.css",
+      "import": "./dist/style.css"
+    }
+  },
+  "scripts": {
+    "dev": "vp pack --watch",
+    "build": "vp pack",
+    "clean": "rm -rf dist",
+    "lint": "vp lint",
+    "fmt": "vp fmt",
+    "check": "vp check",
+    "test": "vp test",
+    "test:watch": "vp test --watch"
+  },
+  "devDependencies": {
+    "@munsonlabs/shipkit": "*",
+    "@types/node": "^25.5.0",
+    "@vue/test-utils": "^2.4.6",
+    "vue": "3.5.42"
+  },
+  "peerDependencies": {
+    "vue": ">=3"
+  }
+}

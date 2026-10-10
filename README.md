@@ -23,6 +23,7 @@ never ships to a consumer.
 | [`@munsonlabs/video-player`](packages/video-player) | [![npm](https://img.shields.io/npm/v/@munsonlabs/video-player?label=)](https://www.npmjs.com/package/@munsonlabs/video-player) | Vue 3 video player: native, HLS, DASH, embeds and IMA ads      |
 | [`@munsonlabs/sigil`](packages/sigil)               | [![npm](https://img.shields.io/npm/v/@munsonlabs/sigil?label=)](https://www.npmjs.com/package/@munsonlabs/sigil)               | Framework-free icon registry with an `<ml-sigil-icon>` element |
 | [`@munsonlabs/shipkit`](packages/shipkit)           | [![npm](https://img.shields.io/npm/v/@munsonlabs/shipkit?label=)](https://www.npmjs.com/package/@munsonlabs/shipkit)           | Shared build tooling: the `shipkit` CLI and vite configs       |
+| [`@munsonlabs/loom`](packages/loom)                 | _unreleased_                                                                                                                   | Widgets as data, bound to your own composables                 |
 
 ## Develop
 

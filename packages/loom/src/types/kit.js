@@ -1,0 +1,50 @@
+/** The kit: what an app plugs in. Its sources (composables). */
+
+/** @typedef {'string' | 'number' | 'boolean' | 'list' | 'object'} ValueType */
+/** @typedef {ValueType | 'action'} FieldType */
+
+/**
+ * @typedef {object} FieldSpec
+ * @property {FieldType} type
+ * @property {string} [description]
+ */
+
+/**
+ * What a source's `setup` gets. Getters, so composables that read them inside `computed` stay reactive.
+ *
+ * @template [TData=any]
+ * @template [TContext=any]
+ * @typedef {object} SourceContext
+ * @property {TData} data
+ * @property {number} index
+ * @property {TContext} context
+ */
+
+/**
+ * A named set of values and actions widgets can bind to, usually one composable. `setup` runs
+ * once per rendered widget, the first time a binding reaches it, inside the widget's effect scope.
+ *
+ * @template [TData=any]
+ * @template [TContext=any]
+ * @typedef {object} Source
+ * @property {string} id
+ * @property {string} label
+ * @property {string} [description]
+ * @property {Record<string, FieldSpec>} fields
+ * @property {(ctx: SourceContext<TData, TContext>) => Record<string, unknown>} setup
+ */
+
+/**
+ * @template [TData=any]
+ * @template [TContext=any]
+ * @typedef {object} KitOptions
+ * @property {Source<TData, TContext>[]} [sources]
+ */
+
+/**
+ * @template [TData=any]
+ * @template [TContext=any]
+ * @typedef {object} Kit
+ * @property {Readonly<Record<string, Source<TData, TContext>>>} sources
+ * @property {Readonly<Record<string, BlockSpec>>} blocks The built-in blocks.
+ */

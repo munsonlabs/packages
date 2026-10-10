@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 430" width="880" height="430" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif" role="img" aria-labelledby="title">
+  <title id="title">How a card renders from a library, and what happens when it is tapped</title>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#71717a"/></marker>
+  </defs>
+  <rect fill="#ffffff" stroke="#e4e4e7" width="880" height="430" rx="12"/>
+  <rect fill="#f4f4f5" stroke="#d4d4d8" stroke-width="1" x="20" y="20" width="170" height="58" rx="10"/>
+  <text fill="#18181b" font-size="14" font-weight="600" x="34" y="42">library.json</text>
+  <text fill="#52525b" font-size="12" x="34" y="62">The published widgets</text>
+  <path stroke="#71717a" stroke-width="1.5" fill="none" d="M190 49L248 49" marker-end="url(#a)"/>
+  <rect fill="#f4f4f5" stroke="#d4d4d8" stroke-width="1" x="250" y="20" width="200" height="58" rx="10"/>
+  <text fill="#18181b" font-size="14" font-weight="600" x="264" y="42">loadLibrary(kit)</text>
+  <text fill="#52525b" font-size="12" x="264" y="62">Skips what can’t render</text>
+  <path stroke="#71717a" stroke-width="1.5" fill="none" d="M450 49L508 49" marker-end="url(#a)"/>
+  <rect fill="#f4f4f5" stroke="#d4d4d8" stroke-width="1" x="510" y="20" width="140" height="58" rx="10"/>
+  <text fill="#18181b" font-size="14" font-weight="600" x="524" y="42">widgets[ ]</text>
+  <text fill="#52525b" font-size="12" x="524" y="62">Ready to render</text>
+  <path stroke="#71717a" stroke-width="1.5" fill="none" d="M580 78L580 128" marker-end="url(#a)"/>
+  <rect fill="#f4f4f5" stroke="#d4d4d8" stroke-width="1" x="20" y="190" width="170" height="58" rx="10"/>
+  <text fill="#18181b" font-size="14" font-weight="600" x="34" y="212">A story</text>
+  <text fill="#52525b" font-size="12" x="34" y="232">Data, from the app</text>
+  <path stroke="#71717a" stroke-width="1.5" fill="none" d="M190 219L248 219" marker-end="url(#a)"/>
+  <rect fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1.5" x="250" y="130" width="400" height="178" rx="10"/>
+  <text fill="#18181b" font-size="14" font-weight="600" x="268" y="156">&lt;Widget :definitions :data&gt;</text>
+  <circle fill="#8b5cf6" cx="278" cy="182" r="9"/>
+  <text fill="#ffffff" font-size="11" font-weight="700" x="278" y="186" text-anchor="middle">1</text>
+  <text fill="#52525b" font-size="12" x="296" y="186">Picks the first widget that matches the story</text>
+  <circle fill="#8b5cf6" cx="278" cy="212" r="9"/>
+  <text fill="#ffffff" font-size="11" font-weight="700" x="278" y="216" text-anchor="middle">2</text>
+  <text fill="#52525b" font-size="12" x="296" y="216">Picks the variant whose rule matches</text>
+  <circle fill="#8b5cf6" cx="278" cy="242" r="9"/>
+  <text fill="#ffffff" font-size="11" font-weight="700" x="278" y="246" text-anchor="middle">3</text>
+  <text fill="#52525b" font-size="12" x="296" y="246">Sets up the sources it reads: your composables</text>
+  <circle fill="#8b5cf6" cx="278" cy="272" r="9"/>
+  <text fill="#ffffff" font-size="11" font-weight="700" x="278" y="276" text-anchor="middle">4</text>
+  <text fill="#52525b" font-size="12" x="296" y="276">Renders its blocks, props filled from them</text>
+  <path stroke="#71717a" stroke-width="1.5" fill="none" d="M650 219L708 219" marker-end="url(#a)"/>
+  <rect fill="#fff7ed" stroke="#fb923c" stroke-width="1" x="710" y="190" width="150" height="58" rx="10"/>
+  <text fill="#18181b" font-size="14" font-weight="600" x="724" y="212">A card</text>
+  <text fill="#52525b" font-size="12" x="724" y="232">On screen</text>
+  <path stroke="#71717a" stroke-width="1.5" fill="none" d="M785 248L785 348" marker-end="url(#a)"/>
+  <text fill="#52525b" font-size="12" x="805" y="300" text-anchor="middle">tap</text>
+  <rect fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1.5" x="690" y="350" width="170" height="62" rx="10"/>
+  <text fill="#18181b" font-size="14" font-weight="600" x="704" y="372">kit.guard</text>
+  <text fill="#52525b" font-size="12" x="704" y="392">Runs it, or stops it</text>
+  <path stroke="#71717a" stroke-width="1.5" fill="none" d="M690 381L642 381" marker-end="url(#a)"/>
+  <rect fill="#f4f4f5" stroke="#d4d4d8" stroke-width="1" x="470" y="350" width="170" height="62" rx="10"/>
+  <text fill="#18181b" font-size="14" font-weight="600" x="484" y="372">The action</text>
+  <text fill="#52525b" font-size="12" x="484" y="392">A source’s function</text>
+  <path stroke="#71717a" stroke-width="1.5" fill="none" d="M470 381L422 381" marker-end="url(#a)"/>
+  <rect fill="#f4f4f5" stroke="#d4d4d8" stroke-width="1" x="250" y="350" width="170" height="62" rx="10"/>
+  <text fill="#18181b" font-size="14" font-weight="600" x="264" y="372">The app</text>
+  <text fill="#52525b" font-size="12" x="264" y="392">Through the context</text>
+  <text fill="#52525b" font-size="12" x="20" y="374">Locked story?</text>
+  <text fill="#52525b" font-size="12" x="20" y="392">The guard shows the</text>
+  <text fill="#52525b" font-size="12" x="20" y="410">paywall instead.</text>
+</svg>

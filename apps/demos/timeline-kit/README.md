@@ -1,6 +1,6 @@
 # timeline-kit
 
-Bolt's story timeline as a [loom](../../../packages/loom) kit, the kit the loom demos share. Its context is the Bolt bridge (here [`bolt-bridge-stub`](../bolt-bridge-stub)): every action a widget takes goes through the bridge to the native app, and comes back as state.
+Bolt's story timeline as a [loom](../../../packages/loom) kit, shared by the [feed](../loom-feed) demo. Its context is the Bolt bridge (here [`bolt-bridge-stub`](../bolt-bridge-stub)): every action a widget takes goes through the bridge to the native app, and comes back as state.
 
 ```
 src/

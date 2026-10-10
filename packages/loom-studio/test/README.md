@@ -9,4 +9,5 @@ Vitest with happy-dom (`vp test`). Folders mirror `src/`. They test the logic wi
 | `editing/useHistory.spec.js`        | Edits on a copy, undo, redo, the history limit.                                                 |
 | `editing/useVariantEditing.spec.js` | Hiding in a variant, resetting one field, falling back to the base.                             |
 | `editing/useTreeEditing.spec.js`    | Add, move, duplicate, delete and edit, on the base and in a variant.                            |
+| `layers/layers.spec.js`             | Rows from the tree (labels, hints, collapsing, what a variant hides), and drop positions.       |
 | `preview/usePreview.spec.js`        | Which samples are offered, and themes with dark partners.                                       |

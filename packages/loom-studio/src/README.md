@@ -9,6 +9,7 @@ src/
   studio.js        createStudio: wires the composables below into one object; useStudio() reads it
   editing/         changing the definition: undo, variants, tree edits, the pure tree helpers
   canvas/          the widget on screen: selection, drag and drop, the element popover
+  layers/          the layers panel: the tree beside the canvas, to select and move things
   preview/         how it's previewed: sample, width, theme, scheme, rules, Try, and the call log
   panels/          the forms inside popovers: Inspector, styles, tokens, variants
   bars/            the floating toolbars around the canvas
@@ -18,7 +19,7 @@ src/
 ## How it fits together
 
 1. `LoomStudio.vue` calls `createStudio(definition, props, events)` (`studio.js`), which calls each composable (`useHistory`, `useVariantEditing`, `useSelection`, `useTreeEditing`, `usePreview`, `useCallLog`, `useCanvasDrag`) and returns one reactive object.
-2. It passes that object down with `provideStudio`. Every component in `canvas/`, `bars/` and `dialogs/` starts with `const s = useStudio()` and uses only what it needs. The object is grouped by owner, so it's clear where each thing comes from:
+2. It passes that object down with `provideStudio`. Every component in `canvas/`, `layers/`, `bars/` and `dialogs/` starts with `const s = useStudio()` and uses only what it needs. The object is grouped by owner, so it's clear where each thing comes from:
 
    | On the studio | Comes from                     | For example                                       |
    | ------------- | ------------------------------ | ------------------------------------------------- |

@@ -58,6 +58,7 @@ provideKit(kit, { cart })
 | Kinds          | `<Widget :definitions>` picks the definition for each piece of data                                                                                                                |
 | Variants       | Diffs on the base tree, applied by a rule on the data or the widget's measured width                                                                                               |
 | Validation     | `validateDefinition(kit, definition)` reports every problem before render                                                                                                          |
+| Libraries      | `createLibrary` puts every widget for a kit in one JSON file; `loadLibrary` loads what renders with this kit and says what it skipped and why                                      |
 
 Full docs: [Loom](https://munsonlabs.pages.dev/loom/getting-started/introduction).
 

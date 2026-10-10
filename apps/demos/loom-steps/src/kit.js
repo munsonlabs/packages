@@ -158,6 +158,8 @@ export const inkTheme = defineTheme({
 })
 
 export const kit = createKit({
+  // Libraries say which kit they were made for.
+  id: 'reading-list',
   sources: [articleSource, readingSource],
   blocks: [highlightBlock],
   kinds: [articleKind, noteKind],

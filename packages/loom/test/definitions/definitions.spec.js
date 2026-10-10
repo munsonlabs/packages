@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
 import { enableAutoUnmount, mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import { validateDefinition } from '@/definitions/validate'
-import { bindableValues } from '@/definitions/paths'
+import { bindableValues, sourcesUsed } from '@/definitions/paths'
 import { createDefinition, matchDefinition, matchKind } from '@/kit'
 import { applyVariant, matchVariant, ruleMatches, variantTree, widthToSize } from '@/definitions/variants'
 import Widget from '@/Widget.vue'
@@ -77,6 +77,10 @@ describe('paths', () => {
     expect(inside.slice(0, 2)).toEqual(['item', 'item.title'])
     expect(inside.indexOf('product.title')).toBeLessThan(inside.indexOf('shop.open'))
     expect(bindableValues(kit, productCard, 'title').some((o) => o.source === 'item')).toBe(false)
+  })
+
+  it('collects every source a definition uses, variants included', () => {
+    expect(sourcesUsed(productCard)).toEqual(['product', 'shop'])
   })
 })
 

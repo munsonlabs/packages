@@ -102,3 +102,36 @@ export function pathType(kit, definition, nodeId, path) {
   const bare = path.startsWith('!') ? path.slice(1) : path
   return bindableValues(kit, definition, nodeId).find((option) => option.path === bare)?.type
 }
+
+/** Every source a definition binds to, across its base and variants: what a host must provide. */
+export function sourcesUsed(definition) {
+  const used = new Set()
+  const add = (path) => {
+    if (!path) return
+    const { source } = parsePath(path)
+    if (source !== 'item' && source !== 'repeat') used.add(source)
+  }
+  const addAction = (binding) => {
+    if (!binding) return
+    if (typeof binding === 'string') return add(binding)
+    const { action, arg } = binding
+    add(action)
+    add(arg)
+  }
+  const visit = (node) => {
+    Object.values(node.bind ?? {}).forEach(add)
+    Object.values(node.on ?? {}).forEach(addAction)
+    add(node.if)
+    node.children?.forEach(visit)
+  }
+  visit(definition.root)
+  for (const variant of definition.variants ?? []) {
+    add(variant.when?.if)
+    for (const override of Object.values(variant.overrides ?? {})) {
+      Object.values(override.bind ?? {}).forEach(add)
+      Object.values(override.on ?? {}).forEach(addAction)
+      add(override.if)
+    }
+  }
+  return [...used].sort()
+}

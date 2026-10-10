@@ -55,6 +55,7 @@
  * @template [TData=any]
  * @template [TContext=any]
  * @typedef {object} KitOptions
+ * @property {string} [id] Names the kit, so a published library records which kit it was made for and a loader can check.
  * @property {Source<TData, TContext>[]} [sources]
  * @property {BlockSpec[]} [blocks]
  * @property {Kind<TData>[]} [kinds]
@@ -66,6 +67,7 @@
  * @template [TData=any]
  * @template [TContext=any]
  * @typedef {object} Kit
+ * @property {string} [id]
  * @property {Readonly<Record<string, Source<TData, TContext>>>} sources
  * @property {Readonly<Record<string, BlockSpec>>} blocks Built-ins plus the kit's own.
  * @property {readonly Kind<TData>[]} kinds

@@ -1,0 +1,119 @@
+import { sourcesUsed } from './paths'
+import { hasErrors, validateDefinition } from './validate'
+
+/**
+ * A library is what an app fetches: every published widget for one kit, in one file, in
+ * order (the first whose kind matches some data renders it). It also lists the sources and
+ * blocks its widgets need, so an app can tell before rendering that it can't serve one.
+ */
+
+export const LIBRARY_FORMAT = 'loom-library'
+export const LIBRARY_VERSION = 1
+
+/**
+ * @typedef {object} WidgetLibrary
+ * @property {typeof LIBRARY_FORMAT} format
+ * @property {typeof LIBRARY_VERSION} version
+ * @property {string} [kit] The kit's id, when it has one.
+ * @property {string} [publishedAt]
+ * @property {string[]} sources Every source a widget binds to.
+ * @property {string[]} blocks Every block a widget uses.
+ * @property {WidgetDefinition[]} widgets
+ */
+
+export class LibraryError extends Error {
+  name = 'LibraryError'
+}
+
+function blocksUsed(definition) {
+  const types = new Set()
+  const visit = (node) => {
+    types.add(node.type)
+    node.children?.forEach(visit)
+  }
+  visit(definition.root)
+  return [...types]
+}
+
+const union = (lists) => [...new Set(lists.flat())].sort()
+
+/**
+ * Bundles definitions, in order, into a library for `kit`.
+ *
+ * @param {Kit} kit
+ * @param {WidgetDefinition[]} definitions
+ * @param {{ publishedAt?: Date | string }} [options={}]
+ * @returns {WidgetLibrary}
+ */
+export function createLibrary(kit, definitions, options = {}) {
+  const publishedAt = options.publishedAt instanceof Date ? options.publishedAt.toISOString() : options.publishedAt
+  return {
+    format: LIBRARY_FORMAT,
+    version: LIBRARY_VERSION,
+    ...(kit.id ? { kit: kit.id } : {}),
+    ...(publishedAt ? { publishedAt } : {}),
+    sources: union(definitions.map(sourcesUsed)),
+    blocks: union(definitions.map(blocksUsed)),
+    widgets: definitions,
+  }
+}
+
+/**
+ * @typedef {object} LoadedLibrary
+ * @property {WidgetDefinition[]} widgets The widgets this app can render, in order: pass them to `<Widget :definitions>`.
+ * @property {Array<{ id: string; name?: string; issues: ValidationIssue[] }>} skipped Widgets left out because they wouldn't render as written here, with why.
+ * @property {{ sources: string[]; blocks: string[] }} missing What the library needs that this kit doesn't have: usually an app older than the library.
+ * @property {{ expected: string; actual: string }} [kitMismatch] Set when the library names a different kit than this one.
+ * @property {string} [publishedAt]
+ */
+
+/**
+ * Reads a library (or a bare array of definitions) for this app's kit: validates each
+ * definition against the kit, and keeps only the ones that render as written. Widgets with only warnings are kept. Throws `LibraryError` for something that isn't
+ * a library, or one from a newer version than this loom understands.
+ *
+ * @param {Kit} kit
+ * @param {unknown} input
+ * @returns {LoadedLibrary}
+ */
+export function loadLibrary(kit, input) {
+  let data = input
+  if (typeof data === 'string') {
+    try {
+      data = JSON.parse(data)
+    } catch {
+      throw new LibraryError('Not JSON')
+    }
+  }
+
+  const library = Array.isArray(data) ? { widgets: data } : data
+  if (!library || typeof library !== 'object' || !Array.isArray(library.widgets)) {
+    throw new LibraryError('Not a widget library: expected { format: "loom-library", widgets: [...] }')
+  }
+  if ('format' in library && library.format !== LIBRARY_FORMAT) throw new LibraryError(`Unknown format "${String(library.format)}"`)
+  if ('version' in library && Number(library.version) > LIBRARY_VERSION) {
+    throw new LibraryError(`Library version ${String(library.version)} is newer than this loom understands (${LIBRARY_VERSION})`)
+  }
+
+  const widgets = []
+  const skipped = []
+  for (const definition of library.widgets) {
+    const issues = validateDefinition(kit, definition)
+    if (hasErrors(issues)) skipped.push({ id: definition.id, name: definition.name, issues: issues.filter((i) => i.severity !== 'warning') })
+    else widgets.push(definition)
+  }
+
+  // Worked out from the widgets themselves, so a hand-edited file can't misreport it.
+  const missing = {
+    sources: union(library.widgets.map(sourcesUsed)).filter((id) => !kit.sources[id]),
+    blocks: union(library.widgets.map(blocksUsed)).filter((type) => !kit.blocks[type]),
+  }
+
+  return {
+    widgets,
+    skipped,
+    missing,
+    ...(library.kit && kit.id && library.kit !== kit.id ? { kitMismatch: { expected: kit.id, actual: library.kit } } : {}),
+    ...(library.publishedAt ? { publishedAt: library.publishedAt } : {}),
+  }
+}

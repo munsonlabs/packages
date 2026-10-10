@@ -9,7 +9,7 @@ function describeDefault(data) {
 }
 
 /**
- * A kit is everything your app lets widgets use: its data and actions, its blocks and its themes.
+ * A kit is everything your app lets widgets use: its data and actions, its blocks, its themes, and the guard every action passes through.
  * Kits are independent, so two apps or two presets can share a page.
  *
  * @template [TData=any]
@@ -33,5 +33,5 @@ export function createKit(options = {}) {
   }
 
   const themes = options.themes?.length ? options.themes : [lightTheme]
-  return { id: options.id, sources, blocks, themes, describe: options.describe ?? describeDefault }
+  return { id: options.id, sources, blocks, themes, describe: options.describe ?? describeDefault, guard: options.guard }
 }

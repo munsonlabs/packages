@@ -1,4 +1,4 @@
-/** The kit: what an app plugs in. Its sources (composables), extra blocks and themes. */
+/** The kit: what an app plugs in. Its sources (composables), extra blocks, themes and guard. */
 
 /** @typedef {'string' | 'number' | 'boolean' | 'list' | 'object'} ValueType */
 /** @typedef {ValueType | 'action'} FieldType */
@@ -45,6 +45,9 @@
  * @property {BlockSpec[]} [blocks]
  * @property {(data: TData) => string} [describe] A short label for a piece of data: sample pickers, logs.
  * @property {Theme[]} [themes] Token values for widgets to start from. The first is the default; `<Widget theme>` picks another.
+ * @property {ActionGuard<TData, TContext>} [guard] Runs before every action any widget triggers. Return `false` to stop it (and do something
+ *   else instead, like showing a paywall), anything else to let it run. May return a promise:
+ *   the action runs once it resolves to anything but `false`.
  */
 
 /**
@@ -56,4 +59,5 @@
  * @property {Readonly<Record<string, BlockSpec>>} blocks Built-ins plus the kit's own.
  * @property {readonly Theme[]} themes At least one: the light theme when the kit gives none.
  * @property {(data: TData) => string} describe
+ * @property {ActionGuard<TData, TContext>} [guard]
  */

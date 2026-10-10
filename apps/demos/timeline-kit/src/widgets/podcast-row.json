@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "id": "podcast-row",
+  "name": "Podcast row",
+  "match": [{ "path": "entry.type", "op": "equals", "value": "podcast" }],
+  "uses": ["story", "actions", "podcast"],
+  "vars": { "--w-radius": "var(--w-radius-md)", "--w-padding": "var(--w-space-3)", "--w-accent": "#db2777" },
+  "root": {
+    "id": "row",
+    "type": "Stack",
+    "props": { "direction": "row", "gap": "var(--w-space-3)", "align": "center" },
+    "on": { "click": "actions.open" },
+    "children": [
+      {
+        "id": "artwork",
+        "type": "Image",
+        "props": { "ratio": "1/1" },
+        "bind": { "src": "podcast.artwork", "alt": "podcast.show" },
+        "style": { "width": "4.5rem", "flex-shrink": "0" }
+      },
+      {
+        "id": "about",
+        "type": "Stack",
+        "props": { "direction": "column", "gap": "var(--w-space-1)" },
+        "style": { "flex": "1", "min-width": "0" },
+        "children": [
+          { "id": "show", "type": "Text", "props": { "variant": "kicker" }, "bind": { "text": "podcast.show" } },
+          { "id": "title", "type": "Text", "props": { "variant": "subtitle", "lines": 2 }, "bind": { "text": "story.title" } },
+          {
+            "id": "meta",
+            "type": "Stack",
+            "props": { "direction": "row", "gap": "var(--w-space-1)", "align": "center" },
+            "children": [
+              { "id": "duration-icon", "type": "Icon", "props": { "name": "headphones", "size": "var(--w-text-xs)", "color": "var(--w-muted)" } },
+              { "id": "duration", "type": "Text", "props": { "variant": "caption" }, "bind": { "text": "podcast.duration" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "play",
+        "type": "Button",
+        "props": { "label": "Play", "activeLabel": "Pause" },
+        "bind": { "active": "podcast.isPlaying" },
+        "on": { "click": "podcast.togglePlay" }
+      }
+    ]
+  },
+  "variants": [
+    { "id": "playing", "label": "Playing", "when": { "if": "podcast.isPlaying" }, "overrides": { "play": { "props": { "variant": "outline" } } } }
+  ]
+}

@@ -1,8 +1,9 @@
 <script setup>
 import { useStudio } from '../studio'
 import IssuesPopover from './IssuesPopover.vue'
+import ThemePopover from './ThemePopover.vue'
 
-/** Top right: undo and redo, issues, export and publish. */
+/** Top right: undo and redo, theme, issues, export and publish. */
 const s = useStudio()
 </script>
 
@@ -32,6 +33,8 @@ const s = useStudio()
         @click="s.history.redo"
       />
     </UTooltip>
+
+    <ThemePopover />
 
     <IssuesPopover />
 

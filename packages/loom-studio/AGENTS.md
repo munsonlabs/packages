@@ -18,9 +18,9 @@ src/
   studio.js        createStudio wires the composables into one reactive object; useStudio() reads it
   editing/         tree.js (pure), useHistory, useTreeEditing
   canvas/          StudioCanvas.vue, ElementPopover.vue, useSelection
-  preview/         usePreview (sample, width)
-  panels/          inspector/ (Inspector + one component per tab), options.js: props in, events out, no studio
-  bars/            IdentityBar, DocumentBar, IssuesPopover, PreviewBar, StatusHints
+  preview/         usePreview (sample, width, theme)
+  panels/          inspector/ (Inspector + one component per tab), StyleEditor, TokensEditor, TokenInput, KeyValueEditor, options.js: props in, events out, no studio
+  bars/            IdentityBar, DocumentBar, ThemePopover, IssuesPopover, PreviewBar, StatusHints
   dialogs/         ExportModal, ImportModal
 test/              mirrors src/; fixtures.js has a tiny kit and inScope()
 ```

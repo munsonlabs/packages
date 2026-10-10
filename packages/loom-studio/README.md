@@ -6,9 +6,10 @@ The editor for [`@munsonlabs/loom`](../loom) widgets. Canvas first, no sidebars:
 <LoomStudio v-model="definition" :kit="kit" :samples="items" :context="context" @publish="save" />
 ```
 
-- **Click to edit**: content, actions and visibility, with a breadcrumb to the element's containers and its add/move/nest/duplicate/delete actions
+- **Click to edit**: content, actions, visibility and style, with a breadcrumb to the element's containers and its add/move/nest/duplicate/delete actions
 - **Bind to anything the kit provides**: every source's fields, grouped, filtered to the types that fit
 - **Preview** with your own sample data at four widths
+- **Design tokens everywhere**: the theme panel shows every token over the kit's theme with per-widget overrides; gaps, padding, radii, colours and sizes pick from the scales; preview each of the kit's themes
 - **Issues, import, export** from the top bar: export a widget's JSON, or paste one in
 
 ## Setup

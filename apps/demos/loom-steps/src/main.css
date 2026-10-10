@@ -1,0 +1,18 @@
+@import 'tailwindcss';
+@import '@nuxt/ui';
+
+/* Loom Studio ships Tailwind classes in its source; scan it like app code. */
+@source '../../../../packages/loom-studio/src';
+
+/* The studio fills the screen; in a chapter it gets a fixed-height pane instead. */
+.studio-pane {
+  height: 78vh;
+  min-height: 520px;
+  overflow: hidden;
+  border: 1px solid var(--steps-line);
+  border-radius: 10px;
+}
+
+.studio-pane > * {
+  height: 100% !important;
+}

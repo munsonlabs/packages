@@ -2,7 +2,7 @@
   "name": "@munsonlabs/loom",
   "version": "0.0.0",
   "private": true,
-  "description": "Widgets as data: JSON trees of blocks bound to your own composables, picked by conditions on the data, with variants by rule. Render them with <Widget>.",
+  "description": "Widgets as data: JSON trees of blocks bound to your own composables, picked by conditions on the data, with variants by rule. Render them with <Widget>; edit them with @munsonlabs/loom-studio.",
   "license": "MIT",
   "repository": {
     "type": "git",

@@ -11,24 +11,24 @@ export const readingSource = composableSource({ // the source
 })
 ```
 
-| File          | Gives widgets                                                             |
-| ------------- | ------------------------------------------------------------------------- |
-| `shared.js`   | Not a source: `composableSource`, `storyProps`, `imageUrl`, `STORY_ITEM`. |
-| `story.js`    | Headline, summary, section, byline, image, link, saved, read, locked      |
-| `time.js`     | "2 hours ago", the full date, published in the last hour                  |
-| `reading.js`  | "6 min read", percent read                                                |
-| `labels.js`   | Breaking, exclusive, opinion, sponsored, and the one to show              |
-| `topic.js`    | The topic, whether it's followed, follow or unfollow (through the bridge) |
-| `related.js`  | Related stories from the feed                                             |
-| `actions.js`  | Open, save, share (through the bridge)                                    |
-| `event.js`    | Date, day and month, place, add to calendar (through the bridge)          |
-| `video.js`    | A playable URL for every Bolt video platform, poster, running time        |
-| `gallery.js`  | Photos with captions, "6 photos"                                          |
-| `podcast.js`  | Show, length, artwork, play or pause in the native player                 |
-| `live.js`     | Live or ended, posts newest first, "Updated 4 minutes ago"                |
-| `quote.js`    | The quote and who said it                                                 |
-| `timeline.js` | Which timeline the widget is in                                           |
-| `index.js`    | `timelineSources`, in the order editors list them, and every composable.  |
+| File          | Gives widgets                                                                |
+| ------------- | ---------------------------------------------------------------------------- |
+| `shared.js`   | Not a source: `composableSource`, `storyProps`, `imageUrl`, `STORY_ITEM`.    |
+| `story.js`    | Headline, summary, section, byline, image, link, saved, read, locked         |
+| `time.js`     | "2 hours ago", the full date, published in the last hour                     |
+| `reading.js`  | "6 min read", percent read                                                   |
+| `labels.js`   | Breaking, exclusive, opinion, sponsored, and the one to show                 |
+| `topic.js`    | The topic, whether it's followed, follow or unfollow (through the bridge)    |
+| `related.js`  | Related stories from the feed                                                |
+| `actions.js`  | Open, save, share (through the bridge)                                       |
+| `event.js`    | Date, day and month, place, add to calendar (through the bridge)             |
+| `video.js`    | A playable URL for every Bolt video platform, poster, running time           |
+| `gallery.js`  | Photos with captions, "6 photos"                                             |
+| `podcast.js`  | Show, length, artwork, play or pause in the native player                    |
+| `live.js`     | Live or ended, posts newest first, "Updated 4 minutes ago"                   |
+| `quote.js`    | The quote and who said it                                                    |
+| `timeline.js` | Which timeline the widget is in                                              |
+| `index.js`    | `timelineSources`, in the order the studio lists them, and every composable. |
 
 ## Technically
 

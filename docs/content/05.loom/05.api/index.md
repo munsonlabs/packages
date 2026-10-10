@@ -79,7 +79,7 @@ See [Libraries](/loom/core-concepts/libraries).
 
 ## `@munsonlabs/loom/editor`
 
-What an editor needs beyond rendering. An app that only renders widgets never imports them.
+What an editor needs beyond rendering. Loom Studio is built on these; an app that only renders widgets never imports them.
 
 | Export                                                                                    | Does                                                                                                   |
 | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
@@ -93,6 +93,12 @@ What an editor needs beyond rendering. An app that only renders widgets never im
 | `tokens`, `scaleForRole`, `scaleTokens(scale)`, `tokenVar(name)`                          | Every token; which scale each role picks from; a scale's steps; `accent` → `--w-accent`.               |
 | `themeForScheme(kit, id, scheme)`, `usePreferredScheme()`                                 | The theme to render with for a scheme; the device's scheme as a live ref.                              |
 | `parseLightDark(value)`, `lightDark(light, dark)`                                         | Read and write CSS `light-dark()` values.                                                              |
+
+## `@munsonlabs/loom-studio`
+
+| Export       | Is                                                       |
+| ------------ | -------------------------------------------------------- |
+| `LoomStudio` | The editor. See [Loom Studio](/loom/studio/loom-studio). |
 
 ## Types
 

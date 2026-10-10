@@ -1,6 +1,6 @@
 # `kit/`: what an app plugs in
 
-A kit is how an app gives loom its data and behaviour: its **sources** (composables that provide values and actions) any extra **blocks**, and **themes**. Loom never imports app code; it only ever sees a kit.
+A kit is how an app gives loom its data and behaviour: its **sources** (composables that provide values and actions) any extra **blocks**, **themes**, and an optional **guard** for actions. Loom never imports app code; it only ever sees a kit.
 
 | File           | What it does                                                                                                                                                                                                                               |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -13,6 +13,7 @@ A kit is how an app gives loom its data and behaviour: its **sources** (composab
 
 - A kit is a plain value, not a registry. Two kits can share a page.
 - A source's `setup` runs lazily, the first time a widget binding reaches it, inside the widget's own effect scope, so its `computed`s and watchers stop when the widget unmounts. That code is in `renderer.js`; the types are in `types/kit.js`.
+- `kit.guard` is called from `renderer.js` before every action. See `types/guard.js`.
 
 ## Used by
 

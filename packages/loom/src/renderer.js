@@ -49,10 +49,21 @@ export function createRenderer({ kit, sourceContext }) {
       // No argument means none at all: passing the event would land in parameters like `openArticle(story?)`.
       const run = () => (typeof fn === 'function' ? (arg ? fn(value) : fn()) : undefined)
 
+      // The kit sees every action first, and may stop it (a paywall, say) or hold it until it answers.
+      const guard = kit().guard
+      const verdict = guard?.({
+        action,
+        arg: value,
+        node: node.id,
+        data: sourceContext.data,
+        index: sourceContext.index,
+        context: sourceContext.context,
+      })
       const isLink = node.type === 'Link'
-      // A link with somewhere to go still goes there, alongside its action.
-      if (isLink && !e.currentTarget.getAttribute('href')) e.preventDefault()
-      run()
+      // A link with somewhere to go still goes there, alongside its action, unless the guard stops it or has to think.
+      if (isLink && (verdict === false || verdict instanceof Promise || !e.currentTarget.getAttribute('href'))) e.preventDefault()
+      if (verdict instanceof Promise) void verdict.then((ok) => ok !== false && run())
+      else if (verdict !== false) run()
     }
   }
 

@@ -35,13 +35,13 @@ import '@munsonlabs/loom/style.css'
 
 ### Kits
 
-| Export                               | Does                                                                                     |
-| ------------------------------------ | ---------------------------------------------------------------------------------------- |
-| `createKit(options)`                 | A kit from `id`, `sources`, `blocks`, `themes` and `describe`. Throws on clashing names. |
-| `defineSource`, `defineBlock`        | Identity helpers: they return their argument.                                            |
-| `provideKit(kit, context?)`          | The default kit and context for every `<Widget>` below.                                  |
-| `matchDefinition(data, definitions)` | The first definition whose [conditions](/loom/core-concepts/matching) the data meets.    |
-| `getTheme(kit, id?)`                 | A kit's theme by id, or its default.                                                     |
+| Export                               | Does                                                                                                        |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `createKit(options)`                 | A kit from `id`, `sources`, `blocks`, `themes`, `describe` and an action `guard`. Throws on clashing names. |
+| `defineSource`, `defineBlock`        | Identity helpers: they return their argument.                                                               |
+| `provideKit(kit, context?)`          | The default kit and context for every `<Widget>` below.                                                     |
+| `matchDefinition(data, definitions)` | The first definition whose [conditions](/loom/core-concepts/matching) the data meets.                       |
+| `getTheme(kit, id?)`                 | A kit's theme by id, or its default.                                                                        |
 
 ### Themes
 
@@ -104,6 +104,7 @@ There are no types to import in JavaScript. Each shape is a JSDoc `@typedef` bes
 | `types/definition.js`     | `WidgetDefinition`, `Condition`, `WidgetNode`, `WidgetVariant`, `NodeOverride`, `VariantRule`, `WidgetSize`, `ColorScheme`, `ValuePath`, `ActionBinding` |
 | `types/kit.js`            | `Kit`, `KitOptions`, `Source`, `SourceContext`, `FieldSpec`, `FieldType`, `ValueType`                                                                    |
 | `types/blocks.js`         | `BlockSpec`, `BlockPropSpec`, `BlockType`                                                                                                                |
+| `types/guard.js`          | `ActionGuard`, `GuardedAction`                                                                                                                           |
 | `theme/tokens.js`         | `Theme`, `TokenSpec`, `TokenGroup`, `TokenKind`, `TokenScale`                                                                                            |
 | `theme/scheme.js`         | `SchemePreference`                                                                                                                                       |
 | `definitions/validate.js` | `ValidationIssue`                                                                                                                                        |

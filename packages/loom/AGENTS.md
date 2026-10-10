@@ -2,7 +2,7 @@
 
 ## Package purpose
 
-Renders widget **definitions** (JSON trees of blocks) against a **kit** (an app's sources, blocks and themes). It is deliberately domain-free: nothing here may know about stories, products or any app's data. App-specific code lives in kits. Its only internal dependency is `@munsonlabs/shipkit` (tooling).
+Renders widget **definitions** (JSON trees of blocks) against a **kit** (an app's sources and blocks). It is deliberately domain-free: nothing here may know about stories, products or any app's data. App-specific code lives in kits. Its only internal dependency is `@munsonlabs/shipkit` (tooling).
 
 ## Public API
 
@@ -18,8 +18,8 @@ src/
   editor.js      @munsonlabs/loom/editor: the helpers editors need (bindings in scope, variant diffs, token scales)
   Widget.vue     <Widget>: picks the definition and variant, themes the root, provides the renderer
   WidgetNode.vue draws one node (if, props, block) and recurses into its children
-  renderer.js    createRenderer: lazy sources, readValue(path, locals), clickHandler (runs actions)
-  types/         definition.js, blocks.js, kit.js: every shape, no runtime code
+  renderer.js    createRenderer: lazy sources, readValue(path, locals), clickHandler (runs the guard)
+  types/         definition.js, blocks.js, kit.js, guard.js: every shape, no runtime code
   kit/           createKit.js, provide.js (provideKit/inject*), lookup.js (themes, blockDefaults)
   blocks/        builtin/ (the 15 built-ins, one SFC each: spec, template, CSS; index.js gathers builtinBlocks)
   definitions/   paths.js, match.js, variants.js, validate.js, library.js
@@ -42,6 +42,7 @@ test/            mirrors src/; fixtures.js (a small shop kit) is imported as @te
 - **One media query for every widget.** `usePreferredScheme` shares a single `prefers-color-scheme` listener, counted in and out by widget scopes.
 - **Warnings render; errors don't.** `severity: 'warning'` is for things that work but probably aren't meant (a pinned colour under a dark theme); editors shouldn't block on them.
 - **Libraries load what they can.** `loadLibrary` skips widgets with errors (reporting why) rather than failing the file, so an older app survives a newer library; it throws only for input that isn't a library or a format version it can't read. Bump `LIBRARY_VERSION` only for changes an old reader would misread.
+- **Every action goes through the kit's `guard` first** (`clickHandler` in `renderer.js`): one place for paywalls and the like, so widgets and composables never re-check. Keep it the only path that runs an action.
 - **A widget says which data it's for, as JSON.** `match` holds conditions on the raw data, never on sources, which don't exist until a widget renders; `conditionHolds` in `definitions/match.js` is the only place they run. Among several definitions, the first that matches wins: there's no specificity, so order is the tie-break.
 - **`uses` is a widget's scope.** When set, editors offer only those sources and validation treats any other as out of scope. Unset means every source.
 - **Keep the main entry small.** Something only an editor needs goes in `editor.js`, not `index.js`; something nothing outside loom uses isn't exported at all.
@@ -49,4 +50,4 @@ test/            mirrors src/; fixtures.js (a small shop kit) is imported as @te
 
 ## Testing
 
-`vp test` (happy-dom). Tests mirror `src/` (see `test/README.md`): `widget.spec.js` for rendering, actions, kits, custom blocks and picking definitions; `blocks/`, `definitions/` and `theme/` for the rest. Use the shop kit in `test/fixtures.js`; never import from the demos.
+`vp test` (happy-dom). Tests mirror `src/` (see `test/README.md`): `widget.spec.js` for rendering, actions, the guard and custom blocks; `blocks/`, `definitions/` and `theme/` for the rest. Use the shop kit in `test/fixtures.js`; never import from the demos.

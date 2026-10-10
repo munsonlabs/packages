@@ -6,6 +6,7 @@
 | `ExportModal.vue`    | This widget's JSON, the whole library as one file (when the app passes `library`), and a usage snippet; copy or download each.                                                      |
 | `ImportModal.vue`    | Paste JSON: a single widget replaces the one being edited (undoably); a library goes to the app through the `importLibrary` event, with what was skipped and why.                   |
 | `conditions.js`      | A widget's conditions in words (`describeMatch`), for the identity bar and the library list.                                                                                        |
+| `parseImport.js`     | Tells a pasted widget from a pasted library. A widget keeps the id of the one being edited, so the app's library still finds it.                                                    |
 | `NewWidgetModal.vue` | Starts a widget: a name, and blank or a copy of one in the library. One of the package's two exports: apps open it themselves, since adding a widget to their library is their job. |
 
 ## Technically

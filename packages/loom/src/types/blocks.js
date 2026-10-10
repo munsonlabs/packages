@@ -23,4 +23,5 @@
  * @property {string} [icon] An Iconify name for editors, e.g. `i-lucide-type`.
  * @property {boolean} container
  * @property {Record<string, BlockPropSpec>} props
+ * @property {boolean} [clickable] Can be tapped: its node's `on.click` runs an action. Taps are the only event widgets have.
  */

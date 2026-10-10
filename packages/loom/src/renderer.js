@@ -1,9 +1,10 @@
 import { effectScope, inject, onScopeDispose, provide } from 'vue'
 import { parsePath, readPath } from './definitions/paths'
+import { parseAction } from './definitions/validate'
 
 /**
- * What every node of one `<Widget>` shares: its sources, and how a value path becomes a value.
- * `<Widget>` creates it and provides it; each `<WidgetNode>` injects it.
+ * What every node of one `<Widget>` shares: its sources, how a value path becomes a value, and how a tap
+ * becomes an action. `<Widget>` creates it and provides it; each `<WidgetNode>` injects it.
  *
  * @param {object} options
  * @param {() => import('./types').Kit} options.kit
@@ -28,13 +29,30 @@ export function createRenderer({ kit, sourceContext }) {
     return sources.get(id)
   }
 
-  /** A value path's value, read from its source. */
-  function readValue(path) {
-    const { source: id, keys } = parsePath(path)
-    return readPath(source(id), keys)
+  /** A value path's value: `item`/`repeat` from `locals` inside a `Repeat`, anything else from its source. */
+  function readValue(path, locals) {
+    const { negate, source: id, keys } = parsePath(path)
+    const value = id in locals ? readPath(locals[id], keys) : readPath(source(id), keys)
+    return negate ? !value : value
   }
 
-  return { kit, readValue }
+  /** The DOM handler for a node's `on.click`, or `undefined` when it has none. Taps are the only event. */
+  function clickHandler(node, locals) {
+    const binding = node.on?.click
+    if (!binding) return undefined
+    const { action, arg } = parseAction(binding)
+    return (e) => {
+      // A handled click belongs to this node, not to a clickable ancestor (the Save button inside a tappable card).
+      e.stopPropagation()
+      const fn = readValue(action, locals)
+      const value = arg ? readValue(arg, locals) : undefined
+      // No argument means none at all: passing the event would land in parameters like `openArticle(story?)`.
+      const run = () => (typeof fn === 'function' ? (arg ? fn(value) : fn()) : undefined)
+      run()
+    }
+  }
+
+  return { kit, readValue, clickHandler }
 }
 
 const RENDERER = Symbol('loom-renderer')

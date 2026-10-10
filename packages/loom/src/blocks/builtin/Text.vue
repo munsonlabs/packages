@@ -5,6 +5,7 @@ export const spec = {
   icon: 'i-lucide-type',
   description: 'A run of text in one of the type styles.',
   container: false,
+  clickable: true,
   props: {
     text: { type: 'string', label: 'Text', default: 'Text', accepts: ['string', 'number'] },
     variant: { type: 'enum', label: 'Style', options: ['title', 'subtitle', 'body', 'caption', 'kicker'], default: 'body' },

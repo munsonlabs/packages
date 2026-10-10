@@ -5,6 +5,7 @@ export const spec = {
   icon: 'i-lucide-layout-list',
   description: 'Lays its children out in a row or column.',
   container: true,
+  clickable: true,
   props: {
     direction: { type: 'enum', label: 'Direction', options: ['column', 'row'], default: 'column' },
     gap: { type: 'string', label: 'Gap', default: 'var(--w-gap)' },
@@ -36,10 +37,3 @@ const props = defineProps(blockProps(spec))
     <slot />
   </div>
 </template>
-
-<style>
-.w-stack {
-  display: flex;
-  min-width: 0;
-}
-</style>

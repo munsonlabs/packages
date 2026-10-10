@@ -3,8 +3,9 @@ export const spec = {
   type: 'Button',
   label: 'Button',
   icon: 'i-lucide-mouse-pointer-click',
-  description: 'A pressable button.',
+  description: 'Runs an action when pressed.',
   container: false,
+  clickable: true,
   props: {
     label: { type: 'string', label: 'Label', default: 'Button', accepts: ['string', 'number'] },
     variant: { type: 'enum', label: 'Variant', options: ['solid', 'outline', 'ghost'], default: 'solid' },

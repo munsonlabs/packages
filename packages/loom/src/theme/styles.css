@@ -1,7 +1,8 @@
 /*
- * The default of every `--w-*` variable, the widget root. The defaults are declared at zero
- * specificity, so a definition's vars, set inline on the widget root, override them without a
- * fight. Each block draws the rest in its SFC's `<style>`, reading the same variables.
+ * The default of every `--w-*` variable, the widget root, and the rules several blocks share. The
+ * defaults are declared at zero specificity, so a definition's vars, set inline on the widget root,
+ * override them without a fight. Each block draws the rest in its SFC's `<style>`, reading the same
+ * variables.
  */
 
 :where(.w-root) {
@@ -65,4 +66,14 @@
 .w-root *::before,
 .w-root *::after {
   box-sizing: border-box;
+}
+
+.w-stack,
+.w-repeat {
+  display: flex;
+  min-width: 0;
+}
+
+.is-clickable {
+  cursor: pointer;
 }

@@ -49,6 +49,6 @@ provideRenderer(renderer)
 
 <template>
   <div class="w-root" :data-widget="props.definition.id" :style="props.definition.vars">
-    <WidgetNode :node="props.definition.root" />
+    <WidgetNode :node="props.definition.root" :locals="{}" />
   </div>
 </template>

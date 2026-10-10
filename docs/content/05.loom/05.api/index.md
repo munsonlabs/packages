@@ -38,6 +38,6 @@ There are no types to import in JavaScript. Each shape is a JSDoc `@typedef` bes
 
 | File                  | Typedefs                                                                              |
 | --------------------- | ------------------------------------------------------------------------------------- |
-| `types/definition.js` | `WidgetDefinition`, `WidgetNode`, `ValuePath`                                         |
+| `types/definition.js` | `WidgetDefinition`, `WidgetNode`, `ValuePath`, `ActionBinding`                        |
 | `types/kit.js`        | `Kit`, `KitOptions`, `Source`, `SourceContext`, `FieldSpec`, `FieldType`, `ValueType` |
 | `types/blocks.js`     | `BlockSpec`, `BlockPropSpec`, `BlockType`                                             |

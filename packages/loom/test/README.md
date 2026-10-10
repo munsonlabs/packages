@@ -8,3 +8,4 @@ Vitest with happy-dom (`vp test`). Folders mirror `src/`, and every test uses th
 | `widget.spec.js`                  | `<Widget>`: rendering through sources, actions, and kits.                                       |
 | `blocks/blocks.spec.js`           | Each built-in block's HTML.                                                                     |
 | `definitions/definitions.spec.js` | Validation, bindings and `uses`, matching and variants.                                         |
+| `theme/tokens.spec.js`            | That every token is declared in `styles.css`, and that blocks read only real tokens.            |

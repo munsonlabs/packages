@@ -1,12 +1,14 @@
 # `theme/`: how widgets look
 
-The default of every `--w-*` variable blocks read, and the widget root's CSS.
+Loom's design system: tokens (named CSS variables), themes (sets of token values), and the default of every token blocks read.
 
-| File         | What it does                                                                                                                                                                                                                                                                     |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `styles.css` | The default value of every `--w-*` variable (on `.w-root`, at zero specificity), then the widget root's CSS and the rules several blocks share. Each block's own CSS is in its SFC. Published as `@munsonlabs/loom/style.css`, which the build fills with every block's CSS too. |
+| File         | What it does                                                                                                                                                                                                                                                                  |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tokens.js`  | Every token, all prefixed `--w-`, in two tiers: **scales** (colours, type sizes, spacing, radii, shadows) and **roles** (what a value is for: `gap`, `padding`, `title-size`…), which point at the scales. Also `defineTheme`, the built-in `lightTheme`, and `scaleForRole`. |
+| `styles.css` | The default value of every token (on `.w-root`, at zero specificity), then the widget root's CSS and the rules several blocks share. Each block's own CSS is in its SFC. Published as `@munsonlabs/loom/style.css`, which the build fills with every block's CSS too.         |
 
 ## Technically
 
-- Values stack on a widget's root element, last wins: the defaults in `styles.css`, then the definition's `vars`, then the active variant's `vars`. `Widget.vue` writes the last two as inline CSS variables.
-- Blocks read role variables (`--w-gap`, `--w-title-size`) and colours only, which point at the scales (`--w-space-2`, `--w-text-xl`) by default.
+- Values stack on a widget's root element, last wins: the defaults in `styles.css`, then the theme, then the definition's `vars`, then the active variant's `vars`. `Widget.vue` writes the last three as inline CSS variables.
+- Blocks read role tokens and colours only. A theme can retune a whole scale, and a widget can say "my gap is `space-3`" without either knowing the other's numbers.
+- `test/theme/tokens.spec.js` fails if `tokens.js` and `styles.css` drift apart, or if any CSS, a block's `<style>` included, reads a token that doesn't exist.

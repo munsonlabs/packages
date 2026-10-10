@@ -1,5 +1,5 @@
 import { computed, reactive } from 'vue'
-import { createKit } from '@munsonlabs/loom'
+import { createKit, defineTheme, lightTheme } from '@munsonlabs/loom'
 import Highlight from './Highlight.vue'
 
 /** The data: a few articles, as an app might fetch them. Nothing here knows about loom. */
@@ -117,8 +117,31 @@ export const highlightBlock = {
 /** Short notes from the editors: other data in the same feed. */
 export const notes = [{ id: 'week-off', kind: 'note', title: 'Back on Monday: the newsletter takes a week off.', author: 'The editors' }]
 
+/** A theme is a set of token values. Blocks read only tokens, so a theme restyles every widget. */
+export const sepiaTheme = defineTheme({
+  id: 'sepia',
+  label: 'Sepia',
+  values: {
+    bg: '#f6efe0',
+    surface: '#ece1c9',
+    text: '#3b2f22',
+    muted: '#7a6650',
+    accent: '#9a3412',
+    border: '#d9c7a3',
+    'title-font': 'Georgia, serif',
+    radius: 'var(--w-radius-lg)',
+  },
+})
+
+export const inkTheme = defineTheme({
+  id: 'ink',
+  label: 'Ink',
+  values: { accent: '#1d4ed8', 'accent-contrast': '#ffffff', 'title-weight': '800', gap: 'var(--w-space-3)', radius: 'var(--w-radius-none)' },
+})
+
 export const kit = createKit({
   sources: [articleSource, readingSource],
   blocks: [highlightBlock],
+  themes: [lightTheme, sepiaTheme, inkTheme],
   describe: (data) => data.title,
 })

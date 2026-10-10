@@ -8,7 +8,7 @@ export const spec = {
   clickable: true,
   props: {
     direction: { type: 'enum', label: 'Direction', options: ['column', 'row'], default: 'column' },
-    gap: { type: 'string', label: 'Gap', default: 'var(--w-gap)' },
+    gap: { type: 'string', label: 'Gap', default: 'var(--w-gap)', tokenScale: 'space' },
     align: { type: 'enum', label: 'Align', options: ['stretch', 'start', 'center', 'end'], default: 'stretch' },
     justify: { type: 'enum', label: 'Justify', options: ['start', 'center', 'end', 'space-between'], default: 'start' },
     wrap: { type: 'boolean', label: 'Wrap', default: false },

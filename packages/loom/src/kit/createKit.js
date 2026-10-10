@@ -1,4 +1,5 @@
 import { builtinBlocks } from '../blocks/builtin'
+import { lightTheme } from '../theme/tokens'
 
 function describeDefault(data) {
   if (data && typeof data === 'object') {
@@ -8,7 +9,7 @@ function describeDefault(data) {
 }
 
 /**
- * A kit is everything your app lets widgets use: its data and actions, and its blocks.
+ * A kit is everything your app lets widgets use: its data and actions, its blocks and its themes.
  * Kits are independent, so two apps or two presets can share a page.
  *
  * @template [TData=any]
@@ -31,5 +32,6 @@ export function createKit(options = {}) {
     blocks[block.type] = block
   }
 
-  return { sources, blocks, describe: options.describe ?? describeDefault }
+  const themes = options.themes?.length ? options.themes : [lightTheme]
+  return { sources, blocks, themes, describe: options.describe ?? describeDefault }
 }

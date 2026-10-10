@@ -1,0 +1,18 @@
+# `kit/`: what an app plugs in
+
+A kit is how an app gives loom its data: its **sources** (composables that provide values). Loom never imports app code; it only ever sees a kit.
+
+| File           | What it does                                                                                                                                               |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createKit.js` | `createKit(options)` checks and builds a kit: source ids are unique.                                                                                       |
+| `provide.js`   | `provideKit(kit, context)` makes a kit and its context the default for every `<Widget>` below a component; `injectKit` and `injectContext` read them back. |
+| `index.js`     | Re-exports the above.                                                                                                                                      |
+
+## Technically
+
+- A kit is a plain value, not a registry. Two kits can share a page.
+- A source's `setup` runs lazily, the first time a widget binding reaches it, inside the widget's own effect scope, so its `computed`s and watchers stop when the widget unmounts. That code is in `renderer.js`; the types are in `types/kit.js`.
+
+## Used by
+
+`Widget.vue` and `renderer.js` (to render), and `definitions/` (to read bindings).

@@ -5,8 +5,8 @@ Everything that reads, checks or changes a definition, apart from drawing it. `<
 | File          | What it does                                                                                                                                                                                                                                            |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `paths.js`    | Bindings: splits `"product.title"` into source and keys and reads it (unwrapping Vue refs), lists what a node may bind to (`bindableValues`, including `item` and `repeat` inside a Repeat, kind-suggested sources first), and what type a binding has. |
-| `variants.js` | Variants: `ruleMatches` and `matchVariant` pick one from data and width; `variantTree` and `applyVariant` apply its overrides (hidden, order, props, bindings) on top of the base.                                                                      |
-| `validate.js` | `validateDefinition(kit, definition)`: every problem in the base and in every variant, such as an unknown block or kind, a binding the kit can't provide, or a type that doesn't fit.                                                                   |
+| `variants.js` | Variants: `ruleMatches` and `matchVariant` pick one from data, width and scheme; `variantTree` and `applyVariant` apply its overrides (hidden, order, props, bindings) on top of the base.                                                              |
+| `validate.js` | `validateDefinition(kit, definition)`: every problem in the base and in every variant, such as an unknown block or kind, a binding the kit can't provide, a type that doesn't fit, or a colour that won't follow dark mode (a warning).                 |
 
 ## Technically
 

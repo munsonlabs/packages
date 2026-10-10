@@ -38,6 +38,8 @@ export const DEFINITION_VERSION = 2
  * @property {string} [kind] The kind of data it's designed for. `<Widget :definitions>` picks a definition by it.
  * @property {Record<string, string>} [vars] CSS custom properties set on the widget root.
  * @property {WidgetNode} root
+ * @property {boolean} [fixedColors] Set when the widget is meant to look the same in light and dark: its own background or text
+ *   colours are deliberate, so the validator doesn't warn that they won't follow dark themes.
  * @property {WidgetVariant[]} [variants] Alternatives to the base tree. The first whose `when` matches is applied; none matching renders the base.
  */
 
@@ -61,7 +63,10 @@ export const DEFINITION_VERSION = 2
  * @property {WidgetSize[]} [size] The widget's measured size bucket.
  * @property {number} [minWidth]
  * @property {number} [maxWidth]
+ * @property {ColorScheme} [scheme] The colour scheme the widget renders in, for structure that differs in the dark, not just colours.
  */
+
+/** @typedef {'light' | 'dark'} ColorScheme */
 
 /**
  * `sm` under 300px, `md` from 300px, `lg` from 500px, measured from the widget itself.

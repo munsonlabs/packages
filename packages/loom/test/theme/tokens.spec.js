@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vite-plus/test'
 import { enableAutoUnmount, mount } from '@vue/test-utils'
 import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { defineTheme, scaleForRole, scaleTokens, tokenVars, tokens } from '@/theme/tokens'
+import { darkTheme, defineTheme, scaleForRole, scaleTokens, tokenVars, tokens } from '@/theme/tokens'
 import { createKit, getTheme } from '@/kit'
 import Widget from '@/Widget.vue'
 import { makeProducts, makeShop, productCard, productSource } from '@test/fixtures'
@@ -59,7 +59,6 @@ describe('tokens', () => {
 
 describe('themes', () => {
   const brand = defineTheme({ id: 'brand', label: 'Brand', values: { accent: '#4f46e5', radius: 'var(--w-radius-lg)' } })
-  const darkTheme = defineTheme({ id: 'dark', label: 'Dark', values: { bg: '#18181b', text: '#fafafa' } })
 
   it('default to light, and pick by id', () => {
     expect(getTheme(createKit()).id).toBe('light')

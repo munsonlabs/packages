@@ -53,7 +53,8 @@ provideKit(kit, { cart })
 | Bindings       | `bind`, `on`, `if` and `style` on any node, type-checked against what your sources declare                                                                                         |
 | Fifteen blocks | Layout (`Stack`, `Box`, `Grid`, `Carousel`, `Repeat`) and content (`Text`, `Image`, `Avatar`, `Button`, `Link`, `Badge`, `Rating`, `Progress`, `Divider`, `Spacer`), plus your own |
 | Design tokens  | A palette, type, space and shape scales, and role tokens; blocks read only tokens                                                                                                  |
-| Themes         | Token sets per kit (light, a brand, a host's own variables), overridden per widget and variant                                                                                     |
+| Themes         | Token sets per kit (light, dark, a brand, a host's own variables), overridden per widget and variant                                                                               |
+| Light and dark | Paired themes; `<Widget scheme>` follows the device or the host's setting, live; variants can target a scheme                                                                      |
 | Kinds          | `<Widget :definitions>` picks the definition for each piece of data                                                                                                                |
 | Variants       | Diffs on the base tree, applied by a rule on the data or the widget's measured width                                                                                               |
 | Validation     | `validateDefinition(kit, definition)` reports every problem before render                                                                                                          |

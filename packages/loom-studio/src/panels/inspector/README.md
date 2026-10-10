@@ -5,9 +5,10 @@ What opens beside a selected element, under its breadcrumb and actions: a tab ba
 | File                | What it does                                                                                                         |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | `Inspector.vue`     | The tab bar, and whichever tab is open. Hides tabs a block has no use for (Actions on a block that can't be tapped). |
-| `ContentTab.vue`    | Each of the block's props: bound to data, or a value typed in or picked from a list.                                 |
+| `ContentTab.vue`    | Each of the block's props: bound to data, or a value typed in, picked from a list, or picked from a token scale.     |
 | `ActionTab.vue`     | What tapping runs: one of the kit's actions, and optionally the value it gets (a Repeat's `item`, say).              |
 | `VisibilityTab.vue` | Show when: render only while a value is truthy, or falsy.                                                            |
+| `StyleTab.vue`      | The element's own CSS, through `StyleEditor`.                                                                        |
 | `shared.js`         | What every tab takes (`TabProps`) and emits (`TabEmits`).                                                            |
 
 ## Technically

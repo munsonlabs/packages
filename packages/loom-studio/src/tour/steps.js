@@ -147,7 +147,7 @@ export function tourSteps(api) {
       side: 'bottom',
       title: 'Export and publish',
       body: 'The widget is a single JSON document. Export it, or publish it to your app. There’s no build and no deploy, because your app renders it with the same kit.',
-      tips: ['Undo and redo sit at the far end of this bar: ⌘Z and ⇧⌘Z'],
+      tips: ['Undo and redo sit near the start of this bar: ⌘Z and ⇧⌘Z'],
     },
     {
       target: at('identity'),

@@ -7,7 +7,7 @@ Everything that reads, checks or changes a definition, apart from drawing it. `<
 | `paths.js`    | Bindings: splits `"story.title"` into source and keys and reads it (unwrapping Vue refs), lists what a node may bind to (`bindableValues`, including `item` and `repeat` inside a Repeat), and what type a binding has.                               |
 | `variants.js` | Variants: `ruleMatches` and `matchVariant` pick one from data, width and scheme; `variantTree` and `applyVariant` apply its overrides (hidden, order, props, bindings) on top of the base; `diffAsOverride` turns an edit into the smallest override. |
 | `validate.js` | `validateDefinition(kit, definition)`: every problem in the base and in every variant, such as an unknown block, a binding the kit can't provide, a type that doesn't fit, or a colour that won't follow dark mode (a warning).                       |
-| `library.js`  | `createLibrary` puts a kit's widgets in one file with what they need; `loadLibrary` reads one back, upgrades and validates each widget, and skips (and reports) what can't render with this kit.                                                      |
+| `library.js`  | `createLibrary` puts a kit's widgets in one file with what they need; `loadLibrary` reads one back, validates each widget, and skips (and reports) what can't render with this kit.                                                                   |
 
 ## Technically
 

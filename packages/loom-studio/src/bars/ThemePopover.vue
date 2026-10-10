@@ -9,7 +9,7 @@ const s = useStudio()
 <template>
   <UPopover v-model:open="s.open.theme" :content="{ align: 'end', sideOffset: 8 }">
     <UTooltip text="Theme">
-      <UButton icon="i-lucide-palette" size="sm" color="neutral" variant="ghost" class="rounded-full" aria-label="Theme" />
+      <UButton icon="i-lucide-palette" size="sm" color="neutral" variant="ghost" class="rounded-full" aria-label="Theme" data-tour="theme" />
     </UTooltip>
     <template #content>
       <div class="max-h-[75vh] w-[30rem] overflow-y-auto p-3">

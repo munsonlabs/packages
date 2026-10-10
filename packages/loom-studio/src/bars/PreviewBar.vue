@@ -17,6 +17,7 @@ const s = useStudio()
         :label="s.variants.variantLabel(s.variants.variantId)"
         icon="i-lucide-git-branch"
         trailing-icon="i-lucide-chevron-down"
+        data-tour="variant"
         size="sm"
         :color="s.variants.variant ? 'warning' : 'neutral'"
         :variant="s.variants.variant ? 'soft' : 'ghost'"
@@ -75,6 +76,7 @@ const s = useStudio()
       variant="ghost"
       class="w-48"
       aria-label="Preview data"
+      data-tour="sample"
     />
 
     <USelect
@@ -87,6 +89,7 @@ const s = useStudio()
       variant="ghost"
       class="w-28"
       aria-label="Preview theme"
+      data-tour="themes"
     />
 
     <UTooltip
@@ -100,11 +103,12 @@ const s = useStudio()
         variant="ghost"
         class="rounded-full"
         aria-label="Preview colour scheme"
+        data-tour="scheme"
         @click="s.preview.cycleScheme"
       />
     </UTooltip>
 
-    <div class="flex items-center">
+    <div class="flex items-center" data-tour="widths">
       <UTooltip v-for="vp in viewports" :key="vp.label" :text="`${vp.label}: ${viewportHint(vp.width)}`">
         <UButton
           :icon="vp.icon"
@@ -128,6 +132,7 @@ const s = useStudio()
       <UButton
         :label="s.preview.followRules ? s.variants.variantLabel(s.preview.matchedVariant) : 'Rules'"
         icon="i-lucide-wand-sparkles"
+        data-tour="rules"
         size="sm"
         :color="s.preview.followRules ? (s.preview.matchedVariant === s.variants.variantId ? 'primary' : 'warning') : 'neutral'"
         :variant="s.preview.followRules ? 'soft' : 'ghost'"
@@ -140,6 +145,7 @@ const s = useStudio()
       <UButton
         :icon="s.preview.mode === 'edit' ? 'i-lucide-hand' : 'i-lucide-mouse-pointer-2'"
         :label="s.preview.mode === 'edit' ? 'Try' : 'Edit'"
+        data-tour="try"
         size="sm"
         :color="s.preview.mode === 'interact' ? 'primary' : 'neutral'"
         :variant="s.preview.mode === 'interact' ? 'solid' : 'ghost'"

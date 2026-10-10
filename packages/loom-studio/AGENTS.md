@@ -23,10 +23,11 @@ src/
   panels/          inspector/ (Inspector + one component per tab), StyleEditor, TokensEditor, TokenInput, KeyValueEditor, VariantsPanel, OverrideMark, options.js: props in, events out, no studio
   bars/            IdentityBar, DocumentBar, ThemePopover, IssuesPopover, PreviewBar, StatusHints, CallsLog
   dialogs/         CommandPalette, ExportModal, ImportModal, NewWidgetModal
+  tour/            steps.js, useStudioTour, TourPopover.vue
 test/              mirrors src/; fixtures.js has a tiny kit and inScope()
 ```
 
-Components in `canvas/`, `layers/`, `bars/` and `dialogs/` take what they need from `useStudio()`, which is grouped by owner: `s.history`, `s.variants`, `s.selection`, `s.editing`, `s.preview`, `s.callLog`, `s.drag`, `s.open`. A new concern gets its own composable, called from `createStudio`, rather than more code in a component.
+Components in `canvas/`, `layers/`, `bars/`, `dialogs/` and `tour/` take what they need from `useStudio()`, which is grouped by owner: `s.history`, `s.variants`, `s.selection`, `s.editing`, `s.preview`, `s.callLog`, `s.drag`, `s.tour`, `s.open`. A new concern gets its own composable, called from `createStudio`, rather than more code in a component.
 
 ## How editing works
 
@@ -35,6 +36,10 @@ Components in `canvas/`, `layers/`, `bars/` and `dialogs/` take what they need f
 - The popover anchors to the element found by `[data-node-id]` in the stage, relocated after every render (`locate()`). A node that isn't rendered (hidden in the variant, or its `if` false) anchors to its nearest rendered ancestor instead, and the popover says why (`offscreen`).
 - **Drag and drop** works on loom's DOM, not ours: `useCanvasDrag` turns a press past 5px into a drag, finds the `[data-node-id]` under the pointer, and picks before/after/inside from where the pointer sits (containers take `inside` in their middle half; the flow direction comes from the nearest Stack/Repeat). On the base it calls `moveNodeTo` (checked by `canMoveTo`); in a variant it only reorders siblings, saved as `order`. The click that ends a drag is swallowed so it doesn't reselect.
 - `clone` is JSON-based on purpose: `structuredClone` throws on Vue's reactive proxies.
+
+## The tour
+
+Steps point at `data-tour="…"` markers (looked up by `at()`, since `useTour` only resolves `#id`/`.class` selectors) or at getters for live elements (the widget, the inspector, the selection). A step's `enter` sets up what it points at: opening the editor on a demo element, closing it, clearing the selection. Adding a control worth explaining means a `data-tour` marker plus a step; keep the copy short and in the order the bars are read.
 
 ## Palette actions
 

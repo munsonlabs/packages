@@ -14,6 +14,13 @@ export const isBlank = (value) => value == null || value === ''
 /** Bound values are JSON scalars; anything else (a list bound by mistake) renders as nothing. */
 export const toText = (value) => (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : '')
 
+/** Fixed columns, or as many as fit `minWidth` when it's set. */
+export function gridColumns(columns, minWidth) {
+  const min = toText(minWidth).trim()
+  const count = Math.max(1, Math.round(Number(columns) || 1))
+  return { gridTemplateColumns: min ? `repeat(auto-fill, minmax(min(${min}, 100%), 1fr))` : `repeat(${count}, minmax(0, 1fr))` }
+}
+
 /** `start`/`end` as flexbox spells them. */
 export function toFlexAlign(value) {
   return value === 'start' ? 'flex-start' : value === 'end' ? 'flex-end' : value

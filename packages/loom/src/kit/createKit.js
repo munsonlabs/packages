@@ -1,7 +1,7 @@
 import { builtinBlocks } from '../blocks/builtin'
 
 /**
- * A kit is everything your app lets widgets use: its data and actions.
+ * A kit is everything your app lets widgets use: its data and actions, and its blocks.
  * Kits are independent, so two apps or two presets can share a page.
  *
  * @template [TData=any]
@@ -18,6 +18,11 @@ export function createKit(options = {}) {
   }
 
   const blocks = { ...builtinBlocks }
+  for (const block of options.blocks ?? []) {
+    if (block.type in builtinBlocks) throw new Error(`[loom] "${block.type}" is a built-in block`)
+    if (!block.component) throw new Error(`[loom] block "${block.type}" needs a component`)
+    blocks[block.type] = block
+  }
 
   return { sources, blocks }
 }

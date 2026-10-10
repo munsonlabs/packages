@@ -18,10 +18,10 @@ import '@munsonlabs/loom/style.css'
 
 ### Kits
 
-| Export                      | Does                                                    |
-| --------------------------- | ------------------------------------------------------- |
-| `createKit(options)`        | A kit from `sources`. Throws on clashing names.         |
-| `provideKit(kit, context?)` | The default kit and context for every `<Widget>` below. |
+| Export                      | Does                                                         |
+| --------------------------- | ------------------------------------------------------------ |
+| `createKit(options)`        | A kit from `sources` and `blocks`. Throws on clashing names. |
+| `provideKit(kit, context?)` | The default kit and context for every `<Widget>` below.      |
 
 ### `<Widget>`
 

@@ -12,7 +12,7 @@ src/
   types/         the shapes of everything: definitions, kits, blocks, guards
   kit/           making a kit, sharing it with widgets, and finding things in it
   blocks/        the 15 built-in blocks, one file each (what it accepts, the HTML it draws, its CSS), plus Video and Icon
-  definitions/   working with definitions: bindings, matching, variants, validation, libraries, upgrades
+  definitions/   working with definitions: bindings, matching, variants, validation, libraries
   theme/         design tokens, themes, light and dark, and the shared CSS
 ```
 

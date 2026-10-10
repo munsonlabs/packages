@@ -1,0 +1,29 @@
+{
+  "name": "timeline-kit",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Bolt's timeline as a loom kit: story composables as sources, widgets picked by entry type, example widgets and a sample feed. Shared by the loom demos.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js",
+    "./vite": "./vite.js"
+  },
+  "scripts": {
+    "lint": "vp lint",
+    "fmt": "vp fmt",
+    "test": "vp test",
+    "check": "vp check"
+  },
+  "dependencies": {
+    "@munsonlabs/loom": "*",
+    "@munsonlabs/sigil": "*",
+    "@munsonlabs/video-player": "*",
+    "bolt-bridge-stub": "*"
+  },
+  "devDependencies": {
+    "@munsonlabs/shipkit": "*",
+    "@types/node": "^25.5.0",
+    "@vue/test-utils": "^2.4.6",
+    "vue": "3.5.42"
+  }
+}

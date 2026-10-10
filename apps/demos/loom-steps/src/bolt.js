@@ -1,11 +1,7 @@
 import { reactive } from 'vue'
 import { createStubNative, globalBridge } from 'bolt-bridge-stub'
-
-/** A few stories in Bolt's shape, as the native app would have downloaded them. */
-const stories = [
-  { entry: { id: 'harbour', type: 'article', title: 'Harbour redevelopment clears its final planning hurdle', section: 'City' } },
-  { entry: { id: 'storm', type: 'article', title: 'Storm warnings extended along the coast', section: 'Weather', paywall_locked: true } },
-]
+// The timeline kit's sample feed: something for every kind of story, in Bolt's shape.
+import { stories } from 'timeline-kit'
 
 /** Every message between the web and the stub app, newest first. */
 export const messages = reactive([])

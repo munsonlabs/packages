@@ -3,12 +3,13 @@
 The editor for [`@munsonlabs/loom`](../loom) widgets. Canvas first, no sidebars: click any part of the widget and its editor opens beside it.
 
 ```vue
-<LoomStudio v-model="definition" :kit="kit" :samples="items" :context="context" />
+<LoomStudio v-model="definition" :kit="kit" :samples="items" :context="context" @publish="save" />
 ```
 
 - **Click to edit**: content, actions and visibility, with a breadcrumb to the element's containers and its add/move/nest/duplicate/delete actions
 - **Bind to anything the kit provides**: every source's fields, grouped, filtered to the types that fit
 - **Preview** with your own sample data at four widths
+- **Issues, import, export** from the top bar: export a widget's JSON, or paste one in
 
 ## Setup
 

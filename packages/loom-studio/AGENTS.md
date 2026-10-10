@@ -6,7 +6,7 @@
 
 ## Nuxt UI
 
-Components are used by **auto-import only**, never imported from `@nuxt/ui/components/*.vue`: explicit imports get Nuxt UI's Nuxt builds of `UIcon`/`ULink`, which pull in `@nuxt/icon` and break outside Nuxt. The host app runs Nuxt UI's Vite plugin with `scanPackages: ['@munsonlabs/loom-studio']`. Composables (`defineShortcuts`) are imported from `@nuxt/ui/composables`. `@nuxt/ui` and `@munsonlabs/loom` stay external in the pack build. The studio imports editor helpers from `@munsonlabs/loom/editor`, and exports only `LoomStudio`.
+Components are used by **auto-import only**, never imported from `@nuxt/ui/components/*.vue`: explicit imports get Nuxt UI's Nuxt builds of `UIcon`/`ULink`, which pull in `@nuxt/icon` and break outside Nuxt. The host app runs Nuxt UI's Vite plugin with `scanPackages: ['@munsonlabs/loom-studio']`. Composables (`useToast`, `defineShortcuts`) are imported from `@nuxt/ui/composables`. `@nuxt/ui` and `@munsonlabs/loom` stay external in the pack build. The studio imports editor helpers from `@munsonlabs/loom/editor`, and exports only `LoomStudio`.
 
 ## Layout
 
@@ -20,11 +20,12 @@ src/
   canvas/          StudioCanvas.vue, ElementPopover.vue, useSelection
   preview/         usePreview (sample, width)
   panels/          inspector/ (Inspector + one component per tab), options.js: props in, events out, no studio
-  bars/            IdentityBar, DocumentBar, PreviewBar, StatusHints
+  bars/            IdentityBar, DocumentBar, IssuesPopover, PreviewBar, StatusHints
+  dialogs/         ExportModal, ImportModal
 test/              mirrors src/; fixtures.js has a tiny kit and inScope()
 ```
 
-Components in `canvas/` and `bars/` take what they need from `useStudio()`, which is grouped by owner: `s.history`, `s.selection`, `s.editing`, `s.preview`. A new concern gets its own composable, called from `createStudio`, rather than more code in a component.
+Components in `canvas/`, `bars/` and `dialogs/` take what they need from `useStudio()`, which is grouped by owner: `s.history`, `s.selection`, `s.editing`, `s.preview`, `s.open`. A new concern gets its own composable, called from `createStudio`, rather than more code in a component.
 
 ## How editing works
 

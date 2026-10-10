@@ -1,7 +1,8 @@
 <script setup>
 import { useStudio } from '../studio'
+import IssuesPopover from './IssuesPopover.vue'
 
-/** Top right: undo and redo. */
+/** Top right: undo and redo, issues, export and publish. */
 const s = useStudio()
 </script>
 
@@ -31,5 +32,20 @@ const s = useStudio()
         @click="s.history.redo"
       />
     </UTooltip>
+
+    <IssuesPopover />
+
+    <UTooltip text="Export">
+      <UButton
+        icon="i-lucide-download"
+        size="sm"
+        color="neutral"
+        variant="ghost"
+        class="rounded-full"
+        aria-label="Export"
+        @click="s.open.export = true"
+      />
+    </UTooltip>
+    <UButton label="Publish" icon="i-lucide-send" size="sm" class="ml-1 rounded-full" :disabled="s.errors" @click="s.publish" />
   </div>
 </template>

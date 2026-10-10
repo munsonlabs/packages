@@ -48,12 +48,15 @@ provideKit(kit, { cart })
 }
 ```
 
-| You get     |                                                                                          |
-| ----------- | ---------------------------------------------------------------------------------------- |
-| Bindings    | `bind`, `on`, `if` and `style` on any node, read through the fields your sources declare |
-| Five blocks | Layout (`Stack`, `Repeat`) and content (`Text`, `Image`, `Button`)                       |
-| Variables   | Every block reads `--w-*` variables, which a definition's `vars` set on its root         |
+| You get     |                                                                                            |
+| ----------- | ------------------------------------------------------------------------------------------ |
+| Bindings    | `bind`, `on`, `if` and `style` on any node, type-checked against what your sources declare |
+| Five blocks | Layout (`Stack`, `Repeat`) and content (`Text`, `Image`, `Button`)                         |
+| Variables   | Every block reads `--w-*` variables, which a definition's `vars` set on its root           |
+| Validation  | `validateDefinition(kit, definition)` reports every problem before render                  |
 
 Full docs: [Loom](https://munsonlabs.pages.dev/loom/getting-started/introduction).
+
+Editors get the lower-level helpers (what a field can bind to, defaults for new nodes) from `@munsonlabs/loom/editor`; an app that only renders widgets never needs it.
 
 To see how loom was built, one commit at a time, run [`apps/demos/loom-steps`](../../apps/demos/loom-steps): a chapter per step, each with the files to read and a live example.

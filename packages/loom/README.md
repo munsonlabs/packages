@@ -52,13 +52,15 @@ provideKit(kit, { cart })
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Bindings       | `bind`, `on`, `if` and `style` on any node, type-checked against what your sources declare                                                                                         |
 | Fifteen blocks | Layout (`Stack`, `Box`, `Grid`, `Carousel`, `Repeat`) and content (`Text`, `Image`, `Avatar`, `Button`, `Link`, `Badge`, `Rating`, `Progress`, `Divider`, `Spacer`), plus your own |
+| Matching       | Each widget says which data it's for (`match`) and which sources it uses; `<Widget :definitions>` renders the first that matches                                                   |
+| Variants       | Diffs on the base tree, applied by a rule on the data or the widget's measured width                                                                                               |
 | Design tokens  | A palette, type, space and shape scales, and role tokens; blocks read only tokens                                                                                                  |
 | Themes         | Token sets per kit (light, dark, a brand, a host's own variables), overridden per widget and variant                                                                               |
 | Light and dark | Paired themes; `<Widget scheme>` follows the device or the host's setting, live; variants can target a scheme                                                                      |
-| Matching       | Each widget says which data it's for (`match`) and which sources it uses; `<Widget :definitions>` renders the first that matches                                                   |
-| Variants       | Diffs on the base tree, applied by a rule on the data or the widget's measured width                                                                                               |
 | Validation     | `validateDefinition(kit, definition)` reports every problem before render                                                                                                          |
 | Libraries      | `createLibrary` puts every widget for a kit in one JSON file; `loadLibrary` loads what renders with this kit and says what it skipped and why                                      |
+| Video          | `@munsonlabs/loom/video`: a `Video` block on [`@munsonlabs/video-player`](../video-player)                                                                                         |
+| Icons          | `@munsonlabs/loom/icon`: an `Icon` block on [`@munsonlabs/sigil`](../sigil)                                                                                                        |
 
 Full docs: [Loom](https://munsonlabs.pages.dev/loom/getting-started/introduction).
 

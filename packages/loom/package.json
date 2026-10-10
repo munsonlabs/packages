@@ -2,7 +2,7 @@
   "name": "@munsonlabs/loom",
   "version": "0.0.0",
   "private": true,
-  "description": "Widgets as data: JSON trees of blocks bound to your own composables. Render them with <Widget>.",
+  "description": "Widgets as data: JSON trees of blocks bound to your own composables, picked by conditions on the data, with variants by rule. Render them with <Widget>.",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -29,6 +29,14 @@
     "./style.css": {
       "source": "./src/theme/styles.css",
       "import": "./dist/style.css"
+    },
+    "./video": {
+      "source": "./src/blocks/video/index.js",
+      "import": "./dist/video.mjs"
+    },
+    "./icon": {
+      "source": "./src/blocks/icon/index.js",
+      "import": "./dist/icon.mjs"
     }
   },
   "scripts": {
@@ -43,11 +51,23 @@
   },
   "devDependencies": {
     "@munsonlabs/shipkit": "*",
+    "@munsonlabs/sigil": "*",
+    "@munsonlabs/video-player": "*",
     "@types/node": "^25.5.0",
     "@vue/test-utils": "^2.4.6",
     "vue": "3.5.42"
   },
   "peerDependencies": {
+    "@munsonlabs/sigil": "*",
+    "@munsonlabs/video-player": "*",
     "vue": ">=3"
+  },
+  "peerDependenciesMeta": {
+    "@munsonlabs/video-player": {
+      "optional": true
+    },
+    "@munsonlabs/sigil": {
+      "optional": true
+    }
   }
 }

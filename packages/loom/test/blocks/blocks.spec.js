@@ -1,13 +1,15 @@
 import { afterEach, describe, expect, it } from 'vite-plus/test'
-import { enableAutoUnmount, mount } from '@vue/test-utils'
+import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
+import { override } from '@munsonlabs/sigil'
 import Widget from '@/Widget.vue'
 import { createKit } from '@/kit'
 import { validateDefinition } from '@/definitions/validate'
+import { iconBlock } from '@/blocks/icon'
 import { makeProducts, makeShop, productSource } from '@test/fixtures'
 
 enableAutoUnmount(afterEach)
 
-const kit = createKit({ sources: [productSource] })
+const kit = createKit({ sources: [productSource], blocks: [iconBlock] })
 const definition = (root) => ({ version: 2, id: 'b', name: 'B', root })
 
 function render(root) {
@@ -113,5 +115,16 @@ describe('content blocks', () => {
     const wrapper = render({ id: 'p', type: 'Progress', props: { value: 10, max: 40, tone: 'alert', label: 'Stock' } })
     expect(el(wrapper, 'p').classList).toContain('is-alert')
     expect(wrapper.find('.w-progress-label').text()).toBe('Stock')
+  })
+
+  it('Icon draws a sigil icon inside a selectable span', async () => {
+    override('flag', '<svg viewBox="0 0 24 24"><path d="M0 0h24"/></svg>')
+    const wrapper = render({ id: 'i', type: 'Icon', props: { name: 'flag', label: 'Flagged', size: 'var(--w-text-lg)' } })
+    await flushPromises()
+    const icon = el(wrapper, 'i')
+    expect(icon.classList).toContain('w-icon')
+    expect(icon.getAttribute('aria-label')).toBe('Flagged')
+    expect(icon.style.fontSize).toBe('var(--w-text-lg)')
+    expect(icon.querySelector('svg')).not.toBeNull()
   })
 })

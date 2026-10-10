@@ -34,4 +34,4 @@ Components in `canvas/` and `bars/` take what they need from `useStudio()`, whic
 
 ## Checking
 
-`vp check` and `vp test` (the editing and preview composables).
+`vp check` and `vp test` (the editing and preview composables). Try UI changes in `apps/demos/loom-studio` (`vp run --filter loom-studio-demo dev`).

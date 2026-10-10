@@ -33,4 +33,4 @@ import '@munsonlabs/loom/style.css'
 createApp(App).use(ui).mount('#app')
 ```
 
-Full docs: [Loom Studio](https://munsonlabs.pages.dev/loom/studio/loom-studio).
+`apps/demos/loom-studio` is a working setup, editing the timeline kit in `apps/demos/timeline-kit`. Full docs: [Loom Studio](https://munsonlabs.pages.dev/loom/studio/loom-studio).

@@ -1,6 +1,6 @@
 # `test/`: Loom Studio's tests
 
-Vitest with happy-dom (`vp test`). Folders mirror `src/`. They test the logic without mounting the editor, using the small kit in `fixtures.js`; the UI itself is checked by hand.
+Vitest with happy-dom (`vp test`). Folders mirror `src/`. They test the logic without mounting the editor, using the small kit in `fixtures.js`; the UI itself is checked by hand in `apps/demos/loom-studio`.
 
 | Path                             | Covers                                              |
 | -------------------------------- | --------------------------------------------------- |

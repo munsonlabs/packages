@@ -1,37 +1,43 @@
 import { computed, nextTick } from 'vue'
-import { createNode, duplicateNode, findNode, findParent, indentNode, insertNode, moveNodeBy, outdentNode, removeNode } from './tree'
+import { diffAsOverride } from '@munsonlabs/loom/editor'
+import { clone, createNode, duplicateNode, findNode, findParent, indentNode, insertNode, moveNodeBy, outdentNode, removeNode } from './tree'
+import { setOverride } from './useVariantEditing'
 
 /**
  * @typedef {object} Options
  * @property {() => Kit} kit
  * @property {Ref<WidgetDefinition>} definition
  * @property {(fn: (draft: WidgetDefinition) => void) => void} change
+ * @property {VariantEditing} variants
  * @property {Selection} selection
  */
 
 /**
  * Changing the tree around the selection: add, move, nest, duplicate, delete, and edit a node.
- * Every change goes through `change`, so it's undoable.
+ * On the base anything goes. In a variant, structure is the base's: moves become the parent's
+ * `order`, delete hides, and adding or nesting isn't offered.
  *
  * @param {Options} options
  */
-export function useTreeEditing({ kit, definition, change, selection }) {
-  const { selectedId, isRoot, siblings, position, select, locate } = selection
+export function useTreeEditing({ kit, definition, change, variants, selection }) {
+  const { variant, tree, editVariant, toggleHidden } = variants
+  const { selectedId, selected, isRoot, siblings, position, select, locate } = selection
 
   const isContainerNode = (node) => !!kit().blocks[node.type]?.container
 
   const canIndent = computed(() => {
     const above = siblings.value[position.value - 1]
-    return !!above && isContainerNode(above)
+    return !variant.value && !!above && isContainerNode(above)
   })
   const canOutdent = computed(() => {
-    if (!selectedId.value) return false
-    const parent = findParent(definition.value.root, selectedId.value)
+    if (variant.value || !selectedId.value) return false
+    const parent = findParent(tree.value.root, selectedId.value)
     return !!parent && parent.id !== definition.value.root.id
   })
 
   /** Adds a block inside the selected container, or after the selection (`where: 'after'`). */
   function add(type, where = 'auto') {
+    if (variant.value) return
     const target = selectedId.value ?? definition.value.root.id
     const node = createNode(kit(), definition.value, type)
     change((draft) => insertNode(kit(), draft, target, node, where))
@@ -42,7 +48,17 @@ export function useTreeEditing({ kit, definition, change, selection }) {
   function moveBy(delta) {
     const id = selectedId.value
     if (!id || isRoot.value) return
-    change((d) => moveNodeBy(d, id, delta))
+    if (!variant.value) {
+      change((d) => moveNodeBy(d, id, delta))
+    } else {
+      const parent = findParent(tree.value.root, id)
+      if (!parent?.children) return
+      const order = parent.children.map((c) => c.id)
+      const from = order.indexOf(id)
+      if (from + delta < 0 || from + delta >= order.length) return
+      order.splice(from + delta, 0, ...order.splice(from, 1))
+      editVariant((v) => setOverride(v, parent.id, { ...v.overrides?.[parent.id], order }))
+    }
     void nextTick(locate)
   }
 
@@ -65,27 +81,38 @@ export function useTreeEditing({ kit, definition, change, selection }) {
   function remove() {
     const id = selectedId.value
     if (!id || isRoot.value) return
-    const next = siblings.value[position.value + 1] ?? siblings.value[position.value - 1] ?? findParent(definition.value.root, id)
+    // Structure belongs to the base; in a variant, delete means hide.
+    if (variant.value) return toggleHidden(id)
+    const next = siblings.value[position.value + 1] ?? siblings.value[position.value - 1] ?? findParent(tree.value.root, id)
     change((draft) => removeNode(draft, id))
     select(next?.id)
   }
 
   function duplicate() {
     const id = selectedId.value
-    if (!id || isRoot.value) return
+    if (!id || isRoot.value || variant.value) return
     let copy
     change((draft) => (copy = duplicateNode(draft, id)))
     if (copy) select(copy)
   }
 
-  /** Changes the selected node. */
+  /** Changes the selected node: directly on the base, or as the smallest override in a variant. */
   function editNode(fn) {
     const id = selectedId.value
     if (!id) return
-    change((draft) => {
-      const node = findNode(draft.root, id)
-      if (node) fn(node)
-    })
+    if (variant.value) {
+      const base = findNode(definition.value.root, id)
+      const current = selected.value
+      if (!base || !current) return
+      const edited = clone(current)
+      fn(edited)
+      editVariant((v) => setOverride(v, id, diffAsOverride(base, edited, v.overrides?.[id])))
+    } else {
+      change((draft) => {
+        const node = findNode(draft.root, id)
+        if (node) fn(node)
+      })
+    }
   }
 
   /** Menu items for adding each of the kit's blocks. */

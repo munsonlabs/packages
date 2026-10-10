@@ -31,3 +31,14 @@ export const typeColor = {
 export function iconFor(kit, type) {
   return kit.blocks[type]?.icon ?? 'i-lucide-box'
 }
+
+/**
+ * A field of a node a variant can override, for resetting it to the base.
+ *
+ * @typedef {(
+ *     | { field: 'prop'; name: string }
+ *     | { field: 'event'; name: string }
+ *     | { field: 'if' }
+ *     | { field: 'style' }
+ * )} OverrideField
+ */

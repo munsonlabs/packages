@@ -5,14 +5,16 @@ import KeyValueEditor from './KeyValueEditor.vue'
 import TokenInput from './TokenInput.vue'
 
 /**
- * Overrides for the design tokens, over a theme: a definition's `vars`. Each row shows what the
- * theme gives and marks what's overridden here.
+ * Overrides for the design tokens, over a theme: a definition's `vars`, or a variant's.
+ * Each row shows what the theme gives and marks what's overridden here.
  */
 const props = defineProps({
-  /** `--w-*` → value, as stored on the definition. */
+  /** `--w-*` → value, as stored on the definition or variant. */
   vars: { type: Object, required: true },
   /** What the values fall back to before these overrides. */
   theme: { type: Object, required: true },
+  /** Labels the overrides: "this widget", "Compact". */
+  scope: String,
 })
 const emit = defineEmits(['change'])
 
@@ -62,7 +64,7 @@ function setOthers(next) {
 <template>
   <div class="flex flex-col gap-2">
     <p class="text-xs text-muted">
-      Starting from the <strong class="text-default">{{ theme.label }}</strong> theme. Changes here apply to this widget only.
+      Starting from the <strong class="text-default">{{ theme.label }}</strong> theme. Changes here apply to {{ scope ?? 'this widget' }} only.
     </p>
 
     <details v-for="group in groups" :key="group.id" :open="group.open" class="group rounded-md border border-default">

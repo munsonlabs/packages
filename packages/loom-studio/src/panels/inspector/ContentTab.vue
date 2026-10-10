@@ -1,14 +1,16 @@
 <script setup>
 import { computed } from 'vue'
+import OverrideMark from '../OverrideMark.vue'
 import TokenInput from '../TokenInput.vue'
 import { valueOptions } from '../options'
-import { tabEmits, tabProps } from './shared'
+import { overridesIn, tabEmits, tabProps } from './shared'
 
 /** Each of the block's props: bound to data, or a value typed in, picked from a list or a token scale. */
 const props = defineProps(tabProps)
 const emit = defineEmits(tabEmits)
 
 const spec = computed(() => props.kit.blocks[props.node.type])
+const overridden = computed(() => overridesIn(props.variant?.override))
 
 const staticValue = (name, prop) => props.node.props?.[name] ?? prop.default
 
@@ -33,6 +35,9 @@ function setBind(name, path) {
 <template>
   <div class="flex flex-col gap-3">
     <UFormField v-for="(prop, name) in spec.props" :key="name" :label="prop.label" size="xs">
+      <template #hint>
+        <OverrideMark v-if="variant && overridden.prop(name)" :variant="variant.label" @reset="emit('reset', { field: 'prop', name })" />
+      </template>
       <div class="flex flex-col gap-1.5">
         <div v-if="prop.accepts" class="flex items-center gap-1">
           <USelect

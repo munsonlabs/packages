@@ -5,7 +5,7 @@ import { validateDefinition } from '@/definitions/validate'
 import { bindableValues, sourcesUsed } from '@/definitions/paths'
 import { createKit } from '@/kit'
 import { conditionHolds, definitionMatches, matchDefinition } from '@/definitions/match'
-import { applyVariant, matchVariant, ruleMatches, variantTree, widthToSize } from '@/definitions/variants'
+import { applyVariant, diffAsOverride, matchVariant, ruleMatches, variantTree, widthToSize } from '@/definitions/variants'
 import Widget from '@/Widget.vue'
 import { videoBlock } from '@/blocks/video'
 import { makeKit, makeProducts, makeShop, productCard, productSource } from '@test/fixtures'
@@ -164,6 +164,14 @@ describe('variants', () => {
     expect(matchVariant(productCard, ctx(200, { 'product.onSale': true }))).toBe('sale')
     expect(matchVariant(productCard, ctx(200))).toBe('compact')
     expect(matchVariant(productCard, ctx(600))).toBeUndefined()
+  })
+
+  it('store an edit as the smallest override', () => {
+    const base = { id: 't', type: 'Text', props: { variant: 'body' }, bind: { text: 'product.title' }, if: 'product.title' }
+    const edited = { ...base, props: { variant: 'title' }, bind: undefined, if: undefined, style: { color: 'red' } }
+    expect(diffAsOverride(base, edited)).toEqual({ props: { variant: 'title' }, bind: { text: null }, if: null, style: { color: 'red' } })
+    expect(diffAsOverride(base, { ...base }, { hidden: true })).toEqual({ hidden: true })
+    expect(diffAsOverride(base, { ...base })).toBeUndefined()
   })
 
   it('render by rule: data first, then measured size; a pinned variant wins', async () => {

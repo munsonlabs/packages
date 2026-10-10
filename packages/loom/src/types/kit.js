@@ -1,4 +1,4 @@
-/** The kit: what an app plugs in. Its sources (composables). */
+/** The kit: what an app plugs in. Its sources (composables) and extra blocks. */
 
 /** @typedef {'string' | 'number' | 'boolean' | 'list' | 'object'} ValueType */
 /** @typedef {ValueType | 'action'} FieldType */
@@ -41,6 +41,7 @@
  * @template [TContext=any]
  * @typedef {object} KitOptions
  * @property {Source<TData, TContext>[]} [sources]
+ * @property {BlockSpec[]} [blocks]
  */
 
 /**
@@ -48,5 +49,5 @@
  * @template [TContext=any]
  * @typedef {object} Kit
  * @property {Readonly<Record<string, Source<TData, TContext>>>} sources
- * @property {Readonly<Record<string, BlockSpec>>} blocks The built-in blocks.
+ * @property {Readonly<Record<string, BlockSpec>>} blocks Built-ins plus the kit's own.
  */

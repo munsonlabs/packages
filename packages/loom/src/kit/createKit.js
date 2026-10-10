@@ -1,16 +1,11 @@
 import { builtinBlocks } from '../blocks/builtin'
 
-/**
- * Identity helper: it returns what it's given, and says what the object is where it's written.
- *
- * @template [TData=any]
- * @template [TContext=any]
- * @param {Source<TData, TContext>} source
- */
+/** Identity helpers: they return what they're given, and say what each object is where it's written. */
 export const defineSource = (source) => source
+export const defineBlock = (block) => block
 
 /**
- * A kit is everything your app lets widgets use: its data and actions.
+ * A kit is everything your app lets widgets use: its data and actions, and its blocks.
  * Kits are independent, so two apps or two presets can share a page.
  *
  * @template [TData=any]
@@ -27,6 +22,11 @@ export function createKit(options = {}) {
   }
 
   const blocks = { ...builtinBlocks }
+  for (const block of options.blocks ?? []) {
+    if (block.type in builtinBlocks) throw new Error(`[loom] "${block.type}" is a built-in block`)
+    if (!block.component) throw new Error(`[loom] block "${block.type}" needs a component`)
+    blocks[block.type] = block
+  }
 
   return { sources, blocks }
 }

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
 import { enableAutoUnmount, mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick } from 'vue'
 import Widget from '@/Widget.vue'
-import { createKit, provideKit } from '@/kit'
+import { createKit, defineBlock, provideKit } from '@/kit'
 import { validateDefinition } from '@/definitions/validate'
 import { bindableValues } from '@/definitions/paths'
 import { makeKit, makeProducts, makeShop, productCard, productSource } from '@test/fixtures'
@@ -55,7 +55,7 @@ describe('<Widget>', () => {
         children: [
           { id: 'n', type: 'Text', bind: { text: 'repeat.number' }, props: { suffix: '.' } },
           { id: 'name', type: 'Text', bind: { text: 'item.title' } },
-          { id: 'rule', type: 'Text', props: { text: '—' }, if: '!repeat.last' },
+          { id: 'rule', type: 'Divider', if: '!repeat.last' },
         ],
       },
     }
@@ -121,12 +121,51 @@ describe('<Widget>', () => {
     })
     expect(mount(Host).find('[data-node-id="title"]').text()).toBe('Teapot')
   })
+
+  it('renders a kit’s own blocks with resolved props and node attrs', async () => {
+    const Stars = defineComponent({ props: { value: Number }, setup: (p) => () => h('span', '★'.repeat(p.value ?? 0)) })
+    const kit = createKit({
+      sources: [
+        productSource,
+        { id: 'shop', label: 'Shop', fields: { addToCart: { type: 'action' } }, setup: (c) => ({ addToCart: () => c.context.cart.add(c.data) }) },
+      ],
+      blocks: [
+        defineBlock({
+          type: 'Stars',
+          label: 'Stars',
+          description: 'Stars',
+          container: false,
+          props: { value: { type: 'number', label: 'Value' } },
+          clickable: true,
+          component: Stars,
+        }),
+      ],
+    })
+    const shop = makeShop()
+    const definition = {
+      version: 2,
+      id: 'r',
+      name: 'R',
+      root: { id: 'stars', type: 'Stars', props: { value: 3 }, on: { click: 'shop.addToCart' } },
+    }
+    const wrapper = mount(Widget, { props: { kit, definition, data: makeProducts()[0], context: shop } })
+
+    const node = wrapper.find('[data-node-id="stars"]')
+    expect(node.text()).toBe('★★★')
+    expect(node.classes()).toContain('w-stars')
+    await node.trigger('click')
+    expect(shop.cart.add).toHaveBeenCalled()
+  })
 })
 
 describe('createKit', () => {
-  it('refuses reserved and duplicate names', () => {
+  it('refuses reserved, duplicate and built-in names', () => {
     expect(() => createKit({ sources: [{ ...productSource, id: 'item' }] })).toThrow('reserved')
     expect(() => createKit({ sources: [{ ...productSource, id: 'repeat' }] })).toThrow('reserved')
     expect(() => createKit({ sources: [productSource, productSource] })).toThrow('share the id')
+    const Text = defineComponent({ render: () => null })
+    expect(() => createKit({ blocks: [{ type: 'Text', label: 'T', description: '', container: false, props: {}, component: Text }] })).toThrow(
+      'built-in',
+    )
   })
 })

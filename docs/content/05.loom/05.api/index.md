@@ -12,7 +12,19 @@ Loom has two entry points. An app needs only the first; editors use the second a
 What an app needs: make a kit, theme it, validate definitions, render widgets.
 
 ```js
-import { createKit, provideKit, matchDefinition, getTheme, defineTheme, lightTheme, validateDefinition, Widget } from '@munsonlabs/loom'
+import {
+  createKit,
+  provideKit,
+  matchDefinition,
+  getTheme,
+  defineTheme,
+  lightTheme,
+  darkTheme,
+  lightDark,
+  validateDefinition,
+  hasErrors,
+  Widget,
+} from '@munsonlabs/loom'
 import '@munsonlabs/loom/style.css'
 ```
 
@@ -27,22 +39,24 @@ import '@munsonlabs/loom/style.css'
 
 ### Themes
 
-| Export                      | Does                             |
-| --------------------------- | -------------------------------- |
-| `defineTheme`, `lightTheme` | Themes: `{ id, label, values }`. |
+| Export                                   | Does                                                                                    |
+| ---------------------------------------- | --------------------------------------------------------------------------------------- |
+| `defineTheme`, `lightTheme`, `darkTheme` | Themes: `{ id, label, dark?, values }`. A light theme names its dark partner in `dark`. |
+| `lightDark(light, dark)`                 | Writes a CSS `light-dark()` value, for one colour that differs by scheme.               |
 
 ### `<Widget>`
 
-| Prop          | Type                 | Notes                                                 |
-| ------------- | -------------------- | ----------------------------------------------------- |
-| `kit`         | `Kit`                | Or `provideKit()`.                                    |
-| `definition`  | `WidgetDefinition`   |                                                       |
-| `definitions` | `WidgetDefinition[]` | Used when `definition` isn't: the first that matches. |
-| `data`        | any                  | Required.                                             |
-| `index`       | `number`             | Passed to sources. Default `0`.                       |
-| `context`     | any                  | Or `provideKit()`.                                    |
-| `variant`     | `string`             | Pins a variant, or `'base'`.                          |
-| `theme`       | `string`             | One of the kit's themes. Default: its first.          |
+| Prop          | Type                          | Notes                                                          |
+| ------------- | ----------------------------- | -------------------------------------------------------------- |
+| `kit`         | `Kit`                         | Or `provideKit()`.                                             |
+| `definition`  | `WidgetDefinition`            |                                                                |
+| `definitions` | `WidgetDefinition[]`          | Used when `definition` isn't: the first that matches.          |
+| `data`        | any                           | Required.                                                      |
+| `index`       | `number`                      | Passed to sources. Default `0`.                                |
+| `context`     | any                           | Or `provideKit()`.                                             |
+| `variant`     | `string`                      | Pins a variant, or `'base'`.                                   |
+| `theme`       | `string`                      | One of the kit's themes. Default: its first.                   |
+| `scheme`      | `'auto' \| 'light' \| 'dark'` | Default `auto`: follows the device. Picks the theme's partner. |
 
 Emits `variant(id)`. Slot `fallback({ data })` renders when no definition fits.
 
@@ -51,6 +65,7 @@ Emits `variant(id)`. Slot `fallback({ data })` renders when no definition fits.
 | Export                                | Does                                                                |
 | ------------------------------------- | ------------------------------------------------------------------- |
 | `validateDefinition(kit, definition)` | Every problem, base and variants. `[]` means it renders as written. |
+| `hasErrors(issues)`                   | Whether any issue is an error, not just a warning.                  |
 
 ## `@munsonlabs/loom/editor`
 
@@ -66,16 +81,19 @@ What an editor needs beyond rendering. An app that only renders widgets never im
 | `blockDefaults(kit, type)`                                                                | A block's default props.                                                                               |
 | `CONDITION_OPS`, `conditionHolds(condition, data)`, `definitionMatches(definition, data)` | The tests a condition can use; whether data meets one; whether it meets all of a definition's `match`. |
 | `tokens`, `scaleForRole`, `scaleTokens(scale)`, `tokenVar(name)`                          | Every token; which scale each role picks from; a scale's steps; `accent` → `--w-accent`.               |
+| `themeForScheme(kit, id, scheme)`, `usePreferredScheme()`                                 | The theme to render with for a scheme; the device's scheme as a live ref.                              |
+| `parseLightDark(value)`, `lightDark(light, dark)`                                         | Read and write CSS `light-dark()` values.                                                              |
 
 ## Types
 
 There are no types to import in JavaScript. Each shape is a JSDoc `@typedef` beside the code that uses it, under `packages/loom/src/`:
 
-| File                      | Typedefs                                                                                                                                  |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `types/definition.js`     | `WidgetDefinition`, `Condition`, `WidgetNode`, `WidgetVariant`, `NodeOverride`, `VariantRule`, `WidgetSize`, `ValuePath`, `ActionBinding` |
-| `types/kit.js`            | `Kit`, `KitOptions`, `Source`, `SourceContext`, `FieldSpec`, `FieldType`, `ValueType`                                                     |
-| `types/blocks.js`         | `BlockSpec`, `BlockPropSpec`, `BlockType`                                                                                                 |
-| `theme/tokens.js`         | `Theme`, `TokenSpec`, `TokenGroup`, `TokenKind`, `TokenScale`                                                                             |
-| `definitions/validate.js` | `ValidationIssue`                                                                                                                         |
-| `definitions/paths.js`    | `ValueOption`                                                                                                                             |
+| File                      | Typedefs                                                                                                                                                 |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `types/definition.js`     | `WidgetDefinition`, `Condition`, `WidgetNode`, `WidgetVariant`, `NodeOverride`, `VariantRule`, `WidgetSize`, `ColorScheme`, `ValuePath`, `ActionBinding` |
+| `types/kit.js`            | `Kit`, `KitOptions`, `Source`, `SourceContext`, `FieldSpec`, `FieldType`, `ValueType`                                                                    |
+| `types/blocks.js`         | `BlockSpec`, `BlockPropSpec`, `BlockType`                                                                                                                |
+| `theme/tokens.js`         | `Theme`, `TokenSpec`, `TokenGroup`, `TokenKind`, `TokenScale`                                                                                            |
+| `theme/scheme.js`         | `SchemePreference`                                                                                                                                       |
+| `definitions/validate.js` | `ValidationIssue`                                                                                                                                        |
+| `definitions/paths.js`    | `ValueOption`                                                                                                                                            |

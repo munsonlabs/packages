@@ -2,12 +2,12 @@
 
 Everything that reads, checks or changes a definition, apart from drawing it. `<Widget>` uses these to render; editors use them to show what's possible and what's wrong.
 
-| File          | What it does                                                                                                                                                                                                                                                          |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `paths.js`    | Bindings: splits `"product.title"` into source and keys and reads it (unwrapping Vue refs), lists what a node may bind to (`bindableValues`, including `item` and `repeat` inside a Repeat, and only the sources the definition `uses`), and what type a binding has. |
-| `variants.js` | Variants: `ruleMatches` and `matchVariant` pick one from data and width; `variantTree` and `applyVariant` apply its overrides (hidden, order, props, bindings) on top of the base.                                                                                    |
-| `validate.js` | `validateDefinition(kit, definition)`: every problem in the base and in every variant, such as an unknown block, a malformed condition, a binding the kit can't provide or the widget doesn't `use`, or a type that doesn't fit.                                      |
-| `match.js`    | Which widget renders some data: `conditionHolds` runs one condition on the raw data, `definitionMatches` all of a definition's `match`, `matchDefinition` picks the first of several that matches, and `validateMatch` checks the conditions.                         |
+| File          | What it does                                                                                                                                                                                                                                                                       |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `paths.js`    | Bindings: splits `"product.title"` into source and keys and reads it (unwrapping Vue refs), lists what a node may bind to (`bindableValues`, including `item` and `repeat` inside a Repeat, and only the sources the definition `uses`), and what type a binding has.              |
+| `variants.js` | Variants: `ruleMatches` and `matchVariant` pick one from data, width and scheme; `variantTree` and `applyVariant` apply its overrides (hidden, order, props, bindings) on top of the base.                                                                                         |
+| `validate.js` | `validateDefinition(kit, definition)`: every problem in the base and in every variant, such as an unknown block, a malformed condition, a binding the kit can't provide or the widget doesn't `use`, a type that doesn't fit, or a colour that won't follow dark mode (a warning). |
+| `match.js`    | Which widget renders some data: `conditionHolds` runs one condition on the raw data, `definitionMatches` all of a definition's `match`, `matchDefinition` picks the first of several that matches, and `validateMatch` checks the conditions.                                      |
 
 ## Technically
 

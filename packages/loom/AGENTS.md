@@ -23,7 +23,7 @@ src/
   kit/           createKit.js, provide.js (provideKit/inject*), lookup.js (themes, blockDefaults)
   blocks/        builtin/ (the 15 built-ins, one SFC each: spec, template, CSS; index.js gathers builtinBlocks)
   definitions/   paths.js, match.js, variants.js, validate.js
-  theme/         tokens.js, styles.css
+  theme/         tokens.js, scheme.js, lightDark.js, styles.css
 test/            mirrors src/; fixtures.js (a small shop kit) is imported as @test/fixtures
 ```
 
@@ -39,6 +39,8 @@ test/            mirrors src/; fixtures.js (a small shop kit) is imported as @te
 - **A missing bound value renders as `null`, never the prop's default** (`?? null` in `WidgetNode.vue`): Vue would fill `undefined` with the default, and a card with no summary would say "Text".
 - **Blocks read tokens, never raw values.** A new visual value is a token in `theme/tokens.js` _and_ a default in `theme/styles.css`; `test/theme/tokens.spec.js` fails if they drift, or if any CSS, a block's `<style>` included, reads a token that doesn't exist.
 - **Theme, then definition vars, then variant vars**, all inline on the root (`Widget.vue`). Keep colours in themes; definitions override them only when the widget is that colour in every theme.
+- **One media query for every widget.** `usePreferredScheme` shares a single `prefers-color-scheme` listener, counted in and out by widget scopes.
+- **Warnings render; errors don't.** `severity: 'warning'` is for things that work but probably aren't meant (a pinned colour under a dark theme); editors shouldn't block on them.
 - **A widget says which data it's for, as JSON.** `match` holds conditions on the raw data, never on sources, which don't exist until a widget renders; `conditionHolds` in `definitions/match.js` is the only place they run. Among several definitions, the first that matches wins: there's no specificity, so order is the tie-break.
 - **`uses` is a widget's scope.** When set, editors offer only those sources and validation treats any other as out of scope. Unset means every source.
 - **Keep the main entry small.** Something only an editor needs goes in `editor.js`, not `index.js`; something nothing outside loom uses isn't exported at all.

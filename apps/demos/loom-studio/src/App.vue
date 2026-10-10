@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { LoomStudio } from '@munsonlabs/loom-studio'
 import { useBridge } from 'bolt-bridge-stub'
 import { timelineKit as kit, widgets as examples } from 'timeline-kit'
+import { native } from './native'
 
 const STORAGE_KEY = 'loom-studio-demo:library'
 
@@ -40,8 +41,13 @@ watch(
 )
 
 // Widgets preview against the Bolt bridge, talking to the stub native app (see main.js).
+// The studio logs every call they make on it.
 const bridge = useBridge()
 const samples = computed(() => bridge.stories)
+
+// Whether the reader subscribes, as the app reports it. Flipping it plays the app's part: the app
+// tells the bridge, which locks or unlocks every paywalled sample, so a widget can be checked both ways.
+const subscribed = computed(() => bridge.authorisationStatus.state === 'active')
 
 /** The widget being edited, written back into the library by id. */
 const definition = computed({
@@ -58,6 +64,14 @@ const widgetOptions = computed(() => library.value.definitions.map((d) => ({ lab
   <UApp>
     <LoomStudio :key="definition.id" v-model="definition" :kit="kit" :samples="samples" :context="bridge">
       <template #actions>
+        <USwitch
+          :model-value="subscribed"
+          label="Subscriber"
+          size="sm"
+          class="mx-1"
+          :title="subscribed ? 'Paywalled samples are unlocked' : 'Paywalled samples are locked: actions on them show the paywall'"
+          @update:model-value="native.setSubscribed(!!$event)"
+        />
         <USelect
           :model-value="library.selectedId"
           :items="widgetOptions"

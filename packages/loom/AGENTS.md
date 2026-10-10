@@ -2,7 +2,7 @@
 
 ## Package purpose
 
-Renders widget **definitions** (JSON trees of blocks) against a **kit** (an app's sources, blocks and kinds). It is deliberately domain-free: nothing here may know about stories, products or any app's data. App-specific code lives in kits. Its only internal dependency is `@munsonlabs/shipkit` (tooling).
+Renders widget **definitions** (JSON trees of blocks) against a **kit** (an app's sources, blocks, kinds and themes). It is deliberately domain-free: nothing here may know about stories, products or any app's data. App-specific code lives in kits. Its only internal dependency is `@munsonlabs/shipkit` (tooling).
 
 ## Public API
 
@@ -14,16 +14,16 @@ Each folder under `src/` has a README with its files and how they work.
 
 ```
 src/
-  index.js       the public API for apps: kits, validation, <Widget>
-  editor.js      @munsonlabs/loom/editor: the helpers editors need (bindings in scope, variants, defaults for new nodes)
-  Widget.vue     <Widget>: picks the definition and variant, sets their vars on the root, provides the renderer
+  index.js       the public API for apps: kits, themes, validation, <Widget>
+  editor.js      @munsonlabs/loom/editor: the helpers editors need (bindings in scope, variant diffs, token scales)
+  Widget.vue     <Widget>: picks the definition and variant, themes the root, provides the renderer
   WidgetNode.vue draws one node (if, props, block) and recurses into its children
   renderer.js    createRenderer: lazy sources, readValue(path, locals), clickHandler (runs actions)
   types/         definition.js, blocks.js, kit.js: every shape, no runtime code
-  kit/           createKit.js, provide.js (provideKit/inject*), lookup.js (kinds, blockDefaults)
+  kit/           createKit.js, provide.js (provideKit/inject*), lookup.js (kinds, themes, blockDefaults)
   blocks/        builtin/ (the 15 built-ins, one SFC each: spec, template, CSS; index.js gathers builtinBlocks)
   definitions/   paths.js, variants.js, validate.js
-  theme/         styles.css
+  theme/         tokens.js, styles.css
 test/            mirrors src/; fixtures.js (a small shop kit) is imported as @test/fixtures
 ```
 
@@ -37,11 +37,11 @@ test/            mirrors src/; fixtures.js (a small shop kit) is imported as @te
 - **Structure belongs to the base.** Overrides can't add or move nodes between parents; only `hidden` and `order`.
 - **`item` and `repeat` are reserved source ids**: inside a `Repeat` they're the current item and its position (declared once, in `Repeat.vue`: `positionFields` lists them for editors, `repeatPosition` builds them).
 - **A missing bound value renders as `null`, never the prop's default** (`?? null` in `WidgetNode.vue`): Vue would fill `undefined` with the default, and a card with no summary would say "Text".
-- **Blocks read `--w-*` variables, never raw values.** A new visual value is a variable with a default in `theme/styles.css`.
-- **Definition vars, then variant vars**, all inline on the root (`Widget.vue`).
+- **Blocks read tokens, never raw values.** A new visual value is a token in `theme/tokens.js` _and_ a default in `theme/styles.css`; `test/theme/tokens.spec.js` fails if they drift, or if any CSS, a block's `<style>` included, reads a token that doesn't exist.
+- **Theme, then definition vars, then variant vars**, all inline on the root (`Widget.vue`). Keep colours in themes; definitions override them only when the widget is that colour in every theme.
 - **Keep the main entry small.** Something only an editor needs goes in `editor.js`, not `index.js`; something nothing outside loom uses isn't exported at all.
 - **Kits are values.** No module-level registries; two kits must be able to share a page.
 
 ## Testing
 
-`vp test` (happy-dom). Tests mirror `src/` (see `test/README.md`): `widget.spec.js` for rendering, actions, kits, custom blocks and picking definitions; `blocks/` and `definitions/` for the rest. Use the shop kit in `test/fixtures.js`; never import from the demos.
+`vp test` (happy-dom). Tests mirror `src/` (see `test/README.md`): `widget.spec.js` for rendering, actions, kits, custom blocks and picking definitions; `blocks/`, `definitions/` and `theme/` for the rest. Use the shop kit in `test/fixtures.js`; never import from the demos.

@@ -30,7 +30,7 @@ export const spec = {
     direction: { type: 'enum', label: 'Direction (stack)', options: ['column', 'row'], default: 'column' },
     columns: { type: 'number', label: 'Columns (grid)', default: 2 },
     itemWidth: { type: 'string', label: 'Item width (carousel)', default: '80%' },
-    gap: { type: 'string', label: 'Gap', default: 'var(--w-gap)' },
+    gap: { type: 'string', label: 'Gap', default: 'var(--w-gap)', tokenScale: 'space' },
   },
 }
 </script>

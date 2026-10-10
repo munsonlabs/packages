@@ -1,4 +1,4 @@
-/** The kit: what an app plugs in. Its sources (composables), extra blocks and kinds of data. */
+/** The kit: what an app plugs in. Its sources (composables), extra blocks, kinds of data and themes. */
 
 /** @typedef {'string' | 'number' | 'boolean' | 'list' | 'object'} ValueType */
 /** @typedef {ValueType | 'action'} FieldType */
@@ -59,6 +59,7 @@
  * @property {BlockSpec[]} [blocks]
  * @property {Kind<TData>[]} [kinds]
  * @property {(data: TData) => string} [describe] A short label for a piece of data: sample pickers, logs.
+ * @property {Theme[]} [themes] Token values for widgets to start from. The first is the default; `<Widget theme>` picks another.
  */
 
 /**
@@ -68,5 +69,6 @@
  * @property {Readonly<Record<string, Source<TData, TContext>>>} sources
  * @property {Readonly<Record<string, BlockSpec>>} blocks Built-ins plus the kit's own.
  * @property {readonly Kind<TData>[]} kinds
+ * @property {readonly Theme[]} themes At least one: the light theme when the kit gives none.
  * @property {(data: TData) => string} describe
  */

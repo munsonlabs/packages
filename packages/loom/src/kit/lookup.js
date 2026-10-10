@@ -1,6 +1,6 @@
 import { DEFINITION_VERSION } from '../types'
 
-/** Finding things in a kit: a kind, a block's defaults, and the widget for some data. */
+/** Finding things in a kit: a kind, a theme, a block's defaults, and the widget for some data. */
 
 /**
  * @param {Kit} kit
@@ -51,6 +51,17 @@ export function createDefinition(kit, kindId, identity) {
   const kind = getKind(kit, kindId)
   if (!kind) throw new Error(`[loom] unknown kind "${kindId}"`)
   return { version: DEFINITION_VERSION, ...structuredClone(kind.starter()), ...identity, kind: kind.id }
+}
+
+/**
+ * A kit's theme by id, or its default (first) theme.
+ *
+ * @param {Kit} kit
+ * @param {string} [id]
+ * @returns {Theme}
+ */
+export function getTheme(kit, id) {
+  return (id && kit.themes.find((t) => t.id === id)) || kit.themes[0]
 }
 
 /**

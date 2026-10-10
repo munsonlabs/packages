@@ -8,7 +8,7 @@ export const spec = {
   props: {
     columns: { type: 'number', label: 'Columns', default: 2 },
     minWidth: { type: 'string', label: 'Or fit columns of at least', default: '' },
-    gap: { type: 'string', label: 'Gap', default: 'var(--w-gap)' },
+    gap: { type: 'string', label: 'Gap', default: 'var(--w-gap)', tokenScale: 'space' },
     align: { type: 'enum', label: 'Align', options: ['stretch', 'start', 'center', 'end'], default: 'stretch' },
   },
 }

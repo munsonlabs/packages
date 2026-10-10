@@ -6,7 +6,7 @@ export const spec = {
   description: 'Fixed space, or fills the remaining space when grow is on.',
   container: false,
   props: {
-    size: { type: 'string', label: 'Size', default: 'var(--w-space-2)' },
+    size: { type: 'string', label: 'Size', default: 'var(--w-space-2)', tokenScale: 'space' },
     grow: { type: 'boolean', label: 'Grow', default: false },
   },
 }

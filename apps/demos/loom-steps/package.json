@@ -15,7 +15,8 @@
     "@munsonlabs/loom": "*",
     "@munsonlabs/sigil": "*",
     "@munsonlabs/video-player": "*",
-    "bolt-bridge-stub": "*"
+    "bolt-bridge-stub": "*",
+    "timeline-kit": "*"
   },
   "devDependencies": {
     "@munsonlabs/shipkit": "*",

@@ -1,0 +1,42 @@
+{
+  "version": 2,
+  "id": "video-tile",
+  "name": "Video tile",
+  "kind": "video",
+  "fixedColors": true,
+  "vars": {
+    "--w-gap": "var(--w-space-2)",
+    "--w-radius": "var(--w-radius-md)",
+    "--w-padding": "var(--w-space-2)",
+    "--w-bg": "#111113",
+    "--w-text": "#f4f4f5",
+    "--w-muted": "#a1a1aa",
+    "--w-accent": "#f97316"
+  },
+  "root": {
+    "id": "tile",
+    "type": "Stack",
+    "props": { "direction": "column", "gap": "var(--w-gap)" },
+    "children": [
+      {
+        "id": "player",
+        "type": "Video",
+        "if": "video.hasVideo",
+        "props": { "ratio": "16:9" },
+        "bind": { "src": "video.src", "poster": "video.poster", "label": "story.title" }
+      },
+      { "id": "kicker", "type": "Text", "props": { "variant": "kicker" }, "bind": { "text": "story.section" } },
+      { "id": "title", "type": "Text", "props": { "variant": "subtitle", "lines": 2 }, "bind": { "text": "story.title" } },
+      {
+        "id": "meta",
+        "type": "Stack",
+        "props": { "direction": "row", "gap": "var(--w-space-1)", "align": "center" },
+        "children": [
+          { "id": "duration-icon", "type": "Icon", "props": { "name": "play", "size": "var(--w-text-xs)", "color": "var(--w-accent)" } },
+          { "id": "duration", "type": "Text", "props": { "variant": "caption" }, "bind": { "text": "video.duration" } },
+          { "id": "time", "type": "Text", "props": { "variant": "caption", "prefix": "· " }, "bind": { "text": "time.ago" } }
+        ]
+      }
+    ]
+  }
+}

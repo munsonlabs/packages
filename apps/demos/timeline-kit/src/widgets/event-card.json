@@ -1,0 +1,111 @@
+{
+  "version": 2,
+  "id": "event-card",
+  "name": "Event card",
+  "kind": "event",
+  "vars": { "--w-gap": "var(--w-space-3)", "--w-accent": "#0f766e", "--w-radius": "var(--w-radius-md)", "--w-padding": "var(--w-space-3)" },
+  "root": {
+    "id": "card",
+    "type": "Stack",
+    "props": { "direction": "column", "gap": "var(--w-gap)" },
+    "on": { "click": "actions.open" },
+    "children": [
+      { "id": "image", "type": "Image", "props": { "ratio": "16/9" }, "bind": { "src": "story.image", "alt": "story.title" } },
+      {
+        "id": "heading",
+        "type": "Stack",
+        "props": { "direction": "row", "gap": "var(--w-space-3)", "align": "center" },
+        "children": [
+          {
+            "id": "date-tile",
+            "type": "Box",
+            "if": "event.day",
+            "props": {
+              "align": "center",
+              "gap": "var(--w-space-0)",
+              "padding": "var(--w-space-2) var(--w-space-3)",
+              "background": "var(--w-accent)"
+            },
+            "style": { "color": "var(--w-accent-contrast)", "min-width": "3.5rem" },
+            "children": [
+              {
+                "id": "month",
+                "type": "Text",
+                "props": { "variant": "caption" },
+                "bind": { "text": "event.month" },
+                "style": { "color": "inherit" }
+              },
+              { "id": "day", "type": "Text", "props": { "variant": "title" }, "bind": { "text": "event.day" }, "style": { "color": "inherit" } }
+            ]
+          },
+          {
+            "id": "what",
+            "type": "Stack",
+            "props": { "direction": "column", "gap": "var(--w-space-1)" },
+            "children": [
+              { "id": "kicker", "type": "Text", "props": { "variant": "kicker" }, "bind": { "text": "story.section" } },
+              { "id": "title", "type": "Text", "props": { "variant": "subtitle", "lines": 2 }, "bind": { "text": "story.title" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "details",
+        "type": "Stack",
+        "props": { "direction": "column", "gap": "var(--w-space-1)" },
+        "children": [
+          {
+            "id": "date-row",
+            "type": "Stack",
+            "props": { "direction": "row", "gap": "var(--w-space-2)", "align": "center" },
+            "children": [
+              { "id": "date-icon", "type": "Icon", "props": { "name": "clock", "color": "var(--w-accent)" } },
+              { "id": "date", "type": "Text", "props": { "variant": "caption" }, "bind": { "text": "event.date" } }
+            ]
+          },
+          {
+            "id": "location-row",
+            "type": "Stack",
+            "if": "event.location",
+            "props": { "direction": "row", "gap": "var(--w-space-2)", "align": "center" },
+            "children": [
+              { "id": "location-icon", "type": "Icon", "props": { "name": "map-pin", "color": "var(--w-accent)" } },
+              { "id": "location", "type": "Text", "props": { "variant": "caption" }, "bind": { "text": "event.location" } }
+            ]
+          }
+        ]
+      },
+      { "id": "summary", "type": "Text", "props": { "variant": "body", "lines": 3 }, "bind": { "text": "story.summary" } },
+      {
+        "id": "actions",
+        "type": "Stack",
+        "props": { "direction": "row", "gap": "var(--w-space-3)", "align": "center" },
+        "children": [
+          {
+            "id": "calendar",
+            "type": "Button",
+            "if": "event.canAddToCalendar",
+            "bind": { "label": "event.calendarLabel", "active": "event.isInCalendar" },
+            "on": { "click": "event.addToCalendar" }
+          },
+          {
+            "id": "more",
+            "type": "Link",
+            "if": "event.href",
+            "props": { "text": "Find out more" },
+            "bind": { "href": "event.href" },
+            "on": { "click": "event.findOutMore" }
+          }
+        ]
+      }
+    ]
+  },
+  "variants": [
+    {
+      "id": "compact",
+      "label": "Compact",
+      "when": { "size": ["sm"] },
+      "overrides": { "image": { "hidden": true }, "summary": { "hidden": true }, "details": { "hidden": true }, "more": { "hidden": true } }
+    }
+  ]
+}

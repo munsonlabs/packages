@@ -1,0 +1,46 @@
+{
+  "version": 2,
+  "id": "pull-quote",
+  "name": "Pull quote",
+  "kind": "quote",
+  "vars": { "--w-radius": "var(--w-radius-md)", "--w-padding": "var(--w-space-4)" },
+  "root": {
+    "id": "card",
+    "type": "Stack",
+    "props": { "direction": "column", "gap": "var(--w-space-3)" },
+    "on": { "click": "actions.open" },
+    "style": { "border-left-width": "4px", "border-left-style": "solid", "border-left-color": "var(--w-accent)" },
+    "children": [
+      {
+        "id": "mark",
+        "type": "Icon",
+        "props": { "name": "quote", "size": "var(--w-text-2xl)", "color": "var(--w-accent)" },
+        "style": { "align-self": "flex-start" }
+      },
+      {
+        "id": "text",
+        "type": "Text",
+        "props": { "variant": "title", "prefix": "“", "suffix": "”" },
+        "bind": { "text": "quote.text" },
+        "style": { "font-style": "italic" }
+      },
+      { "id": "attribution", "type": "Text", "props": { "variant": "caption", "prefix": "— " }, "bind": { "text": "quote.attribution" } },
+      {
+        "id": "topic-row",
+        "type": "Stack",
+        "if": "topic.name",
+        "props": { "direction": "row", "align": "center", "justify": "space-between" },
+        "children": [
+          { "id": "topic", "type": "Text", "props": { "variant": "kicker" }, "bind": { "text": "topic.name" } },
+          {
+            "id": "follow",
+            "type": "Button",
+            "props": { "variant": "ghost", "label": "Follow", "activeLabel": "Following" },
+            "bind": { "active": "topic.isFollowed" },
+            "on": { "click": "topic.toggleFollow" }
+          }
+        ]
+      }
+    ]
+  }
+}

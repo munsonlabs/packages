@@ -2,7 +2,7 @@
 
 ## Package purpose
 
-Renders widget **definitions** (JSON trees of blocks) against a **kit** (an app's sources, blocks and kinds). It is deliberately domain-free: nothing here may know about stories, products or any app's data. App-specific code lives in kits. Its only internal dependencies are `@munsonlabs/shipkit` (tooling) and, for the `./video` entry only, `@munsonlabs/video-player` (an optional peer).
+Renders widget **definitions** (JSON trees of blocks) against a **kit** (an app's sources, blocks and kinds). It is deliberately domain-free: nothing here may know about stories, products or any app's data. App-specific code lives in kits, e.g. the timeline kit in `apps/demos/timeline-kit`. Its only internal dependencies are `@munsonlabs/shipkit` (tooling) and, for the `./video` entry only, `@munsonlabs/video-player` (an optional peer).
 
 ## Public API
 

@@ -1,0 +1,63 @@
+{
+  "version": 2,
+  "id": "gallery-card",
+  "name": "Gallery card",
+  "kind": "gallery",
+  "vars": { "--w-gap": "var(--w-space-3)", "--w-radius": "var(--w-radius-md)", "--w-padding": "var(--w-space-3)" },
+  "root": {
+    "id": "card",
+    "type": "Stack",
+    "props": { "direction": "column", "gap": "var(--w-gap)" },
+    "on": { "click": "actions.open" },
+    "children": [
+      {
+        "id": "heading",
+        "type": "Stack",
+        "props": { "direction": "column", "gap": "var(--w-space-1)" },
+        "children": [
+          { "id": "kicker", "type": "Text", "props": { "variant": "kicker" }, "bind": { "text": "story.section" } },
+          { "id": "title", "type": "Text", "props": { "variant": "title", "lines": 2 }, "bind": { "text": "story.title" } }
+        ]
+      },
+      {
+        "id": "photos",
+        "type": "Repeat",
+        "props": { "layout": "carousel", "itemWidth": "72%", "gap": "var(--w-space-2)", "limit": 8 },
+        "bind": { "items": "gallery.photos" },
+        "children": [
+          {
+            "id": "photo",
+            "type": "Stack",
+            "props": { "direction": "column", "gap": "var(--w-space-1)" },
+            "children": [
+              { "id": "photo-image", "type": "Image", "props": { "ratio": "4/3" }, "bind": { "src": "item.src", "alt": "item.caption" } },
+              { "id": "photo-caption", "type": "Text", "props": { "variant": "caption", "lines": 1 }, "bind": { "text": "item.caption" } }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "meta",
+        "type": "Stack",
+        "props": { "direction": "row", "gap": "var(--w-space-2)", "align": "center" },
+        "children": [
+          { "id": "count-icon", "type": "Icon", "props": { "name": "images", "size": "var(--w-text-sm)", "color": "var(--w-accent)" } },
+          { "id": "count", "type": "Text", "props": { "variant": "caption" }, "bind": { "text": "gallery.countLabel" } },
+          { "id": "time", "type": "Text", "props": { "variant": "caption", "prefix": "· " }, "bind": { "text": "time.ago" } }
+        ]
+      }
+    ]
+  },
+  "variants": [
+    {
+      "id": "compact",
+      "label": "Compact",
+      "when": { "size": ["sm"] },
+      "overrides": {
+        "photos": { "props": { "itemWidth": "88%" } },
+        "photo-caption": { "hidden": true },
+        "title": { "props": { "variant": "subtitle" } }
+      }
+    }
+  ]
+}

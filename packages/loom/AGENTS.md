@@ -14,7 +14,7 @@ Each folder under `src/` has a README with its files and how they work.
 
 ```
 src/
-  index.js       the public API for apps: kits, themes, validation, <Widget>
+  index.js       the public API for apps: kits, themes, validation, libraries, <Widget>
   editor.js      @munsonlabs/loom/editor: the helpers editors need (bindings in scope, variant diffs, token scales)
   Widget.vue     <Widget>: picks the definition and variant, themes the root, provides the renderer
   WidgetNode.vue draws one node (if, props, block) and recurses into its children
@@ -22,7 +22,7 @@ src/
   types/         definition.js, blocks.js, kit.js: every shape, no runtime code
   kit/           createKit.js, provide.js (provideKit/inject*), lookup.js (themes, blockDefaults)
   blocks/        builtin/ (the 15 built-ins, one SFC each: spec, template, CSS; index.js gathers builtinBlocks)
-  definitions/   paths.js, match.js, variants.js, validate.js
+  definitions/   paths.js, match.js, variants.js, validate.js, library.js
   theme/         tokens.js, scheme.js, lightDark.js, styles.css
 test/            mirrors src/; fixtures.js (a small shop kit) is imported as @test/fixtures
 ```
@@ -41,6 +41,7 @@ test/            mirrors src/; fixtures.js (a small shop kit) is imported as @te
 - **Theme, then definition vars, then variant vars**, all inline on the root (`Widget.vue`). Keep colours in themes; definitions override them only when the widget is that colour in every theme.
 - **One media query for every widget.** `usePreferredScheme` shares a single `prefers-color-scheme` listener, counted in and out by widget scopes.
 - **Warnings render; errors don't.** `severity: 'warning'` is for things that work but probably aren't meant (a pinned colour under a dark theme); editors shouldn't block on them.
+- **Libraries load what they can.** `loadLibrary` skips widgets with errors (reporting why) rather than failing the file, so an older app survives a newer library; it throws only for input that isn't a library or a format version it can't read. Bump `LIBRARY_VERSION` only for changes an old reader would misread.
 - **A widget says which data it's for, as JSON.** `match` holds conditions on the raw data, never on sources, which don't exist until a widget renders; `conditionHolds` in `definitions/match.js` is the only place they run. Among several definitions, the first that matches wins: there's no specificity, so order is the tie-break.
 - **`uses` is a widget's scope.** When set, editors offer only those sources and validation treats any other as out of scope. Unset means every source.
 - **Keep the main entry small.** Something only an editor needs goes in `editor.js`, not `index.js`; something nothing outside loom uses isn't exported at all.

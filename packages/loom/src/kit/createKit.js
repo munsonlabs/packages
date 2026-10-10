@@ -37,5 +37,5 @@ export function createKit(options = {}) {
   }
 
   const themes = options.themes?.length ? options.themes : [lightTheme]
-  return { sources, blocks, themes, describe: options.describe ?? describeDefault }
+  return { id: options.id, sources, blocks, themes, describe: options.describe ?? describeDefault }
 }

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
 import { enableAutoUnmount, mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import { validateDefinition } from '@/definitions/validate'
-import { bindableValues } from '@/definitions/paths'
+import { bindableValues, sourcesUsed } from '@/definitions/paths'
 import { conditionHolds, definitionMatches, matchDefinition } from '@/definitions/match'
 import { applyVariant, matchVariant, ruleMatches, variantTree, widthToSize } from '@/definitions/variants'
 import Widget from '@/Widget.vue'
@@ -98,6 +98,10 @@ describe('paths', () => {
     expect(validateDefinition(kit, { ...productCard, uses: ['product', 'shop', 'weather'] })).toEqual([
       { message: 'Uses "weather", which this kit doesn\'t have' },
     ])
+  })
+
+  it('collects every source a definition uses, variants included', () => {
+    expect(sourcesUsed(productCard)).toEqual(['product', 'shop'])
   })
 })
 

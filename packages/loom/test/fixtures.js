@@ -1,6 +1,6 @@
 import { computed, reactive } from 'vue'
 import { vi } from 'vite-plus/test'
-import { createKit, defineSource } from '@/kit'
+import { createKit, defineKind, defineSource } from '@/kit'
 
 /**
  * A small shop: the kind of thing a client would plug in. Nothing here is special to loom.
@@ -97,6 +97,7 @@ export const productCard = {
   version: 2,
   id: 'product-card',
   name: 'Product card',
+  kind: 'product',
   vars: { '--w-accent': '#c2410c', '--w-radius': '12px' },
   root: {
     id: 'card',
@@ -145,6 +146,14 @@ export const productCard = {
   },
 }
 
+export const productKind = defineKind({
+  id: 'product',
+  label: 'Product',
+  matches: (p) => p.kind === 'product',
+  sources: ['shop'],
+  starter: () => ({ root: { id: 'card', type: 'Stack', children: [{ id: 'title', type: 'Text', bind: { text: 'product.title' } }] } }),
+})
+
 export function makeKit() {
-  return createKit({ sources: [productSource, actionsSource] })
+  return createKit({ sources: [productSource, actionsSource], kinds: [productKind], describe: (p) => p.title })
 }

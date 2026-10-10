@@ -35,6 +35,7 @@ export const DEFINITION_VERSION = 2
  * @property {typeof DEFINITION_VERSION} version
  * @property {string} id
  * @property {string} name
+ * @property {string} [kind] The kind of data it's designed for. `<Widget :definitions>` picks a definition by it.
  * @property {Record<string, string>} [vars] CSS custom properties set on the widget root.
  * @property {WidgetNode} root
  */

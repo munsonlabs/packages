@@ -1,4 +1,5 @@
 import { DEFINITION_VERSION } from '../types'
+import { getKind } from '../kit'
 import { pathType } from './paths'
 
 /**
@@ -28,6 +29,7 @@ export function validateDefinition(kit, definition) {
   if (definition.version !== DEFINITION_VERSION) {
     issues.push({ message: `Unsupported version ${String(definition.version)}, expected ${String(DEFINITION_VERSION)}` })
   }
+  if (definition.kind && !getKind(kit, definition.kind)) issues.push({ message: `Unknown kind "${definition.kind}"` })
   issues.push(...validateTree(kit, definition))
   return issues
 }

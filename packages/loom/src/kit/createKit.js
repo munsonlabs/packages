@@ -2,10 +2,18 @@ import { builtinBlocks } from '../blocks/builtin'
 
 /** Identity helpers: they return what they're given, and say what each object is where it's written. */
 export const defineSource = (source) => source
+export const defineKind = (kind) => kind
 export const defineBlock = (block) => block
 
+function describeDefault(data) {
+  if (data && typeof data === 'object') {
+    for (const key of ['label', 'title', 'name', 'id']) if (typeof data[key] === 'string') return data[key]
+  }
+  return String(data)
+}
+
 /**
- * A kit is everything your app lets widgets use: its data and actions, and its blocks.
+ * A kit is everything your app lets widgets use: its data and actions, its blocks, and its kinds of data.
  * Kits are independent, so two apps or two presets can share a page.
  *
  * @template [TData=any]
@@ -28,5 +36,5 @@ export function createKit(options = {}) {
     blocks[block.type] = block
   }
 
-  return { sources, blocks }
+  return { sources, blocks, kinds: options.kinds ?? [], describe: options.describe ?? describeDefault }
 }

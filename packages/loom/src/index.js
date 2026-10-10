@@ -6,6 +6,6 @@ import './theme/styles.css'
  */
 
 export * from './types'
-export { createKit, defineSource, defineBlock, provideKit } from './kit'
+export { createKit, defineSource, defineKind, defineBlock, provideKit, getKind, matchKind, matchDefinition } from './kit'
 export { validateDefinition } from './definitions/validate'
 export { default as Widget } from './Widget.vue'

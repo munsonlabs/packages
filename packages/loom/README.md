@@ -1,6 +1,6 @@
 # @munsonlabs/loom
 
-Widgets as data. A widget is a JSON **definition**, a tree of blocks whose props bind to values and actions your app provides, and `<Widget>` renders it. Loom knows nothing about your data: you plug in a **kit** of sources (your composables) and extra blocks.
+Widgets as data. A widget is a JSON **definition**, a tree of blocks whose props bind to values and actions your app provides, and `<Widget>` renders it. Loom knows nothing about your data: you plug in a **kit** of sources (your composables), extra blocks, and kinds of data.
 
 ```ts
 import { createKit, defineSource, Widget, provideKit } from '@munsonlabs/loom'
@@ -53,6 +53,7 @@ provideKit(kit, { cart })
 | Bindings       | `bind`, `on`, `if` and `style` on any node, type-checked against what your sources declare                                                                                         |
 | Fifteen blocks | Layout (`Stack`, `Box`, `Grid`, `Carousel`, `Repeat`) and content (`Text`, `Image`, `Avatar`, `Button`, `Link`, `Badge`, `Rating`, `Progress`, `Divider`, `Spacer`), plus your own |
 | Variables      | Every block reads `--w-*` variables, which a definition's `vars` set on its root                                                                                                   |
+| Kinds          | `<Widget :definitions>` picks the definition for each piece of data                                                                                                                |
 | Validation     | `validateDefinition(kit, definition)` reports every problem before render                                                                                                          |
 
 Full docs: [Loom](https://munsonlabs.pages.dev/loom/getting-started/introduction).

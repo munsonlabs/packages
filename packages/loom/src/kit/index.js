@@ -1,3 +1,3 @@
-export { createKit, defineSource, defineBlock } from './createKit'
+export { createKit, defineSource, defineKind, defineBlock } from './createKit'
 export { provideKit, injectKit, injectContext } from './provide'
-export { blockDefaults } from './lookup'
+export { getKind, matchKind, matchDefinition, createDefinition, blockDefaults } from './lookup'

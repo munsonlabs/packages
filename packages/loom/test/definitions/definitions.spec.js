@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vite-plus/test'
 import { validateDefinition } from '@/definitions/validate'
 import { bindableValues } from '@/definitions/paths'
-import { makeKit, productCard } from '@test/fixtures'
+import { createDefinition, matchDefinition, matchKind } from '@/kit'
+import { makeKit, makeProducts, productCard } from '@test/fixtures'
 
 const kit = makeKit()
 const withRoot = (root, extra = {}) => ({ version: 2, id: 't', name: 'T', root, ...extra })
@@ -33,18 +34,40 @@ describe('validateDefinition', () => {
     expect(issues.map((i) => i.nodeId)).toEqual(['b', 't', 'n'])
   })
 
-  it('flags unknown blocks, duplicate ids and children on leaves', () => {
-    const issues = validateDefinition(kit, withRoot({ id: 'a', type: 'Text', children: [{ id: 'a', type: 'Marquee' }] }))
-    expect(issues.map((i) => i.message)).toEqual(["Text can't have children", 'Duplicate node id "a"', 'Unknown block "Marquee"'])
+  it('flags unknown blocks and kinds, duplicate ids and children on leaves', () => {
+    const issues = validateDefinition(kit, withRoot({ id: 'a', type: 'Text', children: [{ id: 'a', type: 'Marquee' }] }, { kind: 'recipe' }))
+    expect(issues.map((i) => i.message)).toEqual([
+      'Unknown kind "recipe"',
+      "Text can't have children",
+      'Duplicate node id "a"',
+      'Unknown block "Marquee"',
+    ])
   })
 })
 
 describe('paths', () => {
-  it('lists the Repeat item first inside it, then primary sources', () => {
+  it('lists the Repeat item first inside it, then primary sources, then the kind’s', () => {
     const inside = bindableValues(kit, productCard, 'related-title').map((o) => o.path)
     expect(inside.slice(0, 2)).toEqual(['item', 'item.title'])
     expect(inside.indexOf('product.title')).toBeLessThan(inside.indexOf('shop.open'))
     expect(bindableValues(kit, productCard, 'title').some((o) => o.source === 'item')).toBe(false)
+  })
+})
+
+describe('kinds', () => {
+  it('match data and pick definitions', () => {
+    const [teapot, , bundle] = makeProducts()
+    expect(matchKind(kit, teapot)?.id).toBe('product')
+    expect(matchKind(kit, bundle)).toBeUndefined()
+    expect(matchDefinition(kit, teapot, [productCard])).toBe(productCard)
+    expect(matchDefinition(kit, bundle, [productCard])).toBeUndefined()
+  })
+
+  it('start new definitions from their starter', () => {
+    const def = createDefinition(kit, 'product', { id: 'mini', name: 'Mini' })
+    expect(def).toMatchObject({ version: 2, id: 'mini', name: 'Mini', kind: 'product' })
+    expect(validateDefinition(kit, def)).toEqual([])
+    expect(() => createDefinition(kit, 'recipe', { id: 'x', name: 'X' })).toThrow('unknown kind')
   })
 })
 

@@ -1,11 +1,12 @@
 import { computed, reactive } from 'vue'
-import { createKit, defineBlock, defineSource } from '@munsonlabs/loom'
+import { createKit, defineBlock, defineKind, defineSource } from '@munsonlabs/loom'
 import Highlight from './Highlight.vue'
 
 /** The data: a few articles, as an app might fetch them. Nothing here knows about loom. */
 export const articles = [
   {
     id: 'tides',
+    kind: 'article',
     title: 'Why the tides are getting higher',
     summary: 'Sea levels are rising a little faster each decade. Here is what that means for the coast.',
     section: 'Science',
@@ -18,6 +19,7 @@ export const articles = [
   },
   {
     id: 'sourdough',
+    kind: 'article',
     title: 'A loaf a day: a year of sourdough',
     summary: 'Three hundred and sixty-five loaves later, one baker on what actually matters.',
     section: 'Food',
@@ -30,6 +32,7 @@ export const articles = [
   },
   {
     id: 'chess',
+    kind: 'article',
     title: 'The chess club that never closes',
     section: 'Local',
     author: 'Mo Khan',
@@ -111,4 +114,30 @@ export const highlightBlock = defineBlock({
   component: Highlight,
 })
 
-export const kit = createKit({ sources: [articleSource, readingSource], blocks: [highlightBlock] })
+/** Short notes from the editors: another kind of data in the same feed. */
+export const notes = [{ id: 'week-off', kind: 'note', title: 'Back on Monday: the newsletter takes a week off.', author: 'The editors' }]
+
+/** Kinds say which data a widget is for, and what a new widget of that kind starts from. */
+export const articleKind = defineKind({
+  id: 'article',
+  label: 'Article',
+  icon: 'i-lucide-newspaper',
+  matches: (data) => data.kind === 'article',
+  sources: ['article', 'reading'],
+  starter: () => ({ root: { id: 'card', type: 'Stack', children: [{ id: 'title', type: 'Text', bind: { text: 'article.title' } }] } }),
+})
+
+export const noteKind = defineKind({
+  id: 'note',
+  label: 'Note',
+  icon: 'i-lucide-sticky-note',
+  matches: (data) => data.kind === 'note',
+  starter: () => ({ root: { id: 'note', type: 'Box', children: [{ id: 'text', type: 'Text', bind: { text: 'article.title' } }] } }),
+})
+
+export const kit = createKit({
+  sources: [articleSource, readingSource],
+  blocks: [highlightBlock],
+  kinds: [articleKind, noteKind],
+  describe: (data) => data.title,
+})

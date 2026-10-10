@@ -1,4 +1,5 @@
 import { unref } from 'vue'
+import { getKind } from '../kit'
 import { positionFields } from '../blocks/builtin/Repeat.vue'
 
 /**
@@ -46,7 +47,8 @@ function repeatAncestors(root, id) {
 
 /**
  * Every value path a node can bind to, in the order an editor should list them: the enclosing
- * `Repeat`'s item and position, the kit's primary sources, then the rest.
+ * `Repeat`'s item and position, the kit's primary sources, the sources the definition's kind suggests,
+ * then the rest.
  *
  * @param {Kit} kit
  * @param {WidgetDefinition} definition
@@ -75,7 +77,8 @@ export function bindableValues(kit, definition, nodeId) {
     }
   }
 
-  const rank = (id) => (kit.sources[id].primary ? 0 : 1)
+  const suggested = getKind(kit, definition.kind)?.sources ?? []
+  const rank = (id) => (kit.sources[id].primary ? 0 : suggested.includes(id) ? 1 : 2)
   const ids = Object.keys(kit.sources).sort((a, b) => rank(a) - rank(b))
 
   for (const id of ids) {

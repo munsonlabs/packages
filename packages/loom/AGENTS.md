@@ -15,14 +15,14 @@ Each folder under `src/` has a README with its files and how they work.
 ```
 src/
   index.js       the public API for apps: kits, validation, <Widget>
-  editor.js      @munsonlabs/loom/editor: the helpers editors need (bindings in scope, defaults for new nodes)
-  Widget.vue     <Widget>: picks the definition, sets its vars on the root, provides the renderer
+  editor.js      @munsonlabs/loom/editor: the helpers editors need (bindings in scope, variants, defaults for new nodes)
+  Widget.vue     <Widget>: picks the definition and variant, sets their vars on the root, provides the renderer
   WidgetNode.vue draws one node (if, props, block) and recurses into its children
   renderer.js    createRenderer: lazy sources, readValue(path, locals), clickHandler (runs actions)
   types/         definition.js, blocks.js, kit.js: every shape, no runtime code
   kit/           createKit.js, provide.js (provideKit/inject*), lookup.js (blockDefaults)
   blocks/        builtin/ (the 15 built-ins, one SFC each: spec, template, CSS; index.js gathers builtinBlocks)
-  definitions/   paths.js, match.js, validate.js
+  definitions/   paths.js, match.js, variants.js, validate.js
   theme/         styles.css
 test/            mirrors src/; fixtures.js (a small shop kit) is imported as @test/fixtures
 ```
@@ -33,9 +33,12 @@ test/            mirrors src/; fixtures.js (a small shop kit) is imported as @te
 - **Sources set up lazily, once per widget**, inside an effect scope owned by the `<Widget>`. `SourceContext` uses getters so composables reading it in `computed` stay reactive; never destructure it in `Widget.vue` or `renderer.js`.
 - **Actions without `arg` are called with no arguments.** Passing the DOM event would land in optional parameters like `openArticle(story?)`.
 - **A node with a click handler stops propagation**, so nested actions don't trigger clickable ancestors.
+- **Variants never mutate the base.** `variantTree` in `definitions/variants.js` copies every node it touches (see the comment on `applyOverride`); a test snapshots the base around `applyVariant`.
+- **Structure belongs to the base.** Overrides can't add or move nodes between parents; only `hidden` and `order`.
 - **`item` and `repeat` are reserved source ids**: inside a `Repeat` they're the current item and its position (declared once, in `Repeat.vue`: `positionFields` lists them for editors, `repeatPosition` builds them).
 - **A missing bound value renders as `null`, never the prop's default** (`?? null` in `WidgetNode.vue`): Vue would fill `undefined` with the default, and a card with no summary would say "Text".
 - **Blocks read `--w-*` variables, never raw values.** A new visual value is a variable with a default in `theme/styles.css`.
+- **Definition vars, then variant vars**, all inline on the root (`Widget.vue`).
 - **A widget says which data it's for, as JSON.** `match` holds conditions on the raw data, never on sources, which don't exist until a widget renders; `conditionHolds` in `definitions/match.js` is the only place they run. Among several definitions, the first that matches wins: there's no specificity, so order is the tie-break.
 - **`uses` is a widget's scope.** When set, editors offer only those sources and validation treats any other as out of scope. Unset means every source.
 - **Keep the main entry small.** Something only an editor needs goes in `editor.js`, not `index.js`; something nothing outside loom uses isn't exported at all.

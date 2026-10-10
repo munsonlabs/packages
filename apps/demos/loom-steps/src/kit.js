@@ -1,6 +1,13 @@
 import { computed, reactive } from 'vue'
 import { createKit, darkTheme, defineBlock, defineKind, defineSource, defineTheme, lightTheme } from '@munsonlabs/loom'
+import { iconBlock } from '@munsonlabs/loom/icon'
+import { videoBlock } from '@munsonlabs/loom/video'
+import { register } from '@munsonlabs/sigil'
+import '@munsonlabs/video-player/style'
 import Highlight from './Highlight.vue'
+
+// The Icon block draws icons from libraries registered with sigil: here Lucide's, fetched by name.
+void register('lucide', { resolver: (name) => `https://cdn.jsdelivr.net/npm/lucide-static@0.469.0/icons/${name}.svg` }, { default: true })
 
 /** The data: a few articles, as an app might fetch them. Nothing here knows about loom. */
 export const articles = [
@@ -173,7 +180,8 @@ export const kit = createKit({
   // Libraries say which kit they were made for.
   id: 'reading-list',
   sources: [articleSource, readingSource],
-  blocks: [highlightBlock],
+  // Video and Icon are optional entries: only kits that list them load the player or sigil.
+  blocks: [highlightBlock, videoBlock, iconBlock],
   kinds: [articleKind, noteKind],
   // lightTheme names darkTheme as its dark partner, so widgets follow the device's light or dark setting.
   themes: [lightTheme, darkTheme, sepiaTheme, inkTheme],

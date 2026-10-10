@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vite-plus/test'
 import { createKit } from '@/kit'
 import { createLibrary, LibraryError, loadLibrary } from '@/definitions/library'
+import { videoBlock } from '@/blocks/video'
 import { actionsSource, productCard, productKind, productSource } from '@test/fixtures'
 
 const kit = createKit({ id: 'shop', sources: [productSource, actionsSource], kinds: [productKind] })
@@ -43,6 +44,7 @@ describe('loadLibrary', () => {
         actionsSource,
         { id: 'reviews', label: 'Reviews', fields: { count: { type: 'number' } }, setup: () => ({ count: 3 }) },
       ],
+      blocks: [videoBlock],
       kinds: [productKind],
     })
     const usesNewThings = {
@@ -51,13 +53,18 @@ describe('loadLibrary', () => {
       root: {
         id: 'card',
         type: 'Stack',
-        children: [{ id: 'n', type: 'Text', bind: { text: 'reviews.count' } }],
+        children: [
+          { id: 'clip', type: 'Video' },
+          { id: 'n', type: 'Text', bind: { text: 'reviews.count' } },
+        ],
       },
     }
     const loaded = loadLibrary(kit, createLibrary(newer, [mini, usesNewThings]))
     expect(loaded.widgets.map((w) => w.id)).toEqual(['mini'])
-    expect(loaded.skipped.map((s) => [s.id, s.issues.map((i) => i.message)])).toEqual([['fancy', ['"reviews.count" isn\'t in scope']]])
-    expect(loaded.missing).toEqual({ sources: ['reviews'], blocks: [] })
+    expect(loaded.skipped.map((s) => [s.id, s.issues.map((i) => i.message)])).toEqual([
+      ['fancy', ['Unknown block "Video"', '"reviews.count" isn\'t in scope']],
+    ])
+    expect(loaded.missing).toEqual({ sources: ['reviews'], blocks: ['Video'] })
   })
 
   it('flags a library made for another kit', () => {

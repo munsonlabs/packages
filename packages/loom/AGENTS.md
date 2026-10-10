@@ -2,11 +2,11 @@
 
 ## Package purpose
 
-Renders widget **definitions** (JSON trees of blocks) against a **kit** (an app's sources, blocks and kinds). It is deliberately domain-free: nothing here may know about stories, products or any app's data. App-specific code lives in kits. Its only internal dependency is `@munsonlabs/shipkit` (tooling).
+Renders widget **definitions** (JSON trees of blocks) against a **kit** (an app's sources, blocks and kinds). It is deliberately domain-free: nothing here may know about stories, products or any app's data. App-specific code lives in kits. Its only internal dependencies are `@munsonlabs/shipkit` (tooling) and, for the `./video` entry only, `@munsonlabs/video-player` (an optional peer).
 
 ## Public API
 
-Everything is exported from `src/index.js`; `./style.css` is the blocks' CSS. `./editor` (`src/editor.js`) holds what only editors need. The docs site's Loom section (`docs/content/05.loom`) is the reference: keep `05.api/index.md` in step with `src/index.js`.
+Everything is exported from `src/index.js`; `./video` exports `videoBlock`; `./style.css` is the blocks' CSS. The docs site's Loom section (`docs/content/05.loom`) is the reference: keep `05.api/index.md` in step with `src/index.js`.
 
 ## Layout
 
@@ -21,7 +21,7 @@ src/
   renderer.js    createRenderer: lazy sources, readValue(path, locals), clickHandler (runs the guard)
   types/         definition.js, blocks.js, kit.js, guard.js: every shape, no runtime code
   kit/           createKit.js, provide.js (provideKit/inject*), lookup.js (kinds, themes, blockDefaults)
-  blocks/        builtin/ (the 15 built-ins, one SFC each: spec, template, CSS; index.js gathers builtinBlocks)
+  blocks/        builtin/ (the 15 built-ins, one SFC each: spec, template, CSS; index.js gathers builtinBlocks), video/ and icon/ (optional entries)
   definitions/   paths.js, variants.js, validate.js, library.js
   theme/         tokens.js, scheme.js, lightDark.js, styles.css
 test/            mirrors src/; fixtures.js (a small shop kit) is imported as @test/fixtures
@@ -36,7 +36,6 @@ test/            mirrors src/; fixtures.js (a small shop kit) is imported as @te
 - **Variants never mutate the base.** `variantTree` in `definitions/variants.js` copies every node it touches (see the comment on `applyOverride`); a test snapshots the base around `applyVariant`.
 - **Structure belongs to the base.** Overrides can't add or move nodes between parents; only `hidden` and `order`.
 - **`item` and `repeat` are reserved source ids**: inside a `Repeat` they're the current item and its position (declared once, in `Repeat.vue`: `positionFields` lists them for editors, `repeatPosition` builds them).
-- **A missing bound value renders as `null`, never the prop's default** (`?? null` in `WidgetNode.vue`): Vue would fill `undefined` with the default, and a card with no summary would say "Text".
 - **Blocks read tokens, never raw values.** A new visual value is a token in `theme/tokens.js` _and_ a default in `theme/styles.css`; `test/theme/tokens.spec.js` fails if they drift, or if any CSS, a block's `<style>` included, reads a token that doesn't exist.
 - **Theme, then definition vars, then variant vars**, all inline on the root (`Widget.vue`). Keep colours in themes; definitions override them only when the widget is that colour in every theme.
 - **One media query for every widget.** `usePreferredScheme` shares a single `prefers-color-scheme` listener, counted in and out by widget scopes.

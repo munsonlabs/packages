@@ -11,7 +11,7 @@ src/
   renderer.js    what every node of one widget shares: its sources, path → value, tap → guard → action
   types/         the shapes of everything: definitions, kits, blocks, guards
   kit/           making a kit, sharing it with widgets, and finding things in it
-  blocks/        the 15 built-in blocks, one file each (what it accepts, the HTML it draws, its CSS)
+  blocks/        the 15 built-in blocks, one file each (what it accepts, the HTML it draws, its CSS), plus Video and Icon
   definitions/   working with definitions: bindings, variants, validation, libraries, upgrades
   theme/         design tokens, themes, light and dark, and the shared CSS
 ```
@@ -19,7 +19,7 @@ src/
 ## How a render flows through them
 
 1. An app makes a kit (`kit/`) from its composables, and loads definitions, usually a library (`definitions/library.js`).
-2. `<Widget>` (`Widget.vue`) gets a definition (or picks one by the data's kind) and some data. It picks the variant (`definitions/variants.js`), themes the root (`theme/`), and provides a renderer (`renderer.js`) that reads each binding through the kit's sources (`definitions/paths.js`).
+2. `<Widget>` (`Widget.vue`) gets a definition and some data. It picks the variant (`definitions/variants.js`), themes the root (`theme/`), and provides a renderer (`renderer.js`) that reads each binding through the kit's sources (`definitions/paths.js`).
 3. `<WidgetNode>` (`WidgetNode.vue`) walks the tree: each node becomes one of the block components (`blocks/builtin/`, one SFC each), its props checked against the block's spec (which the SFC exports beside its template).
 4. A tap goes through the kit's guard (`types/guard.js`, run in `renderer.js`) before the action runs.
 

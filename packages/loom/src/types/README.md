@@ -2,13 +2,13 @@
 
 JSDoc `@typedef`s only, with no runtime code (except the `DEFINITION_VERSION` constant). Every other folder imports from here, so this is the best place to start reading loom.
 
-| File            | Describes                                                                                                                                                                                           |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `definition.js` | A widget as JSON: `WidgetDefinition`, its tree of `WidgetNode`s, `WidgetVariant`s with their `VariantRule` and per-node `NodeOverride`s, and value paths (`"story.title"`).                         |
-| `blocks.js`     | Blocks: `BlockType` (a block's name), `BlockSpec` (what a block accepts) and `BlockPropSpec` (one prop: its type, default, what it can be bound to, its token scale), and whether it can be tapped. |
-| `kit.js`        | What an app plugs in: `KitOptions` and `Kit`, a `Source` (one composable and its declared `fields`), a `Kind` (which data a widget is for), `SourceContext`.                                        |
-| `guard.js`      | `ActionGuard` and `GuardedAction`: the function a kit can give to see, and stop, every action.                                                                                                      |
-| `index.js`      | Re-exports `DEFINITION_VERSION`, the one runtime value here, so the rest of loom imports `from '../types'`.                                                                                         |
+| File            | Describes                                                                                                                                                                   |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `definition.js` | A widget as JSON: `WidgetDefinition`, its tree of `WidgetNode`s, `WidgetVariant`s with their `VariantRule` and per-node `NodeOverride`s, and value paths (`"story.title"`). |
+| `blocks.js`     | Blocks: `BlockType` (a block's name), `BlockSpec` (what a block accepts) and `BlockPropSpec` (one prop: its type, default, what it can be bound to, its token scale).       |
+| `kit.js`        | What an app plugs in: `KitOptions` and `Kit`, a `Source` (one composable and its declared `fields`), a `Kind` (which data a widget is for), `SourceContext`.                |
+| `guard.js`      | `ActionGuard` and `GuardedAction`: the function a kit can give to see, and stop, every action.                                                                              |
+| `index.js`      | Re-exports `DEFINITION_VERSION`, the one runtime value here, so the rest of loom imports `from '../types'`.                                                                 |
 
 ## Technically
 

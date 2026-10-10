@@ -3,6 +3,7 @@ import { hasErrors, validateDefinition } from '@munsonlabs/loom'
 import { useSelection } from './canvas/useSelection'
 import { useHistory } from './editing/useHistory'
 import { useTreeEditing } from './editing/useTreeEditing'
+import { useVariantEditing } from './editing/useVariantEditing'
 import { usePreview } from './preview/usePreview'
 
 /**
@@ -33,15 +34,16 @@ export function createStudio(definition, props, events) {
   const stage = ref()
 
   /** Which popovers and dialogs are open. */
-  const open = reactive({ theme: false, issues: false, export: false, import: false })
+  const open = reactive({ variants: false, theme: false, issues: false, export: false, import: false })
 
   const history = useHistory(definition)
-  const selection = useSelection({ definition, stage })
-  const editing = useTreeEditing({ kit, definition, change: history.change, selection })
+  const variants = useVariantEditing(definition, history.change)
+  const selection = useSelection({ definition, tree: variants.tree, stage })
+  const editing = useTreeEditing({ kit, definition, change: history.change, variants, selection })
   const preview = usePreview({ kit, samples: () => props.samples, definition })
 
   // Keep the popover anchored to the element as edits re-render it.
-  watch(definition, () => void nextTick(selection.locate), { flush: 'post' })
+  watch([variants.rendered, variants.variantId], () => void nextTick(selection.locate), { flush: 'post' })
 
   /** A click on the canvas selects what was clicked. */
   function onStageClick(e) {
@@ -55,6 +57,7 @@ export function createStudio(definition, props, events) {
   /** Errors stop publishing. */
   const errors = computed(() => hasErrors(issues.value))
   function selectIssue(issue) {
+    if (issue.variant) variants.variantId.value = issue.variant
     open.issues = false
     if (issue.nodeId) selection.select(issue.nodeId)
   }
@@ -66,11 +69,13 @@ export function createStudio(definition, props, events) {
     open,
     /** Undo and redo: `change`, `checkpoint`, `undo`, `redo`, `canUndo`, `canRedo`. */
     history,
+    /** The variant being edited, and the tree as it arranges it. */
+    variants,
     /** What's selected, and where its editor anchors. */
     selection,
     /** The actions on the selected element. */
     editing,
-    /** Sample, width and theme. */
+    /** Sample, width, theme and Rules. */
     preview,
     issues,
     errors,

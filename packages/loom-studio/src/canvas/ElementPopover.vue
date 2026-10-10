@@ -6,12 +6,13 @@ import { useStudio } from '../studio'
 
 /**
  * The editor that opens beside whatever was clicked: a breadcrumb up to its containers, a note
- * when it isn't on screen, the tree actions (add, move, nest, duplicate, delete), and the
- * Inspector's tabs.
+ * when it isn't on screen, the tree actions (add, move, nest, duplicate, delete or hide), and
+ * the Inspector's tabs.
  */
 const s = useStudio()
 
 const spec = computed(() => (s.selection.selected ? s.props.kit.blocks[s.selection.selected.type] : undefined))
+const resetField = (field) => s.selection.selectedId && s.variants.resetField(s.selection.selectedId, field)
 </script>
 
 <template>
@@ -50,11 +51,23 @@ const spec = computed(() => (s.selection.selected ? s.props.kit.blocks[s.selecti
 
         <div v-if="s.selection.offscreen" class="flex items-center gap-2 border-b border-default bg-warning/10 px-3 py-2 text-xs text-warning">
           <UIcon name="i-lucide-eye-off" class="size-3.5 shrink-0" />
-          <span class="flex-1">Not shown for this data: its <em>Show when</em>, or an empty value, hides it.</span>
+          <span v-if="s.selection.offscreen.kind === 'hidden'" class="flex-1">
+            {{ s.selection.offscreen.self ? 'Hidden' : `Inside #${s.selection.offscreen.id}, which is hidden` }} in {{ s.variants.variant?.label }}.
+          </span>
+          <span v-else class="flex-1">Not shown for this data: its <em>Show when</em>, or an empty value, hides it.</span>
+          <UButton
+            v-if="s.selection.offscreen.kind === 'hidden'"
+            label="Show"
+            size="xs"
+            color="warning"
+            variant="soft"
+            @click="s.variants.toggleHidden(s.selection.offscreen.id)"
+          />
         </div>
 
         <div class="flex items-center gap-0.5 border-b border-default px-1.5 py-1">
           <UDropdownMenu
+            v-if="!s.variants.variant"
             :items="
               spec.container
                 ? [s.editing.blockOptions('auto'), [{ label: 'After this instead', type: 'label' }], s.editing.blockOptions('after')]
@@ -86,59 +99,76 @@ const spec = computed(() => (s.selection.selected ? s.props.kit.blocks[s.selecti
                 @click="s.editing.moveBy(1)"
               />
             </UTooltip>
-            <UTooltip text="Into the container above">
+            <template v-if="!s.variants.variant">
+              <UTooltip text="Into the container above">
+                <UButton
+                  icon="i-lucide-indent-increase"
+                  size="xs"
+                  color="neutral"
+                  variant="ghost"
+                  :disabled="!s.editing.canIndent"
+                  aria-label="Indent"
+                  @click="s.editing.indent()"
+                />
+              </UTooltip>
+              <UTooltip text="Out of its container">
+                <UButton
+                  icon="i-lucide-indent-decrease"
+                  size="xs"
+                  color="neutral"
+                  variant="ghost"
+                  :disabled="!s.editing.canOutdent"
+                  aria-label="Outdent"
+                  @click="s.editing.outdent()"
+                />
+              </UTooltip>
+              <UTooltip text="Duplicate" :kbds="['meta', 'd']">
+                <UButton
+                  icon="i-lucide-copy"
+                  size="xs"
+                  color="neutral"
+                  variant="ghost"
+                  :disabled="s.selection.isRoot"
+                  aria-label="Duplicate"
+                  @click="s.editing.duplicate"
+                />
+              </UTooltip>
+              <UTooltip text="Delete" :kbds="['backspace']">
+                <UButton
+                  icon="i-lucide-trash-2"
+                  size="xs"
+                  color="error"
+                  variant="ghost"
+                  :disabled="s.selection.isRoot"
+                  aria-label="Delete"
+                  @click="s.editing.remove"
+                />
+              </UTooltip>
+            </template>
+            <UTooltip v-else :text="s.selection.isHidden ? 'Show in this variant' : 'Hide in this variant'" :kbds="['backspace']">
               <UButton
-                icon="i-lucide-indent-increase"
+                :icon="s.selection.isHidden ? 'i-lucide-eye' : 'i-lucide-eye-off'"
                 size="xs"
-                color="neutral"
-                variant="ghost"
-                :disabled="!s.editing.canIndent"
-                aria-label="Indent"
-                @click="s.editing.indent()"
-              />
-            </UTooltip>
-            <UTooltip text="Out of its container">
-              <UButton
-                icon="i-lucide-indent-decrease"
-                size="xs"
-                color="neutral"
-                variant="ghost"
-                :disabled="!s.editing.canOutdent"
-                aria-label="Outdent"
-                @click="s.editing.outdent()"
-              />
-            </UTooltip>
-            <UTooltip text="Duplicate" :kbds="['meta', 'd']">
-              <UButton
-                icon="i-lucide-copy"
-                size="xs"
-                color="neutral"
+                color="warning"
                 variant="ghost"
                 :disabled="s.selection.isRoot"
-                aria-label="Duplicate"
-                @click="s.editing.duplicate"
-              />
-            </UTooltip>
-            <UTooltip text="Delete" :kbds="['backspace']">
-              <UButton
-                icon="i-lucide-trash-2"
-                size="xs"
-                color="error"
-                variant="ghost"
-                :disabled="s.selection.isRoot"
-                aria-label="Delete"
-                @click="s.editing.remove"
+                aria-label="Hide in this variant"
+                @click="s.variants.toggleHidden(s.selection.selectedId)"
               />
             </UTooltip>
           </div>
         </div>
 
         <Inspector
-          :key="s.selection.selected.id"
+          :key="`${s.variants.variantId}:${s.selection.selected.id}`"
           :kit="s.props.kit"
-          :definition="s.definition"
+          :definition="s.variants.rendered"
           :node="s.selection.selected"
+          :variant="
+            s.variants.variant ? { label: s.variants.variant.label, override: s.variants.variant.overrides?.[s.selection.selected.id] } : undefined
+          "
           @edit="s.editing.editNode"
+          @reset="resetField"
         />
       </div>
     </template>

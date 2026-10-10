@@ -18,7 +18,7 @@ const s = useStudio()
     />
     <template #content>
       <div class="flex w-96 flex-col gap-1 p-2">
-        <p v-if="!s.issues.length" class="p-2 text-xs text-muted">Valid: this widget renders as written.</p>
+        <p v-if="!s.issues.length" class="p-2 text-xs text-muted">Valid: this widget renders as written, in every variant.</p>
         <button
           v-for="(issue, i) in s.issues"
           :key="i"
@@ -28,6 +28,7 @@ const s = useStudio()
         >
           <UIcon name="i-lucide-triangle-alert" class="mt-0.5 size-3 shrink-0" />
           <span>
+            <UBadge v-if="issue.variant" :label="s.variants.variantLabel(issue.variant)" color="warning" variant="subtle" size="sm" class="mr-1" />
             <code v-if="issue.nodeId">#{{ issue.nodeId }}</code> {{ issue.message }}
           </span>
         </button>

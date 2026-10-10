@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Widget } from '@munsonlabs/loom'
+import { BASE_VARIANT } from '@munsonlabs/loom/editor'
 import { viewportHint } from '../preview/usePreview'
 import { useStudio } from '../studio'
 
@@ -18,6 +19,8 @@ const selectionCss = computed(() => {
   }
   return rules.join('\n')
 })
+
+const shownVariant = computed(() => (s.preview.followRules ? s.preview.matchedVariant : s.variants.variantId))
 </script>
 
 <template>
@@ -34,9 +37,14 @@ const selectionCss = computed(() => {
         <UIcon :name="s.preview.viewport.icon" class="size-3.5" />
         <span class="font-medium text-default">{{ s.preview.viewport.label }}</span>
         <span>{{ viewportHint(s.preview.viewport.width) }}</span>
-        <span v-if="s.props.kit.themes.length > 1" class="ml-auto flex items-center gap-1"
-          ><UIcon name="i-lucide-palette" class="size-3" />{{ s.preview.theme.label }}</span
-        >
+        <span class="ml-auto flex items-center gap-1.5">
+          <span v-if="s.props.kit.themes.length > 1" class="flex items-center gap-1"
+            ><UIcon name="i-lucide-palette" class="size-3" />{{ s.preview.theme.label }}</span
+          >
+          <span class="flex items-center gap-1" :class="{ 'text-warning': shownVariant !== BASE_VARIANT }">
+            <UIcon name="i-lucide-git-branch" class="size-3" />{{ s.variants.variantLabel(shownVariant) }}
+          </span>
+        </span>
       </div>
       <div
         class="transition-[width] duration-200"
@@ -50,7 +58,9 @@ const selectionCss = computed(() => {
           :data="s.preview.sample"
           :index="s.preview.sampleIndex"
           :context="s.props.context"
+          :variant="s.preview.followRules ? undefined : s.variants.variantId"
           :theme="s.preview.themeId"
+          @variant="s.preview.matchedVariant = $event"
         />
       </div>
     </div>

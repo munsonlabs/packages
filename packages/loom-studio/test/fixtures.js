@@ -20,6 +20,7 @@ export const card = () => ({
       { id: 'more', type: 'Stack', children: [{ id: 'link', type: 'Link' }] },
     ],
   },
+  variants: [{ id: 'small', label: 'Small', when: { size: ['sm'] } }],
 })
 
 /** A definition ref, as `<LoomStudio v-model>` holds it. */

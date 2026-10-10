@@ -8,7 +8,8 @@ The editor for [`@munsonlabs/loom`](../loom) widgets. Canvas first, no sidebars:
 
 - **Click to edit**: content, actions, visibility and style, with a breadcrumb to the element's containers and its add/move/nest/duplicate/delete actions
 - **Bind to anything the kit provides**: every source's fields, grouped, filtered to the types that fit
-- **Preview** with your own sample data at four widths
+- **Variants**: pick one to edit it; changes become overrides with reset-to-base markers, moves become its order, delete hides
+- **Preview** with your own sample data at four widths, and let the rules pick the variant
 - **Design tokens everywhere**: the theme panel shows every token over the kit's theme with per-widget overrides; gaps, padding, radii, colours and sizes pick from the scales; preview each of the kit's themes
 - **Issues, import, export** from the top bar: export a widget's JSON, or paste one in
 

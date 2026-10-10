@@ -4,6 +4,7 @@ import { findNode, findParent, pathTo } from '../editing/tree'
 /**
  * @typedef {object} Options
  * @property {Ref<WidgetDefinition>} definition
+ * @property {Ref<{ root: WidgetNode; hidden: Set<string> }>} tree The tree as the edited variant arranges it, hidden nodes listed.
  * @property {Ref<HTMLElement | undefined>} stage The canvas element the widget renders in.
  */
 
@@ -14,16 +15,15 @@ import { findNode, findParent, pathTo } from '../editing/tree'
  *
  * @param {Options} options
  */
-export function useSelection({ definition, stage }) {
-  const root = computed(() => definition.value.root)
-
+export function useSelection({ definition, tree, stage }) {
   const selectedId = ref()
-  const selected = computed(() => (selectedId.value ? findNode(root.value, selectedId.value) : undefined))
+  const selected = computed(() => (selectedId.value ? findNode(tree.value.root, selectedId.value) : undefined))
   /** The path from the root to the selection, for the breadcrumb. */
-  const crumbs = computed(() => (selectedId.value ? pathTo(root.value, selectedId.value) : []))
+  const crumbs = computed(() => (selectedId.value ? pathTo(tree.value.root, selectedId.value) : []))
   const isRoot = computed(() => selectedId.value === definition.value.root.id)
-  const siblings = computed(() => (selectedId.value ? (findParent(root.value, selectedId.value)?.children ?? []) : []))
+  const siblings = computed(() => (selectedId.value ? (findParent(tree.value.root, selectedId.value)?.children ?? []) : []))
   const position = computed(() => siblings.value.findIndex((c) => c.id === selectedId.value))
+  const isHidden = computed(() => !!selectedId.value && tree.value.hidden.has(selectedId.value))
 
   /** The element the popover is anchored to. */
   const selectedEl = shallowRef()
@@ -35,8 +35,8 @@ export function useSelection({ definition, stage }) {
 
   /**
    * Finds what the popover anchors to: the node's own element, or, for a node that isn't rendered
-   * (its `Show when` is false for this data), its nearest rendered ancestor's, so it can still be
-   * edited.
+   * (hidden in this variant, or its `Show when` is false for this data), its nearest rendered
+   * ancestor's, so it can still be edited and brought back.
    */
   function locate() {
     const id = selectedId.value
@@ -55,6 +55,8 @@ export function useSelection({ definition, stage }) {
   /** Why the selected node isn't on screen, when it isn't. */
   const offscreen = computed(() => {
     if (anchoredToSelf.value || !selectedId.value) return undefined
+    const hiddenBy = crumbs.value.find((crumb) => tree.value.hidden.has(crumb.id))
+    if (hiddenBy) return { kind: 'hidden', id: hiddenBy.id, self: hiddenBy.id === selectedId.value }
     return { kind: 'unrendered' }
   })
 
@@ -80,6 +82,7 @@ export function useSelection({ definition, stage }) {
     isRoot,
     siblings,
     position,
+    isHidden,
     selectedEl,
     popoverOpen,
     anchoredToSelf,

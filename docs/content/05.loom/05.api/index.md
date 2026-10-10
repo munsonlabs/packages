@@ -94,6 +94,7 @@ What an editor needs beyond rendering. Loom Studio is built on these; an app tha
 | `parseAction(binding)`                                                    | An action binding as `{ action, arg? }`, whichever form it was written in.                      |
 | `BASE_VARIANT`, `findVariant`                                             | The base's id (`'base'`), and a variant by id.                                                  |
 | `applyVariant(definition, id)`, `variantTree(definition, id, keepHidden)` | The plain definition a variant renders; its tree, optionally with hidden nodes kept and listed. |
+| `diffAsOverride(base, edited, previous)`                                  | The smallest override that turns `base` into `edited`: how editors store variant edits.         |
 | `widthToSize(width)`                                                      | The size bucket (`sm`, `md`, `lg`) for a width.                                                 |
 | `blockDefaults(kit, type)`, `createDefinition(kit, kind, identity)`       | A block's default props; a new widget from a kind's starter.                                    |
 | `tokens`, `scaleForRole`, `scaleTokens(scale)`, `tokenVar(name)`          | Every token; which scale each role picks from; a scale's steps; `accent` → `--w-accent`.        |

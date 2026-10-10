@@ -135,3 +135,44 @@ export function ruleMatches(rule, ctx) {
 export function matchVariant(definition, ctx) {
   return definition.variants?.find((v) => ruleMatches(v.when, ctx))?.id
 }
+
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
+
+/** Keys of `edited` that differ from `base`, with `null` for keys `edited` dropped. */
+function diffRecord(base, edited) {
+  const diff = {}
+  for (const key of new Set([...Object.keys(base ?? {}), ...Object.keys(edited ?? {})])) {
+    const a = base?.[key]
+    const b = edited?.[key]
+    if (same(a, b)) continue
+    diff[key] = b === undefined ? null : b
+  }
+  return Object.keys(diff).length ? diff : undefined
+}
+
+/**
+ * The override that turns `base` into `edited`, keeping `hidden` and `order` from `previous`.
+ * Editors apply a change to the resolved node and store the diff, so an override never holds
+ * anything the base already says.
+ *
+ * @param {WidgetNode} base
+ * @param {WidgetNode} edited
+ * @param {NodeOverride} [previous]
+ * @returns {NodeOverride | undefined}
+ */
+export function diffAsOverride(base, edited, previous) {
+  const override = {}
+  const props = diffRecord(base.props, edited.props)
+  if (props) override.props = Object.fromEntries(Object.entries(props).filter(([, v]) => v !== null))
+  if (override.props && !Object.keys(override.props).length) delete override.props
+  const bind = diffRecord(base.bind, edited.bind)
+  if (bind) override.bind = bind
+  const on = diffRecord(base.on, edited.on)
+  if (on) override.on = on
+  const style = diffRecord(base.style, edited.style)
+  if (style) override.style = style
+  if (base.if !== edited.if) override.if = edited.if ?? null
+  if (previous?.hidden) override.hidden = true
+  if (previous?.order?.length) override.order = previous.order
+  return Object.keys(override).length ? override : undefined
+}

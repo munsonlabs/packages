@@ -8,8 +8,8 @@ The controls around the canvas. Each reads the studio object and calls its actio
 | `DocumentBar.vue`   | Top right  | Undo and redo, theme, issues, export, and **Publish**.                                                     |
 | `ThemePopover.vue`  | Top right  | The theme button and panel: the widget's token overrides.                                                  |
 | `IssuesPopover.vue` | Top right  | A tick when the widget is valid, else its problems from loom's validator, each one click from the element. |
-| `PreviewBar.vue`    | Bottom     | Sample data, theme, width.                                                                                 |
-| `StatusHints.vue`   | Top centre | What clicking does.                                                                                        |
+| `PreviewBar.vue`    | Bottom     | The variant being edited (and the variants panel), sample data, theme, width, **Rules**.                   |
+| `StatusHints.vue`   | Top centre | What clicking does, and a banner while a variant is being edited.                                          |
 
 ## Technically
 

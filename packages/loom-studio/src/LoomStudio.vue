@@ -10,12 +10,13 @@ import StudioCanvas from './canvas/StudioCanvas.vue'
 import CommandPalette from './dialogs/CommandPalette.vue'
 import ExportModal from './dialogs/ExportModal.vue'
 import ImportModal from './dialogs/ImportModal.vue'
+import LayersPanel from './layers/LayersPanel.vue'
 import { createStudio, provideStudio } from './studio'
 
 /**
  * The editor. It builds the studio's shared state (`studio.js`), provides it to the parts
- * below, and lays them out: the canvas, four floating bars, the element popover, and the
- * dialogs. Each part lives in its own folder with a README.
+ * below, and lays them out: the canvas, the layers panel, four floating bars, the element
+ * popover, and the dialogs. Each part lives in its own folder with a README.
  */
 
 const definition = defineModel({ required: true })
@@ -45,6 +46,7 @@ provideStudio(studio)
 // Plain handlers don't fire while an input has focus, so Backspace in a field stays a keystroke.
 defineShortcuts({
   meta_k: () => (studio.open.palette = true),
+  l: () => (studio.open.layers = !studio.open.layers),
   meta_z: studio.history.undo,
   meta_shift_z: studio.history.redo,
   meta_d: studio.editing.duplicate,
@@ -62,6 +64,7 @@ defineShortcuts({
 <template>
   <div class="relative h-dvh overflow-hidden bg-muted text-default">
     <StudioCanvas />
+    <LayersPanel v-if="studio.open.layers" />
 
     <IdentityBar><slot name="actions" /></IdentityBar>
     <PreviewBar />

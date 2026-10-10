@@ -57,6 +57,18 @@ const cycleAppearance = () => (appearance.store.value = appearanceOptions[appear
       />
     </UTooltip>
 
+    <UTooltip text="Layers" :kbds="['l']">
+      <UButton
+        icon="i-lucide-layers"
+        size="sm"
+        color="neutral"
+        :variant="s.open.layers ? 'soft' : 'ghost'"
+        class="rounded-full"
+        aria-label="Layers"
+        @click="s.open.layers = !s.open.layers"
+      />
+    </UTooltip>
+
     <ThemePopover />
 
     <UTooltip text="Everything" :kbds="['meta', 'k']">

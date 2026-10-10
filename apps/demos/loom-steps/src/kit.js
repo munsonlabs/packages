@@ -140,6 +140,8 @@ export const inkTheme = defineTheme({
 })
 
 export const kit = createKit({
+  // Libraries say which kit they were made for.
+  id: 'reading-list',
   sources: [articleSource, readingSource],
   blocks: [highlightBlock],
   // lightTheme names darkTheme as its dark partner, so widgets follow the device's light or dark setting.

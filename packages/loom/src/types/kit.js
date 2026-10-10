@@ -40,6 +40,7 @@
  * @template [TData=any]
  * @template [TContext=any]
  * @typedef {object} KitOptions
+ * @property {string} [id] Names the kit, so a published library records which kit it was made for and a loader can check.
  * @property {Source<TData, TContext>[]} [sources]
  * @property {BlockSpec[]} [blocks]
  * @property {(data: TData) => string} [describe] A short label for a piece of data: sample pickers, logs.
@@ -50,6 +51,7 @@
  * @template [TData=any]
  * @template [TContext=any]
  * @typedef {object} Kit
+ * @property {string} [id]
  * @property {Readonly<Record<string, Source<TData, TContext>>>} sources
  * @property {Readonly<Record<string, BlockSpec>>} blocks Built-ins plus the kit's own.
  * @property {readonly Theme[]} themes At least one: the light theme when the kit gives none.

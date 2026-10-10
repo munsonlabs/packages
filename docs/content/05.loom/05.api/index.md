@@ -31,6 +31,8 @@ import {
   Widget,
 } from '@munsonlabs/loom'
 import '@munsonlabs/loom/style.css'
+import { videoBlock } from '@munsonlabs/loom/video'
+import { iconBlock } from '@munsonlabs/loom/icon'
 ```
 
 ### Kits

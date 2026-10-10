@@ -1,6 +1,6 @@
 # `kit/`: what an app plugs in
 
-A kit is how an app gives loom its data and behaviour: its **sources** (composables that provide values and actions) any extra **blocks**, **themes**, and an optional **guard** for actions. Loom never imports app code; it only ever sees a kit.
+A kit is how an app gives loom its data and behaviour: its **sources** (composables that provide values and actions), any extra **blocks**, **themes**, and an optional **guard** for actions. Loom never imports app code; it only ever sees a kit.
 
 | File           | What it does                                                                                                                                                                                                                               |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

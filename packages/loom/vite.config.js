@@ -7,7 +7,7 @@ export default {
   pack: {
     ...basePack,
     dts: false,
-    entry: { index: 'src/index.js', editor: 'src/editor.js' },
-    deps: { neverBundle: ['vue'], alwaysBundle: [/\.css$/] },
+    entry: { index: 'src/index.js', editor: 'src/editor.js', video: 'src/blocks/video/index.js', icon: 'src/blocks/icon/index.js' },
+    deps: { neverBundle: ['vue', /^@munsonlabs\/video-player/, /^@munsonlabs\/sigil/], alwaysBundle: [/\.css$/] },
   },
 }

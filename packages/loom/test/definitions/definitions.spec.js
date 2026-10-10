@@ -3,10 +3,12 @@ import { enableAutoUnmount, mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import { validateDefinition } from '@/definitions/validate'
 import { bindableValues, sourcesUsed } from '@/definitions/paths'
+import { createKit } from '@/kit'
 import { conditionHolds, definitionMatches, matchDefinition } from '@/definitions/match'
 import { applyVariant, matchVariant, ruleMatches, variantTree, widthToSize } from '@/definitions/variants'
 import Widget from '@/Widget.vue'
-import { makeKit, makeProducts, makeShop, productCard } from '@test/fixtures'
+import { videoBlock } from '@/blocks/video'
+import { makeKit, makeProducts, makeShop, productCard, productSource } from '@test/fixtures'
 
 enableAutoUnmount(afterEach)
 
@@ -202,5 +204,18 @@ describe('taps', () => {
     expect(validateDefinition(kit, on('Stack'))).toEqual([])
     expect(validateDefinition(kit, on('Badge')).map((i) => i.message)).toEqual(["Badge can't be tapped"])
     expect(validateDefinition(kit, on('Stack', 'hover')).map((i) => i.message)).toEqual(['Widgets only handle "click", not "hover"'])
+  })
+})
+
+describe('videoBlock', () => {
+  it('renders a VideoCard for a source, and nothing without one', () => {
+    const videoKit = createKit({ sources: [productSource], blocks: [videoBlock] })
+    const definition = withRoot({ id: 'player', type: 'Video', bind: { src: 'product.image' } })
+    const [teapot, kettle] = makeProducts()
+    const withSrc = mount(Widget, { props: { kit: videoKit, definition, data: teapot, context: makeShop() } })
+    expect(withSrc.find('[data-node-id="player"].w-video').exists()).toBe(true)
+    const without = mount(Widget, { props: { kit: videoKit, definition, data: kettle, context: makeShop() } })
+    expect(without.find('[data-node-id="player"]').exists()).toBe(false)
+    expect(validateDefinition(videoKit, definition)).toEqual([])
   })
 })

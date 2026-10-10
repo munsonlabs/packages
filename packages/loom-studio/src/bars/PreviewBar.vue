@@ -5,7 +5,7 @@ import { useStudio } from '../studio'
 
 /**
  * Bottom centre: how the widget is previewed. The variant being edited (and its rules), the
- * sample data, the theme, light or dark, the width, and whether rules pick the variant.
+ * sample data, the theme, light or dark, the width, whether rules pick the variant, and Try.
  */
 const s = useStudio()
 </script>
@@ -133,6 +133,18 @@ const s = useStudio()
         :variant="s.preview.followRules ? 'soft' : 'ghost'"
         class="rounded-full"
         @click="s.preview.followRules = !s.preview.followRules"
+      />
+    </UTooltip>
+
+    <UTooltip :text="s.preview.mode === 'edit' ? 'Try it: clicks run actions' : 'Back to editing'">
+      <UButton
+        :icon="s.preview.mode === 'edit' ? 'i-lucide-hand' : 'i-lucide-mouse-pointer-2'"
+        :label="s.preview.mode === 'edit' ? 'Try' : 'Edit'"
+        size="sm"
+        :color="s.preview.mode === 'interact' ? 'primary' : 'neutral'"
+        :variant="s.preview.mode === 'interact' ? 'solid' : 'ghost'"
+        class="rounded-full"
+        @click="s.toggleMode"
       />
     </UTooltip>
   </div>

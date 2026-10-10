@@ -2,12 +2,15 @@
 import { BASE_VARIANT } from '@munsonlabs/loom/editor'
 import { useStudio } from '../studio'
 
-/** Top centre: what clicking does, and a banner while a variant is being edited. */
+/** Top centre: what clicking does right now, and a banner while a variant is being edited. */
 const s = useStudio()
 </script>
 
 <template>
-  <p class="pointer-events-none absolute top-5 left-1/2 -translate-x-1/2 text-xs text-dimmed">Click anything to edit it</p>
+  <p class="pointer-events-none absolute top-5 left-1/2 -translate-x-1/2 text-xs text-dimmed">
+    <template v-if="s.preview.mode === 'edit'">Click anything to edit it</template>
+    <template v-else>Trying it: clicks run the widget's actions</template>
+  </p>
 
   <div
     v-if="s.variants.variant"

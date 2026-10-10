@@ -9,7 +9,7 @@ src/
   studio.js        createStudio: wires the composables below into one object; useStudio() reads it
   editing/         changing the definition: undo, variants, tree edits, the pure tree helpers
   canvas/          the widget on screen: selection, the element popover
-  preview/         how it's previewed: sample, width, theme, scheme, rules
+  preview/         how it's previewed: sample, width, theme, scheme, rules, Try, and the call log
   panels/          the forms inside popovers: Inspector, styles, tokens, variants
   bars/            the floating toolbars around the canvas
   dialogs/         Export, Import
@@ -17,7 +17,7 @@ src/
 
 ## How it fits together
 
-1. `LoomStudio.vue` calls `createStudio(definition, props, events)` (`studio.js`), which calls each composable (`useHistory`, `useVariantEditing`, `useSelection`, `useTreeEditing`, `usePreview`) and returns one reactive object.
+1. `LoomStudio.vue` calls `createStudio(definition, props, events)` (`studio.js`), which calls each composable (`useHistory`, `useVariantEditing`, `useSelection`, `useTreeEditing`, `usePreview`, `useCallLog`) and returns one reactive object.
 2. It passes that object down with `provideStudio`. Every component in `canvas/`, `bars/` and `dialogs/` starts with `const s = useStudio()` and uses only what it needs. The object is grouped by owner, so it's clear where each thing comes from:
 
    | On the studio | Comes from                     | For example                                       |
@@ -26,10 +26,11 @@ src/
    | `s.variants`  | `editing/useVariantEditing.js` | `s.variants.variantId`, `s.variants.toggleHidden` |
    | `s.selection` | `canvas/useSelection.js`       | `s.selection.selected`, `s.selection.select(id)`  |
    | `s.editing`   | `editing/useTreeEditing.js`    | `s.editing.add('Text')`, `s.editing.remove()`     |
-   | `s.preview`   | `preview/usePreview.js`        | `s.preview.sampleIndex`, `s.preview.viewport`     |
+   | `s.preview`   | `preview/usePreview.js`        | `s.preview.sampleIndex`, `s.preview.mode`         |
+   | `s.callLog`   | `preview/useCallLog.js`        | `s.callLog.calls`                                 |
    | `s.open`      | `studio.js`                    | `s.open.theme`, `s.open.export`                   |
 
-   Plus `s.props`, `s.definition`, `s.issues` and `s.errors`, and a few actions that join several parts (`onStageClick`, `selectIssue`, `publish`).
+   Plus `s.props`, `s.definition`, `s.issues` and `s.errors`, and a few actions that join several parts (`toggleMode`, `selectIssue`, `publish`).
 
 3. Components in `panels/` don't read the studio: they take props and emit changes, so they work in any editor.
 

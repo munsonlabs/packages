@@ -31,6 +31,7 @@
  * @property {string} id
  * @property {string} label
  * @property {string} [description]
+ * @property {boolean} [primary] Listed first in editors. Use for the data's own fields.
  * @property {Record<string, FieldSpec>} fields
  * @property {(ctx: SourceContext<TData, TContext>) => Record<string, unknown>} setup
  */

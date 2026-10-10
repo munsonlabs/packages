@@ -7,7 +7,7 @@ export default {
   pack: {
     ...basePack,
     dts: false,
-    entry: { index: 'src/index.js' },
+    entry: { index: 'src/index.js', editor: 'src/editor.js' },
     deps: { neverBundle: ['vue'], alwaysBundle: [/\.css$/] },
   },
 }

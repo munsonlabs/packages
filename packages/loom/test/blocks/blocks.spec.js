@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vite-plus/test'
 import { enableAutoUnmount, mount } from '@vue/test-utils'
 import Widget from '@/Widget.vue'
 import { createKit } from '@/kit'
+import { validateDefinition } from '@/definitions/validate'
 import { makeProducts, makeShop, productSource } from '@test/fixtures'
 
 enableAutoUnmount(afterEach)
@@ -20,6 +21,7 @@ describe('content blocks', () => {
         { id: 'empty', type: 'Image', bind: { src: 'product.image' } },
       ],
     })
+    expect(validateDefinition(kit, def)).toEqual([])
     const wrapper = mount(Widget, { props: { kit, definition: def, data: makeProducts()[1], context: makeShop() } })
     expect(wrapper.find('[data-node-id="missing"]').exists()).toBe(false)
     expect(wrapper.find('[data-node-id="empty"]').exists()).toBe(false)

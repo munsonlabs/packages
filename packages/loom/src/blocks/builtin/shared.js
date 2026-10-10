@@ -1,6 +1,6 @@
 /**
  * A built-in block's Vue props, from the spec its SFC exports: `defineProps(blockProps(spec))`.
- * The defaults live in the spec only, so the editor and the HTML can't disagree.
+ * The defaults live in the spec only, so the editor, the validator and the HTML can't disagree.
  *
  * No `type`s on purpose: values arrive as bound, and Boolean casting would turn an absent prop
  * into `false` before its default applies.

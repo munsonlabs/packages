@@ -18,6 +18,7 @@ src/
   studio.js        createStudio wires the composables into one reactive object; useStudio() reads it
   editing/         tree.js (pure), useHistory, useVariantEditing, useTreeEditing
   canvas/          StudioCanvas.vue, ElementPopover.vue, useSelection, useCanvasDrag
+  layers/          LayersPanel.vue (the tree, toggled by s.open.layers or L), layers.js (rows, drop positions)
   preview/         usePreview (sample, width, theme, scheme, rules, mode), useCallLog, logCalls
   panels/          inspector/ (Inspector + one component per tab), StyleEditor, TokensEditor, TokenInput, KeyValueEditor, VariantsPanel, OverrideMark, options.js: props in, events out, no studio
   bars/            IdentityBar, DocumentBar, ThemePopover, IssuesPopover, PreviewBar, StatusHints, CallsLog
@@ -25,7 +26,7 @@ src/
 test/              mirrors src/; fixtures.js has a tiny kit and inScope()
 ```
 
-Components in `canvas/`, `bars/` and `dialogs/` take what they need from `useStudio()`, which is grouped by owner: `s.history`, `s.variants`, `s.selection`, `s.editing`, `s.preview`, `s.callLog`, `s.drag`, `s.open`. A new concern gets its own composable, called from `createStudio`, rather than more code in a component.
+Components in `canvas/`, `layers/`, `bars/` and `dialogs/` take what they need from `useStudio()`, which is grouped by owner: `s.history`, `s.variants`, `s.selection`, `s.editing`, `s.preview`, `s.callLog`, `s.drag`, `s.open`. A new concern gets its own composable, called from `createStudio`, rather than more code in a component.
 
 ## How editing works
 

@@ -12,12 +12,13 @@ src/
   preview/         how it's previewed: sample and width
   panels/          the forms inside popovers: the Inspector
   bars/            the floating toolbars around the canvas
+  dialogs/         Export, Import
 ```
 
 ## How it fits together
 
-1. `LoomStudio.vue` calls `createStudio(definition, props)` (`studio.js`), which calls each composable (`useHistory`, `useSelection`, `useTreeEditing`, `usePreview`) and returns one reactive object.
-2. It passes that object down with `provideStudio`. Every component in `canvas/` and `bars/` starts with `const s = useStudio()` and uses only what it needs. The object is grouped by owner, so it's clear where each thing comes from:
+1. `LoomStudio.vue` calls `createStudio(definition, props, events)` (`studio.js`), which calls each composable (`useHistory`, `useSelection`, `useTreeEditing`, `usePreview`) and returns one reactive object.
+2. It passes that object down with `provideStudio`. Every component in `canvas/`, `bars/` and `dialogs/` starts with `const s = useStudio()` and uses only what it needs. The object is grouped by owner, so it's clear where each thing comes from:
 
    | On the studio | Comes from                  | For example                                      |
    | ------------- | --------------------------- | ------------------------------------------------ |
@@ -25,8 +26,9 @@ src/
    | `s.selection` | `canvas/useSelection.js`    | `s.selection.selected`, `s.selection.select(id)` |
    | `s.editing`   | `editing/useTreeEditing.js` | `s.editing.add('Text')`, `s.editing.remove()`    |
    | `s.preview`   | `preview/usePreview.js`     | `s.preview.sampleIndex`, `s.preview.viewport`    |
+   | `s.open`      | `studio.js`                 | `s.open.export`                                  |
 
-   Plus `s.props` and `s.definition`, and `onStageClick`, which turns a click on the canvas into a selection.
+   Plus `s.props`, `s.definition`, `s.issues` and `s.errors`, and a few actions that join several parts (`onStageClick`, `selectIssue`, `publish`).
 
 3. Components in `panels/` don't read the studio: they take props and emit changes, so they work in any editor.
 

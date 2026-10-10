@@ -1,4 +1,5 @@
-import { inject, nextTick, provide, reactive, ref, watch } from 'vue'
+import { computed, inject, nextTick, provide, reactive, ref, watch } from 'vue'
+import { hasErrors, validateDefinition } from '@munsonlabs/loom'
 import { useSelection } from './canvas/useSelection'
 import { useHistory } from './editing/useHistory'
 import { useTreeEditing } from './editing/useTreeEditing'
@@ -14,16 +15,25 @@ import { usePreview } from './preview/usePreview'
  */
 
 /**
+ * @typedef {object} StudioEvents
+ * @property {(definition: WidgetDefinition) => void} publish
+ */
+
+/**
  * Everything the studio's parts share, built once by `<LoomStudio>` and provided to the
  * components inside it. Each concern lives in its own composable; this only wires them together.
  *
  * @param {Ref<WidgetDefinition>} definition
  * @param {StudioProps} props
+ * @param {StudioEvents} events
  */
-export function createStudio(definition, props) {
+export function createStudio(definition, props, events) {
   const kit = () => props.kit
 
   const stage = ref()
+
+  /** Which popovers and dialogs are open. */
+  const open = reactive({ issues: false, export: false, import: false })
 
   const history = useHistory(definition)
   const selection = useSelection({ definition, stage })
@@ -40,10 +50,20 @@ export function createStudio(definition, props) {
     selection.select(e.target.closest('[data-node-id]')?.dataset.nodeId)
   }
 
+  // --- Validation
+  const issues = computed(() => validateDefinition(props.kit, definition.value))
+  /** Errors stop publishing. */
+  const errors = computed(() => hasErrors(issues.value))
+  function selectIssue(issue) {
+    open.issues = false
+    if (issue.nodeId) selection.select(issue.nodeId)
+  }
+
   return reactive({
     props,
     definition,
     stage,
+    open,
     /** Undo and redo: `change`, `checkpoint`, `undo`, `redo`, `canUndo`, `canRedo`. */
     history,
     /** What's selected, and where its editor anchors. */
@@ -52,7 +72,11 @@ export function createStudio(definition, props) {
     editing,
     /** Sample and width. */
     preview,
+    issues,
+    errors,
     onStageClick,
+    selectIssue,
+    publish: () => events.publish(definition.value),
   })
 }
 

@@ -4,7 +4,7 @@
 
 ```
 src/
-  index.js         the public API: LoomStudio
+  index.js         the public API: LoomStudio and NewWidgetModal
   LoomStudio.vue   the shell: builds the studio, provides it, sets the shortcuts, lays out the parts
   studio.js        createStudio: wires the composables below into one object; useStudio() reads it
   editing/         changing the definition: undo, variants, tree edits, the pure tree helpers
@@ -12,7 +12,7 @@ src/
   preview/         how it's previewed: sample, width, theme, scheme, rules, Try, and the call log
   panels/          the forms inside popovers: Inspector, styles, tokens, variants
   bars/            the floating toolbars around the canvas
-  dialogs/         ⌘K, Export, Import
+  dialogs/         ⌘K, Export, Import, New widget
 ```
 
 ## How it fits together

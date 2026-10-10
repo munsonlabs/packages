@@ -2,7 +2,7 @@
   "name": "loom-studio-demo",
   "version": "0.0.0",
   "private": true,
-  "description": "Loom Studio editing the timeline kit’s widgets.",
+  "description": "Loom Studio editing the timeline kit’s widgets; Publish downloads the library the feed demo imports.",
   "type": "module",
   "scripts": {
     "clean": "rm -rf dist",

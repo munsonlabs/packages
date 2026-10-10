@@ -26,12 +26,19 @@ const props = defineProps({
   samples: { type: Array, required: true },
   /** What the kit's sources get as `context` in the preview. Every function called on it is logged. */
   context: { default: undefined },
+  /** Every widget in the app's library, in order: offered as one file in Export. */
+  library: Array,
 })
 
-const emit = defineEmits(['publish'])
+const emit = defineEmits([
+  'publish',
+  /** A library file was imported: its loadable widgets, what was skipped, and why. The app decides what to do with them. */
+  'importLibrary',
+])
 
 const studio = createStudio(definition, props, {
   publish: (d) => emit('publish', d),
+  importLibrary: (library) => emit('importLibrary', library),
 })
 provideStudio(studio)
 

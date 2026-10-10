@@ -15,5 +15,5 @@ One JSON file per widget: exactly what Loom Studio edits and a library publishes
 
 ## Technically
 
-- Each says which stories it's for in `match` (Bolt picks by `entry.type`, and so do these), and which sources it binds to in `uses`.
+- Each says which stories it's for in `match` (Bolt picks by `entry.type`, and so do these), and which sources it binds to in `uses`. "New widget" in the studio can start as a copy of any of them.
 - They must validate against the kit: `test/kit.spec.js` checks every one, and the feed demo's bundled library is built from them (its test fails if they drift).

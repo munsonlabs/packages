@@ -19,4 +19,12 @@ describe('usePreview', () => {
     await nextTick()
     expect(preview.sampleIndex.value).toBe(0)
   })
+
+  it('lists themes without their dark partners, which the scheme switch reaches', () => {
+    const preview = inScope(() => usePreview({ kit: () => kit, samples: () => [], definition: model() }))
+    expect(preview.themeOptions.value.map((t) => t.value)).toEqual(['brand'])
+    preview.previewScheme.value = 'dark'
+    expect(preview.theme.value.id).toBe('brand-dark')
+    expect(preview.panelTheme.value.id).toBe('brand')
+  })
 })

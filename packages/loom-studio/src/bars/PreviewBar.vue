@@ -1,11 +1,11 @@
 <script setup>
 import VariantsPanel from '../panels/VariantsPanel.vue'
-import { viewportHint, viewports } from '../preview/usePreview'
+import { schemeOptions, viewportHint, viewports } from '../preview/usePreview'
 import { useStudio } from '../studio'
 
 /**
  * Bottom centre: how the widget is previewed. The variant being edited (and its rules), the
- * sample data, the theme, the width, and whether rules pick the variant.
+ * sample data, the theme, light or dark, the width, and whether rules pick the variant.
  */
 const s = useStudio()
 </script>
@@ -88,6 +88,21 @@ const s = useStudio()
       class="w-28"
       aria-label="Preview theme"
     />
+
+    <UTooltip
+      :text="s.preview.previewScheme === 'auto' ? `Following the device: ${s.preview.activeScheme}` : `Previewing ${s.preview.previewScheme} mode`"
+    >
+      <UButton
+        :icon="schemeOptions[s.preview.previewScheme].icon"
+        :label="schemeOptions[s.preview.previewScheme].label"
+        size="sm"
+        color="neutral"
+        variant="ghost"
+        class="rounded-full"
+        aria-label="Preview colour scheme"
+        @click="s.preview.cycleScheme"
+      />
+    </UTooltip>
 
     <div class="flex items-center">
       <UTooltip v-for="vp in viewports" :key="vp.label" :text="`${vp.label}: ${viewportHint(vp.width)}`">

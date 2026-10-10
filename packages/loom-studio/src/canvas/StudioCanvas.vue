@@ -44,6 +44,9 @@ const shownVariant = computed(() => (s.preview.followRules ? s.preview.matchedVa
           <span class="flex items-center gap-1" :class="{ 'text-warning': shownVariant !== BASE_VARIANT }">
             <UIcon name="i-lucide-git-branch" class="size-3" />{{ s.variants.variantLabel(shownVariant) }}
           </span>
+          <span class="flex items-center gap-1"
+            ><UIcon :name="s.preview.activeScheme === 'dark' ? 'i-lucide-moon' : 'i-lucide-sun'" class="size-3" />{{ s.preview.activeScheme }}</span
+          >
         </span>
       </div>
       <div
@@ -60,6 +63,7 @@ const shownVariant = computed(() => (s.preview.followRules ? s.preview.matchedVa
           :context="s.props.context"
           :variant="s.preview.followRules ? undefined : s.variants.variantId"
           :theme="s.preview.themeId"
+          :scheme="s.preview.previewScheme"
           @variant="s.preview.matchedVariant = $event"
         />
       </div>

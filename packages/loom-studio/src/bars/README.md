@@ -5,10 +5,10 @@ The controls around the canvas. Each reads the studio object and calls its actio
 | File                | Where      | What it does                                                                                                       |
 | ------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------ |
 | `IdentityBar.vue`   | Top left   | The widget's name and the data it renders for, then the host app's own controls (`<LoomStudio>`'s `actions` slot). |
-| `DocumentBar.vue`   | Top right  | Undo and redo, theme, issues, export, and **Publish**.                                                             |
-| `ThemePopover.vue`  | Top right  | The theme button and panel: the widget's token overrides.                                                          |
+| `DocumentBar.vue`   | Top right  | The studio's own light/dark, undo and redo, theme, issues, export, and **Publish**.                                |
+| `ThemePopover.vue`  | Top right  | The theme button and panel: the widget's token overrides, and "fixed colours".                                     |
 | `IssuesPopover.vue` | Top right  | A tick when the widget is valid, else its problems from loom's validator, each one click from the element.         |
-| `PreviewBar.vue`    | Bottom     | The variant being edited (and the variants panel), sample data, theme, width, **Rules**.                           |
+| `PreviewBar.vue`    | Bottom     | The variant being edited (and the variants panel), sample data, theme, light/dark, width, **Rules**.               |
 | `StatusHints.vue`   | Top centre | What clicking does, and a banner while a variant is being edited.                                                  |
 
 ## Technically

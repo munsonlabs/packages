@@ -122,6 +122,19 @@ describe('<Widget>', () => {
     expect(mount(Host).find('[data-node-id="title"]').text()).toBe('Teapot')
   })
 
+  it('picks the first of `definitions` that matches the data, or renders the fallback slot', () => {
+    const kit = makeKit()
+    const [teapot, , bundle] = makeProducts()
+    const ok = mount(Widget, { props: { kit, definitions: [productCard], data: teapot, context: makeShop() } })
+    expect(ok.attributes('data-widget')).toBe('product-card')
+
+    const none = mount(Widget, {
+      props: { kit, definitions: [productCard], data: bundle, context: makeShop() },
+      slots: { fallback: ({ data }) => h('em', `No widget for ${data.title}`) },
+    })
+    expect(none.text()).toBe('No widget for Tea set')
+  })
+
   it('renders a kit’s own blocks with resolved props and node attrs', async () => {
     const Stars = defineComponent({ props: { value: Number }, setup: (p) => () => h('span', '★'.repeat(p.value ?? 0)) })
     const kit = createKit({

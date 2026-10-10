@@ -6,6 +6,7 @@ import Highlight from './Highlight.vue'
 export const articles = [
   {
     id: 'tides',
+    kind: 'article',
     title: 'Why the tides are getting higher',
     summary: 'Sea levels are rising a little faster each decade. Here is what that means for the coast.',
     section: 'Science',
@@ -18,6 +19,7 @@ export const articles = [
   },
   {
     id: 'sourdough',
+    kind: 'article',
     title: 'A loaf a day: a year of sourdough',
     summary: 'Three hundred and sixty-five loaves later, one baker on what actually matters.',
     section: 'Food',
@@ -30,6 +32,7 @@ export const articles = [
   },
   {
     id: 'chess',
+    kind: 'article',
     title: 'The chess club that never closes',
     section: 'Local',
     author: 'Mo Khan',
@@ -111,4 +114,11 @@ export const highlightBlock = defineBlock({
   component: Highlight,
 })
 
-export const kit = createKit({ sources: [articleSource, readingSource], blocks: [highlightBlock] })
+/** Short notes from the editors: other data in the same feed. */
+export const notes = [{ id: 'week-off', kind: 'note', title: 'Back on Monday: the newsletter takes a week off.', author: 'The editors' }]
+
+export const kit = createKit({
+  sources: [articleSource, readingSource],
+  blocks: [highlightBlock],
+  describe: (data) => data.title,
+})

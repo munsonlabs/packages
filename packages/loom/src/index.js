@@ -7,5 +7,6 @@ import './theme/styles.css'
 
 export * from './types'
 export { createKit, defineSource, defineBlock, provideKit } from './kit'
+export { matchDefinition } from './definitions/match'
 export { validateDefinition } from './definitions/validate'
 export { default as Widget } from './Widget.vue'

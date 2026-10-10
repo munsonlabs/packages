@@ -35,6 +35,17 @@ export const DEFINITION_VERSION = 2
  * @property {typeof DEFINITION_VERSION} version
  * @property {string} id
  * @property {string} name
+ * @property {Condition[]} [match] Which data it's for: every condition must hold. `<Widget :definitions>` renders the first definition that matches; none means any data.
+ * @property {string[]} [uses] The sources it binds to. Editors offer only these, and binding to another is out of scope. Unset means every source in the kit.
  * @property {Record<string, string>} [vars] CSS custom properties set on the widget root.
  * @property {WidgetNode} root
+ */
+
+/**
+ * A test on the raw data, before any source runs: `{ "path": "entry.tags", "op": "includes", "value": "breaking" }`.
+ *
+ * @typedef {object} Condition
+ * @property {string} path A dotted path into the data. Prefix with `!` to negate the condition.
+ * @property {'equals' | 'in' | 'includes' | 'exists'} op `in` takes a list of values; `includes` tests a list or a string; `exists` takes no value.
+ * @property {unknown} [value]
  */

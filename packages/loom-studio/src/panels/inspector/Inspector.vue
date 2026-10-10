@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import ActionTab from './ActionTab.vue'
 import ContentTab from './ContentTab.vue'
+import StyleTab from './StyleTab.vue'
 import VisibilityTab from './VisibilityTab.vue'
 import { tabEmits, tabProps } from './shared'
 
@@ -25,6 +26,7 @@ const tabs = computed(() =>
     },
     { label: 'Actions', value: 'actions', icon: 'i-lucide-zap', component: ActionTab, show: !!spec.value?.clickable },
     { label: 'Show when', value: 'visibility', icon: 'i-lucide-eye', component: VisibilityTab, show: true },
+    { label: 'Style', value: 'style', icon: 'i-lucide-paintbrush', component: StyleTab, show: true },
   ].filter((t) => t.show),
 )
 const tab = ref(tabs.value[0]?.value ?? 'visibility')

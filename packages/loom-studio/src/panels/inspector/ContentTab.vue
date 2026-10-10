@@ -1,9 +1,10 @@
 <script setup>
 import { computed } from 'vue'
+import TokenInput from '../TokenInput.vue'
 import { valueOptions } from '../options'
 import { tabEmits, tabProps } from './shared'
 
-/** Each of the block's props: bound to data, or a value typed in or picked from a list. */
+/** Each of the block's props: bound to data, or a value typed in, picked from a list or a token scale. */
 const props = defineProps(tabProps)
 const emit = defineEmits(tabEmits)
 
@@ -75,6 +76,12 @@ function setBind(name, path) {
             :model-value="Number(staticValue(name, prop) ?? 0)"
             :min="0"
             size="xs"
+            @update:model-value="setStatic(name, $event)"
+          />
+          <TokenInput
+            v-else-if="prop.tokenScale"
+            :model-value="String(staticValue(name, prop) ?? '')"
+            :scale="prop.tokenScale"
             @update:model-value="setStatic(name, $event)"
           />
           <UInput v-else :model-value="String(staticValue(name, prop) ?? '')" size="xs" @update:model-value="setStatic(name, $event)" />

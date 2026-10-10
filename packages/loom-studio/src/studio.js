@@ -33,7 +33,7 @@ export function createStudio(definition, props, events) {
   const stage = ref()
 
   /** Which popovers and dialogs are open. */
-  const open = reactive({ issues: false, export: false, import: false })
+  const open = reactive({ theme: false, issues: false, export: false, import: false })
 
   const history = useHistory(definition)
   const selection = useSelection({ definition, stage })
@@ -70,7 +70,7 @@ export function createStudio(definition, props, events) {
     selection,
     /** The actions on the selected element. */
     editing,
-    /** Sample and width. */
+    /** Sample, width and theme. */
     preview,
     issues,
     errors,

@@ -34,6 +34,9 @@ const selectionCss = computed(() => {
         <UIcon :name="s.preview.viewport.icon" class="size-3.5" />
         <span class="font-medium text-default">{{ s.preview.viewport.label }}</span>
         <span>{{ viewportHint(s.preview.viewport.width) }}</span>
+        <span v-if="s.props.kit.themes.length > 1" class="ml-auto flex items-center gap-1"
+          ><UIcon name="i-lucide-palette" class="size-3" />{{ s.preview.theme.label }}</span
+        >
       </div>
       <div
         class="transition-[width] duration-200"
@@ -47,6 +50,7 @@ const selectionCss = computed(() => {
           :data="s.preview.sample"
           :index="s.preview.sampleIndex"
           :context="s.props.context"
+          :theme="s.preview.themeId"
         />
       </div>
     </div>

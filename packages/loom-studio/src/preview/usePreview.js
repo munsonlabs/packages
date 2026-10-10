@@ -1,4 +1,5 @@
 import { computed, ref, watch } from 'vue'
+import { getTheme } from '@munsonlabs/loom'
 import { definitionMatches, widthToSize } from '@munsonlabs/loom/editor'
 
 /** The canvas widths the preview offers. */
@@ -21,8 +22,8 @@ export const viewportHint = (width) => (width ? `${width}px · ${widthToSize(wid
  */
 
 /**
- * How the widget is previewed: with which sample data, and at what width. None of it is saved
- * in the definition.
+ * How the widget is previewed: with which sample data, at what width, and in which theme. None
+ * of it is saved in the definition.
  *
  * @param {Options} options
  */
@@ -55,6 +56,12 @@ export function usePreview({ kit, samples, definition }) {
 
   const viewport = ref(viewports[1])
 
+  /** Which of the kit's themes the preview uses. Themes belong to the kit; a widget only overrides tokens. */
+  const themeId = ref(kit().themes[0]?.id)
+  const themeOptions = computed(() => kit().themes.map((t) => ({ label: t.label, value: t.id })))
+  /** The theme the preview renders with. */
+  const theme = computed(() => getTheme(kit(), themeId.value))
+
   return {
     describe,
     matchingSamples,
@@ -62,5 +69,8 @@ export function usePreview({ kit, samples, definition }) {
     sampleOptions,
     sample,
     viewport,
+    themeId,
+    themeOptions,
+    theme,
   }
 }

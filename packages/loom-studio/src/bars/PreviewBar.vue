@@ -2,7 +2,7 @@
 import { viewportHint, viewports } from '../preview/usePreview'
 import { useStudio } from '../studio'
 
-/** Bottom centre: how the widget is previewed. The sample data, and the width. */
+/** Bottom centre: how the widget is previewed. The sample data, the theme, and the width. */
 const s = useStudio()
 </script>
 
@@ -17,6 +17,18 @@ const s = useStudio()
       variant="ghost"
       class="w-48"
       aria-label="Preview data"
+    />
+
+    <USelect
+      v-if="s.preview.themeOptions.length > 1"
+      v-model="s.preview.themeId"
+      :items="s.preview.themeOptions"
+      value-key="value"
+      icon="i-lucide-palette"
+      size="sm"
+      variant="ghost"
+      class="w-28"
+      aria-label="Preview theme"
     />
 
     <div class="flex items-center">

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 430" width="800" height="430" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif" role="img" aria-labelledby="title">
+  <title id="title">One tap through the bridge: the web asks the native app, the app pings back, the web reads the new state</title>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#71717a"/></marker>
+  </defs>
+  <rect fill="#ffffff" stroke="#e4e4e7" width="800" height="430" rx="12"/>
+  <rect fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1.5" x="60" y="20" width="260" height="52" rx="10"/>
+  <text fill="#18181b" font-size="14" font-weight="600" x="74" y="42">Web</text>
+  <text fill="#52525b" font-size="12" x="74" y="62">The bridge and the widgets</text>
+  <rect fill="#fff7ed" stroke="#fb923c" stroke-width="1" x="480" y="20" width="260" height="52" rx="10"/>
+  <text fill="#18181b" font-size="14" font-weight="600" x="494" y="42">Native app</text>
+  <text fill="#52525b" font-size="12" x="494" y="62">The iOS or Android shell (here, the stub)</text>
+  <path stroke="#a1a1aa" stroke-width="1" stroke-dasharray="3 4" fill="none" d="M190 72V420"/>
+  <path stroke="#a1a1aa" stroke-width="1" stroke-dasharray="3 4" fill="none" d="M610 72V420"/>
+  <text fill="#52525b" font-size="12" x="20" y="112">Tap Save</text>
+  <path stroke="#71717a" stroke-width="1.5" fill="none" d="M190 130L606 130" marker-end="url(#a)"/>
+  <circle fill="#8b5cf6" cx="264" cy="116" r="9"/>
+  <text fill="#ffffff" font-size="11" font-weight="700" x="264" y="120" text-anchor="middle">1</text>
+  <text fill="#52525b" font-size="12" x="400.0" y="120" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">setSaved({ story, saved: true })</text>
+  <rect fill="#fff7ed" stroke="#fb923c" stroke-width="1" x="520" y="160" width="180" height="40" rx="8"/>
+  <circle fill="#8b5cf6" cx="540" cy="180" r="9"/>
+  <text fill="#ffffff" font-size="11" font-weight="700" x="540" y="184" text-anchor="middle">2</text>
+  <text fill="#52525b" font-size="12" x="556" y="184">Saves it</text>
+  <path stroke="#71717a" stroke-width="1.5" fill="none" d="M610 250L194 250" marker-end="url(#a)"/>
+  <circle fill="#8b5cf6" cx="278" cy="236" r="9"/>
+  <text fill="#ffffff" font-size="11" font-weight="700" x="278" y="240" text-anchor="middle">3</text>
+  <text fill="#52525b" font-size="12" x="400.0" y="240" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">pugpigUpdate('savedStories')</text>
+  <text fill="#52525b" font-size="12" x="630" y="246">“something changed”</text>
+  <path stroke="#71717a" stroke-width="1.5" fill="none" d="M190 310L606 310" marker-end="url(#a)"/>
+  <circle fill="#8b5cf6" cx="330" cy="296" r="9"/>
+  <text fill="#ffffff" font-size="11" font-weight="700" x="330" y="300" text-anchor="middle">4</text>
+  <text fill="#52525b" font-size="12" x="400.0" y="300" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">savedStories()</text>
+  <path stroke="#71717a" stroke-width="1.5" fill="none" stroke-dasharray="5 4" d="M610 345L194 345" marker-end="url(#a)"/>
+  <text fill="#52525b" font-size="12" x="400" y="337" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">{ savedStories: [ … ] }</text>
+  <rect fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1.5" x="70" y="370" width="300" height="40" rx="8"/>
+  <circle fill="#8b5cf6" cx="90" cy="390" r="9"/>
+  <text fill="#ffffff" font-size="11" font-weight="700" x="90" y="394" text-anchor="middle">5</text>
+  <text fill="#52525b" font-size="12" x="106" y="394">The card re-renders: Save reads “Saved”</text>
+</svg>

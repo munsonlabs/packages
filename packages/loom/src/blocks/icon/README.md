@@ -2,7 +2,7 @@
 
 `iconBlock`, published as `@munsonlabs/loom/icon`, draws an icon by name through `@munsonlabs/sigil`, sized and coloured from design tokens.
 
-It's its own entry point so only apps that use icons load sigil. An app opts in with `createKit({ blocks: [iconBlock] })` and registers an icon library with sigil first.
+It's its own entry point so only apps that use icons load sigil. An app opts in with `createKit({ blocks: [iconBlock] })` and registers an icon library with sigil first (the feed demo registers Lucide in `main.js`).
 
 ## Technically
 

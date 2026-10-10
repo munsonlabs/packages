@@ -16,4 +16,4 @@ One JSON file per widget: exactly what an editor edits and a library bundles. No
 ## Technically
 
 - Each kind in `../kinds.js` starts new widgets from its file here, so editing an example changes what `createDefinition` starts from.
-- They must validate against the kit: `test/kit.spec.js` checks every one.
+- They must validate against the kit: `test/kit.spec.js` checks every one, and the feed demo's bundled library is built from them (its test fails if they drift).

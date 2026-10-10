@@ -14,7 +14,8 @@
   "dependencies": {
     "@munsonlabs/loom": "*",
     "@munsonlabs/sigil": "*",
-    "@munsonlabs/video-player": "*"
+    "@munsonlabs/video-player": "*",
+    "bolt-bridge-stub": "*"
   },
   "devDependencies": {
     "@munsonlabs/shipkit": "*",

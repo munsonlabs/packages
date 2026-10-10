@@ -5,6 +5,7 @@
 | `CommandPalette.vue` | ⌘K: jump to any element, add a block, switch variant, or open any panel.                                                                                          |
 | `ExportModal.vue`    | This widget's JSON, the whole library as one file (when the app passes `library`), and a usage snippet; copy or download each.                                    |
 | `ImportModal.vue`    | Paste JSON: a single widget replaces the one being edited (undoably); a library goes to the app through the `importLibrary` event, with what was skipped and why. |
+| `parseImport.js`     | Tells a pasted widget from a pasted library. A widget keeps the id of the one being edited, so the app's library still finds it.                                  |
 | `NewWidgetModal.vue` | Starts a widget from one of the kit's kinds. One of the package's two exports: apps open it themselves, since adding a widget to their library is their job.      |
 
 ## Technically

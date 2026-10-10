@@ -3,8 +3,9 @@ import { ref } from 'vue'
 import { useToast } from '@nuxt/ui/composables'
 import { loadLibrary } from '@munsonlabs/loom'
 import { useStudio } from '../studio'
+import { parseImport } from './parseImport'
 
-/** Import: a single widget replaces the one being edited; a whole library goes to the app (`importLibrary`). */
+/** Import: a single widget replaces the one being edited (keeping its id); a whole library goes to the app (`importLibrary`). */
 const s = useStudio()
 const toast = useToast()
 
@@ -19,9 +20,9 @@ function close() {
 
 function apply() {
   try {
-    const parsed = JSON.parse(text.value)
-    if (Array.isArray(parsed) || parsed?.format === 'loom-library') {
-      const loaded = loadLibrary(s.props.kit, parsed)
+    const imported = parseImport(text.value, s.definition.id)
+    if (imported.kind === 'library') {
+      const loaded = loadLibrary(s.props.kit, imported.data)
       s.importLibrary(loaded)
       toast.add({
         title: `Imported ${loaded.widgets.length} widget${loaded.widgets.length === 1 ? '' : 's'}`,
@@ -33,9 +34,7 @@ function apply() {
       })
       return close()
     }
-    const single = parsed
-    if (!single?.root?.id) throw new Error('Not a widget definition or a library: it needs a `root`, or `widgets`.')
-    s.history.checkpoint(single)
+    s.history.checkpoint(imported.definition)
     s.selection.select(undefined)
     close()
   } catch (e) {

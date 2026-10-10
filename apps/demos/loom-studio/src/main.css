@@ -1,0 +1,5 @@
+@import 'tailwindcss';
+@import '@nuxt/ui';
+
+/* Loom Studio ships Tailwind classes in its source; scan it like app code. */
+@source '../../../../packages/loom-studio/src';

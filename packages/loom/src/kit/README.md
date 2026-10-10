@@ -11,7 +11,7 @@ A kit is how an app gives loom its data and behaviour: its **sources** (composab
 
 ## Technically
 
-- A kit is a plain value, not a registry. Two kits can share a page.
+- A kit is a plain value, not a registry. Two kits can share a page, which is also how the demos run two apps side by side.
 - A source's `setup` runs lazily, the first time a widget binding reaches it, inside the widget's own effect scope, so its `computed`s and watchers stop when the widget unmounts. That code is in `renderer.js`; the types are in `types/kit.js`.
 - `kit.guard` is called from `renderer.js` before every action. See `types/guard.js`.
 

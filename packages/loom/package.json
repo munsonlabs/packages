@@ -22,6 +22,10 @@
       "source": "./src/index.js",
       "import": "./dist/index.mjs"
     },
+    "./editor": {
+      "source": "./src/editor.js",
+      "import": "./dist/editor.mjs"
+    },
     "./style.css": {
       "source": "./src/theme/styles.css",
       "import": "./dist/style.css"

@@ -61,6 +61,7 @@ export function useProduct(props, shop) {
 export const productSource = {
   id: 'product',
   label: 'Product',
+  primary: true,
   fields: {
     title: { type: 'string' },
     summary: { type: 'string' },

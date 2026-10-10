@@ -6,6 +6,7 @@ A kit is how an app gives loom its data and behaviour: its **sources** (composab
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `createKit.js` | `createKit(options)` checks and builds a kit: source ids are unique and not the reserved `item` or `repeat`.                                               |
 | `provide.js`   | `provideKit(kit, context)` makes a kit and its context the default for every `<Widget>` below a component; `injectKit` and `injectContext` read them back. |
+| `lookup.js`    | Finding things in a kit: `blockDefaults` (a block's default props, for new nodes).                                                                         |
 | `index.js`     | Re-exports the above.                                                                                                                                      |
 
 ## Technically
@@ -15,4 +16,4 @@ A kit is how an app gives loom its data and behaviour: its **sources** (composab
 
 ## Used by
 
-`Widget.vue` and `renderer.js` (to render), and `definitions/` (to read bindings).
+`Widget.vue` and `renderer.js` (to render), `definitions/` (to validate and list bindings), and editors (to build their forms).

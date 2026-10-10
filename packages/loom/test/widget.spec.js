@@ -3,6 +3,8 @@ import { enableAutoUnmount, mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick } from 'vue'
 import Widget from '@/Widget.vue'
 import { createKit, provideKit } from '@/kit'
+import { validateDefinition } from '@/definitions/validate'
+import { bindableValues } from '@/definitions/paths'
 import { makeKit, makeProducts, makeShop, productCard, productSource } from '@test/fixtures'
 
 enableAutoUnmount(afterEach)
@@ -57,9 +59,16 @@ describe('<Widget>', () => {
         ],
       },
     }
-    const { wrapper } = render({ definition })
+    const { wrapper, kit } = render({ definition })
     expect(wrapper.findAll('[data-node-id="n"]').map((n) => n.text())).toEqual(['1.', '2.'])
     expect(wrapper.findAll('[data-node-id="rule"]')).toHaveLength(1)
+    expect(validateDefinition(kit, definition)).toEqual([])
+    expect(
+      bindableValues(kit, definition, 'n')
+        .filter((o) => o.source === 'repeat')
+        .map((o) => o.path),
+    ).toEqual(['repeat.index', 'repeat.number', 'repeat.first', 'repeat.last', 'repeat.count'])
+    expect(validateDefinition(kit, { ...definition, root: { id: 'x', type: 'Text', bind: { text: 'repeat.number' } } })).toHaveLength(1)
   })
 
   it('passes an action’s argument, and calls it with none otherwise', async () => {

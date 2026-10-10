@@ -75,10 +75,10 @@ export function useTreeEditing({ kit, definition, change, variants, selection })
     void nextTick(locate)
   }
 
-  /** Moves the selection into the container above it. */
+  /** Moves the selection into the container above it. Structure belongs to the base, as with `add`. */
   function indent() {
     const id = selectedId.value
-    if (!id) return
+    if (!id || variant.value) return
     change((d) => indentNode(kit(), d, id))
     void nextTick(locate)
   }
@@ -86,7 +86,7 @@ export function useTreeEditing({ kit, definition, change, variants, selection })
   /** Moves the selection out of its container. */
   function outdent() {
     const id = selectedId.value
-    if (!id) return
+    if (!id || variant.value) return
     change((d) => outdentNode(d, id))
     void nextTick(locate)
   }

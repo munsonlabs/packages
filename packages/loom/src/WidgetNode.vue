@@ -32,7 +32,10 @@ const values = computed(() => {
 
 const onClick = computed(() => clickHandler(props.node, props.locals))
 // Built-in blocks add their own `w-*` class; a kit's block gets one here.
-const classes = computed(() => [!(props.node.type in builtinBlocks) && `w-${props.node.type.toLowerCase()}`, onClick.value && 'is-clickable'])
+const classes = computed(() => [
+  !Object.hasOwn(builtinBlocks, props.node.type) && `w-${props.node.type.toLowerCase()}`,
+  onClick.value && 'is-clickable',
+])
 </script>
 
 <template>

@@ -22,16 +22,17 @@ function describeDefault(data) {
  * @returns {Kit<TData, TContext>}
  */
 export function createKit(options = {}) {
-  const sources = {}
+  // No prototype, so a lookup like `kit.blocks[type]` finds only what's here, never `toString` and friends.
+  const sources = Object.create(null)
   for (const source of options.sources ?? []) {
     if (source.id === 'item' || source.id === 'repeat') throw new Error(`[loom] "${source.id}" is reserved for the current Repeat item`)
     if (sources[source.id]) throw new Error(`[loom] two sources share the id "${source.id}"`)
     sources[source.id] = source
   }
 
-  const blocks = { ...builtinBlocks }
+  const blocks = Object.assign(Object.create(null), builtinBlocks)
   for (const block of options.blocks ?? []) {
-    if (block.type in builtinBlocks) throw new Error(`[loom] "${block.type}" is a built-in block`)
+    if (Object.hasOwn(builtinBlocks, block.type)) throw new Error(`[loom] "${block.type}" is a built-in block`)
     if (!block.component) throw new Error(`[loom] block "${block.type}" needs a component`)
     blocks[block.type] = block
   }

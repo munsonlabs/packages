@@ -5,7 +5,7 @@ import Widget from '@/Widget.vue'
 import { createKit, defineBlock, provideKit } from '@/kit'
 import { validateDefinition } from '@/definitions/validate'
 import { bindableValues } from '@/definitions/paths'
-import { makeKit, makeProducts, makeShop, productCard, productSource } from '@test/fixtures'
+import { actionsSource, makeKit, makeProducts, makeShop, productCard, productKind, productSource } from '@test/fixtures'
 
 enableAutoUnmount(afterEach)
 
@@ -174,5 +174,54 @@ describe('createKit', () => {
     expect(() => createKit({ blocks: [{ type: 'Text', label: 'T', description: '', container: false, props: {}, component: Text }] })).toThrow(
       'built-in',
     )
+  })
+})
+
+describe('a kit guard', () => {
+  const mountWith = (guard) => {
+    const shop = makeShop()
+    const products = makeProducts()
+    const kit = createKit({ sources: [productSource, actionsSource], kinds: [productKind], guard })
+    const wrapper = mount(Widget, { props: { kit, definition: productCard, data: products[0], index: 2, context: shop, variant: 'base' } })
+    return { wrapper, shop, products }
+  }
+
+  it('sees every action first, with its argument and the widget’s data, index and context', async () => {
+    const guard = vi.fn(() => true)
+    const { wrapper, shop, products } = mountWith(guard)
+    await wrapper.findAll('[data-node-id="related-title"]')[1].trigger('click')
+    expect(guard).toHaveBeenCalledWith({
+      action: 'shop.open',
+      arg: products[0].related[1],
+      node: 'related-title',
+      data: products[0],
+      index: 2,
+      context: shop,
+    })
+    expect(shop.open).toHaveBeenCalledWith(products[0].related[1])
+  })
+
+  it('stops an action by returning false, so the kit can do something else instead', async () => {
+    const paywall = vi.fn()
+    const { wrapper, shop } = mountWith(({ action, context }) => {
+      if (action === 'shop.addToCart') return true
+      paywall(context)
+      return false
+    })
+    await wrapper.find('[data-node-id="card"]').trigger('click')
+    expect(shop.open).not.toHaveBeenCalled()
+    expect(paywall).toHaveBeenCalledWith(shop)
+    await wrapper.find('[data-node-id="add"]').trigger('click')
+    expect(shop.added).toEqual(['p1'])
+  })
+
+  it('may answer later: the action runs once it resolves to anything but false', async () => {
+    let answer
+    const { wrapper, shop } = mountWith(() => new Promise((resolve) => (answer = resolve)))
+    await wrapper.find('[data-node-id="card"]').trigger('click')
+    expect(shop.open).not.toHaveBeenCalled()
+    answer(true)
+    await new Promise((resolve) => setTimeout(resolve))
+    expect(shop.open).toHaveBeenCalledTimes(1)
   })
 })

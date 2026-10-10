@@ -38,14 +38,14 @@ import '@munsonlabs/loom/style.css'
 
 ### Kits
 
-| Export                                      | Does                                                                                              |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `createKit(options)`                        | A kit from `id`, `sources`, `blocks`, `kinds`, `themes` and `describe`. Throws on clashing names. |
-| `defineSource`, `defineKind`, `defineBlock` | Identity helpers: they return their argument.                                                     |
-| `provideKit(kit, context?)`                 | The default kit and context for every `<Widget>` below.                                           |
-| `getKind(kit, id)`, `matchKind(kit, data)`  | A kind by id; the first kind that matches data.                                                   |
-| `matchDefinition(kit, data, definitions)`   | The first definition whose kind matches the data.                                                 |
-| `getTheme(kit, id?)`                        | A kit's theme by id, or its default.                                                              |
+| Export                                      | Does                                                                                                                 |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `createKit(options)`                        | A kit from `id`, `sources`, `blocks`, `kinds`, `themes`, `describe` and an action `guard`. Throws on clashing names. |
+| `defineSource`, `defineKind`, `defineBlock` | Identity helpers: they return their argument.                                                                        |
+| `provideKit(kit, context?)`                 | The default kit and context for every `<Widget>` below.                                                              |
+| `getKind(kit, id)`, `matchKind(kit, data)`  | A kind by id; the first kind that matches data.                                                                      |
+| `matchDefinition(kit, data, definitions)`   | The first definition whose kind matches the data.                                                                    |
+| `getTheme(kit, id?)`                        | A kit's theme by id, or its default.                                                                                 |
 
 ### Themes
 
@@ -107,6 +107,7 @@ There are no types to import in JavaScript. Each shape is a JSDoc `@typedef` bes
 | `types/definition.js`     | `WidgetDefinition`, `WidgetNode`, `WidgetVariant`, `NodeOverride`, `VariantRule`, `WidgetSize`, `ColorScheme`, `ValuePath`, `ActionBinding` |
 | `types/kit.js`            | `Kit`, `KitOptions`, `Source`, `SourceContext`, `FieldSpec`, `FieldType`, `ValueType`, `Kind`                                               |
 | `types/blocks.js`         | `BlockSpec`, `BlockPropSpec`, `BlockType`                                                                                                   |
+| `types/guard.js`          | `ActionGuard`, `GuardedAction`                                                                                                              |
 | `theme/tokens.js`         | `Theme`, `TokenSpec`, `TokenGroup`, `TokenKind`, `TokenScale`                                                                               |
 | `theme/scheme.js`         | `SchemePreference`                                                                                                                          |
 | `definitions/validate.js` | `ValidationIssue`                                                                                                                           |

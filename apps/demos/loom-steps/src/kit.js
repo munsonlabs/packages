@@ -76,7 +76,19 @@ export const articleSource = defineSource({
 })
 
 /** The app's own state and services, which widgets get as their context: what's saved, and a log of what was asked. */
-export const reader = reactive({ saved: [], log: [] })
+export const reader = reactive({ saved: [], log: [], member: false })
+
+/** For members only: the kit's guard stops what a widget asks of it until the reader is a member. */
+export const lockedArticle = {
+  id: 'interview',
+  kind: 'article',
+  locked: true,
+  title: 'The interview: forty years at sea',
+  section: 'Members',
+  author: 'Ada Lovell',
+  minutes: 12,
+  tags: ['Interview'],
+}
 
 /** Another of the app's composables: saving and opening an article. */
 export function useReading(article, app) {
@@ -166,4 +178,10 @@ export const kit = createKit({
   // lightTheme names darkTheme as its dark partner, so widgets follow the device's light or dark setting.
   themes: [lightTheme, darkTheme, sepiaTheme, inkTheme],
   describe: (data) => data.title,
+  // Sees every action first. Returning false stops it: one paywall for every widget, instead of one in each.
+  guard: ({ action, data, context }) => {
+    if (!data.locked || context?.member || action === 'reading.toggleSave') return true
+    context?.log.unshift(`Paywall: “${data.title}” is for members`)
+    return false
+  },
 })

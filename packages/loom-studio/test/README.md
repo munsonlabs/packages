@@ -5,6 +5,7 @@ Vitest with happy-dom (`vp test`). Folders mirror `src/`. They test the logic wi
 | Path                                | Covers                                                                                          |
 | ----------------------------------- | ----------------------------------------------------------------------------------------------- |
 | `fixtures.js`                       | A tiny kit (notes and photos, a theme with a dark partner), a card with a variant, `inScope()`. |
+| `editing/tree.spec.js`              | Moving nodes, and where they're allowed to go.                                                  |
 | `editing/useHistory.spec.js`        | Edits on a copy, undo, redo, the history limit.                                                 |
 | `editing/useVariantEditing.spec.js` | Hiding in a variant, resetting one field, falling back to the base.                             |
 | `editing/useTreeEditing.spec.js`    | Add, move, duplicate, delete and edit, on the base and in a variant.                            |

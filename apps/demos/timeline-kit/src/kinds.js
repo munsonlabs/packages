@@ -15,7 +15,7 @@ const type =
 
 /**
  * Bolt picks a widget by `entry.type`, and so do these. A story with no type matches nothing,
- * as in Bolt, where it renders no widget. `sources` are what editors suggest first.
+ * as in Bolt, where it renders no widget. `sources` are what the studio suggests first.
  */
 export const timelineKinds = [
   defineKind({

@@ -7,7 +7,7 @@ import pullQuote from './pull-quote.json'
 import videoTile from './video-tile.json'
 
 /**
- * The example widgets, one JSON file each: what an editor edits and what a library bundles.
+ * The example widgets, one JSON file each: what the studio edits and what a library publishes.
  * In library order, so the first whose kind matches a story renders it.
  */
 export const widgets = [articleCard, eventCard, videoTile, galleryCard, podcastRow, liveBlog, pullQuote]

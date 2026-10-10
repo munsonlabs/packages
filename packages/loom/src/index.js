@@ -1,8 +1,8 @@
 import './theme/styles.css'
 
 /**
- * What an app needs: make a kit, load a library, render widgets. Editors get the lower-level
- * helpers from `@munsonlabs/loom/editor`.
+ * What an app needs: make a kit, load a library, render widgets. Editors (Loom Studio, or your
+ * own) get the lower-level helpers from `@munsonlabs/loom/editor`.
  */
 
 export * from './types'

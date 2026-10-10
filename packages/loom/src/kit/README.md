@@ -17,4 +17,4 @@ A kit is how an app gives loom its data and behaviour: its **sources** (composab
 
 ## Used by
 
-`Widget.vue` and `renderer.js` (to render), `definitions/` (to validate and list bindings), and editors (to build their forms).
+`Widget.vue` and `renderer.js` (to render), `definitions/` (to validate and list bindings), and Loom Studio (to build its editors).

@@ -97,6 +97,7 @@ export const productCard = {
   version: 2,
   id: 'product-card',
   name: 'Product card',
+  match: [{ path: 'kind', op: 'equals', value: 'product' }],
   vars: { '--w-accent': '#c2410c', '--w-radius': '12px' },
   root: {
     id: 'card',
@@ -146,5 +147,5 @@ export const productCard = {
 }
 
 export function makeKit() {
-  return createKit({ sources: [productSource, actionsSource] })
+  return createKit({ sources: [productSource, actionsSource], describe: (p) => p.title })
 }

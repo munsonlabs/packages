@@ -1,5 +1,6 @@
 import { DEFINITION_VERSION } from '../types'
-import { pathType } from './paths'
+import { parsePath, pathType } from './paths'
+import { validateMatch } from './match'
 
 /**
  * @typedef {object} ValidationIssue
@@ -15,6 +16,14 @@ export function parseAction(binding) {
   return typeof binding === 'string' ? { action: binding } : binding
 }
 
+/** Why a path is out of scope: its source is one the widget doesn't `use`, or there's no such value. */
+function outOfScope(kit, definition, path, problem = "isn't in scope") {
+  const { source } = parsePath(path)
+  return definition.uses && kit.sources[source] && !definition.uses.includes(source)
+    ? `"${path}" is from "${source}", which this widget doesn't use`
+    : `"${path}" ${problem}`
+}
+
 /**
  * Checks a definition against a kit: every block, bound path, action and condition must exist
  * and fit where it's used. An empty result means it renders as written.
@@ -28,6 +37,8 @@ export function validateDefinition(kit, definition) {
   if (definition.version !== DEFINITION_VERSION) {
     issues.push({ message: `Unsupported version ${String(definition.version)}, expected ${String(DEFINITION_VERSION)}` })
   }
+  issues.push(...validateMatch(definition))
+  for (const id of definition.uses ?? []) if (!kit.sources[id]) issues.push({ message: `Uses "${id}", which this kit doesn't have` })
   issues.push(...validateTree(kit, definition))
   return issues
 }
@@ -49,7 +60,7 @@ function validateTree(kit, definition) {
       else if (!propSpec.accepts) at(`${node.type}.${prop} can't be bound`)
       else {
         const type = pathType(kit, definition, node.id, path)
-        if (!type) at(`"${path}" isn't in scope`)
+        if (!type) at(outOfScope(kit, definition, path))
         else if (type === 'action' || !propSpec.accepts.includes(type)) at(`${node.type}.${prop} can't take a ${type} ("${path}")`)
       }
     }
@@ -59,13 +70,14 @@ function validateTree(kit, definition) {
       else if (!spec.clickable) at(`${node.type} can't be tapped`)
       const { action, arg } = parseAction(binding)
       const type = pathType(kit, definition, node.id, action)
-      if (type !== 'action') at(`"${action}" isn't an action in scope`)
-      if (arg && !pathType(kit, definition, node.id, arg)) at(`"${arg}" isn't in scope`)
+      if (!type) at(outOfScope(kit, definition, action, "isn't an action in scope"))
+      else if (type !== 'action') at(`"${action}" isn't an action in scope`)
+      if (arg && !pathType(kit, definition, node.id, arg)) at(outOfScope(kit, definition, arg))
     }
 
     if (node.if) {
       const type = pathType(kit, definition, node.id, node.if)
-      if (!type) at(`"${node.if}" isn't in scope`)
+      if (!type) at(outOfScope(kit, definition, node.if))
       else if (type === 'action') at(`Can't use action "${node.if}" as a condition`)
     }
 

@@ -16,13 +16,13 @@ Each folder under `src/` has a README with its files and how they work.
 src/
   index.js       the public API for apps: kits, validation, <Widget>
   editor.js      @munsonlabs/loom/editor: the helpers editors need (bindings in scope, defaults for new nodes)
-  Widget.vue     <Widget>: sets the definition's vars on the root, provides the renderer
+  Widget.vue     <Widget>: picks the definition, sets its vars on the root, provides the renderer
   WidgetNode.vue draws one node (if, props, block) and recurses into its children
   renderer.js    createRenderer: lazy sources, readValue(path, locals), clickHandler (runs actions)
   types/         definition.js, blocks.js, kit.js: every shape, no runtime code
   kit/           createKit.js, provide.js (provideKit/inject*), lookup.js (blockDefaults)
   blocks/        builtin/ (the 15 built-ins, one SFC each: spec, template, CSS; index.js gathers builtinBlocks)
-  definitions/   paths.js, validate.js
+  definitions/   paths.js, match.js, validate.js
   theme/         styles.css
 test/            mirrors src/; fixtures.js (a small shop kit) is imported as @test/fixtures
 ```
@@ -36,9 +36,11 @@ test/            mirrors src/; fixtures.js (a small shop kit) is imported as @te
 - **`item` and `repeat` are reserved source ids**: inside a `Repeat` they're the current item and its position (declared once, in `Repeat.vue`: `positionFields` lists them for editors, `repeatPosition` builds them).
 - **A missing bound value renders as `null`, never the prop's default** (`?? null` in `WidgetNode.vue`): Vue would fill `undefined` with the default, and a card with no summary would say "Text".
 - **Blocks read `--w-*` variables, never raw values.** A new visual value is a variable with a default in `theme/styles.css`.
+- **A widget says which data it's for, as JSON.** `match` holds conditions on the raw data, never on sources, which don't exist until a widget renders; `conditionHolds` in `definitions/match.js` is the only place they run. Among several definitions, the first that matches wins: there's no specificity, so order is the tie-break.
+- **`uses` is a widget's scope.** When set, editors offer only those sources and validation treats any other as out of scope. Unset means every source.
 - **Keep the main entry small.** Something only an editor needs goes in `editor.js`, not `index.js`; something nothing outside loom uses isn't exported at all.
 - **Kits are values.** No module-level registries; two kits must be able to share a page.
 
 ## Testing
 
-`vp test` (happy-dom). Tests mirror `src/` (see `test/README.md`): `widget.spec.js` for rendering, actions, kits and custom blocks; `blocks/` and `definitions/` for the rest. Use the shop kit in `test/fixtures.js`; never import from the demos.
+`vp test` (happy-dom). Tests mirror `src/` (see `test/README.md`): `widget.spec.js` for rendering, actions, kits, custom blocks and picking definitions; `blocks/` and `definitions/` for the rest. Use the shop kit in `test/fixtures.js`; never import from the demos.

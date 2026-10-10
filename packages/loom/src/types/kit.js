@@ -42,6 +42,7 @@
  * @typedef {object} KitOptions
  * @property {Source<TData, TContext>[]} [sources]
  * @property {BlockSpec[]} [blocks]
+ * @property {(data: TData) => string} [describe] A short label for a piece of data: sample pickers, logs.
  */
 
 /**
@@ -50,4 +51,5 @@
  * @typedef {object} Kit
  * @property {Readonly<Record<string, Source<TData, TContext>>>} sources
  * @property {Readonly<Record<string, BlockSpec>>} blocks Built-ins plus the kit's own.
+ * @property {(data: TData) => string} describe
  */

@@ -4,7 +4,7 @@ JSDoc `@typedef`s only, with no runtime code (except the `DEFINITION_VERSION` co
 
 | File            | Describes                                                                                                                                                                          |
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `definition.js` | A widget as JSON: `WidgetDefinition`, its tree of `WidgetNode`s, and value paths (`"product.title"`) and action bindings.                                                          |
+| `definition.js` | A widget as JSON: `WidgetDefinition`, the `Condition`s that say which data it's for, its tree of `WidgetNode`s, and value paths (`"product.title"`) and action bindings.           |
 | `blocks.js`     | Blocks: `BlockType` (a block's name), `BlockSpec` (what a block accepts) and `BlockPropSpec` (one prop: its type, default, what it can be bound to), and whether it can be tapped. |
 | `kit.js`        | What an app plugs in: `KitOptions` and `Kit`, a `Source` (one composable and its declared `fields`), extra blocks, `SourceContext`.                                                |
 | `index.js`      | Re-exports `DEFINITION_VERSION`, the one runtime value here, so the rest of loom imports `from '../types'`.                                                                        |

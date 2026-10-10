@@ -1,5 +1,12 @@
 import { builtinBlocks } from '../blocks/builtin'
 
+function describeDefault(data) {
+  if (data && typeof data === 'object') {
+    for (const key of ['label', 'title', 'name', 'id']) if (typeof data[key] === 'string') return data[key]
+  }
+  return String(data)
+}
+
 /**
  * A kit is everything your app lets widgets use: its data and actions, and its blocks.
  * Kits are independent, so two apps or two presets can share a page.
@@ -24,5 +31,5 @@ export function createKit(options = {}) {
     blocks[block.type] = block
   }
 
-  return { sources, blocks }
+  return { sources, blocks, describe: options.describe ?? describeDefault }
 }

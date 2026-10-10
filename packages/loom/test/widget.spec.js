@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
 import { enableAutoUnmount, mount } from '@vue/test-utils'
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, nextTick } from 'vue'
 import Widget from '@/Widget.vue'
 import { createKit, provideKit } from '@/kit'
 import { makeKit, makeProducts, makeShop, productCard, productSource } from '@test/fixtures'
@@ -25,6 +25,57 @@ describe('<Widget>', () => {
     expect(wrapper.find('[data-node-id="price"]').text()).toBe('£24')
     expect(wrapper.find('[data-node-id="image"] img').attributes('src')).toBe('/teapot.jpg')
     expect(wrapper.element.style.getPropertyValue('--w-accent')).toBe('#c2410c')
+  })
+
+  it('repeats children per item, resolving item paths', () => {
+    const { wrapper } = render()
+    expect(wrapper.findAll('[data-node-id="related-title"]').map((n) => n.text())).toEqual(['Matching mug', 'Spare lid'])
+  })
+
+  it('runs actions with the context, without bubbling to clickable ancestors', async () => {
+    const { wrapper, shop, products } = render()
+    await wrapper.find('[data-node-id="add"]').trigger('click')
+    expect(shop.cart.add).toHaveBeenCalledWith(products[0])
+    expect(shop.open).not.toHaveBeenCalled()
+    await nextTick()
+    expect(wrapper.find('[data-node-id="add"]').text()).toBe('In basket')
+  })
+
+  it('gives each repeated row its position as `repeat`', () => {
+    const definition = {
+      version: 2,
+      id: 'list',
+      name: 'List',
+      root: {
+        id: 'rows',
+        type: 'Repeat',
+        bind: { items: 'product.related' },
+        children: [
+          { id: 'n', type: 'Text', bind: { text: 'repeat.number' }, props: { suffix: '.' } },
+          { id: 'name', type: 'Text', bind: { text: 'item.title' } },
+          { id: 'rule', type: 'Text', props: { text: '—' }, if: '!repeat.last' },
+        ],
+      },
+    }
+    const { wrapper } = render({ definition })
+    expect(wrapper.findAll('[data-node-id="n"]').map((n) => n.text())).toEqual(['1.', '2.'])
+    expect(wrapper.findAll('[data-node-id="rule"]')).toHaveLength(1)
+  })
+
+  it('passes an action’s argument, and calls it with none otherwise', async () => {
+    const { wrapper, shop, products } = render()
+    await wrapper.findAll('[data-node-id="related-title"]')[1].trigger('click')
+    expect(shop.open).toHaveBeenLastCalledWith(products[0].related[1])
+    await wrapper.find('[data-node-id="card"]').trigger('click')
+    expect(shop.open).toHaveBeenLastCalledWith(products[0])
+  })
+
+  it('hides nodes whose condition is falsy, reactively', async () => {
+    const { wrapper, products } = render()
+    expect(wrapper.find('[data-node-id="related"]').exists()).toBe(true)
+    products[0].related = []
+    await nextTick()
+    expect(wrapper.find('[data-node-id="related"]').exists()).toBe(false)
   })
 
   it('reaches sources added to the definition after mount', async () => {
@@ -64,7 +115,9 @@ describe('<Widget>', () => {
 })
 
 describe('createKit', () => {
-  it('refuses duplicate names', () => {
+  it('refuses reserved and duplicate names', () => {
+    expect(() => createKit({ sources: [{ ...productSource, id: 'item' }] })).toThrow('reserved')
+    expect(() => createKit({ sources: [{ ...productSource, id: 'repeat' }] })).toThrow('reserved')
     expect(() => createKit({ sources: [productSource, productSource] })).toThrow('share the id')
   })
 })

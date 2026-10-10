@@ -2,9 +2,9 @@
 
 The default of every `--w-*` variable blocks read, and the widget root's CSS.
 
-| File         | What it does                                                                                                                                                                                                                                  |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `styles.css` | The default value of every `--w-*` variable (on `.w-root`, at zero specificity), then the widget root's CSS. Each block's own CSS is in its SFC. Published as `@munsonlabs/loom/style.css`, which the build fills with every block's CSS too. |
+| File         | What it does                                                                                                                                                                                                                                                                     |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `styles.css` | The default value of every `--w-*` variable (on `.w-root`, at zero specificity), then the widget root's CSS and the rules several blocks share. Each block's own CSS is in its SFC. Published as `@munsonlabs/loom/style.css`, which the build fills with every block's CSS too. |
 
 ## Technically
 

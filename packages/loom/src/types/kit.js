@@ -7,6 +7,7 @@
  * @typedef {object} FieldSpec
  * @property {FieldType} type
  * @property {string} [description]
+ * @property {Record<string, ValueType>} [item] For `list` fields: what each item exposes inside a `Repeat`, as path → type. `''` is the item itself.
  */
 
 /**

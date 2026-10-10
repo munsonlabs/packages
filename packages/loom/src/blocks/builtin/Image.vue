@@ -5,6 +5,7 @@ export const spec = {
   icon: 'i-lucide-image',
   description: 'A lazily loaded image at a fixed aspect ratio.',
   container: false,
+  clickable: true,
   props: {
     src: { type: 'string', label: 'Source', default: '', accepts: ['string'] },
     alt: { type: 'string', label: 'Alt text', default: '', accepts: ['string'] },

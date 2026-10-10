@@ -14,7 +14,7 @@ function render(props = {}, productIndex = 0) {
   const shop = makeShop()
   const kit = makeKit()
   const wrapper = mount(Widget, {
-    props: { kit, definition: productCard, data: products[productIndex], index: 4, context: shop, ...props },
+    props: { kit, definition: productCard, data: products[productIndex], index: 4, context: shop, variant: 'base', ...props },
   })
   return { wrapper, shop, products, kit }
 }
@@ -89,17 +89,17 @@ describe('<Widget>', () => {
 
   it('reaches sources added to the definition after mount', async () => {
     const { wrapper } = render({
-      definition: { ...productCard, root: { id: 't', type: 'Text', bind: { text: 'product.category' } } },
+      definition: { ...productCard, variants: undefined, root: { id: 't', type: 'Text', bind: { text: 'product.category' } } },
     })
     expect(wrapper.find('[data-node-id="t"]').text()).toBe('Kitchen')
-    await wrapper.setProps({ definition: { ...productCard, root: { id: 't', type: 'Text', bind: { text: 'product.price' } } } })
+    await wrapper.setProps({ definition: { ...productCard, variants: undefined, root: { id: 't', type: 'Text', bind: { text: 'product.price' } } } })
     expect(wrapper.find('[data-node-id="t"]').text()).toBe('£24')
   })
 
   it('sets each source up once, however many bindings reach it', () => {
     const setup = vi.fn(productSource.setup)
     const kit = createKit({ sources: [{ ...productSource, setup }] })
-    mount(Widget, { props: { kit, definition: productCard, data: makeProducts()[0], context: makeShop() } })
+    mount(Widget, { props: { kit, definition: productCard, data: makeProducts()[0], context: makeShop(), variant: 'base' } })
     expect(setup).toHaveBeenCalledTimes(1)
   })
 
@@ -110,7 +110,7 @@ describe('<Widget>', () => {
     const Host = defineComponent({
       setup() {
         provideKit(kit, shop)
-        return () => h(Widget, { definition: productCard, data: product })
+        return () => h(Widget, { definition: productCard, data: product, variant: 'base' })
       },
     })
     expect(mount(Host).find('[data-node-id="title"]').text()).toBe('Teapot')

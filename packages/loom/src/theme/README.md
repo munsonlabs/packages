@@ -8,5 +8,5 @@ The default of every `--w-*` variable blocks read, and the widget root's CSS.
 
 ## Technically
 
-- Values stack on a widget's root element, last wins: the defaults in `styles.css`, then the definition's `vars`. `Widget.vue` writes the latter as inline CSS variables.
+- Values stack on a widget's root element, last wins: the defaults in `styles.css`, then the definition's `vars`, then the active variant's `vars`. `Widget.vue` writes the last two as inline CSS variables.
 - Blocks read role variables (`--w-gap`, `--w-title-size`) and colours only, which point at the scales (`--w-space-2`, `--w-text-xl`) by default.

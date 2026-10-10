@@ -1,11 +1,19 @@
-import { describe, expect, it } from 'vite-plus/test'
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
+import { enableAutoUnmount, mount } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import { validateDefinition } from '@/definitions/validate'
 import { bindableValues } from '@/definitions/paths'
 import { createDefinition, matchDefinition, matchKind } from '@/kit'
-import { makeKit, makeProducts, productCard } from '@test/fixtures'
+import { applyVariant, matchVariant, ruleMatches, variantTree, widthToSize } from '@/definitions/variants'
+import Widget from '@/Widget.vue'
+import { makeKit, makeProducts, makeShop, productCard } from '@test/fixtures'
+
+enableAutoUnmount(afterEach)
 
 const kit = makeKit()
 const withRoot = (root, extra = {}) => ({ version: 2, id: 't', name: 'T', root, ...extra })
+const ids = (node) => [node.id, ...(node.children ?? []).flatMap(ids)]
+const find = (node, id) => (node.id === id ? node : node.children?.map((c) => find(c, id)).find(Boolean))
 
 describe('validateDefinition', () => {
   it('accepts the product card', () => {
@@ -43,6 +51,24 @@ describe('validateDefinition', () => {
       'Unknown block "Marquee"',
     ])
   })
+
+  it('checks variants: their nodes, orders, rules, and the tree each renders', () => {
+    const issues = validateDefinition(kit, {
+      ...productCard,
+      variants: [
+        { id: 'base', label: 'Base', overrides: { ghost: { hidden: true }, meta: { order: ['title'] } } },
+        { id: 'v', label: 'V', when: { if: 'shop.open', size: ['xl'] }, overrides: { title: { bind: { text: 'product.onSale' } } } },
+      ],
+    })
+    expect(issues.map((i) => `${i.variant}: ${i.nodeId ?? ''} ${i.message}`)).toEqual([
+      'base:  Variant id "base" is reserved or already used',
+      "base: ghost Overrides a node that doesn't exist",
+      'base: meta Orders "title", which isn\'t a child',
+      'v:  Can\'t use action "shop.open" as a rule',
+      'v:  Unknown size "xl"',
+      'v: title Text.text can\'t take a boolean ("product.onSale")',
+    ])
+  })
 })
 
 describe('paths', () => {
@@ -71,10 +97,69 @@ describe('kinds', () => {
   })
 })
 
+describe('variants', () => {
+  it('hide, reorder, rebind and merge vars, leaving the base untouched', () => {
+    const snapshot = JSON.stringify(productCard)
+    const sale = applyVariant(productCard, 'sale')
+    expect(ids(sale.root)).not.toContain('related')
+    expect(sale.root.children.map((c) => c.id)).toEqual(['copy', 'image', 'meta'])
+    expect(find(sale.root, 'category')).toMatchObject({ props: { variant: 'kicker', text: 'Sale' } })
+    expect(find(sale.root, 'category')?.bind).toBeUndefined()
+    expect(sale.vars).toMatchObject({ '--w-accent': '#dc2626', '--w-radius': '12px' })
+    expect(JSON.stringify(productCard)).toBe(snapshot)
+  })
+
+  it('keep hidden nodes when asked, and report them', () => {
+    const { root, hidden } = variantTree(productCard, 'compact', true)
+    expect(ids(root)).toContain('image')
+    expect([...hidden].sort()).toEqual(['image', 'related', 'summary'])
+  })
+
+  it('match by rule, first wins', () => {
+    const ctx = (width, values = {}) => ({ width, readValue: (path) => values[path] })
+    expect([0, 299, 300, 500].map(widthToSize)).toEqual(['sm', 'sm', 'md', 'lg'])
+    expect(ruleMatches({}, ctx(100))).toBe(false)
+    expect(ruleMatches({ minWidth: 200, maxWidth: 400 }, ctx(300))).toBe(true)
+    expect(matchVariant(productCard, ctx(200, { 'product.onSale': true }))).toBe('sale')
+    expect(matchVariant(productCard, ctx(200))).toBe('compact')
+    expect(matchVariant(productCard, ctx(600))).toBeUndefined()
+  })
+
+  it('render by rule: data first, then measured size; a pinned variant wins', async () => {
+    let report = () => {}
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(cb) {
+          report = cb
+        }
+        observe() {}
+        disconnect() {}
+      },
+    )
+    const [teapot, kettle] = makeProducts()
+    const shop = makeShop()
+    const onSale = mount(Widget, { props: { kit, definition: productCard, data: kettle, context: shop } })
+    expect(onSale.attributes('data-variant')).toBe('sale')
+    expect(onSale.find('[data-node-id="category"]').text()).toBe('Sale')
+
+    const plain = mount(Widget, { props: { kit, definition: productCard, data: teapot, context: shop } })
+    expect(plain.attributes('data-variant')).toBe('base')
+    report([{ contentRect: { width: 280 } }], {})
+    await nextTick()
+    expect(plain.attributes('data-variant')).toBe('compact')
+    expect(plain.emitted('variant')).toEqual([['base'], ['compact']])
+
+    const pinned = mount(Widget, { props: { kit, definition: productCard, data: kettle, context: shop, variant: 'base' } })
+    expect(pinned.find('[data-node-id="category"]').text()).toBe('Kitchen')
+    vi.unstubAllGlobals()
+  })
+})
+
 describe('taps', () => {
   it('are only allowed on blocks that can be tapped, and only as click', () => {
     const kit = makeKit()
-    const on = (type, event = 'click') => ({ ...productCard, root: { id: 'r', type, on: { [event]: 'shop.open' } } })
+    const on = (type, event = 'click') => ({ ...productCard, variants: undefined, root: { id: 'r', type, on: { [event]: 'shop.open' } } })
     expect(validateDefinition(kit, on('Stack'))).toEqual([])
     expect(validateDefinition(kit, on('Badge')).map((i) => i.message)).toEqual(["Badge can't be tapped"])
     expect(validateDefinition(kit, on('Stack', 'hover')).map((i) => i.message)).toEqual(['Widgets only handle "click", not "hover"'])

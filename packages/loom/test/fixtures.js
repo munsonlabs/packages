@@ -144,6 +144,30 @@ export const productCard = {
       },
     ],
   },
+  variants: [
+    {
+      id: 'sale',
+      label: 'On sale',
+      when: { if: 'product.onSale' },
+      vars: { '--w-accent': '#dc2626' },
+      overrides: {
+        card: { order: ['copy', 'image'] },
+        category: { bind: { text: null }, props: { text: 'Sale' } },
+        related: { hidden: true },
+      },
+    },
+    {
+      id: 'compact',
+      label: 'Compact',
+      when: { size: ['sm'] },
+      overrides: {
+        image: { hidden: true },
+        summary: { hidden: true },
+        related: { hidden: true },
+        title: { props: { variant: 'subtitle' } },
+      },
+    },
+  ],
 }
 
 export const productKind = defineKind({

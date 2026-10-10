@@ -47,33 +47,37 @@ import '@munsonlabs/loom/style.css'
 | `data`        | any                  | Required.                                    |
 | `index`       | `number`             | Passed to sources. Default `0`.              |
 | `context`     | any                  | Or `provideKit()`.                           |
+| `variant`     | `string`             | Pins a variant, or `'base'`.                 |
 
-Slot `fallback({ data })` renders when no definition fits.
+Emits `variant(id)`. Slot `fallback({ data })` renders when no definition fits.
 
 ### Definitions
 
-| Export                                | Does                                                         |
-| ------------------------------------- | ------------------------------------------------------------ |
-| `validateDefinition(kit, definition)` | Every problem in the tree. `[]` means it renders as written. |
+| Export                                | Does                                                                |
+| ------------------------------------- | ------------------------------------------------------------------- |
+| `validateDefinition(kit, definition)` | Every problem, base and variants. `[]` means it renders as written. |
 
 ## `@munsonlabs/loom/editor`
 
 What an editor needs beyond rendering. An app that only renders widgets never imports them.
 
-| Export                                                              | Does                                                                       |
-| ------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `bindableValues(kit, definition, nodeId)`                           | What a node can bind to, in editor order.                                  |
-| `parseAction(binding)`                                              | An action binding as `{ action, arg? }`, whichever form it was written in. |
-| `blockDefaults(kit, type)`, `createDefinition(kit, kind, identity)` | A block's default props; a new widget from a kind's starter.               |
+| Export                                                                    | Does                                                                                            |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `bindableValues(kit, definition, nodeId)`                                 | What a node can bind to, in editor order.                                                       |
+| `parseAction(binding)`                                                    | An action binding as `{ action, arg? }`, whichever form it was written in.                      |
+| `BASE_VARIANT`, `findVariant`                                             | The base's id (`'base'`), and a variant by id.                                                  |
+| `applyVariant(definition, id)`, `variantTree(definition, id, keepHidden)` | The plain definition a variant renders; its tree, optionally with hidden nodes kept and listed. |
+| `widthToSize(width)`                                                      | The size bucket (`sm`, `md`, `lg`) for a width.                                                 |
+| `blockDefaults(kit, type)`, `createDefinition(kit, kind, identity)`       | A block's default props; a new widget from a kind's starter.                                    |
 
 ## Types
 
 There are no types to import in JavaScript. Each shape is a JSDoc `@typedef` beside the code that uses it, under `packages/loom/src/`:
 
-| File                      | Typedefs                                                                                      |
-| ------------------------- | --------------------------------------------------------------------------------------------- |
-| `types/definition.js`     | `WidgetDefinition`, `WidgetNode`, `ValuePath`, `ActionBinding`                                |
-| `types/kit.js`            | `Kit`, `KitOptions`, `Source`, `SourceContext`, `FieldSpec`, `FieldType`, `ValueType`, `Kind` |
-| `types/blocks.js`         | `BlockSpec`, `BlockPropSpec`, `BlockType`                                                     |
-| `definitions/validate.js` | `ValidationIssue`                                                                             |
-| `definitions/paths.js`    | `ValueOption`                                                                                 |
+| File                      | Typedefs                                                                                                                     |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `types/definition.js`     | `WidgetDefinition`, `WidgetNode`, `WidgetVariant`, `NodeOverride`, `VariantRule`, `WidgetSize`, `ValuePath`, `ActionBinding` |
+| `types/kit.js`            | `Kit`, `KitOptions`, `Source`, `SourceContext`, `FieldSpec`, `FieldType`, `ValueType`, `Kind`                                |
+| `types/blocks.js`         | `BlockSpec`, `BlockPropSpec`, `BlockType`                                                                                    |
+| `definitions/validate.js` | `ValidationIssue`                                                                                                            |
+| `definitions/paths.js`    | `ValueOption`                                                                                                                |

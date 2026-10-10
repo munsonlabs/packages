@@ -1,0 +1,20 @@
+{
+  "name": "bolt-bridge-stub",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A stand-in for @pugpigbolt/bridge and the native app behind it, so the loom demos run the way a Bolt timeline does without Bolt.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "lint": "vp lint",
+    "fmt": "vp fmt",
+    "test": "vp test",
+    "check": "vp check"
+  },
+  "devDependencies": {
+    "@munsonlabs/shipkit": "*",
+    "vue": "3.5.42"
+  }
+}

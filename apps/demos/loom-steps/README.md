@@ -13,6 +13,7 @@ src/
   App.vue          the page: chapters in the sidebar, the one picked in the main pane
   ChapterPage.vue  the layout each chapter shares: what's new, files to read, try it
   kit.js           the demo's own little kit (articles), which grows as loom does
+  bolt.js          the stub native app and the connected Bolt bridge, for the chapters that use them
   chapters/        one file per step: 01-widgets-as-data.vue, …
 ```
 

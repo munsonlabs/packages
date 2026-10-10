@@ -20,7 +20,7 @@ import '@munsonlabs/loom/style.css'
 
 | Export                               | Does                                                                                  |
 | ------------------------------------ | ------------------------------------------------------------------------------------- |
-| `createKit(options)`                 | A kit from `sources`, `blocks` and `describe`. Throws on clashing names.              |
+| `createKit(options)`                 | A kit from `sources`, `blocks`, `describe`. Throws on clashing names.                 |
 | `provideKit(kit, context?)`          | The default kit and context for every `<Widget>` below.                               |
 | `matchDefinition(data, definitions)` | The first definition whose [conditions](/loom/core-concepts/matching) the data meets. |
 
@@ -34,14 +34,15 @@ import '@munsonlabs/loom/style.css'
 | `data`        | any                  | Required.                                             |
 | `index`       | `number`             | Passed to sources. Default `0`.                       |
 | `context`     | any                  | Or `provideKit()`.                                    |
+| `variant`     | `string`             | Pins a variant, or `'base'`.                          |
 
-Slot `fallback({ data })` renders when no definition fits.
+Emits `variant(id)`. Slot `fallback({ data })` renders when no definition fits.
 
 ### Definitions
 
-| Export                                | Does                                                         |
-| ------------------------------------- | ------------------------------------------------------------ |
-| `validateDefinition(kit, definition)` | Every problem in the tree. `[]` means it renders as written. |
+| Export                                | Does                                                                |
+| ------------------------------------- | ------------------------------------------------------------------- |
+| `validateDefinition(kit, definition)` | Every problem, base and variants. `[]` means it renders as written. |
 
 ## `@munsonlabs/loom/editor`
 
@@ -51,6 +52,9 @@ What an editor needs beyond rendering. An app that only renders widgets never im
 | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | `bindableValues(kit, definition, nodeId)`                                                 | What a node can bind to, in editor order.                                                              |
 | `parseAction(binding)`                                                                    | An action binding as `{ action, arg? }`, whichever form it was written in.                             |
+| `BASE_VARIANT`, `findVariant`                                                             | The base's id (`'base'`), and a variant by id.                                                         |
+| `applyVariant(definition, id)`, `variantTree(definition, id, keepHidden)`                 | The plain definition a variant renders; its tree, optionally with hidden nodes kept and listed.        |
+| `widthToSize(width)`                                                                      | The size bucket (`sm`, `md`, `lg`) for a width.                                                        |
 | `blockDefaults(kit, type)`                                                                | A block's default props.                                                                               |
 | `CONDITION_OPS`, `conditionHolds(condition, data)`, `definitionMatches(definition, data)` | The tests a condition can use; whether data meets one; whether it meets all of a definition's `match`. |
 
@@ -58,10 +62,10 @@ What an editor needs beyond rendering. An app that only renders widgets never im
 
 There are no types to import in JavaScript. Each shape is a JSDoc `@typedef` beside the code that uses it, under `packages/loom/src/`:
 
-| File                      | Typedefs                                                                              |
-| ------------------------- | ------------------------------------------------------------------------------------- |
-| `types/definition.js`     | `WidgetDefinition`, `Condition`, `WidgetNode`, `ValuePath`, `ActionBinding`           |
-| `types/kit.js`            | `Kit`, `KitOptions`, `Source`, `SourceContext`, `FieldSpec`, `FieldType`, `ValueType` |
-| `types/blocks.js`         | `BlockSpec`, `BlockPropSpec`, `BlockType`                                             |
-| `definitions/validate.js` | `ValidationIssue`                                                                     |
-| `definitions/paths.js`    | `ValueOption`                                                                         |
+| File                      | Typedefs                                                                                                                                  |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `types/definition.js`     | `WidgetDefinition`, `Condition`, `WidgetNode`, `WidgetVariant`, `NodeOverride`, `VariantRule`, `WidgetSize`, `ValuePath`, `ActionBinding` |
+| `types/kit.js`            | `Kit`, `KitOptions`, `Source`, `SourceContext`, `FieldSpec`, `FieldType`, `ValueType`                                                     |
+| `types/blocks.js`         | `BlockSpec`, `BlockPropSpec`, `BlockType`                                                                                                 |
+| `definitions/validate.js` | `ValidationIssue`                                                                                                                         |
+| `definitions/paths.js`    | `ValueOption`                                                                                                                             |

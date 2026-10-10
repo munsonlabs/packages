@@ -1,17 +1,20 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, onScopeDispose, ref, watch } from 'vue'
 import WidgetNode from './WidgetNode.vue'
 import { injectContext, injectKit } from './kit'
 import { matchDefinition } from './definitions/match'
 import { createRenderer, provideRenderer } from './renderer'
+import { applyVariant, BASE_VARIANT, findVariant, matchVariant } from './definitions/variants'
 
 /**
  * Renders a widget definition for one piece of data.
  *
  * - The definition is `definition`, or the first of `definitions` whose `match` holds for the data;
  *   with neither, the `fallback` slot renders.
- * - It sets the definition's `vars` on the root, then hands its tree to `<WidgetNode>`, which
- *   draws it node by node.
+ * - The variant is the `variant` prop when given (`'base'` forces the base), otherwise the first
+ *   whose rule matches the data and the widget's measured width.
+ * - It sets the definition's `vars` (and the variant's) on the root, then hands the variant's tree
+ *   to `<WidgetNode>`, which draws it node by node.
  */
 defineOptions({ name: 'LoomWidget' })
 
@@ -26,7 +29,12 @@ const props = defineProps({
   index: { type: Number, default: 0 },
   /** Passed to every source's `setup`; falls back to the context given to `provideKit()`. */
   context: { type: null, required: false },
+  /** Pins a variant by id, or `'base'`. Omit to pick by the variants' rules. */
+  variant: { type: String, default: undefined },
 })
+
+/** `variant`: the variant being rendered, `'base'` when none applies. */
+const emit = defineEmits(['variant'])
 
 const injectedKit = injectKit()
 const injectedContext = injectContext()
@@ -51,12 +59,33 @@ const sourceContext = {
 const renderer = createRenderer({ kit: () => kit.value, sourceContext })
 provideRenderer(renderer)
 
-/** The definition to draw: the one given, or the first that matches the data. */
-const resolved = computed(() => props.definition ?? (props.definitions ? matchDefinition(props.data, props.definitions) : undefined))
+const definition = computed(() => props.definition ?? (props.definitions ? matchDefinition(props.data, props.definitions) : undefined))
+
+// The widget's own width, for variant rules by size.
+const el = ref()
+const width = ref()
+let observer
+onMounted(() => {
+  if (!el.value || typeof ResizeObserver === 'undefined') return
+  observer = new ResizeObserver(([entry]) => (width.value = entry.contentRect.width))
+  observer.observe(el.value)
+})
+onScopeDispose(() => observer?.disconnect())
+
+const active = computed(() => {
+  const def = definition.value
+  if (!def) return BASE_VARIANT
+  if (props.variant) return findVariant(def, props.variant)?.id ?? BASE_VARIANT
+  return matchVariant(def, { width: width.value, readValue: (path) => renderer.readValue(path, {}) }) ?? BASE_VARIANT
+})
+watch(active, (id) => emit('variant', id), { immediate: true })
+
+/** The definition with the active variant applied: what's drawn. */
+const resolved = computed(() => definition.value && applyVariant(definition.value, active.value))
 </script>
 
 <template>
-  <div v-if="resolved" class="w-root" :data-widget="resolved.id" :style="resolved.vars">
+  <div v-if="resolved" ref="el" class="w-root" :data-widget="resolved.id" :data-variant="active" :style="resolved.vars">
     <WidgetNode :node="resolved.root" :locals="{}" />
   </div>
   <slot v-else name="fallback" :data="props.data" />

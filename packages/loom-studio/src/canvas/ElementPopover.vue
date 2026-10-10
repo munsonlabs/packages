@@ -23,7 +23,7 @@ const resetField = (field) => s.selection.selectedId && s.variants.resetField(s.
     :content="{ side: 'right', align: 'start', sideOffset: 14, collisionPadding: 12 }"
   >
     <template #content>
-      <div v-if="s.selection.selected && spec" class="w-[22rem]">
+      <div v-if="s.selection.selected && spec" :ref="(el) => (s.inspectorEl = el)" class="w-[22rem]">
         <div class="flex items-center gap-1 border-b border-default px-2 py-1.5">
           <nav class="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto text-xs" aria-label="Path">
             <template v-for="(crumb, i) in s.selection.crumbs" :key="crumb.id">

@@ -15,6 +15,7 @@ const s = useStudio()
       variant="ghost"
       class="rounded-full"
       :aria-label="s.issues.length ? `${s.issues.length} issues` : 'Valid'"
+      data-tour="issues"
     />
     <template #content>
       <div class="flex w-96 flex-col gap-1 p-2">

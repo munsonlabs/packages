@@ -5,7 +5,7 @@ import { useStudio } from '../studio'
 import IssuesPopover from './IssuesPopover.vue'
 import ThemePopover from './ThemePopover.vue'
 
-/** Top right: the studio's own appearance, undo and redo, theme, ⌘K, issues, export and publish. */
+/** Top right: the studio's own appearance, the tour, undo and redo, theme, ⌘K, issues, export and publish. */
 const s = useStudio()
 
 /** The studio's own light or dark appearance (Nuxt UI's colour mode), separate from the preview's. */
@@ -29,7 +29,20 @@ const cycleAppearance = () => (appearance.store.value = appearanceOptions[appear
         variant="ghost"
         class="rounded-full"
         aria-label="Studio appearance"
+        data-tour="appearance"
         @click="cycleAppearance"
+      />
+    </UTooltip>
+    <UTooltip text="Take the tour">
+      <UButton
+        icon="i-lucide-circle-help"
+        size="sm"
+        color="neutral"
+        variant="ghost"
+        class="rounded-full"
+        aria-label="Take the tour"
+        data-tour="help"
+        @click="s.tour.start"
       />
     </UTooltip>
     <UTooltip text="Undo" :kbds="['meta', 'z']">
@@ -65,6 +78,7 @@ const cycleAppearance = () => (appearance.store.value = appearanceOptions[appear
         :variant="s.open.layers ? 'soft' : 'ghost'"
         class="rounded-full"
         aria-label="Layers"
+        data-tour="layers"
         @click="s.open.layers = !s.open.layers"
       />
     </UTooltip>
@@ -79,6 +93,7 @@ const cycleAppearance = () => (appearance.store.value = appearanceOptions[appear
         variant="ghost"
         class="rounded-full"
         aria-label="Command palette"
+        data-tour="palette"
         @click="s.open.palette = true"
       />
     </UTooltip>
@@ -93,9 +108,10 @@ const cycleAppearance = () => (appearance.store.value = appearanceOptions[appear
         variant="ghost"
         class="rounded-full"
         aria-label="Export"
+        data-tour="export"
         @click="s.open.export = true"
       />
     </UTooltip>
-    <UButton label="Publish" icon="i-lucide-send" size="sm" class="ml-1 rounded-full" :disabled="s.errors" @click="s.publish" />
+    <UButton label="Publish" data-tour="publish" icon="i-lucide-send" size="sm" class="ml-1 rounded-full" :disabled="s.errors" @click="s.publish" />
   </div>
 </template>

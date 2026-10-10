@@ -1,4 +1,4 @@
-import { computed, inject, nextTick, provide, reactive, ref, watch } from 'vue'
+import { computed, inject, nextTick, provide, reactive, ref, shallowRef, watch } from 'vue'
 import { hasErrors, validateDefinition } from '@munsonlabs/loom'
 import { useCanvasDrag } from './canvas/useCanvasDrag'
 import { useSelection } from './canvas/useSelection'
@@ -8,6 +8,7 @@ import { useTreeEditing } from './editing/useTreeEditing'
 import { useVariantEditing } from './editing/useVariantEditing'
 import { useCallLog } from './preview/useCallLog'
 import { usePreview } from './preview/usePreview'
+import { useStudioTour } from './tour/useStudioTour'
 
 /**
  * What `<LoomStudio>` takes, as the studio reads it.
@@ -16,6 +17,7 @@ import { usePreview } from './preview/usePreview'
  * @property {Kit} kit
  * @property {unknown[]} samples
  * @property {unknown} [context]
+ * @property {boolean} tour
  * @property {WidgetDefinition[]} [library]
  */
 
@@ -37,9 +39,23 @@ export function createStudio(definition, props, events) {
   const kit = () => props.kit
 
   const stage = ref()
+  /** The element editor, for the tour to point at. */
+  const inspectorEl = shallowRef()
 
-  /** Which popovers and dialogs are open. */
-  const open = reactive({ layers: false, variants: false, theme: false, issues: false, calls: false, palette: false, export: false, import: false })
+  /** Which popovers and dialogs are open; `closeAll()` closes every one. */
+  const open = reactive({
+    layers: false,
+    variants: false,
+    theme: false,
+    issues: false,
+    calls: false,
+    palette: false,
+    export: false,
+    import: false,
+    closeAll() {
+      for (const [name, value] of Object.entries(open)) if (value === true) open[name] = false
+    },
+  })
 
   const history = useHistory(definition)
   const variants = useVariantEditing(definition, history.change)
@@ -98,10 +114,25 @@ export function createStudio(definition, props, events) {
     if (issue.nodeId) selection.select(issue.nodeId)
   }
 
+  const tour = useStudioTour({
+    autoStart: () => props.tour,
+    definition,
+    tree: variants.tree,
+    stage,
+    inspectorEl,
+    selection,
+    isContainerNode: editing.isContainerNode,
+    reset: () => {
+      preview.mode.value = 'edit'
+      open.closeAll()
+    },
+  })
+
   return reactive({
     props,
     definition,
     stage,
+    inspectorEl,
     open,
     /** Undo and redo: `change`, `checkpoint`, `undo`, `redo`, `canUndo`, `canRedo`. */
     history,
@@ -116,6 +147,7 @@ export function createStudio(definition, props, events) {
     /** Calls the previewed widget made to the app. */
     callLog,
     drag,
+    tour,
     issues,
     errors,
     toggleMode,

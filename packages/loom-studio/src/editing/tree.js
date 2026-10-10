@@ -131,3 +131,36 @@ export function pathTo(root, id) {
   }
   return []
 }
+
+/** @typedef {'before' | 'after' | 'inside'} DropPosition */
+
+/**
+ * Whether `id` can move to `position` relative to `targetId`: not onto or into itself, `inside`
+ * only into containers, and `before`/`after` only next to something that has a parent.
+ */
+export function canMoveTo(root, id, targetId, position, isContainer) {
+  if (id === targetId || id === root.id) return false
+  const node = findNode(root, id)
+  const target = findNode(root, targetId)
+  if (!node || !target || findNode(node, targetId)) return false
+  if (position === 'inside') return isContainer(target)
+  return targetId !== root.id
+}
+
+/** Moves a node next to, or into, another anywhere in the tree. Check `canMoveTo` first. */
+export function moveNodeTo(draft, id, targetId, position) {
+  const node = findNode(draft.root, id)
+  const parent = findParent(draft.root, id)
+  if (!node || !parent?.children) return
+  parent.children = parent.children.filter((c) => c.id !== id)
+
+  if (position === 'inside') {
+    const target = findNode(draft.root, targetId)
+    if (target) (target.children ??= []).push(node)
+    return
+  }
+  const targetParent = findParent(draft.root, targetId)
+  if (!targetParent?.children) return
+  const index = targetParent.children.findIndex((c) => c.id === targetId)
+  targetParent.children.splice(position === 'before' ? index : index + 1, 0, node)
+}

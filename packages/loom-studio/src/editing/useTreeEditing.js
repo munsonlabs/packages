@@ -1,6 +1,19 @@
 import { computed, nextTick } from 'vue'
 import { diffAsOverride } from '@munsonlabs/loom/editor'
-import { clone, createNode, duplicateNode, findNode, findParent, indentNode, insertNode, moveNodeBy, outdentNode, removeNode } from './tree'
+import {
+  canMoveTo,
+  clone,
+  createNode,
+  duplicateNode,
+  findNode,
+  findParent,
+  indentNode,
+  insertNode,
+  moveNodeBy,
+  moveNodeTo,
+  outdentNode,
+  removeNode,
+} from './tree'
 import { setOverride } from './useVariantEditing'
 
 /**
@@ -13,9 +26,9 @@ import { setOverride } from './useVariantEditing'
  */
 
 /**
- * Changing the tree around the selection: add, move, nest, duplicate, delete, and edit a node.
- * On the base anything goes. In a variant, structure is the base's: moves become the parent's
- * `order`, delete hides, and adding or nesting isn't offered.
+ * Changing the tree around the selection: add, move, nest, duplicate, delete, edit a node, and
+ * where a dragged element may drop. On the base anything goes. In a variant, structure is the
+ * base's: moves become the parent's `order`, delete hides, and adding or nesting isn't offered.
  *
  * @param {Options} options
  */
@@ -119,5 +132,26 @@ export function useTreeEditing({ kit, definition, change, variants, selection })
   const blockOptions = (where) =>
     Object.values(kit().blocks).map((spec) => ({ label: spec.label, icon: spec.icon ?? 'i-lucide-box', onSelect: () => add(spec.type, where) }))
 
-  return { isContainerNode, canIndent, canOutdent, add, moveBy, indent, outdent, remove, duplicate, editNode, blockOptions }
+  /** Whether a dragged node may land at `target`. In a variant, only among its siblings. */
+  function canDrop(dragId, target) {
+    if (!variant.value) return canMoveTo(tree.value.root, dragId, target.id, target.position, isContainerNode)
+    if (target.position === 'inside' || target.id === dragId) return false
+    return findParent(tree.value.root, dragId)?.id === findParent(tree.value.root, target.id)?.id
+  }
+
+  function drop(dragId, target) {
+    if (!variant.value) {
+      change((d) => moveNodeTo(d, dragId, target.id, target.position))
+    } else {
+      const parent = findParent(tree.value.root, dragId)
+      if (!parent?.children) return
+      const order = parent.children.map((c) => c.id).filter((id) => id !== dragId)
+      const at = order.indexOf(target.id) + (target.position === 'after' ? 1 : 0)
+      order.splice(at, 0, dragId)
+      editVariant((v) => setOverride(v, parent.id, { ...v.overrides?.[parent.id], order }))
+    }
+    select(dragId)
+  }
+
+  return { isContainerNode, canIndent, canOutdent, add, moveBy, indent, outdent, remove, duplicate, editNode, blockOptions, canDrop, drop }
 }

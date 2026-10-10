@@ -17,7 +17,7 @@ src/
   LoomStudio.vue   the shell: createStudio, provideStudio, shortcuts, layout
   studio.js        createStudio wires the composables into one reactive object; useStudio() reads it
   editing/         tree.js (pure), useHistory, useVariantEditing, useTreeEditing
-  canvas/          StudioCanvas.vue, ElementPopover.vue, useSelection
+  canvas/          StudioCanvas.vue, ElementPopover.vue, useSelection, useCanvasDrag
   preview/         usePreview (sample, width, theme, scheme, rules, mode), useCallLog, logCalls
   panels/          inspector/ (Inspector + one component per tab), StyleEditor, TokensEditor, TokenInput, KeyValueEditor, VariantsPanel, OverrideMark, options.js: props in, events out, no studio
   bars/            IdentityBar, DocumentBar, ThemePopover, IssuesPopover, PreviewBar, StatusHints, CallsLog
@@ -25,13 +25,14 @@ src/
 test/              mirrors src/; fixtures.js has a tiny kit and inScope()
 ```
 
-Components in `canvas/`, `bars/` and `dialogs/` take what they need from `useStudio()`, which is grouped by owner: `s.history`, `s.variants`, `s.selection`, `s.editing`, `s.preview`, `s.callLog`, `s.open`. A new concern gets its own composable, called from `createStudio`, rather than more code in a component.
+Components in `canvas/`, `bars/` and `dialogs/` take what they need from `useStudio()`, which is grouped by owner: `s.history`, `s.variants`, `s.selection`, `s.editing`, `s.preview`, `s.callLog`, `s.drag`, `s.open`. A new concern gets its own composable, called from `createStudio`, rather than more code in a component.
 
 ## How editing works
 
 - Every edit goes through `change(fn)` (`editing/useHistory.js`): `update()` clones the definition, applies `fn`, and `checkpoint` pushes the old one onto the undo stack. Never mutate `definition.value` in place.
 - **Variant edits are diffs.** The inspector edits a clone of the resolved node; `diffAsOverride(base, edited, previous)` stores the minimal override. Moves write the parent's `order`; delete toggles `hidden`. Structural tools are disabled while a variant is active.
 - The popover anchors to the element found by `[data-node-id]` in the stage, relocated after every render (`locate()`). A node that isn't rendered (hidden in the variant, or its `if` false) anchors to its nearest rendered ancestor instead, and the popover says why (`offscreen`).
+- **Drag and drop** works on loom's DOM, not ours: `useCanvasDrag` turns a press past 5px into a drag, finds the `[data-node-id]` under the pointer, and picks before/after/inside from where the pointer sits (containers take `inside` in their middle half; the flow direction comes from the nearest Stack/Repeat). On the base it calls `moveNodeTo` (checked by `canMoveTo`); in a variant it only reorders siblings, saved as `order`. The click that ends a drag is swallowed so it doesn't reselect.
 - `clone` is JSON-based on purpose: `structuredClone` throws on Vue's reactive proxies.
 
 ## Checking

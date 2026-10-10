@@ -5,10 +5,10 @@ import { BASE_VARIANT } from '@munsonlabs/loom/editor'
 import { viewportHint } from '../preview/usePreview'
 import { useStudio } from '../studio'
 
-/** The dotted canvas: the widget at the chosen width, and the selection outline. */
+/** The dotted canvas: the widget at the chosen width, the selection outline, and drag feedback. */
 const s = useStudio()
 
-/** Outlines the selection (dashed when it isn't rendered and an ancestor stands in). */
+/** Outlines the selection (dashed when it isn't rendered and an ancestor stands in) and fades what's being dragged. */
 const selectionCss = computed(() => {
   const rules = []
   const anchor = s.selection.selectedEl?.dataset.nodeId
@@ -17,6 +17,7 @@ const selectionCss = computed(() => {
   } else if (anchor) {
     rules.push(`.loom-stage [data-node-id="${CSS.escape(anchor)}"] { outline: 2px dashed var(--ui-warning); outline-offset: 3px; }`)
   }
+  if (s.drag.dragging) rules.push(`.loom-stage [data-node-id="${CSS.escape(s.drag.dragging.id)}"] { opacity: 0.35; }`)
   return rules.join('\n')
 })
 
@@ -27,8 +28,9 @@ const shownVariant = computed(() => (s.preview.followRules ? s.preview.matchedVa
   <div
     :ref="(el) => (s.stage = el)"
     class="loom-stage absolute inset-0 flex flex-col overflow-auto px-6 pt-24 pb-24"
-    :class="{ 'is-editing': s.preview.mode === 'edit' }"
+    :class="{ 'is-editing': s.preview.mode === 'edit', 'is-dragging': !!s.drag.dragging }"
     @click.capture="s.onStageClick"
+    @pointerdown="s.drag.onPointerDown"
     @dragstart.capture="s.preview.mode === 'edit' && $event.preventDefault()"
   >
     <component :is="'style'">{{ selectionCss }}</component>
@@ -69,5 +71,31 @@ const shownVariant = computed(() => (s.preview.followRules ? s.preview.matchedVa
         />
       </div>
     </div>
+  </div>
+
+  <!-- Where a drag would land: a line between elements, or a box inside a container. -->
+  <div
+    v-if="s.drag.indicator"
+    class="pointer-events-none fixed z-50"
+    :class="
+      s.drag.indicator.kind === 'line'
+        ? 'rounded-full bg-primary'
+        : 'rounded-md bg-primary/5 outline-2 outline-offset-2 outline-primary outline-dashed'
+    "
+    :style="{
+      top: `${s.drag.indicator.top}px`,
+      left: `${s.drag.indicator.left}px`,
+      width: `${s.drag.indicator.width}px`,
+      height: `${s.drag.indicator.height}px`,
+    }"
+  />
+  <div
+    v-if="s.drag.dragging"
+    class="loom-bar pointer-events-none fixed z-50 flex items-center gap-1 rounded-full px-2 py-0.5 text-xs"
+    :style="{ left: `${s.drag.pointer.x + 14}px`, top: `${s.drag.pointer.y + 14}px` }"
+  >
+    <UIcon name="i-lucide-move" class="size-3 text-primary" />
+    {{ s.drag.dragging.label }}
+    <span v-if="s.variants.variant" class="text-warning">· reorder in {{ s.variants.variant.label }}</span>
   </div>
 </template>

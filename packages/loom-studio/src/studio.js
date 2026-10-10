@@ -1,6 +1,8 @@
 import { computed, inject, nextTick, provide, reactive, ref, watch } from 'vue'
 import { hasErrors, validateDefinition } from '@munsonlabs/loom'
+import { useCanvasDrag } from './canvas/useCanvasDrag'
 import { useSelection } from './canvas/useSelection'
+import { findNode } from './editing/tree'
 import { useHistory } from './editing/useHistory'
 import { useTreeEditing } from './editing/useTreeEditing'
 import { useVariantEditing } from './editing/useVariantEditing'
@@ -47,6 +49,25 @@ export function createStudio(definition, props, events) {
   // Keep the popover anchored to the element as edits re-render it.
   watch([variants.rendered, variants.variantId], () => void nextTick(selection.locate), { flush: 'post' })
 
+  const drag = useCanvasDrag({
+    stage,
+    enabled: () => preview.mode.value === 'edit',
+    rootId: () => definition.value.root.id,
+    isContainer: (id) => {
+      const node = findNode(variants.tree.value.root, id)
+      return !!node && editing.isContainerNode(node)
+    },
+    labelFor: (id) => {
+      const node = findNode(variants.tree.value.root, id)
+      return node ? `${props.kit.blocks[node.type]?.label ?? node.type} #${id}` : `#${id}`
+    },
+    canDrop: editing.canDrop,
+    onDrop: editing.drop,
+  })
+  watch(drag.dragging, (d) => {
+    if (d) selection.popoverOpen.value = false
+  })
+
   function toggleMode() {
     preview.mode.value = preview.mode.value === 'edit' ? 'interact' : 'edit'
     if (preview.mode.value === 'interact') selection.popoverOpen.value = false
@@ -54,6 +75,11 @@ export function createStudio(definition, props, events) {
 
   /** A click on the canvas: selects in edit mode; in Try mode, the widget handles it. */
   function onStageClick(e) {
+    if (drag.consumeClick()) {
+      e.preventDefault()
+      e.stopPropagation()
+      return
+    }
     if (preview.mode.value !== 'edit') return
     e.preventDefault()
     e.stopPropagation()
@@ -87,6 +113,7 @@ export function createStudio(definition, props, events) {
     preview,
     /** Calls the previewed widget made to the app. */
     callLog,
+    drag,
     issues,
     errors,
     toggleMode,

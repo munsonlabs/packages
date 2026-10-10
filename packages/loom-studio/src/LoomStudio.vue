@@ -6,12 +6,14 @@ import PreviewBar from './bars/PreviewBar.vue'
 import StatusHints from './bars/StatusHints.vue'
 import ElementPopover from './canvas/ElementPopover.vue'
 import StudioCanvas from './canvas/StudioCanvas.vue'
+import ExportModal from './dialogs/ExportModal.vue'
+import ImportModal from './dialogs/ImportModal.vue'
 import { createStudio, provideStudio } from './studio'
 
 /**
  * The editor. It builds the studio's shared state (`studio.js`), provides it to the parts
- * below, and lays them out: the canvas, three floating bars, and the element popover. Each part
- * lives in its own folder with a README.
+ * below, and lays them out: the canvas, three floating bars, the element popover, and the
+ * dialogs. Each part lives in its own folder with a README.
  */
 
 const definition = defineModel({ required: true })
@@ -24,7 +26,11 @@ const props = defineProps({
   context: { default: undefined },
 })
 
-const studio = createStudio(definition, props)
+const emit = defineEmits(['publish'])
+
+const studio = createStudio(definition, props, {
+  publish: (d) => emit('publish', d),
+})
 provideStudio(studio)
 
 // Plain handlers don't fire while an input has focus, so Backspace in a field stays a keystroke.
@@ -53,6 +59,9 @@ defineShortcuts({
     <StatusHints />
 
     <ElementPopover />
+
+    <ExportModal />
+    <ImportModal />
   </div>
 </template>
 

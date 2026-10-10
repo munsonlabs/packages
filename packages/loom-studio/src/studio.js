@@ -4,6 +4,7 @@ import { useSelection } from './canvas/useSelection'
 import { useHistory } from './editing/useHistory'
 import { useTreeEditing } from './editing/useTreeEditing'
 import { useVariantEditing } from './editing/useVariantEditing'
+import { useCallLog } from './preview/useCallLog'
 import { usePreview } from './preview/usePreview'
 
 /**
@@ -34,19 +35,26 @@ export function createStudio(definition, props, events) {
   const stage = ref()
 
   /** Which popovers and dialogs are open. */
-  const open = reactive({ variants: false, theme: false, issues: false, export: false, import: false })
+  const open = reactive({ variants: false, theme: false, issues: false, calls: false, export: false, import: false })
 
   const history = useHistory(definition)
   const variants = useVariantEditing(definition, history.change)
   const selection = useSelection({ definition, tree: variants.tree, stage })
   const editing = useTreeEditing({ kit, definition, change: history.change, variants, selection })
   const preview = usePreview({ kit, samples: () => props.samples, definition })
+  const callLog = useCallLog({ context: () => props.context, describe: preview.describe })
 
   // Keep the popover anchored to the element as edits re-render it.
   watch([variants.rendered, variants.variantId], () => void nextTick(selection.locate), { flush: 'post' })
 
-  /** A click on the canvas selects what was clicked. */
+  function toggleMode() {
+    preview.mode.value = preview.mode.value === 'edit' ? 'interact' : 'edit'
+    if (preview.mode.value === 'interact') selection.popoverOpen.value = false
+  }
+
+  /** A click on the canvas: selects in edit mode; in Try mode, the widget handles it. */
   function onStageClick(e) {
+    if (preview.mode.value !== 'edit') return
     e.preventDefault()
     e.stopPropagation()
     selection.select(e.target.closest('[data-node-id]')?.dataset.nodeId)
@@ -75,10 +83,13 @@ export function createStudio(definition, props, events) {
     selection,
     /** The actions on the selected element. */
     editing,
-    /** Sample, width, theme, scheme and Rules. */
+    /** Sample, width, theme, scheme, Rules and Try mode. */
     preview,
+    /** Calls the previewed widget made to the app. */
+    callLog,
     issues,
     errors,
+    toggleMode,
     onStageClick,
     selectIssue,
     publish: () => events.publish(definition.value),

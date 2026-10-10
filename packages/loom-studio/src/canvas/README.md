@@ -11,5 +11,5 @@ The dotted canvas where the widget renders, what's selected on it, and the edito
 ## Technically
 
 - Loom renders every node with a `data-node-id` attribute, and this folder finds things on screen only through it. The studio adds no markup inside the widget.
-- A click on the canvas is caught before the widget sees it (`onStageClick` in `studio.js`), so clicks select instead of running actions.
+- A click on the canvas is caught before the widget sees it (`onStageClick` in `studio.js`), so in edit mode clicks select instead of running actions. In Try mode they reach the widget.
 - The selection outline is a generated `<style>` (`selectionCss`), so it follows the element through re-renders without touching loom's DOM.

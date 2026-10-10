@@ -29,8 +29,8 @@ export const schemeOptions = {
 
 /**
  * How the widget is previewed: with which sample data, at what width, in which theme and
- * colour scheme, and whether its variants' rules pick the variant. None of it is saved in the
- * definition.
+ * colour scheme, whether its variants' rules pick the variant, and whether clicks edit or run
+ * the widget's actions. None of it is saved in the definition.
  *
  * @param {Options} options
  */
@@ -95,6 +95,9 @@ export function usePreview({ kit, samples, definition }) {
     return dark.id === panelTheme.value.id ? undefined : dark
   })
 
+  /** `edit`: clicks select. `interact` (Try): clicks run the widget's actions. */
+  const mode = ref('edit')
+
   return {
     kind,
     describe,
@@ -113,5 +116,6 @@ export function usePreview({ kit, samples, definition }) {
     theme,
     panelTheme,
     darkTheme,
+    mode,
   }
 }

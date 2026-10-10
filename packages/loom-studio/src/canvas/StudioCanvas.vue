@@ -27,8 +27,9 @@ const shownVariant = computed(() => (s.preview.followRules ? s.preview.matchedVa
   <div
     :ref="(el) => (s.stage = el)"
     class="loom-stage absolute inset-0 flex flex-col overflow-auto px-6 pt-24 pb-24"
+    :class="{ 'is-editing': s.preview.mode === 'edit' }"
     @click.capture="s.onStageClick"
-    @dragstart.capture="$event.preventDefault()"
+    @dragstart.capture="s.preview.mode === 'edit' && $event.preventDefault()"
   >
     <component :is="'style'">{{ selectionCss }}</component>
     <!-- The widget at the chosen width, centred, with what it's previewing above it. -->
@@ -60,7 +61,7 @@ const shownVariant = computed(() => (s.preview.followRules ? s.preview.matchedVa
           :definition="s.definition"
           :data="s.preview.sample"
           :index="s.preview.sampleIndex"
-          :context="s.props.context"
+          :context="s.callLog.previewContext"
           :variant="s.preview.followRules ? undefined : s.variants.variantId"
           :theme="s.preview.themeId"
           :scheme="s.preview.previewScheme"

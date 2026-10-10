@@ -2,7 +2,7 @@
 
 ## Package purpose
 
-Renders widget **definitions** (JSON trees of blocks) against a **kit** (an app's sources). It is deliberately domain-free: nothing here may know about stories, products or any app's data. App-specific code lives in kits. Its only internal dependency is `@munsonlabs/shipkit` (tooling).
+Renders widget **definitions** (JSON trees of blocks) against a **kit** (an app's sources and actions). It is deliberately domain-free: nothing here may know about stories, products or any app's data. App-specific code lives in kits. Its only internal dependency is `@munsonlabs/shipkit` (tooling).
 
 ## Public API
 
@@ -16,12 +16,12 @@ Each folder under `src/` has a README with its files and how they work.
 src/
   index.js       the public API for apps: kits and <Widget>
   Widget.vue     <Widget>: sets the definition's vars on the root, provides the renderer
-  WidgetNode.vue draws one node (props, block) and recurses into its children
-  renderer.js    createRenderer: lazy sources, readValue(path)
+  WidgetNode.vue draws one node (if, props, block) and recurses into its children
+  renderer.js    createRenderer: lazy sources, readValue(path, locals), clickHandler (runs actions)
   types/         definition.js, blocks.js, kit.js: every shape, no runtime code
   kit/           createKit.js, provide.js (provideKit/inject*)
-  blocks/        builtin/ (the 4 built-ins, one SFC each: spec, template, CSS; index.js gathers builtinBlocks)
-  definitions/   paths.js
+  blocks/        builtin/ (the 5 built-ins, one SFC each: spec, template, CSS; index.js gathers builtinBlocks)
+  definitions/   paths.js, validate.js
   theme/         styles.css
 test/            mirrors src/; fixtures.js (a small shop kit) is imported as @test/fixtures
 ```
@@ -30,6 +30,9 @@ test/            mirrors src/; fixtures.js (a small shop kit) is imported as @te
 
 - **Definitions are JSON.** No functions, no class instances. Editors rely on `JSON.stringify` round-trips.
 - **Sources set up lazily, once per widget**, inside an effect scope owned by the `<Widget>`. `SourceContext` uses getters so composables reading it in `computed` stay reactive; never destructure it in `Widget.vue` or `renderer.js`.
+- **Actions without `arg` are called with no arguments.** Passing the DOM event would land in optional parameters like `openArticle(story?)`.
+- **A node with a click handler stops propagation**, so nested actions don't trigger clickable ancestors.
+- **`item` and `repeat` are reserved source ids**: inside a `Repeat` they're the current item and its position (declared once, in `Repeat.vue`: `positionFields`, built by `repeatPosition`).
 - **A missing bound value renders as `null`, never the prop's default** (`?? null` in `WidgetNode.vue`): Vue would fill `undefined` with the default, and a card with no summary would say "Text".
 - **Blocks read `--w-*` variables, never raw values.** A new visual value is a variable with a default in `theme/styles.css`.
 - **Keep the main entry small.** Something nothing outside loom uses isn't exported at all.
@@ -37,4 +40,4 @@ test/            mirrors src/; fixtures.js (a small shop kit) is imported as @te
 
 ## Testing
 
-`vp test` (happy-dom). Tests mirror `src/` (see `test/README.md`): `widget.spec.js` for rendering and kits; `blocks/` for the rest. Use the shop kit in `test/fixtures.js`; never import from the demos.
+`vp test` (happy-dom). Tests mirror `src/` (see `test/README.md`): `widget.spec.js` for rendering, actions and kits; `blocks/` for the rest. Use the shop kit in `test/fixtures.js`; never import from the demos.

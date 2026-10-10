@@ -1,10 +1,10 @@
 # `kit/`: what an app plugs in
 
-A kit is how an app gives loom its data: its **sources** (composables that provide values). Loom never imports app code; it only ever sees a kit.
+A kit is how an app gives loom its data and behaviour: its **sources** (composables that provide values and actions). Loom never imports app code; it only ever sees a kit.
 
 | File           | What it does                                                                                                                                               |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `createKit.js` | `createKit(options)` checks and builds a kit: source ids are unique.                                                                                       |
+| `createKit.js` | `createKit(options)` checks and builds a kit: source ids are unique and not the reserved `item` or `repeat`.                                               |
 | `provide.js`   | `provideKit(kit, context)` makes a kit and its context the default for every `<Widget>` below a component; `injectKit` and `injectContext` read them back. |
 | `index.js`     | Re-exports the above.                                                                                                                                      |
 

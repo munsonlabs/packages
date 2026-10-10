@@ -2,12 +2,12 @@
 
 JSDoc `@typedef`s only, with no runtime code (except the `DEFINITION_VERSION` constant). Every other folder imports from here, so this is the best place to start reading loom.
 
-| File            | Describes                                                                                                                                            |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `definition.js` | A widget as JSON: `WidgetDefinition`, its tree of `WidgetNode`s, and value paths (`"product.title"`).                                                |
-| `blocks.js`     | Blocks: `BlockType` (a block's name), `BlockSpec` (what a block accepts) and `BlockPropSpec` (one prop: its type, default, what it can be bound to). |
-| `kit.js`        | What an app plugs in: `KitOptions` and `Kit`, a `Source` (one composable and its declared `fields`), `SourceContext`.                                |
-| `index.js`      | Re-exports `DEFINITION_VERSION`, the one runtime value here, so the rest of loom imports `from '../types'`.                                          |
+| File            | Describes                                                                                                                                                                          |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `definition.js` | A widget as JSON: `WidgetDefinition`, its tree of `WidgetNode`s, and value paths (`"product.title"`) and action bindings.                                                          |
+| `blocks.js`     | Blocks: `BlockType` (a block's name), `BlockSpec` (what a block accepts) and `BlockPropSpec` (one prop: its type, default, what it can be bound to), and whether it can be tapped. |
+| `kit.js`        | What an app plugs in: `KitOptions` and `Kit`, a `Source` (one composable and its declared `fields`), `SourceContext`.                                                              |
+| `index.js`      | Re-exports `DEFINITION_VERSION`, the one runtime value here, so the rest of loom imports `from '../types'`.                                                                        |
 
 ## Technically
 

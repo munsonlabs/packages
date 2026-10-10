@@ -7,9 +7,15 @@
 export const DEFINITION_VERSION = 2
 
 /**
- * `"<source>.<field>"`, optionally with a deeper path: `"product.title"`.
+ * `"<source>.<field>"`, optionally with a deeper path: `"item.title"`.
  *
  * @typedef {string} ValuePath
+ */
+
+/**
+ * An action path, or an action path plus a value path passed as its only argument.
+ *
+ * @typedef {ValuePath | { action: ValuePath; arg?: ValuePath }} ActionBinding
  */
 
 /**
@@ -18,6 +24,8 @@ export const DEFINITION_VERSION = 2
  * @property {BlockType} type
  * @property {Record<string, unknown>} [props] Static prop values. A prop also listed in `bind` takes the bound value.
  * @property {Record<string, ValuePath>} [bind] Prop name → value path.
+ * @property {Record<string, ActionBinding>} [on] Event name → action.
+ * @property {ValuePath} [if] Value path that must be truthy for the node to render. Prefix with `!` to negate.
  * @property {Record<string, string>} [style] Inline CSS declarations. Values may use the definition's vars: `var(--w-accent)`.
  * @property {WidgetNode[]} [children]
  */

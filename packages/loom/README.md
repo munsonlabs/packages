@@ -1,6 +1,6 @@
 # @munsonlabs/loom
 
-Widgets as data. A widget is a JSON **definition**, a tree of blocks whose props bind to values your app provides, and `<Widget>` renders it. Loom knows nothing about your data: you plug in a **kit** of sources (your composables).
+Widgets as data. A widget is a JSON **definition**, a tree of blocks whose props bind to values and actions your app provides, and `<Widget>` renders it. Loom knows nothing about your data: you plug in a **kit** of sources (your composables).
 
 ```ts
 import { createKit, Widget, provideKit } from '@munsonlabs/loom'
@@ -11,7 +11,7 @@ const kit = createKit({
     {
       id: 'product',
       label: 'Product',
-      fields: { name: { type: 'string' }, price: { type: 'string' } },
+      fields: { name: { type: 'string' }, price: { type: 'string' }, add: { type: 'action' } },
       setup: (ctx) =>
         useProduct(
           {
@@ -42,17 +42,17 @@ provideKit(kit, { cart })
     "type": "Stack",
     "children": [
       { "id": "name", "type": "Text", "bind": { "text": "product.name" } },
-      { "id": "price", "type": "Text", "bind": { "text": "product.price" } }
+      { "id": "add", "type": "Button", "props": { "label": "Add" }, "on": { "click": "product.add" } }
     ]
   }
 }
 ```
 
-| You get     |                                                                                  |
-| ----------- | -------------------------------------------------------------------------------- |
-| Bindings    | `bind` and `style` on any node, read through the fields your sources declare     |
-| Four blocks | Layout (`Stack`) and content (`Text`, `Image`, `Button`)                         |
-| Variables   | Every block reads `--w-*` variables, which a definition's `vars` set on its root |
+| You get     |                                                                                          |
+| ----------- | ---------------------------------------------------------------------------------------- |
+| Bindings    | `bind`, `on`, `if` and `style` on any node, read through the fields your sources declare |
+| Five blocks | Layout (`Stack`, `Repeat`) and content (`Text`, `Image`, `Button`)                       |
+| Variables   | Every block reads `--w-*` variables, which a definition's `vars` set on its root         |
 
 Full docs: [Loom](https://munsonlabs.pages.dev/loom/getting-started/introduction).
 

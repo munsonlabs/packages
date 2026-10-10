@@ -69,6 +69,7 @@ export const productSource = {
     price: { type: 'string' },
     onSale: { type: 'boolean' },
     inCart: { type: 'boolean' },
+    related: { type: 'list', item: { '': 'object', title: 'string' } },
   },
   setup: (ctx) =>
     useProduct(
@@ -81,6 +82,16 @@ export const productSource = {
     ),
 }
 
+export const actionsSource = {
+  id: 'shop',
+  label: 'Shop',
+  fields: { addToCart: { type: 'action' }, open: { type: 'action', description: 'Open this product, or the one passed' } },
+  setup: (ctx) => ({
+    addToCart: () => ctx.context.cart.add(ctx.data),
+    open: (product) => ctx.context.open(product ?? ctx.data),
+  }),
+}
+
 export const productCard = {
   version: 2,
   id: 'product-card',
@@ -89,6 +100,7 @@ export const productCard = {
   root: {
     id: 'card',
     type: 'Stack',
+    on: { click: 'shop.open' },
     children: [
       { id: 'image', type: 'Image', bind: { src: 'product.image', alt: 'product.title' } },
       {
@@ -111,6 +123,20 @@ export const productCard = {
             type: 'Button',
             props: { label: 'Add', activeLabel: 'In basket' },
             bind: { active: 'product.inCart' },
+            on: { click: 'shop.addToCart' },
+          },
+        ],
+      },
+      {
+        id: 'related',
+        type: 'Stack',
+        if: 'product.related',
+        children: [
+          {
+            id: 'related-list',
+            type: 'Repeat',
+            bind: { items: 'product.related' },
+            children: [{ id: 'related-title', type: 'Text', bind: { text: 'item.title' }, on: { click: { action: 'shop.open', arg: 'item' } } }],
           },
         ],
       },
@@ -119,5 +145,5 @@ export const productCard = {
 }
 
 export function makeKit() {
-  return createKit({ sources: [productSource] })
+  return createKit({ sources: [productSource, actionsSource] })
 }

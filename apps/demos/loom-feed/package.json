@@ -2,7 +2,7 @@
   "name": "loom-feed-demo",
   "version": "0.0.0",
   "private": true,
-  "description": "An app that only consumes loom: it loads a widget library (bundled, or imported) and renders the timeline feed with it.",
+  "description": "An app that only consumes loom: it loads a widget library (bundled, or imported from the studio) and renders the timeline feed with it.",
   "type": "module",
   "scripts": {
     "clean": "rm -rf dist",

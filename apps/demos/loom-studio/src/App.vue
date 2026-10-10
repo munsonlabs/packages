@@ -1,11 +1,14 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { getKind } from '@munsonlabs/loom'
-import { LoomStudio } from '@munsonlabs/loom-studio'
+import { createLibrary, getKind } from '@munsonlabs/loom'
+import { LoomStudio, NewWidgetModal } from '@munsonlabs/loom-studio'
+import { useToast } from '@nuxt/ui/composables'
 import { useBridge } from 'bolt-bridge-stub'
 import { timelineKit as kit, widgets as examples } from 'timeline-kit'
 import { native } from './native'
 
+/** Where the feed demo runs, which renders a published library. */
+const FEED_URL = 'http://localhost:5195'
 const STORAGE_KEY = 'loom-studio-demo:library'
 
 /**
@@ -61,11 +64,55 @@ const definition = computed({
 const widgetOptions = computed(() =>
   library.value.definitions.map((d) => ({ label: d.name, value: d.id, icon: getKind(kit, d.kind)?.icon ?? 'i-lucide-box' })),
 )
+
+const newOpen = ref(false)
+
+function addWidget(created) {
+  library.value.definitions = [...library.value.definitions, created]
+  library.value.selectedId = created.id
+}
+
+function removeWidget() {
+  if (library.value.definitions.length < 2) return
+  library.value.definitions = library.value.definitions.filter((d) => d.id !== library.value.selectedId)
+  library.value.selectedId = library.value.definitions[0].id
+}
+
+const toast = useToast()
+
+/** Publishing hands the app one file: the whole library. Here that's a download the feed demo can import. */
+function publish() {
+  const file = `${kit.id}.library.json`
+  const json = JSON.stringify(createLibrary(kit, library.value.definitions, { publishedAt: new Date() }), null, 2)
+  const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }))
+  Object.assign(document.createElement('a'), { href: url, download: file }).click()
+  URL.revokeObjectURL(url)
+  toast.add({
+    title: `Published ${file}`,
+    description: `${library.value.definitions.length} widgets. Import it in the feed demo to see them across a timeline.`,
+    icon: 'i-lucide-send',
+    actions: [{ label: 'Open the feed', icon: 'i-lucide-external-link', onClick: () => void window.open(FEED_URL, 'loom-feed') }],
+  })
+}
+
+/** An imported library replaces these widgets with the ones that load. */
+function importLibrary(loaded) {
+  if (loaded.widgets.length) library.value = { definitions: loaded.widgets, selectedId: loaded.widgets[0].id }
+}
 </script>
 
 <template>
   <UApp>
-    <LoomStudio :key="definition.id" v-model="definition" :kit="kit" :samples="samples" :context="bridge">
+    <LoomStudio
+      :key="definition.id"
+      v-model="definition"
+      :kit="kit"
+      :samples="samples"
+      :context="bridge"
+      :library="library.definitions"
+      @publish="publish"
+      @import-library="importLibrary"
+    >
       <template #actions>
         <USwitch
           :model-value="subscribed"
@@ -86,10 +133,24 @@ const widgetOptions = computed(() =>
           aria-label="Widget"
           @update:model-value="library.selectedId = String($event)"
         />
-        <UDropdownMenu :items="[{ label: 'Back to the examples', icon: 'i-lucide-rotate-ccw', onSelect: () => (library = exampleLibrary()) }]">
+        <UDropdownMenu
+          :items="[
+            { label: 'New widget…', icon: 'i-lucide-plus', onSelect: () => (newOpen = true) },
+            {
+              label: 'Delete this widget',
+              icon: 'i-lucide-trash-2',
+              color: 'error',
+              disabled: library.definitions.length < 2,
+              onSelect: removeWidget,
+            },
+            { type: 'separator' },
+            { label: 'Back to the examples', icon: 'i-lucide-rotate-ccw', onSelect: () => (library = exampleLibrary()) },
+          ]"
+        >
           <UButton icon="i-lucide-ellipsis" size="sm" color="neutral" variant="ghost" class="rounded-full" aria-label="Library" />
         </UDropdownMenu>
       </template>
     </LoomStudio>
+    <NewWidgetModal v-model:open="newOpen" :kit="kit" :taken-ids="library.definitions.map((d) => d.id)" @create="addWidget" />
   </UApp>
 </template>

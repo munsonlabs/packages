@@ -103,9 +103,10 @@ What an editor needs beyond rendering. Loom Studio is built on these; an app tha
 
 ## `@munsonlabs/loom-studio`
 
-| Export       | Is                                                       |
-| ------------ | -------------------------------------------------------- |
-| `LoomStudio` | The editor. See [Loom Studio](/loom/studio/loom-studio). |
+| Export           | Is                                                                                                |
+| ---------------- | ------------------------------------------------------------------------------------------------- |
+| `LoomStudio`     | The editor. See [Loom Studio](/loom/studio/loom-studio).                                          |
+| `NewWidgetModal` | A kind picker that emits `create(definition)`. Apps open it, since adding to a library is theirs. |
 
 ## Types
 

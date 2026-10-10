@@ -12,7 +12,7 @@ provideKit(timelineKit, useBridge())
 ```
 
 - It starts from its bundled `public/timeline.library.json`: the kit's example widgets.
-- **Import**, **Paste** or drop a file to render another library, such as one made with `createLibrary`. The browser remembers it until **Use the bundled library**.
+- **Import**, **Paste** or drop a file to render another library, such as one published from the [studio demo](../loom-studio). The browser remembers it until **Use the bundled library**.
 - Widgets the app can't render (a block or source its kit lacks) are skipped and listed, and so is a library made for another kit.
 - Tap the paywalled article or play the members-only podcast: the kit's guard asks the app for its paywall (`bridge.call('showPaywall')`) instead. **Subscribe** there, or flip the switch in the Bridge panel, and they unlock live.
 - **Bridge** shows each message as it crosses: the web asking the app (`setSaved`, `openAudio`, `followTopic`, …) and the app pinging back (`pugpigUpdate('savedStories')`). What the app would show on screen appears as toasts.

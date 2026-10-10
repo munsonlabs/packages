@@ -1,14 +1,23 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useToast } from '@nuxt/ui/composables'
+import { createLibrary, hasErrors, validateDefinition } from '@munsonlabs/loom'
 import { useStudio } from '../studio'
 
-/** Export: this widget's JSON, and how to use it. */
+/** Export: this widget's JSON, the whole library as one file (when the app passes `library`), and how to use it. */
 const s = useStudio()
 const toast = useToast()
 
 const json = computed(() => JSON.stringify(s.definition, null, 2))
 const libraryFile = computed(() => `${s.props.kit.id ?? 'widgets'}.library.json`)
+/** The whole library as one file, for the app to fetch. Dated when it's made. */
+const libraryJson = () => JSON.stringify(createLibrary(s.props.kit, s.props.library ?? [], { publishedAt: new Date() }), null, 2)
+/** What a published library would need, and which widgets wouldn't render as written. */
+const librarySummary = computed(() => {
+  const library = createLibrary(s.props.kit, s.props.library ?? [])
+  const broken = (s.props.library ?? []).filter((d) => hasErrors(validateDefinition(s.props.kit, d))).map((d) => d.name)
+  return { ...library, broken }
+})
 
 const usage = computed(
   () =>
@@ -31,13 +40,14 @@ const { widgets, skipped, missing } = loadLibrary(kit, await (await fetch('/${li
 )
 
 const tab = ref('widget')
-const tabs = [
+const tabs = computed(() => [
   { label: 'This widget', value: 'widget', slot: 'widget' },
+  ...(s.props.library ? [{ label: `Whole library (${s.props.library.length})`, value: 'library', slot: 'library' }] : []),
   { label: 'Usage', value: 'usage', slot: 'usage' },
-]
+])
 
 function exported() {
-  return { text: json.value, file: `${s.definition.id}.widget.json` }
+  return tab.value === 'library' ? { text: libraryJson(), file: libraryFile.value } : { text: json.value, file: `${s.definition.id}.widget.json` }
 }
 
 async function copy() {
@@ -65,6 +75,28 @@ function download() {
         <template #widget>
           <pre class="max-h-[60vh] overflow-auto rounded-md bg-muted p-3 text-xs">{{ json }}</pre>
         </template>
+        <template #library>
+          <div class="flex flex-col gap-3 text-sm">
+            <p class="text-muted">
+              <strong class="text-default">{{ libraryFile }}</strong
+              >: {{ librarySummary.widgets.length }} widgets, in the order apps try them. The first whose kind matches an item renders it.
+            </p>
+            <ol class="flex flex-col gap-1 rounded-md bg-muted p-3 text-xs">
+              <li v-for="(w, i) in librarySummary.widgets" :key="w.id" class="flex items-center gap-2">
+                <span class="w-4 text-dimmed">{{ i + 1 }}</span>
+                <span class="font-medium">{{ w.name }}</span>
+                <code class="text-dimmed">{{ w.id }}</code>
+                <UBadge v-if="w.kind" :label="w.kind" size="sm" color="neutral" variant="subtle" />
+                <UBadge v-if="librarySummary.broken.includes(w.name)" label="has errors" size="sm" color="error" variant="subtle" class="ml-auto" />
+              </li>
+            </ol>
+            <p class="text-xs text-muted">
+              Needs the sources <code>{{ librarySummary.sources.join(', ') || 'none' }}</code> and the blocks
+              <code>{{ librarySummary.blocks.join(', ') }}</code
+              >. An app whose kit lacks one skips the widgets that use it and says so.
+            </p>
+          </div>
+        </template>
         <template #usage>
           <pre class="max-h-[60vh] overflow-auto rounded-md bg-muted p-3 text-xs">{{ usage }}</pre>
         </template>
@@ -81,7 +113,12 @@ function download() {
         />
         <div class="flex gap-2">
           <UButton label="Copy JSON" icon="i-lucide-copy" color="neutral" variant="outline" :disabled="tab === 'usage'" @click="copy" />
-          <UButton label="Download" icon="i-lucide-download" :disabled="tab === 'usage'" @click="download" />
+          <UButton
+            :label="tab === 'library' ? `Download ${libraryFile}` : 'Download'"
+            icon="i-lucide-download"
+            :disabled="tab === 'usage'"
+            @click="download"
+          />
         </div>
       </div>
     </template>

@@ -4,6 +4,8 @@
 
 **Subscriber** (top left) plays the native app's part: off, the paywalled samples (the orchestra article, the Morning Brief podcast) are locked, and in **Try** any action on them logs `call('showPaywall', …)` instead of running; on, they unlock. Use it to check a widget both ways.
 
+**Publish** downloads `timeline.library.json`, the whole library as an app would fetch it. Import it in the [feed demo](../loom-feed) to see it across a timeline.
+
 ```bash
 vp run --filter loom-studio-demo dev   # http://localhost:5189
 ```

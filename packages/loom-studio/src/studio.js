@@ -16,11 +16,13 @@ import { usePreview } from './preview/usePreview'
  * @property {Kit} kit
  * @property {unknown[]} samples
  * @property {unknown} [context]
+ * @property {WidgetDefinition[]} [library]
  */
 
 /**
  * @typedef {object} StudioEvents
  * @property {(definition: WidgetDefinition) => void} publish
+ * @property {(library: LoadedLibrary) => void} importLibrary
  */
 
 /**
@@ -120,6 +122,7 @@ export function createStudio(definition, props, events) {
     onStageClick,
     selectIssue,
     publish: () => events.publish(definition.value),
+    importLibrary: events.importLibrary,
   })
 }
 

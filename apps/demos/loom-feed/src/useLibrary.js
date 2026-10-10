@@ -13,8 +13,8 @@ const STORAGE_KEY = 'loom-feed-demo:library'
  */
 
 /**
- * The library the feed renders: the bundled file, or one you import, which this browser
- * remembers until you go back to the bundled one. Loading goes through `loadLibrary`,
+ * The library the feed renders: the bundled file, or one imported from the studio, which this
+ * browser remembers until you go back to the bundled one. Loading goes through `loadLibrary`,
  * so widgets this app can't render are skipped and reported, never thrown.
  */
 export function useLibrary() {

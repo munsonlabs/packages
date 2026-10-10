@@ -10,6 +10,7 @@ Leave it running and `git checkout` any commit of the history: the page follows,
 
 ```
 src/
+  main.css         Tailwind and Nuxt UI, for the Loom Studio chapters
   App.vue          the page: chapters in the sidebar, the one picked in the main pane
   ChapterPage.vue  the layout each chapter shares: what's new, files to read, try it
   kit.js           the demo's own little kit (articles), which grows as loom does
@@ -17,4 +18,4 @@ src/
   chapters/        one file per step: 01-widgets-as-data.vue, …
 ```
 
-Loom runs from source through the aliases in `vite.config.js`, so what you see is always the checked-out code.
+Loom and Loom Studio run from source through the aliases in `vite.config.js`, so what you see is always the checked-out code; the video player runs from its build. From the studio's chapter on, the page uses Nuxt UI, set up as [Loom Studio](../../../packages/loom-studio)'s README describes.

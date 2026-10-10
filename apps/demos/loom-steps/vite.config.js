@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { mergeConfig } from 'vite-plus'
+import ui from '@nuxt/ui/vite'
 import base from '@munsonlabs/shipkit/vite/vue.config'
 
 const pkg = (path) => fileURLToPath(new URL(`../../../packages/${path}`, import.meta.url))
@@ -18,6 +19,14 @@ const fromSource = [
 ]
 
 export default mergeConfig(base, {
+  plugins: [
+    ui({
+      router: false,
+      // Loom Studio uses Nuxt UI components by auto-import, so it's scanned like app code.
+      scanPackages: ['@munsonlabs/loom-studio'],
+      ui: { colors: { primary: 'orange', neutral: 'stone' } },
+    }),
+  ],
   resolve: { alias: fromSource },
   server: { port: 5214 },
   run: {

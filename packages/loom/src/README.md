@@ -23,7 +23,7 @@ src/
 3. `<WidgetNode>` (`WidgetNode.vue`) walks the tree: each node becomes one of the block components (`blocks/builtin/`, one SFC each), its props checked against the block's spec (which the SFC exports beside its template).
 4. A tap goes through the kit's guard (`types/guard.js`, run in `renderer.js`) before the action runs.
 
-Editors use the same pieces without rendering: `definitions/validate.js` to find problems, `definitions/paths.js` to list what a field can bind to, each block's spec (`kit.blocks`) to build forms.
+Editors such as Loom Studio use the same pieces without rendering: `definitions/validate.js` to find problems, `definitions/paths.js` to list what a field can bind to, each block's spec (`kit.blocks`) to build forms.
 
 ## Rules of the road
 

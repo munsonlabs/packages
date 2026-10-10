@@ -62,7 +62,7 @@ provideKit(kit, { cart })
 | Video          | `@munsonlabs/loom/video`: a `Video` block on [`@munsonlabs/video-player`](../video-player)                                                                                         |
 | Icons          | `@munsonlabs/loom/icon`: an `Icon` block on [`@munsonlabs/sigil`](../sigil)                                                                                                        |
 
-Full docs: [Loom](https://munsonlabs.pages.dev/loom/getting-started/introduction).
+Edit definitions with [`@munsonlabs/loom-studio`](../loom-studio). Full docs: [Loom](https://munsonlabs.pages.dev/loom/getting-started/introduction).
 
 Editors get the lower-level helpers (what a field can bind to, variant diffs, token scales) from `@munsonlabs/loom/editor`; an app that only renders widgets never needs it.
 

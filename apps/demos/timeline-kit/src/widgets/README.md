@@ -1,6 +1,6 @@
 # `widgets/`: the example widgets
 
-One JSON file per widget: exactly what an editor edits and a library bundles. Nothing here is code.
+One JSON file per widget: exactly what Loom Studio edits and a library publishes. Nothing here is code.
 
 | File                | `entry.type`  | Variants                                            |
 | ------------------- | ------------- | --------------------------------------------------- |

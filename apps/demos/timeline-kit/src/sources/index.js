@@ -13,7 +13,7 @@ import { timelineConfigSource } from './timeline'
 import { topicSource } from './topic'
 import { videoSource } from './video'
 
-/** Every source, in the order editors list them. */
+/** Every source, in the order the studio lists them. */
 export const timelineSources = [
   storySource,
   timeSource,

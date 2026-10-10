@@ -24,6 +24,7 @@ never ships to a consumer.
 | [`@munsonlabs/sigil`](packages/sigil)               | [![npm](https://img.shields.io/npm/v/@munsonlabs/sigil?label=)](https://www.npmjs.com/package/@munsonlabs/sigil)               | Framework-free icon registry with an `<ml-sigil-icon>` element |
 | [`@munsonlabs/shipkit`](packages/shipkit)           | [![npm](https://img.shields.io/npm/v/@munsonlabs/shipkit?label=)](https://www.npmjs.com/package/@munsonlabs/shipkit)           | Shared build tooling: the `shipkit` CLI and vite configs       |
 | [`@munsonlabs/loom`](packages/loom)                 | _unreleased_                                                                                                                   | Widgets as data, bound to your own composables                 |
+| [`@munsonlabs/loom-studio`](packages/loom-studio)   | _unreleased_                                                                                                                   | A click-to-edit studio for loom widgets                        |
 
 ## Develop
 

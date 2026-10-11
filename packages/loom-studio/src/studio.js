@@ -6,6 +6,7 @@ import { findNode } from './editing/tree'
 import { useHistory } from './editing/useHistory'
 import { useTreeEditing } from './editing/useTreeEditing'
 import { useVariantEditing } from './editing/useVariantEditing'
+import { framesFor } from './preview/frames'
 import { useCallLog } from './preview/useCallLog'
 import { usePreview } from './preview/usePreview'
 import { useStudioTour } from './tour/useStudioTour'
@@ -38,7 +39,17 @@ import { useStudioTour } from './tour/useStudioTour'
 export function createStudio(definition, props, events) {
   const kit = () => props.kit
 
-  const stage = ref()
+  /** The canvas element. The canvas sets it. */
+  const canvas = ref()
+  /**
+   * The frame being edited: selection, drag and the tour look inside it. Looked up when read, since
+   * which frame that is changes with the preview.
+   */
+  const stage = {
+    get value() {
+      return canvas.value?.querySelector('[data-focused-frame]') ?? canvas.value
+    },
+  }
   /** The element editor, for the tour to point at. */
   const inspectorEl = shallowRef()
 
@@ -86,6 +97,37 @@ export function createStudio(definition, props, events) {
     if (d) selection.popoverOpen.value = false
   })
 
+  /** The frames the canvas draws, side by side: one, or one per width, variant, sample or scheme. */
+  const frames = computed(() =>
+    framesFor(preview.frameMode.value, {
+      viewport: preview.viewport.value,
+      followRules: preview.followRules.value,
+      variantId: variants.variantId.value,
+      variantOptions: variants.variantOptions.value,
+      matchingSamples: preview.matchingSamples.value,
+      describe: preview.describe,
+      sampleIndex: preview.sampleIndex.value,
+      previewScheme: preview.previewScheme.value,
+      activeScheme: preview.activeScheme.value,
+    }),
+  )
+
+  /** Makes a frame the one being edited, by giving the preview its width, variant, sample or scheme. */
+  function focusFrame(frame) {
+    const { viewport, variantId, sampleIndex, previewScheme } = frame.focus
+    if (viewport) preview.viewport.value = viewport
+    if (variantId) variants.variantId.value = variantId
+    if (sampleIndex !== undefined) preview.sampleIndex.value = sampleIndex
+    if (previewScheme) preview.previewScheme.value = previewScheme
+  }
+
+  // Keep the popover on the frame being edited when another becomes it.
+  watch(
+    () => frames.value.find((f) => f.focused)?.key,
+    () => void nextTick(selection.locate),
+    { flush: 'post' },
+  )
+
   function toggleMode() {
     preview.mode.value = preview.mode.value === 'edit' ? 'interact' : 'edit'
     if (preview.mode.value === 'interact') selection.popoverOpen.value = false
@@ -101,6 +143,9 @@ export function createStudio(definition, props, events) {
     if (preview.mode.value !== 'edit') return
     e.preventDefault()
     e.stopPropagation()
+    // A click in another frame makes that frame the one being edited first.
+    const frame = frames.value.find((f) => f.key === e.target.closest('[data-frame]')?.dataset.frame)
+    if (frame && !frame.focused) focusFrame(frame)
     selection.select(e.target.closest('[data-node-id]')?.dataset.nodeId)
   }
 
@@ -131,7 +176,7 @@ export function createStudio(definition, props, events) {
   return reactive({
     props,
     definition,
-    stage,
+    canvas,
     inspectorEl,
     open,
     /** Undo and redo: `change`, `checkpoint`, `undo`, `redo`, `canUndo`, `canRedo`. */
@@ -150,6 +195,9 @@ export function createStudio(definition, props, events) {
     tour,
     issues,
     errors,
+    /** The frames the canvas draws; the focused one is where editing happens. */
+    frames,
+    focusFrame,
     toggleMode,
     onStageClick,
     selectIssue,

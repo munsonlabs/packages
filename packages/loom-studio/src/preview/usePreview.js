@@ -1,4 +1,4 @@
-import { computed, ref, watch } from 'vue'
+import { computed, ref, shallowRef, watch } from 'vue'
 import { BASE_VARIANT, definitionMatches, themeForScheme, usePreferredScheme, widthToSize } from '@munsonlabs/loom/editor'
 
 /** The canvas widths the preview offers. */
@@ -60,7 +60,8 @@ export function usePreview({ kit, samples, definition }) {
   const sampleOptions = computed(() => matchingSamples.value.map(({ data, index }) => ({ label: describe(data), value: index })))
   const sample = computed(() => samples()[sampleIndex.value])
 
-  const viewport = ref(viewports[1])
+  // Shallow, so it holds the entry from `viewports` itself and `viewport === vp` holds.
+  const viewport = shallowRef(viewports[1])
 
   /** Off: the preview shows the variant being edited. On: its rules pick one, as in production. */
   const followRules = ref(false)
@@ -94,6 +95,9 @@ export function usePreview({ kit, samples, definition }) {
   /** `edit`: clicks select. `interact` (Try): clicks run the widget's actions. */
   const mode = ref('edit')
 
+  /** What the canvas shows side by side: one widget, or a frame per width, variant, sample or scheme. See `frames.js`. */
+  const frameMode = ref('one')
+
   return {
     describe,
     matchingSamples,
@@ -112,5 +116,6 @@ export function usePreview({ kit, samples, definition }) {
     panelTheme,
     darkTheme,
     mode,
+    frameMode,
   }
 }

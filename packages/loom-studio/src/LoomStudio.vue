@@ -11,6 +11,7 @@ import CommandPalette from './dialogs/CommandPalette.vue'
 import ExportModal from './dialogs/ExportModal.vue'
 import ImportModal from './dialogs/ImportModal.vue'
 import LayersPanel from './layers/LayersPanel.vue'
+import { frameModes } from './preview/frames'
 import { createStudio, provideStudio } from './studio'
 import TourPopover from './tour/TourPopover.vue'
 
@@ -50,6 +51,10 @@ provideStudio(studio)
 defineShortcuts({
   meta_k: () => (studio.open.palette = true),
   l: () => (studio.open.layers = !studio.open.layers),
+  f: () => {
+    const i = frameModes.findIndex((m) => m.value === studio.preview.frameMode)
+    studio.preview.frameMode = frameModes[(i + 1) % frameModes.length].value
+  },
   meta_z: studio.history.undo,
   meta_shift_z: studio.history.redo,
   meta_d: studio.editing.duplicate,
@@ -120,6 +125,15 @@ defineShortcuts({
 .loom-stage.is-editing [data-node-id]:hover {
   outline: 1px dashed var(--ui-primary);
   outline-offset: 3px;
+}
+
+/* Frames other than the one being edited: a click there makes it the one. */
+.loom-stage .is-other-frame {
+  opacity: 0.8;
+  transition: opacity 150ms;
+}
+.loom-stage .is-other-frame:hover {
+  opacity: 1;
 }
 
 /* An empty container would be zero-sized and unclickable. */

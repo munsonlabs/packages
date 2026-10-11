@@ -11,6 +11,7 @@ The editor for [`@munsonlabs/loom`](../loom) widgets. Canvas first, no sidebars:
 - **Bind to anything the kit provides**: every source's fields, grouped, filtered to the types that fit
 - **Variants**: pick one to edit it; changes become overrides with reset-to-base markers, moves become its order, delete hides
 - **Layers**: the widget's tree beside the canvas, to select anything (even what isn't on screen) and drag to move or nest
+- **Frames**: the widget side by side at every width, in every variant, with several samples, or light and dark
 - **⌘K** for everything: jump to any element, add blocks, switch variant
 - **Preview** with your own sample data at four widths, let the rules pick the variant, and **Try** the widget for real: every call it makes to `context` is logged
 - **A guided tour** on first visit, over your own widget; replay it from the **?** button

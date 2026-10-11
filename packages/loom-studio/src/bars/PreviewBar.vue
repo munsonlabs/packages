@@ -1,11 +1,13 @@
 <script setup>
 import VariantsPanel from '../panels/VariantsPanel.vue'
+import { frameModes } from '../preview/frames'
 import { schemeOptions, viewportHint, viewports } from '../preview/usePreview'
 import { useStudio } from '../studio'
 
 /**
  * Bottom centre: how the widget is previewed. The variant being edited (and its rules), the
- * sample data, the theme, light or dark, the width, whether rules pick the variant, and Try.
+ * sample data, the theme, light or dark, the width, the frames shown side by side, whether rules
+ * pick the variant, and Try.
  */
 const s = useStudio()
 </script>
@@ -105,6 +107,20 @@ const s = useStudio()
         aria-label="Preview colour scheme"
         data-tour="scheme"
         @click="s.preview.cycleScheme"
+      />
+    </UTooltip>
+
+    <UTooltip text="Show frames side by side (F)">
+      <USelect
+        v-model="s.preview.frameMode"
+        :items="frameModes"
+        value-key="value"
+        :icon="frameModes.find((m) => m.value === s.preview.frameMode)?.icon"
+        size="sm"
+        :variant="s.preview.frameMode === 'one' ? 'ghost' : 'soft'"
+        :color="s.preview.frameMode === 'one' ? 'neutral' : 'primary'"
+        class="w-36"
+        aria-label="Frames"
       />
     </UTooltip>
 

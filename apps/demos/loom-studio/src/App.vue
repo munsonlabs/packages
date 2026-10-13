@@ -152,6 +152,7 @@ function importLibrary(loaded) {
       v-model:open="newOpen"
       :kit="kit"
       :widgets="library.definitions"
+      :samples="samples"
       :taken-ids="library.definitions.map((d) => d.id)"
       @create="addWidget"
     />

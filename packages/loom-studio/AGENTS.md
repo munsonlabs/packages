@@ -22,7 +22,7 @@ src/
   preview/         usePreview (sample, width, theme, scheme, rules, mode), useCallLog, logCalls
   panels/          inspector/ (Inspector + one component per tab), StyleEditor, TokensEditor, TokenInput, KeyValueEditor, VariantsPanel, OverrideMark, options.js: props in, events out, no studio
   bars/            IdentityBar, DocumentBar, ThemePopover, IssuesPopover, PreviewBar, StatusHints, CallsLog
-  dialogs/         CommandPalette, ExportModal, ImportModal, NewWidgetModal
+  dialogs/         CommandPalette, ExportModal, ImportModal, MatchModal, MatchFields, NewWidgetModal
   tour/            steps.js, useStudioTour, TourPopover.vue
 test/              mirrors src/; fixtures.js has a tiny kit and inScope()
 ```

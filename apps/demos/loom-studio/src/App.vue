@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { createLibrary, getKind, withKinds } from '@munsonlabs/loom'
+import { shadowedWidgets } from '@munsonlabs/loom/editor'
 import { KindModal, LoomStudio, NewWidgetModal } from '@munsonlabs/loom-studio'
 import { useToast } from '@nuxt/ui/composables'
 import { useBridge } from 'bolt-bridge-stub'
@@ -100,6 +101,28 @@ function addWidget(created) {
   library.value.selectedId = created.id
 }
 
+/** Moves the open widget one place earlier or later. Order decides between widgets of the same kind: the first is picked. */
+function moveWidget(by) {
+  const list = [...library.value.definitions]
+  const at = list.findIndex((d) => d.id === library.value.selectedId)
+  const to = at + by
+  if (at < 0 || to < 0 || to >= list.length) return
+  ;[list[at], list[to]] = [list[to], list[at]]
+  library.value.definitions = list
+}
+
+/** The widget picked instead of the open one, when an earlier one has the same kind. */
+const shadowedBy = computed(() => shadowedWidgets(library.value.definitions).get(library.value.selectedId))
+
+/** Makes the open widget the one picked for its kind, by moving it just before the one that was. */
+function useForKind() {
+  const list = library.value.definitions.filter((d) => d.id !== library.value.selectedId)
+  list.splice(list.indexOf(shadowedBy.value), 0, definition.value)
+  library.value.definitions = list
+}
+
+const position = computed(() => library.value.definitions.findIndex((d) => d.id === library.value.selectedId))
+
 function removeWidget() {
   if (library.value.definitions.length < 2) return
   library.value.definitions = library.value.definitions.filter((d) => d.id !== library.value.selectedId)
@@ -182,6 +205,21 @@ function importLibrary(loaded) {
                 ]
               : []),
             { type: 'separator' },
+            ...(shadowedBy
+              ? [{ label: `Use this one for ${getKind(kit, definition.kind)?.label ?? definition.kind}`, icon: 'i-lucide-eye', onSelect: useForKind }]
+              : []),
+            {
+              label: 'Move earlier',
+              icon: 'i-lucide-arrow-up',
+              disabled: position <= 0,
+              onSelect: () => moveWidget(-1),
+            },
+            {
+              label: 'Move later',
+              icon: 'i-lucide-arrow-down',
+              disabled: position >= library.definitions.length - 1,
+              onSelect: () => moveWidget(1),
+            },
             {
               label: 'Delete this widget',
               icon: 'i-lucide-trash-2',

@@ -6,6 +6,7 @@
 
 export { bindableValues } from './definitions/paths'
 export { parseAction } from './definitions/validate'
+export { shadowedWidgets } from './definitions/library'
 export { BASE_VARIANT, findVariant, variantTree, applyVariant, diffAsOverride, widthToSize } from './definitions/variants'
 export { blockDefaults, createDefinition, conditionHolds, KIND_OPS } from './kit'
 export { tokens, scaleForRole, scaleTokens, tokenVar } from './theme/tokens'

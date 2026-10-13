@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { useToast } from '@nuxt/ui/composables'
 import { createLibrary, hasErrors, validateDefinition } from '@munsonlabs/loom'
+import { shadowedWidgets } from '@munsonlabs/loom/editor'
 import { useStudio } from '../studio'
 
 /** Export: this widget's JSON, the whole library as one file (when the app passes `library`), and how to use it. */
@@ -17,7 +18,7 @@ const libraryJson = () =>
 const librarySummary = computed(() => {
   const library = createLibrary(s.props.kit, s.props.library ?? [], { kinds: s.props.kinds })
   const broken = (s.props.library ?? []).filter((d) => hasErrors(validateDefinition(s.props.kit, d))).map((d) => d.name)
-  return { ...library, broken }
+  return { ...library, broken, shadowed: shadowedWidgets(s.props.library ?? []) }
 })
 
 const usage = computed(
@@ -81,7 +82,8 @@ function download() {
           <div class="flex flex-col gap-3 text-sm">
             <p class="text-muted">
               <strong class="text-default">{{ libraryFile }}</strong
-              >: {{ librarySummary.widgets.length }} widgets, in the order apps try them. The first whose kind matches an item renders it.
+              >: {{ librarySummary.widgets.length }} widgets, in the order apps try them. An item gets the widget whose kind matches it most
+              specifically; among widgets of the same kind, the first.
             </p>
             <ol class="flex flex-col gap-1 rounded-md bg-muted p-3 text-xs">
               <li v-for="(w, i) in librarySummary.widgets" :key="w.id" class="flex items-center gap-2">
@@ -90,6 +92,9 @@ function download() {
                 <code class="text-dimmed">{{ w.id }}</code>
                 <UBadge v-if="w.kind" :label="w.kind" size="sm" color="neutral" variant="subtle" />
                 <UBadge v-if="librarySummary.broken.includes(w.name)" label="has errors" size="sm" color="error" variant="subtle" class="ml-auto" />
+                <UTooltip v-else-if="librarySummary.shadowed.has(w.id)" :text="`${librarySummary.shadowed.get(w.id).name} comes first for this kind`">
+                  <UBadge label="never picked" icon="i-lucide-eye-off" size="sm" color="warning" variant="subtle" class="ml-auto" />
+                </UTooltip>
               </li>
             </ol>
             <p v-if="librarySummary.kinds?.length" class="text-xs text-muted">

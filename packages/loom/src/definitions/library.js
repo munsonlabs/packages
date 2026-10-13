@@ -63,6 +63,26 @@ export function createLibrary(kit, definitions, options = {}) {
 }
 
 /**
+ * Widgets `<Widget :definitions>` never picks, because one before them is for the same kind: as
+ * specific, so the first wins. Each maps to the one that wins instead. They still render when an
+ * app passes them as `definition`.
+ *
+ * @param {WidgetDefinition[]} definitions
+ * @returns {Map<string, WidgetDefinition>} Shadowed widget id → the widget picked instead.
+ */
+export function shadowedWidgets(definitions) {
+  const firstOfKind = new Map()
+  const shadowed = new Map()
+  for (const definition of definitions) {
+    if (!definition.kind) continue
+    const first = firstOfKind.get(definition.kind)
+    if (first) shadowed.set(definition.id, first)
+    else firstOfKind.set(definition.kind, definition)
+  }
+  return shadowed
+}
+
+/**
  * @typedef {object} LoadedLibrary
  * @property {Kit} kit This app's kit with the library's kinds added: render with it, since widgets may be for those kinds.
  * @property {WidgetDefinition[]} widgets The widgets this app can render, in order: pass them to `<Widget :definitions>`.

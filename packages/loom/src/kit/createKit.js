@@ -1,5 +1,6 @@
 import { builtinBlocks } from '../blocks/builtin'
 import { lightTheme } from '../theme/tokens'
+import { resolveKinds } from './kinds'
 
 /** Identity helpers: they return what they're given, and say what each object is where it's written. */
 export const defineSource = (source) => source
@@ -39,5 +40,13 @@ export function createKit(options = {}) {
   }
 
   const themes = options.themes?.length ? options.themes : [lightTheme]
-  return { id: options.id, sources, blocks, kinds: options.kinds ?? [], themes, describe: options.describe ?? describeDefault, guard: options.guard }
+  return {
+    id: options.id,
+    sources,
+    blocks,
+    kinds: resolveKinds(options.kinds ?? []),
+    themes,
+    describe: options.describe ?? describeDefault,
+    guard: options.guard,
+  }
 }

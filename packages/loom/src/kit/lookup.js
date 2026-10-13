@@ -1,4 +1,5 @@
 import { DEFINITION_VERSION } from '../types'
+import { kindDepth } from './kinds'
 
 /** Finding things in a kit: a kind, a theme, a block's defaults, and the widget for some data. */
 
@@ -12,7 +13,8 @@ export function getKind(kit, id) {
 }
 
 /**
- * The first kind whose `matches` accepts the data.
+ * The kind for some data: the most specific one that matches it, the first of those if several
+ * are as specific.
  *
  * @template TData
  * @param {Kit<TData>} kit
@@ -20,11 +22,13 @@ export function getKind(kit, id) {
  * @returns {Kind<TData> | undefined}
  */
 export function matchKind(kit, data) {
-  return kit.kinds.find((k) => k.matches(data))
+  return mostSpecific(kit, kit.kinds, (k) => k, data)
 }
 
 /**
- * The definition to render some data with: the first whose kind matches it.
+ * The definition to render some data with: the one whose kind matches it most specifically,
+ * so a widget for breaking articles beats one for articles wherever each sits. Among equally
+ * specific ones, the first.
  *
  * @template TData
  * @param {Kit<TData>} kit
@@ -33,10 +37,19 @@ export function matchKind(kit, data) {
  * @returns {WidgetDefinition | undefined}
  */
 export function matchDefinition(kit, data, definitions) {
-  return definitions.find((d) => {
-    const kind = getKind(kit, d.kind)
-    return !!kind && kind.matches(data)
-  })
+  return mostSpecific(kit, definitions, (d) => getKind(kit, d.kind), data)
+}
+
+function mostSpecific(kit, items, kindOf, data) {
+  let best
+  let bestDepth = -1
+  for (const item of items) {
+    const kind = kindOf(item)
+    if (!kind?.matches(data)) continue
+    const depth = kindDepth(kit, kind)
+    if (depth > bestDepth) [best, bestDepth] = [item, depth]
+  }
+  return best
 }
 
 /**

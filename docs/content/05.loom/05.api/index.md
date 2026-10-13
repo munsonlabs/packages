@@ -30,6 +30,8 @@ import {
   hasErrors,
   createLibrary,
   loadLibrary,
+  validateKind,
+  withKinds,
   LibraryError,
   Widget,
 } from '@munsonlabs/loom'
@@ -45,8 +47,10 @@ import { iconBlock } from '@munsonlabs/loom/icon'
 | `createKit(options)`                        | A kit from `id`, `sources`, `blocks`, `kinds`, `themes`, `describe` and an action `guard`. Throws on clashing names. |
 | `defineSource`, `defineKind`, `defineBlock` | Identity helpers: they return their argument.                                                                        |
 | `provideKit(kit, context?)`                 | The default kit and context for every `<Widget>` below.                                                              |
-| `getKind(kit, id)`, `matchKind(kit, data)`  | A kind by id; the first kind that matches data.                                                                      |
-| `matchDefinition(kit, data, definitions)`   | The first definition whose kind matches the data.                                                                    |
+| `getKind(kit, id)`, `matchKind(kit, data)`  | A kind by id; the most specific kind that matches data.                                                              |
+| `matchDefinition(kit, data, definitions)`   | The definition whose kind matches the data most specifically; the first of equals.                                   |
+| `withKinds(kit, specs)`                     | The kit with [kinds made in an editor](/loom/core-concepts/kinds#kinds-made-in-an-editor) added. Throws on errors.   |
+| `validateKind(kit, spec)`                   | Every problem with a kind spec against a kit.                                                                        |
 | `getTheme(kit, id?)`                        | A kit's theme by id, or its default.                                                                                 |
 
 ### Themes
@@ -74,13 +78,13 @@ Emits `variant(id)`. Slot `fallback({ data })` renders when no definition fits.
 
 ### Definitions and libraries
 
-| Export                                      | Does                                                                                                   |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `validateDefinition(kit, definition)`       | Every problem, base and variants. `[]` means it renders as written.                                    |
-| `hasErrors(issues)`                         | Whether any issue is an error, not just a warning.                                                     |
-| `createLibrary(kit, definitions, options?)` | One file of every widget, with the kit id, `publishedAt`, and the sources and blocks they need.        |
-| `loadLibrary(kit, input)`                   | `{ widgets, skipped, missing, kitMismatch?, publishedAt? }`: what renders here, and what doesn't, why. |
-| `LibraryError`                              | Thrown for input that isn't a library, an unknown format, or a newer version.                          |
+| Export                                      | Does                                                                                                                             |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `validateDefinition(kit, definition)`       | Every problem, base and variants. `[]` means it renders as written.                                                              |
+| `hasErrors(issues)`                         | Whether any issue is an error, not just a warning.                                                                               |
+| `createLibrary(kit, definitions, options?)` | One file of every widget, with the kit id, `publishedAt`, `kinds`, and the sources and blocks they need.                         |
+| `loadLibrary(kit, input)`                   | `{ kit, widgets, kinds, skipped, skippedKinds, missing, kitMismatch?, publishedAt? }`: what renders here, and what doesn't, why. |
+| `LibraryError`                              | Thrown for input that isn't a library, an unknown format, or a newer version.                                                    |
 
 See [Libraries](/loom/core-concepts/libraries).
 
@@ -97,16 +101,18 @@ What an editor needs beyond rendering. Loom Studio is built on these; an app tha
 | `diffAsOverride(base, edited, previous)`                                  | The smallest override that turns `base` into `edited`: how editors store variant edits.         |
 | `widthToSize(width)`                                                      | The size bucket (`sm`, `md`, `lg`) for a width.                                                 |
 | `blockDefaults(kit, type)`, `createDefinition(kit, kind, identity)`       | A block's default props; a new widget from a kind's starter.                                    |
+| `KIND_OPS`, `conditionHolds(condition, data)`                             | The tests a kind's `where` can use; whether data meets one.                                     |
 | `tokens`, `scaleForRole`, `scaleTokens(scale)`, `tokenVar(name)`          | Every token; which scale each role picks from; a scale's steps; `accent` → `--w-accent`.        |
 | `themeForScheme(kit, id, scheme)`, `usePreferredScheme()`                 | The theme to render with for a scheme; the device's scheme as a live ref.                       |
 | `parseLightDark(value)`, `lightDark(light, dark)`                         | Read and write CSS `light-dark()` values.                                                       |
 
 ## `@munsonlabs/loom-studio`
 
-| Export           | Is                                                                                                |
-| ---------------- | ------------------------------------------------------------------------------------------------- |
-| `LoomStudio`     | The editor. See [Loom Studio](/loom/studio/loom-studio).                                          |
-| `NewWidgetModal` | A kind picker that emits `create(definition)`. Apps open it, since adding to a library is theirs. |
+| Export           | Is                                                                                                    |
+| ---------------- | ----------------------------------------------------------------------------------------------------- |
+| `LoomStudio`     | The editor. See [Loom Studio](/loom/studio/loom-studio).                                              |
+| `NewWidgetModal` | A kind picker that emits `create(definition)`. Apps open it, since adding to a library is theirs.     |
+| `KindModal`      | Makes or edits a kind spec and emits `save(spec)`. Apps open it, since their library holds the kinds. |
 
 ## Types
 
@@ -115,7 +121,7 @@ There are no types to import in JavaScript. Each shape is a JSDoc `@typedef` bes
 | File                      | Typedefs                                                                                                                                    |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | `types/definition.js`     | `WidgetDefinition`, `WidgetNode`, `WidgetVariant`, `NodeOverride`, `VariantRule`, `WidgetSize`, `ColorScheme`, `ValuePath`, `ActionBinding` |
-| `types/kit.js`            | `Kit`, `KitOptions`, `Source`, `SourceContext`, `FieldSpec`, `FieldType`, `ValueType`, `Kind`                                               |
+| `types/kit.js`            | `Kit`, `KitOptions`, `Source`, `SourceContext`, `FieldSpec`, `FieldType`, `ValueType`, `Kind`, `KindSpec`, `KindCondition`                  |
 | `types/blocks.js`         | `BlockSpec`, `BlockPropSpec`, `BlockType`                                                                                                   |
 | `types/guard.js`          | `ActionGuard`, `GuardedAction`                                                                                                              |
 | `theme/tokens.js`         | `Theme`, `TokenSpec`, `TokenGroup`, `TokenKind`, `TokenScale`                                                                               |

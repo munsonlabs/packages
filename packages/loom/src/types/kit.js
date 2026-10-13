@@ -46,9 +46,36 @@
  * @property {string} label
  * @property {string} [description]
  * @property {string} [icon]
- * @property {(data: TData) => boolean} matches
+ * @property {string} [extends] A kind this one narrows, listed before it. Data must match the base as well, and the base's sources, starter and
+ *   icon stand in for any this one leaves out. Deeper kinds win when several match.
+ * @property {(data: TData) => boolean} [matches] Required unless it extends a kind.
  * @property {string[]} [sources] Sources editors list first for this kind.
- * @property {() => Omit<WidgetDefinition, 'version' | 'id' | 'name' | 'kind'>} starter
+ * @property {() => Omit<WidgetDefinition, 'version' | 'id' | 'name' | 'kind'>} [starter] Required unless it extends a kind.
+ * @property {KindSpec} [crafted] The JSON it was made from, when it was made in an editor.
+ */
+
+/**
+ * A kind as JSON, so an editor can make one and a library can carry it. It narrows a kit kind
+ * (`extends`) with conditions on the data, or stands alone on its conditions.
+ *
+ * @typedef {object} KindSpec
+ * @property {string} id
+ * @property {string} label
+ * @property {string} [description]
+ * @property {string} [icon]
+ * @property {string} [extends]
+ * @property {KindCondition[]} [where] Every one must hold. Required unless it extends a kind.
+ * @property {string[]} [sources]
+ * @property {Omit<WidgetDefinition, 'version' | 'id' | 'name' | 'kind'>} [starter] Required unless it extends a kind.
+ */
+
+/**
+ * A test on the raw data, before any source runs: `{ "path": "entry.tags", "op": "includes", "value": "breaking" }`.
+ *
+ * @typedef {object} KindCondition
+ * @property {string} path A dotted path into the data. Prefix with `!` to negate the condition.
+ * @property {'equals' | 'in' | 'includes' | 'exists'} op `in` takes a list of values; `includes` tests a list or a string; `exists` takes no value.
+ * @property {unknown} [value]
  */
 
 /**

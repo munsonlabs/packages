@@ -7,7 +7,7 @@
 export { bindableValues } from './definitions/paths'
 export { parseAction } from './definitions/validate'
 export { BASE_VARIANT, findVariant, variantTree, applyVariant, diffAsOverride, widthToSize } from './definitions/variants'
-export { blockDefaults, createDefinition } from './kit'
+export { blockDefaults, createDefinition, conditionHolds, KIND_OPS } from './kit'
 export { tokens, scaleForRole, scaleTokens, tokenVar } from './theme/tokens'
 export { themeForScheme, usePreferredScheme } from './theme/scheme'
 export { parseLightDark, lightDark } from './theme/lightDark'

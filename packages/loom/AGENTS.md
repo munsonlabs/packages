@@ -41,6 +41,8 @@ test/            mirrors src/; fixtures.js (a small shop kit) is imported as @te
 - **One media query for every widget.** `usePreferredScheme` shares a single `prefers-color-scheme` listener, counted in and out by widget scopes.
 - **Warnings render; errors don't.** `severity: 'warning'` is for things that work but probably aren't meant (a pinned colour under a dark theme); editors shouldn't block on them.
 - **Libraries load what they can.** `loadLibrary` skips widgets with errors (reporting why) rather than failing the file, so an older app survives a newer library; it throws only for input that isn't a library or a format version it can't read. Bump `LIBRARY_VERSION` only for changes an old reader would misread.
+- **The most specific kind wins.** `matchKind` and `matchDefinition` prefer the deepest `extends` chain; order only breaks ties. A kind's base comes before it (in the kit, or earlier in the specs `withKinds` adds), so chains can't loop.
+- **Kinds made in an editor are JSON** (`KindSpec`): conditions on the raw data, never on sources, which don't exist until a widget renders. `compileKind` is the only place they turn into functions.
 - **Every action goes through the kit's `guard` first** (`clickHandler` in `renderer.js`): one place for paywalls and the like, so widgets and composables never re-check. Keep it the only path that runs an action.
 - **Keep the main entry small.** Something only an editor needs goes in `editor.js`, not `index.js`; something nothing outside loom uses isn't exported at all.
 - **Kits are values.** No module-level registries; two kits must be able to share a page.

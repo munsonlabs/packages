@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
 import { enableAutoUnmount, mount } from '@vue/test-utils'
-import { defineComponent, h, nextTick, reactive } from 'vue'
+import { defineComponent, h, nextTick, reactive, ref } from 'vue'
 import { createLibrary, loadLibrary, matchDefinition, validateDefinition, Widget } from '@munsonlabs/loom'
 import { createBridge, createStubNative } from 'bolt-bridge-stub'
 import { composableSource } from '@/sources/shared'
@@ -77,7 +77,7 @@ describe('composableSource', () => {
       },
       use: (props) => ({ title: props.story.entry.title }),
     })
-    expect(source.setup({ data: { entry: { id: 'x', title: 'Hi' } }, index: 0, context: {} })).toEqual({ title: 'Hi' })
+    expect(source.setup({ data: ref({ entry: { id: 'x', title: 'Hi' } }), index: ref(0), context: {} })).toEqual({ title: 'Hi' })
   })
 })
 

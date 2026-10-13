@@ -32,6 +32,6 @@ export const readingSource = composableSource({ // the source
 
 ## Technically
 
-- `composableSource` calls the composable with `{ story, index }` as getters over loom's source context (`storyProps`), so its `computed`s react when the story changes, and `fields` should list what it returns: a field it doesn't return binds to nothing.
-- Composables that act take the bridge as their second argument (`ctx.context`). They never decide paywalls: the kit's guard (`../paywall.js`) does, for every action at once.
+- `composableSource` calls the composable with `{ story, index }` as getters over loom's `data` and `index` refs (`storyProps`), so its `computed`s react when the story changes, and `fields` should list what it returns: a field it doesn't return binds to nothing.
+- Composables that act take the bridge as their second argument (the widget's `context`). They never decide paywalls: the kit's guard (`../paywall.js`) does, for every action at once.
 - A source is set up the first time a widget reads it, inside that widget's scope, so it stops when the widget unmounts.

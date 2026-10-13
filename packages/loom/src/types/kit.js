@@ -11,14 +11,15 @@
  */
 
 /**
- * What a source's `setup` gets. Getters, so composables that read them inside `computed` stay reactive.
+ * What a source's `setup` gets. `data` and `index` are read-only refs, so it can be destructured and
+ * handed to composables that take refs or getters (`toValue` reads either).
  *
  * @template [TData=any]
  * @template [TContext=any]
  * @typedef {object} SourceContext
- * @property {TData} data
- * @property {number} index
- * @property {TContext} context
+ * @property {Readonly<import('vue').Ref<TData>>} data
+ * @property {Readonly<import('vue').Ref<number>>} index
+ * @property {TContext} context The widget's context as it was when the source set up. Keep what changes reactive inside it.
  */
 
 /**

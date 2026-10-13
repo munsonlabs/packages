@@ -14,7 +14,7 @@ export const timelineSource = defineSource
  * a field it doesn't return is a binding that's quietly empty.
  */
 export function composableSource({ use, ...source }) {
-  return timelineSource({ ...source, fields: source.fields, setup: (ctx) => use(storyProps(ctx), ctx.context) })
+  return timelineSource({ ...source, fields: source.fields, setup: ({ data, index, context }) => use(storyProps({ data, index }), context) })
 }
 
 /**
@@ -25,13 +25,13 @@ export function composableSource({ use, ...source }) {
  * @property {number} index
  */
 
-/** The widget's story and position as composable props, read live so composables stay reactive. */
-export const storyProps = (ctx) => ({
+/** The widget's story and position (loom's refs) as composable props, read live so composables stay reactive. */
+export const storyProps = ({ data, index }) => ({
   get story() {
-    return ctx.data
+    return data.value
   },
   get index() {
-    return ctx.index
+    return index.value
   },
 })
 

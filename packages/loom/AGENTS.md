@@ -30,7 +30,7 @@ test/            mirrors src/; fixtures.js (a small shop kit) is imported as @te
 ## Invariants
 
 - **Definitions are JSON.** No functions, no class instances. Editors rely on `JSON.stringify` round-trips.
-- **Sources set up lazily, once per widget**, inside an effect scope owned by the `<Widget>`. `SourceContext` uses getters so composables reading it in `computed` stay reactive; never destructure it in `Widget.vue` or `renderer.js`.
+- **Sources set up lazily, once per widget**, inside an effect scope owned by the `<Widget>`. A source's `setup` gets `data` and `index` as read-only refs (so it can destructure them) and `context` as the value it had when the source set up; the guard gets all three as plain values.
 - **Actions without `arg` are called with no arguments.** Passing the DOM event would land in optional parameters like `openArticle(story?)`.
 - **A node with a click handler stops propagation**, so nested actions don't trigger clickable ancestors.
 - **Variants never mutate the base.** `variantTree` in `definitions/variants.js` copies every node it touches (see the comment on `applyOverride`); a test snapshots the base around `applyVariant`.

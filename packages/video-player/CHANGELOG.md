@@ -1,5 +1,11 @@
 # @munsonlabs/video-player
 
+## 0.3.1
+
+### Patch Changes
+
+- 002ddea: The poster now stays up until the first frame paints, so the player no longer flashes black while a video loads.
+
 ## 0.3.0
 
 ### Minor Changes

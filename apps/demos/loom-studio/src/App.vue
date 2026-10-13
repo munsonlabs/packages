@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { createLibrary } from '@munsonlabs/loom'
+import { shadowedWidgets } from '@munsonlabs/loom/editor'
 import { LoomStudio, NewWidgetModal } from '@munsonlabs/loom-studio'
 import { useToast } from '@nuxt/ui/composables'
 import { useBridge } from 'bolt-bridge-stub'
@@ -12,7 +13,7 @@ const FEED_URL = 'http://localhost:5195'
 const STORAGE_KEY = 'loom-studio-demo:library'
 
 /**
- * What the studio edits: every widget in the app's library, and which one is open.
+ * What the studio edits: every widget in the app's library, in order, and which one is open.
  *
  * @typedef {object} Library
  * @property {WidgetDefinition[]} definitions
@@ -69,6 +70,28 @@ function addWidget(created) {
   library.value.definitions = [...library.value.definitions, created]
   library.value.selectedId = created.id
 }
+
+/** Moves the open widget one place earlier or later. Order decides between widgets that match the same data: the first is picked. */
+function moveWidget(by) {
+  const list = [...library.value.definitions]
+  const at = list.findIndex((d) => d.id === library.value.selectedId)
+  const to = at + by
+  if (at < 0 || to < 0 || to >= list.length) return
+  ;[list[at], list[to]] = [list[to], list[at]]
+  library.value.definitions = list
+}
+
+/** The widget picked instead of the open one, when an earlier one takes all the same data. */
+const shadowedBy = computed(() => shadowedWidgets(library.value.definitions).get(library.value.selectedId))
+
+/** Makes the open widget the one picked, by moving it just before the one that was. */
+function useFirst() {
+  const list = library.value.definitions.filter((d) => d.id !== library.value.selectedId)
+  list.splice(list.indexOf(shadowedBy.value), 0, definition.value)
+  library.value.definitions = list
+}
+
+const position = computed(() => library.value.definitions.findIndex((d) => d.id === library.value.selectedId))
 
 function removeWidget() {
   if (library.value.definitions.length < 2) return
@@ -133,6 +156,20 @@ function importLibrary(loaded) {
         <UDropdownMenu
           :items="[
             { label: 'New widget…', icon: 'i-lucide-plus', onSelect: () => (newOpen = true) },
+            { type: 'separator' },
+            ...(shadowedBy ? [{ label: `Use this one before ${shadowedBy.name}`, icon: 'i-lucide-eye', onSelect: useFirst }] : []),
+            {
+              label: 'Move earlier',
+              icon: 'i-lucide-arrow-up',
+              disabled: position <= 0,
+              onSelect: () => moveWidget(-1),
+            },
+            {
+              label: 'Move later',
+              icon: 'i-lucide-arrow-down',
+              disabled: position >= library.definitions.length - 1,
+              onSelect: () => moveWidget(1),
+            },
             {
               label: 'Delete this widget',
               icon: 'i-lucide-trash-2',

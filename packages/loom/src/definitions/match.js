@@ -75,3 +75,23 @@ export function validateMatch(definition) {
   })
   return issues
 }
+
+const sameCondition = (a, b) => a.path === b.path && a.op === b.op && JSON.stringify(a.value) === JSON.stringify(b.value)
+
+/**
+ * Widgets `<Widget :definitions>` never picks: an earlier one's conditions are all among theirs,
+ * so it matches whenever they would, and comes first. Each maps to the one picked instead. They
+ * still render when an app passes them as `definition`.
+ *
+ * @param {WidgetDefinition[]} definitions
+ * @returns {Map<string, WidgetDefinition>} Shadowed widget id → the widget picked instead.
+ */
+export function shadowedWidgets(definitions) {
+  const shadowed = new Map()
+  definitions.forEach((definition, i) => {
+    const own = definition.match ?? []
+    const earlier = definitions.slice(0, i).find((e) => (e.match ?? []).every((c) => own.some((o) => sameCondition(c, o))))
+    if (earlier) shadowed.set(definition.id, earlier)
+  })
+  return shadowed
+}

@@ -8,9 +8,11 @@ import { parseAction } from './definitions/validate'
  *
  * @param {object} options
  * @param {() => import('./types').Kit} options.kit
- * @param {import('./types').SourceContext} options.sourceContext What each source's `setup` gets.
+ * @param {Readonly<import('vue').Ref>} options.data The widget's data.
+ * @param {Readonly<import('vue').Ref<number>>} options.index
+ * @param {() => unknown} options.context
  */
-export function createRenderer({ kit, sourceContext }) {
+export function createRenderer({ kit, data, index, context }) {
   // Sources are set up lazily, the first time a binding reaches them, inside an effect scope tied
   // to the widget, so a definition edited live can reach new sources without remounting.
   const scope = effectScope()
@@ -23,7 +25,7 @@ export function createRenderer({ kit, sourceContext }) {
       if (!spec) return undefined
       sources.set(
         id,
-        scope.run(() => spec.setup(sourceContext)),
+        scope.run(() => spec.setup({ data, index, context: context() })),
       )
     }
     return sources.get(id)
@@ -55,9 +57,9 @@ export function createRenderer({ kit, sourceContext }) {
         action,
         arg: value,
         node: node.id,
-        data: sourceContext.data,
-        index: sourceContext.index,
-        context: sourceContext.context,
+        data: data.value,
+        index: index.value,
+        context: context(),
       })
       const isLink = node.type === 'Link'
       // A link with somewhere to go still goes there, alongside its action, unless the guard stops it or has to think.

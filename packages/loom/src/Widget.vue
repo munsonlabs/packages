@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onScopeDispose, ref, watch } from 'vue'
+import { computed, onMounted, onScopeDispose, ref, toRef, watch } from 'vue'
 import WidgetNode from './WidgetNode.vue'
 import { injectContext, injectKit } from './kit'
 import { matchDefinition } from './definitions/match'
@@ -52,19 +52,12 @@ const kit = computed(() => {
   return k
 })
 
-// What sources get. Getters, so composables that read them inside `computed` stay reactive.
-const sourceContext = {
-  get data() {
-    return props.data
-  },
-  get index() {
-    return props.index
-  },
-  get context() {
-    return props.context ?? injectedContext
-  },
-}
-const renderer = createRenderer({ kit: () => kit.value, sourceContext })
+const renderer = createRenderer({
+  kit: () => kit.value,
+  data: toRef(() => props.data),
+  index: toRef(() => props.index),
+  context: () => props.context ?? injectedContext,
+})
 provideRenderer(renderer)
 
 const device = usePreferredScheme()

@@ -140,7 +140,12 @@ describe('<Widget>', () => {
     const kit = createKit({
       sources: [
         productSource,
-        { id: 'shop', label: 'Shop', fields: { addToCart: { type: 'action' } }, setup: (c) => ({ addToCart: () => c.context.cart.add(c.data) }) },
+        {
+          id: 'shop',
+          label: 'Shop',
+          fields: { addToCart: { type: 'action' } },
+          setup: ({ data, context }) => ({ addToCart: () => context.cart.add(data.value) }),
+        },
       ],
       blocks: [
         {

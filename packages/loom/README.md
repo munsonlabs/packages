@@ -12,15 +12,7 @@ const kit = createKit({
       id: 'product',
       label: 'Product',
       fields: { name: { type: 'string' }, price: { type: 'string' }, add: { type: 'action' } },
-      setup: (ctx) =>
-        useProduct(
-          {
-            get product() {
-              return ctx.data
-            },
-          },
-          ctx.context.cart,
-        ),
+      setup: ({ data, context }) => useProduct(data, context.cart),
     },
   ],
 })

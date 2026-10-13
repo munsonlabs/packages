@@ -1,4 +1,4 @@
-import { computed, reactive } from 'vue'
+import { computed, reactive, toValue } from 'vue'
 import { createKit, darkTheme, defineTheme, lightTheme } from '@munsonlabs/loom'
 import { iconBlock } from '@munsonlabs/loom/icon'
 import { videoBlock } from '@munsonlabs/loom/video'
@@ -49,18 +49,19 @@ export const articles = [
   },
 ]
 
-/** An app's own composable: it takes the article (as a getter) and returns what a card shows. */
+/** An app's own composable: it takes the article (a ref or a getter) and returns what a card shows. */
 export function useArticle(article) {
+  const a = computed(() => toValue(article))
   return {
-    title: computed(() => article().title),
-    summary: computed(() => article().summary),
-    section: computed(() => article().section),
-    image: computed(() => article().image),
-    readTime: computed(() => `${article().minutes} min read`),
-    tags: computed(() => article().tags ?? []),
-    author: computed(() => article().author),
-    rating: computed(() => article().rating),
-    progress: computed(() => article().progress),
+    title: computed(() => a.value.title),
+    summary: computed(() => a.value.summary),
+    section: computed(() => a.value.section),
+    image: computed(() => a.value.image),
+    readTime: computed(() => `${a.value.minutes} min read`),
+    tags: computed(() => a.value.tags ?? []),
+    author: computed(() => a.value.author),
+    rating: computed(() => a.value.rating),
+    progress: computed(() => a.value.progress),
   }
 }
 
@@ -79,7 +80,7 @@ export const articleSource = {
     rating: { type: 'number' },
     progress: { type: 'number', description: 'How much has been read, out of 100' },
   },
-  setup: (ctx) => useArticle(() => ctx.data),
+  setup: ({ data }) => useArticle(data),
 }
 
 /** The app's own state and services, which widgets get as their context: what's saved, and a log of what was asked. */
@@ -100,13 +101,13 @@ export const lockedArticle = {
 /** Another of the app's composables: saving and opening an article. */
 export function useReading(article, app) {
   return {
-    saved: computed(() => app.saved.includes(article().id)),
+    saved: computed(() => app.saved.includes(toValue(article).id)),
     toggleSave() {
-      const id = article().id
+      const id = toValue(article).id
       app.saved = app.saved.includes(id) ? app.saved.filter((s) => s !== id) : [...app.saved, id]
-      app.log.unshift(`${app.saved.includes(id) ? 'Saved' : 'Unsaved'} “${article().title}”`)
+      app.log.unshift(`${app.saved.includes(id) ? 'Saved' : 'Unsaved'} “${toValue(article).title}”`)
     },
-    open: () => app.log.unshift(`Opened “${article().title}”`),
+    open: () => app.log.unshift(`Opened “${toValue(article).title}”`),
   }
 }
 
@@ -118,7 +119,7 @@ export const readingSource = {
     toggleSave: { type: 'action' },
     open: { type: 'action' },
   },
-  setup: (ctx) => useReading(() => ctx.data, ctx.context),
+  setup: ({ data, context }) => useReading(data, context),
 }
 
 /** The demo's kit: everything the chapters' widgets can read and do. It grows chapter by chapter. */

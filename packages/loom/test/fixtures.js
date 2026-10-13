@@ -1,4 +1,4 @@
-import { computed, reactive } from 'vue'
+import { computed, reactive, toValue } from 'vue'
 import { vi } from 'vite-plus/test'
 import { createKit } from '@/kit'
 
@@ -44,17 +44,18 @@ export function makeShop() {
   }
 }
 
-/** A client composable, written with no idea loom exists. */
-export function useProduct(props, shop) {
+/** A client composable, written with no idea loom exists. `product` is a ref or a getter. */
+export function useProduct(product, shop) {
+  const p = computed(() => toValue(product))
   return {
-    title: computed(() => props.product.title),
-    summary: computed(() => props.product.summary),
-    category: computed(() => props.product.category),
-    image: computed(() => props.product.image),
-    price: computed(() => `£${props.product.price}`),
-    onSale: computed(() => props.product.wasPrice != null && props.product.wasPrice > props.product.price),
-    inCart: computed(() => shop.cart.has(props.product.id)),
-    related: computed(() => (props.product.related?.length ? props.product.related : undefined)),
+    title: computed(() => p.value.title),
+    summary: computed(() => p.value.summary),
+    category: computed(() => p.value.category),
+    image: computed(() => p.value.image),
+    price: computed(() => `£${p.value.price}`),
+    onSale: computed(() => p.value.wasPrice != null && p.value.wasPrice > p.value.price),
+    inCart: computed(() => shop.cart.has(p.value.id)),
+    related: computed(() => (p.value.related?.length ? p.value.related : undefined)),
   }
 }
 
@@ -72,24 +73,16 @@ export const productSource = {
     inCart: { type: 'boolean' },
     related: { type: 'list', item: { '': 'object', title: 'string' } },
   },
-  setup: (ctx) =>
-    useProduct(
-      {
-        get product() {
-          return ctx.data
-        },
-      },
-      ctx.context,
-    ),
+  setup: ({ data, context }) => useProduct(data, context),
 }
 
 export const actionsSource = {
   id: 'shop',
   label: 'Shop',
   fields: { addToCart: { type: 'action' }, open: { type: 'action', description: 'Open this product, or the one passed' } },
-  setup: (ctx) => ({
-    addToCart: () => ctx.context.cart.add(ctx.data),
-    open: (product) => ctx.context.open(product ?? ctx.data),
+  setup: ({ data, context }) => ({
+    addToCart: () => context.cart.add(data.value),
+    open: (product) => context.open(product ?? data.value),
   }),
 }
 

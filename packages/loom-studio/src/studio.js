@@ -1,5 +1,6 @@
 import { computed, inject, nextTick, provide, reactive, ref, shallowRef, watch } from 'vue'
 import { hasErrors, validateDefinition } from '@munsonlabs/loom'
+import { shadowedWidgets } from '@munsonlabs/loom/editor'
 import { useCanvasDrag } from './canvas/useCanvasDrag'
 import { useSelection } from './canvas/useSelection'
 import { findNode } from './editing/tree'
@@ -151,7 +152,24 @@ export function createStudio(definition, props, events) {
   }
 
   // --- Validation
-  const issues = computed(() => validateDefinition(props.kit, definition.value))
+  /** The widget picked instead of this one, when an earlier widget in the library matches whenever it does. */
+  const shadowedBy = computed(() => {
+    const library = props.library?.map((d) => (d.id === definition.value.id ? definition.value : d))
+    return library ? shadowedWidgets(library).get(definition.value.id) : undefined
+  })
+  const issues = computed(() => [
+    ...validateDefinition(props.kit, definition.value),
+    // Studio-only: `shadowed` tells it apart from the colour warnings, which have their own fix.
+    ...(shadowedBy.value
+      ? [
+          {
+            severity: 'warning',
+            shadowed: true,
+            message: `Never picked: "${shadowedBy.value.name}" comes first and takes all the same data. Add a condition, or move this one earlier.`,
+          },
+        ]
+      : []),
+  ])
   /** Errors stop publishing; warnings (a colour that won't follow dark mode) don't. */
   const errors = computed(() => hasErrors(issues.value))
   function selectIssue(issue) {

@@ -4,7 +4,7 @@ import { nextTick } from 'vue'
 import { validateDefinition } from '@/definitions/validate'
 import { bindableValues, sourcesUsed } from '@/definitions/paths'
 import { createKit } from '@/kit'
-import { conditionHolds, definitionMatches, matchDefinition } from '@/definitions/match'
+import { conditionHolds, definitionMatches, matchDefinition, shadowedWidgets } from '@/definitions/match'
 import { applyVariant, diffAsOverride, matchVariant, ruleMatches, variantTree, widthToSize } from '@/definitions/variants'
 import Widget from '@/Widget.vue'
 import { videoBlock } from '@/blocks/video'
@@ -135,6 +135,14 @@ describe('match', () => {
     expect(matchDefinition(bundle, [productCard, anything])).toBe(anything)
     expect(matchDefinition(teapot, [anything, productCard])).toBe(anything)
     expect(matchDefinition(bundle, [productCard])).toBeUndefined()
+  })
+
+  it('finds widgets an earlier one always beats', () => {
+    const onSale = { id: 'sale', match: [...productCard.match, { path: 'wasPrice', op: 'exists' }] }
+    const bundles = { id: 'bundles', match: [{ path: 'kind', op: 'equals', value: 'bundle' }] }
+    expect([...shadowedWidgets([onSale, productCard, bundles])]).toEqual([])
+    expect([...shadowedWidgets([productCard, onSale, bundles])]).toEqual([['sale', productCard]])
+    expect(shadowedWidgets([{ id: 'any' }, bundles]).get('bundles')).toEqual({ id: 'any' })
   })
 })
 

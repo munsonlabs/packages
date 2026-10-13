@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { useToast } from '@nuxt/ui/composables'
 import { createLibrary, hasErrors, validateDefinition } from '@munsonlabs/loom'
+import { shadowedWidgets } from '@munsonlabs/loom/editor'
 import { useStudio } from '../studio'
 import { describeMatch } from './conditions'
 
@@ -17,7 +18,7 @@ const libraryJson = () => JSON.stringify(createLibrary(s.props.kit, s.props.libr
 const librarySummary = computed(() => {
   const library = createLibrary(s.props.kit, s.props.library ?? [])
   const broken = (s.props.library ?? []).filter((d) => hasErrors(validateDefinition(s.props.kit, d))).map((d) => d.name)
-  return { ...library, broken }
+  return { ...library, broken, shadowed: shadowedWidgets(s.props.library ?? []) }
 })
 
 const usage = computed(
@@ -89,6 +90,12 @@ function download() {
                 <code class="text-dimmed">{{ w.id }}</code>
                 <UBadge :label="describeMatch(w.match)" size="sm" color="neutral" variant="subtle" class="max-w-48 truncate" />
                 <UBadge v-if="librarySummary.broken.includes(w.name)" label="has errors" size="sm" color="error" variant="subtle" class="ml-auto" />
+                <UTooltip
+                  v-else-if="librarySummary.shadowed.has(w.id)"
+                  :text="`${librarySummary.shadowed.get(w.id).name} comes first and takes all the same data`"
+                >
+                  <UBadge label="never picked" icon="i-lucide-eye-off" size="sm" color="warning" variant="subtle" class="ml-auto" />
+                </UTooltip>
               </li>
             </ol>
             <p class="text-xs text-muted">

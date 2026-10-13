@@ -48,6 +48,8 @@ export function createPlayerEvents(state: PlayerState, deps: PlayerEventsDeps): 
     supportsPip,
     isPipActive,
     hasStarted,
+    hasFirstFrame,
+    hasPlayedFrame,
     isError,
     errorMessage,
   } = state
@@ -143,6 +145,15 @@ export function createPlayerEvents(state: PlayerState, deps: PlayerEventsDeps): 
       hasEnded.value = false
       if (!isLive.value) positionMemory.restoreOnce(player)
       fire('play')
+    })
+
+    // The browser drops the poster on play(), before a frame is decoded - these mark when the video itself can stand in for it
+    player.on('loadeddata', () => {
+      hasFirstFrame.value = true
+    })
+
+    player.on('playing', () => {
+      hasPlayedFrame.value = true
     })
 
     player.on('pause', () => {

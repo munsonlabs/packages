@@ -86,7 +86,11 @@ const shellAspectRatio = computed(() => parseAspectRatio(props.aspectRatio))
 const isPortrait = computed(() => shellAspectRatio.value.isPortrait)
 const shellAspect = computed(() => shellAspectRatio.value.cssRatio)
 
-const videoHidden = computed(() => !props.poster && !player.isReady)
+const posterSrc = computed(() => player.resolvedPoster || props.poster)
+const posterHidden = computed(() => {
+  if (player.isAdPlaying) return true
+  return posterSrc.value ? player.hasPlayedFrame : player.hasFirstFrame || player.hasPlayedFrame
+})
 
 const shell = computed(() => (props.pin ? PinnablePlayerShell : PlainPlayerShell))
 
@@ -135,14 +139,7 @@ defineExpose(exposePlayerSurface(player))
           @focusout="handleFocusOut"
         >
           <div data-ml-video-player>
-            <video
-              ref="videoEl"
-              class="ml-video-media"
-              :class="{ 'ml-video-media--hidden': videoHidden }"
-              :poster="props.poster"
-              :preload="props.preload"
-              playsinline
-            >
+            <video ref="videoEl" class="ml-video-media" :poster="props.poster" :preload="props.preload" playsinline>
               <track
                 v-for="(t, i) in props.tracks"
                 :key="`${t.src}-${i}`"
@@ -153,6 +150,10 @@ defineExpose(exposePlayerSurface(player))
                 :default="t.default"
               />
             </video>
+
+            <div class="player__poster" :class="{ 'player__poster--hidden': posterHidden }">
+              <img v-if="posterSrc" :src="posterSrc" alt="" />
+            </div>
 
             <div
               v-if="!props.disableTapCapture && !player.isNativeUi && player.hasStarted && !player.isAdPlaying"
@@ -221,7 +222,23 @@ defineExpose(exposePlayerSurface(player))
   container-name: player-shell;
 }
 
-.ml-video-media--hidden {
+.player__poster {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--ml-video-poster-bg, #111);
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.player__poster img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player__poster--hidden {
   opacity: 0;
 }
 

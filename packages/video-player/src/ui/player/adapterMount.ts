@@ -21,6 +21,7 @@ export function applyAdTagParams(adTagUrl: string, params: Record<string, string
 export interface MountedAdapter {
   adapter: PlaybackAdapter
   nativeUi?: boolean
+  poster?: string
 }
 
 export type MountResult = { status: 'mounted'; mounted: MountedAdapter } | { status: 'unsupported' } | { status: 'aborted' }
@@ -88,7 +89,7 @@ async function mountNativeAdapter(
   const baseAdTag = applyAdTagParams(props.adTagUrl || resolved.adTagUrl || '', props.adMacroParams)
   void adSetup.attach(videoEl.value, nativeAdapter, baseAdTag, props.headerBidding)
 
-  return { status: 'mounted', mounted: { adapter: nativeAdapter } }
+  return { status: 'mounted', mounted: { adapter: nativeAdapter, poster: resolved.poster ?? undefined } }
 }
 
 export function mountAdapter(

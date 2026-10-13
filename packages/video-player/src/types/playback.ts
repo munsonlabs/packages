@@ -64,6 +64,7 @@ export type PlaybackEvent =
   | 'seeked'
   | 'waiting'
   | 'canplay'
+  | 'loadeddata'
   | 'qualitychange'
   | 'captionschange'
   | 'pipchange'

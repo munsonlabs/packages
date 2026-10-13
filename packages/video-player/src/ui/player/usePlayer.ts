@@ -152,6 +152,7 @@ export function usePlayer(
   function finalizeAdapter(mounted: MountedAdapter): void {
     adapter = mounted.adapter
     if (mounted.nativeUi !== undefined) isNativeUi.value = mounted.nativeUi
+    if (mounted.poster) state.resolvedPoster.value = mounted.poster
     unregister = registerPauseHandler(controls.pause)
     attachPlayerEvents(mounted.adapter)
   }

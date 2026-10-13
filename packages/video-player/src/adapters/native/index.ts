@@ -39,6 +39,7 @@ const NATIVE_EVENTS = [
   'waiting',
   'playing',
   'canplay',
+  'loadeddata',
 ] as const
 
 function hlsQualityEngine(hls: Hls): QualityEngineAdapter {

@@ -1,13 +1,9 @@
 <script setup>
-import { computed } from 'vue'
-import { describeCondition, describeMatch } from '../dialogs/conditions'
+import { describeMatch } from '../dialogs/conditions'
 import { useStudio } from '../studio'
 
-/** Top left: the widget's name, the data it renders for, and the host app's own controls (the `actions` slot). */
+/** Top left: the widget's name, when it renders (opens the conditions editor), and the host app's own controls (the `actions` slot). */
 const s = useStudio()
-
-/** One phrase per condition, as the badge's tooltip reads them. */
-const conditions = computed(() => (s.definition.match ?? []).map(describeCondition))
 </script>
 
 <template>
@@ -22,14 +18,17 @@ const conditions = computed(() => (s.definition.match ?? []).map(describeConditi
       aria-label="Widget name"
       @update:model-value="s.history.change((d) => (d.name = String($event)))"
     />
-    <UTooltip :text="conditions.length ? `Renders when ${conditions.join(' and ')}` : 'Renders for any data'">
-      <UBadge
+    <UTooltip text="When it renders, and the composables it uses">
+      <UButton
         :label="describeMatch(s.definition.match)"
         icon="i-lucide-filter"
         color="neutral"
         variant="soft"
-        size="sm"
-        class="max-w-56 truncate rounded-full"
+        size="xs"
+        class="max-w-56 rounded-full"
+        :ui="{ label: 'truncate' }"
+        aria-label="When it renders"
+        @click="s.open.match = true"
       />
     </UTooltip>
     <slot />

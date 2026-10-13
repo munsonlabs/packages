@@ -97,10 +97,10 @@ What an editor needs beyond rendering. Loom Studio is built on these; an app tha
 
 ## `@munsonlabs/loom-studio`
 
-| Export           | Is                                                                                                                         |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `LoomStudio`     | The editor. See [Loom Studio](/loom/studio/loom-studio).                                                                   |
-| `NewWidgetModal` | Starts a widget, blank or from another, and emits `create(definition)`. Apps open it, since adding to a library is theirs. |
+| Export           | Is                                                                                                                                                          |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LoomStudio`     | The editor. See [Loom Studio](/loom/studio/loom-studio).                                                                                                    |
+| `NewWidgetModal` | Starts a widget, blank or from another, with its conditions and sources, and emits `create(definition)`. Apps open it, since adding to a library is theirs. |
 
 ## Types
 

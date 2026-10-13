@@ -17,7 +17,7 @@ The editor for [`@munsonlabs/loom`](../loom) widgets. Canvas first, no sidebars:
 - **A guided tour** on first visit, over your own widget; replay it from the **?** button
 - **Design tokens everywhere**: the theme panel shows every token over the kit's theme with per-widget overrides; gaps, padding, radii, colours and sizes pick from the scales; preview each of the kit's themes
 - **Light and dark**: preview either scheme or follow the device; give any colour its own dark value with the moon (written as CSS `light-dark()`); see dark values beside light ones; get warned about colours that won't follow dark mode; the studio has its own light/dark switch
-- **Issues, import, export** from the top bar: export one widget or, with `:library`, the whole library as one file; import either; `<NewWidgetModal>` starts a widget, blank or from another
+- **Issues, import, export** from the top bar: export one widget or, with `:library`, the whole library as one file; import either; `<NewWidgetModal>` starts a widget, blank or from another, with the data it's for
 
 ## Setup
 

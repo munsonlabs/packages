@@ -92,7 +92,14 @@ function importLibrary(loaded) {
               <UButton icon="i-lucide-plus" size="sm" color="neutral" variant="ghost" label="New widget" @click="newOpen = true" />
             </template>
           </LoomStudio>
-          <NewWidgetModal v-model:open="newOpen" :kit="timelineKit" :widgets="library" :taken-ids="library.map((d) => d.id)" @create="add" />
+          <NewWidgetModal
+            v-model:open="newOpen"
+            :kit="timelineKit"
+            :widgets="library"
+            :samples="bridge.stories"
+            :taken-ids="library.map((d) => d.id)"
+            @create="add"
+          />
         </UApp>
       </div>
       <pre v-if="published">{{ JSON.stringify({ ...published, widgets: published.widgets.map((w) => w.name) }, null, 2) }}</pre>

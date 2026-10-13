@@ -153,7 +153,7 @@ export function tourSteps(api) {
       target: at('identity'),
       side: 'bottom',
       title: 'Name, data and your app',
-      body: "The widget's name, and the data it renders for. Your app can add its own controls here too, such as switching widgets or creating a new one.",
+      body: "The widget's name, and the data it renders for: open it to change its conditions and the composables it uses. Your app can add its own controls here too, such as switching widgets or creating a new one.",
     },
     {
       target: at('help'),

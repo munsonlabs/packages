@@ -10,6 +10,7 @@ import StudioCanvas from './canvas/StudioCanvas.vue'
 import CommandPalette from './dialogs/CommandPalette.vue'
 import ExportModal from './dialogs/ExportModal.vue'
 import ImportModal from './dialogs/ImportModal.vue'
+import MatchModal from './dialogs/MatchModal.vue'
 import LayersPanel from './layers/LayersPanel.vue'
 import { frameModes } from './preview/frames'
 import { createStudio, provideStudio } from './studio'
@@ -87,6 +88,7 @@ defineShortcuts({
     <CommandPalette />
     <ExportModal />
     <ImportModal />
+    <MatchModal />
   </div>
 </template>
 

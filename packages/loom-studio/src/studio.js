@@ -63,6 +63,7 @@ export function createStudio(definition, props, events) {
     palette: false,
     export: false,
     import: false,
+    match: false,
     closeAll() {
       for (const [name, value] of Object.entries(open)) if (value === true) open[name] = false
     },

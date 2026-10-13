@@ -78,11 +78,11 @@ export function createLibrary(kit, definitions, options = {}) {
 const isDefinition = (entry) => !!entry && typeof entry === 'object' && typeof entry.root === 'object' && entry.root !== null
 
 /**
- * Reads a library (or a bare array of definitions) for this app's kit: adds the kinds it can,
- * validates each definition against the result, and keeps only the ones that render as written. Widgets with only
- * warnings are kept; entries that aren't definitions at all are skipped like any other. Throws
- * `LibraryError` for something that isn't a library, or one from a newer version than this loom
- * understands.
+ * Reads a library (or a bare array of definitions) for this app's kit: adds the kinds it can, in
+ * place of any the kit already had from an editor, validates each definition against the
+ * result, and keeps only the ones that render as written. Widgets with only warnings are kept;
+ * entries that aren't definitions at all are skipped like any other. Throws `LibraryError` for
+ * something that isn't a library, or one from a newer version than this loom understands.
  *
  * @param {Kit} kit
  * @param {unknown} input
@@ -109,7 +109,8 @@ export function loadLibrary(kit, input) {
 
   const kinds = []
   const skippedKinds = []
-  let withLibraryKinds = kit
+  // The library's kinds replace any made in an editor, so loading it into a kit that already has them works.
+  let withLibraryKinds = { ...kit, kinds: kit.kinds.filter((k) => !k.crafted) }
   for (const [index, spec] of (Array.isArray(library.kinds) ? library.kinds : []).entries()) {
     const issues = validateKind(withLibraryKinds, spec)
     if (hasErrors(issues)) {

@@ -41,12 +41,14 @@ export function conditionHolds(condition, data) {
  * @returns {Kind}
  */
 export function compileKind(spec) {
-  const { where, starter, ...rest } = spec
+  // A copy, through JSON since a spec is JSON: the app may hold it in reactive state, which `structuredClone` can't copy.
+  const crafted = JSON.parse(JSON.stringify(spec))
+  const { where, starter, ...rest } = crafted
   return {
     ...rest,
     ...(where?.length ? { matches: (data) => where.every((c) => conditionHolds(c, data)) } : {}),
     ...(starter ? { starter: () => structuredClone(starter) } : {}),
-    crafted: spec,
+    crafted,
   }
 }
 

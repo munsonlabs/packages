@@ -26,11 +26,15 @@ function apply() {
       s.importLibrary(loaded)
       toast.add({
         title: `Imported ${loaded.widgets.length} widget${loaded.widgets.length === 1 ? '' : 's'}`,
-        description: loaded.skipped.length
-          ? `Skipped ${loaded.skipped.map((x) => x.name ?? x.id).join(', ')}: they won't render with this kit.`
-          : undefined,
+        description:
+          [
+            loaded.skippedKinds.length ? `Skipped the kinds ${loaded.skippedKinds.map((x) => x.id).join(', ')}: they don't fit this kit.` : '',
+            loaded.skipped.length ? `Skipped ${loaded.skipped.map((x) => x.name ?? x.id).join(', ')}: they won't render with this kit.` : '',
+          ]
+            .filter(Boolean)
+            .join(' ') || undefined,
         icon: 'i-lucide-library',
-        color: loaded.skipped.length ? 'warning' : 'success',
+        color: loaded.skipped.length || loaded.skippedKinds.length ? 'warning' : 'success',
       })
       return close()
     }

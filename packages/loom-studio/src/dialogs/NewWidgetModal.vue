@@ -10,14 +10,14 @@ const props = defineProps({
 })
 const emit = defineEmits(['create'])
 
-const types = props.kit.kinds
-const typeId = ref(types[0]?.id ?? 'article')
+const types = computed(() => props.kit.kinds)
+const typeId = ref(types.value[0]?.id ?? 'article')
 const name = ref('')
 
 watch(open, (isOpen) => {
   if (!isOpen) return
   name.value = ''
-  typeId.value = types[0]?.id ?? 'article'
+  typeId.value = types.value[0]?.id ?? 'article'
 })
 
 const slug = (text) =>
@@ -35,7 +35,7 @@ const id = computed(() => {
 })
 
 function create() {
-  const type = types.find((t) => t.id === typeId.value)
+  const type = types.value.find((t) => t.id === typeId.value)
   emit('create', createDefinition(props.kit, typeId.value, { id: id.value, name: name.value.trim() || `${type?.label ?? 'New'} widget` }))
   open.value = false
 }

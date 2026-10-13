@@ -156,6 +156,22 @@ const published = computed(() => {
           description="Widgets that need what this app doesn't have are skipped below."
         />
         <UAlert
+          v-if="library?.skippedKinds.length"
+          color="warning"
+          variant="subtle"
+          icon="i-lucide-shapes"
+          :title="`Skipped ${library.skippedKinds.length} kind${library.skippedKinds.length === 1 ? '' : 's'} this kit can’t take`"
+        >
+          <template #description>
+            <ul class="mt-1 flex flex-col gap-0.5">
+              <li v-for="k in library.skippedKinds" :key="k.id">
+                <strong>{{ k.id }}</strong
+                >: {{ k.issues.map((i) => i.message).join('; ') }}
+              </li>
+            </ul>
+          </template>
+        </UAlert>
+        <UAlert
           v-if="library?.skipped.length"
           color="warning"
           variant="subtle"
@@ -179,7 +195,7 @@ const published = computed(() => {
             :class="width === 'wide' && 'mb-4 break-inside-avoid'"
             class="overflow-hidden rounded-xl shadow-xs ring ring-default"
           >
-            <Widget :definitions="library.widgets" :data="story" :index="i" :scheme="scheme">
+            <Widget :kit="library.kit" :definitions="library.widgets" :data="story" :index="i" :scheme="scheme">
               <template #fallback>
                 <p class="bg-default p-4 text-xs text-dimmed">
                   No widget for “{{ kit.describe(story) }}”{{ story.entry.type ? ` (${story.entry.type})` : ', which has no type' }}.

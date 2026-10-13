@@ -1,10 +1,10 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { createLibrary, getKind } from '@munsonlabs/loom'
-import { LoomStudio, NewWidgetModal } from '@munsonlabs/loom-studio'
+import { createLibrary, getKind, withKinds } from '@munsonlabs/loom'
+import { KindModal, LoomStudio, NewWidgetModal } from '@munsonlabs/loom-studio'
 import { useToast } from '@nuxt/ui/composables'
 import { useBridge } from 'bolt-bridge-stub'
-import { timelineKit as kit, widgets as examples } from 'timeline-kit'
+import { timelineKit, widgets as examples } from 'timeline-kit'
 import { native } from './native'
 
 /** Where the feed demo runs, which renders a published library. */
@@ -12,14 +12,15 @@ const FEED_URL = 'http://localhost:5195'
 const STORAGE_KEY = 'loom-studio-demo:library'
 
 /**
- * What the studio edits: every widget in the app's library, and which one is open.
+ * What the studio edits: every widget in the app's library, which one is open, and the kinds made in the studio.
  *
  * @typedef {object} Library
  * @property {WidgetDefinition[]} definitions
  * @property {string} selectedId
+ * @property {KindSpec[]} [kinds]
  */
 
-const exampleLibrary = () => ({ definitions: structuredClone(examples), selectedId: examples[0].id })
+const exampleLibrary = () => ({ definitions: structuredClone(examples), selectedId: examples[0].id, kinds: [] })
 
 function load() {
   try {
@@ -44,6 +45,19 @@ watch(
   { deep: true },
 )
 
+/** The timeline kit with the kinds made here. One that no longer fits is left out, so the studio still opens. */
+const kit = computed(() => {
+  let next = timelineKit
+  for (const spec of library.value.kinds ?? []) {
+    try {
+      next = withKinds(next, [spec])
+    } catch (e) {
+      console.warn(e)
+    }
+  }
+  return next
+})
+
 // Widgets preview against the Bolt bridge, talking to the stub native app (see main.js).
 // The studio logs every call they make on it.
 const bridge = useBridge()
@@ -62,10 +76,24 @@ const definition = computed({
 })
 
 const widgetOptions = computed(() =>
-  library.value.definitions.map((d) => ({ label: d.name, value: d.id, icon: getKind(kit, d.kind)?.icon ?? 'i-lucide-box' })),
+  library.value.definitions.map((d) => ({ label: d.name, value: d.id, icon: getKind(kit.value, d.kind)?.icon ?? 'i-lucide-box' })),
 )
 
 const newOpen = ref(false)
+
+/** The kind editor: open on a kind made here, or on none for a new one. A new one can start from the widget being edited. */
+const kindEditor = ref({ open: false, kind: undefined, starter: undefined })
+const editableKind = computed(() => library.value.kinds?.find((k) => k.id === definition.value.kind))
+
+function saveKind(spec) {
+  const kinds = library.value.kinds ?? []
+  const at = kinds.findIndex((k) => k.id === spec.id)
+  library.value.kinds = at < 0 ? [...kinds, spec] : kinds.map((k, i) => (i === at ? spec : k))
+}
+
+function removeKind(id) {
+  library.value.kinds = (library.value.kinds ?? []).filter((k) => k.id !== id)
+}
 
 function addWidget(created) {
   library.value.definitions = [...library.value.definitions, created]
@@ -82,8 +110,8 @@ const toast = useToast()
 
 /** Publishing hands the app one file: the whole library. Here that's a download the feed demo can import. */
 function publish() {
-  const file = `${kit.id}.library.json`
-  const json = JSON.stringify(createLibrary(kit, library.value.definitions, { publishedAt: new Date() }), null, 2)
+  const file = `${kit.value.id}.library.json`
+  const json = JSON.stringify(createLibrary(kit.value, library.value.definitions, { publishedAt: new Date(), kinds: library.value.kinds }), null, 2)
   const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }))
   Object.assign(document.createElement('a'), { href: url, download: file }).click()
   URL.revokeObjectURL(url)
@@ -95,9 +123,9 @@ function publish() {
   })
 }
 
-/** An imported library replaces these widgets with the ones that load. */
+/** An imported library replaces these widgets and kinds with the ones that load. */
 function importLibrary(loaded) {
-  if (loaded.widgets.length) library.value = { definitions: loaded.widgets, selectedId: loaded.widgets[0].id }
+  if (loaded.widgets.length) library.value = { definitions: loaded.widgets, selectedId: loaded.widgets[0].id, kinds: loaded.kinds }
 }
 </script>
 
@@ -110,6 +138,7 @@ function importLibrary(loaded) {
       :samples="samples"
       :context="bridge"
       :library="library.definitions"
+      :kinds="library.kinds"
       @publish="publish"
       @import-library="importLibrary"
     >
@@ -136,6 +165,23 @@ function importLibrary(loaded) {
         <UDropdownMenu
           :items="[
             { label: 'New widget…', icon: 'i-lucide-plus', onSelect: () => (newOpen = true) },
+            { type: 'separator' },
+            { label: 'New kind…', icon: 'i-lucide-shapes', onSelect: () => (kindEditor = { open: true, kind: undefined, starter: undefined }) },
+            {
+              label: 'New kind from this widget…',
+              icon: 'i-lucide-copy-plus',
+              onSelect: () => (kindEditor = { open: true, kind: undefined, starter: definition }),
+            },
+            ...(editableKind
+              ? [
+                  {
+                    label: `Edit ${editableKind.label}…`,
+                    icon: 'i-lucide-pencil',
+                    onSelect: () => (kindEditor = { open: true, kind: editableKind, starter: undefined }),
+                  },
+                ]
+              : []),
+            { type: 'separator' },
             {
               label: 'Delete this widget',
               icon: 'i-lucide-trash-2',
@@ -151,6 +197,16 @@ function importLibrary(loaded) {
         </UDropdownMenu>
       </template>
     </LoomStudio>
+    <KindModal
+      v-model:open="kindEditor.open"
+      :kit="kit"
+      :samples="samples"
+      :kind="kindEditor.kind"
+      :starter="kindEditor.starter"
+      :in-use="!!kindEditor.kind && library.definitions.some((d) => d.kind === kindEditor.kind.id)"
+      @save="saveKind"
+      @remove="removeKind"
+    />
     <NewWidgetModal v-model:open="newOpen" :kit="kit" :taken-ids="library.definitions.map((d) => d.id)" @create="addWidget" />
   </UApp>
 </template>

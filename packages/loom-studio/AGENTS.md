@@ -6,7 +6,7 @@
 
 ## Nuxt UI
 
-Components are used by **auto-import only**, never imported from `@nuxt/ui/components/*.vue`: explicit imports get Nuxt UI's Nuxt builds of `UIcon`/`ULink`, which pull in `@nuxt/icon` and break outside Nuxt. The host app runs Nuxt UI's Vite plugin with `scanPackages: ['@munsonlabs/loom-studio']`. Composables (`useToast`, `defineShortcuts`) are imported from `@nuxt/ui/composables`. `@nuxt/ui` and `@munsonlabs/loom` stay external in the pack build. The studio imports editor helpers from `@munsonlabs/loom/editor`, and exports only `LoomStudio` and `NewWidgetModal`.
+Components are used by **auto-import only**, never imported from `@nuxt/ui/components/*.vue`: explicit imports get Nuxt UI's Nuxt builds of `UIcon`/`ULink`, which pull in `@nuxt/icon` and break outside Nuxt. The host app runs Nuxt UI's Vite plugin with `scanPackages: ['@munsonlabs/loom-studio']`. Composables (`useToast`, `defineShortcuts`) are imported from `@nuxt/ui/composables`. `@nuxt/ui` and `@munsonlabs/loom` stay external in the pack build. The studio imports editor helpers from `@munsonlabs/loom/editor`, and exports only `LoomStudio`, `NewWidgetModal` and `KindModal`.
 
 ## Layout
 
@@ -22,7 +22,7 @@ src/
   preview/         usePreview (sample, width, theme, scheme, rules, mode), useCallLog, logCalls
   panels/          inspector/ (Inspector + one component per tab), StyleEditor, TokensEditor, TokenInput, KeyValueEditor, VariantsPanel, OverrideMark, options.js: props in, events out, no studio
   bars/            IdentityBar, DocumentBar, ThemePopover, IssuesPopover, PreviewBar, StatusHints, CallsLog
-  dialogs/         CommandPalette, ExportModal, ImportModal, NewWidgetModal
+  dialogs/         CommandPalette, ExportModal, ImportModal, NewWidgetModal, KindModal
   tour/            steps.js, useStudioTour, TourPopover.vue
 test/              mirrors src/; fixtures.js has a tiny kit and inScope()
 ```

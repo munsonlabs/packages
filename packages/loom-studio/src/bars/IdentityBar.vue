@@ -1,8 +1,19 @@
 <script setup>
+import { computed } from 'vue'
 import { useStudio } from '../studio'
 
-/** Top left: the widget's name, its kind, and the host app's own controls (the `actions` slot). */
+/** Top left: the widget's name, its kind (a menu to change it), and the host app's own controls (the `actions` slot). */
 const s = useStudio()
+
+const kindItems = computed(() => [
+  s.props.kit.kinds.map((k) => ({
+    label: k.label,
+    icon: k.icon ?? 'i-lucide-box',
+    type: 'checkbox',
+    checked: k.id === s.definition.kind,
+    onSelect: () => s.history.change((d) => (d.kind = k.id)),
+  })),
+])
 </script>
 
 <template>
@@ -17,8 +28,19 @@ const s = useStudio()
       aria-label="Widget name"
       @update:model-value="s.history.change((d) => (d.name = String($event)))"
     />
-    <UTooltip v-if="s.preview.kind" :text="s.preview.kind.description ?? s.preview.kind.label">
-      <UBadge :label="s.preview.kind.label" :icon="s.preview.kind.icon" color="neutral" variant="soft" size="sm" class="rounded-full" />
+    <UTooltip :text="s.preview.kind ? (s.preview.kind.description ?? s.preview.kind.label) : 'Pick the kind of data it\'s for'">
+      <UDropdownMenu :items="kindItems">
+        <UButton
+          :label="s.preview.kind?.label ?? 'No kind'"
+          :icon="s.preview.kind?.icon ?? 'i-lucide-box'"
+          trailing-icon="i-lucide-chevron-down"
+          color="neutral"
+          variant="soft"
+          size="xs"
+          class="rounded-full"
+          aria-label="Kind"
+        />
+      </UDropdownMenu>
     </UTooltip>
     <slot />
   </div>

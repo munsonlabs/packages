@@ -33,6 +33,8 @@ const props = defineProps({
   tour: { type: Boolean, default: true },
   /** Every widget in the app's library, in order: offered as one file in Export. */
   library: Array,
+  /** Kinds made in the app's `KindModal`, already added to `kit`: published with the library. */
+  kinds: Array,
 })
 
 const emit = defineEmits([

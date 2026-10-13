@@ -20,6 +20,7 @@ import { useStudioTour } from './tour/useStudioTour'
  * @property {unknown} [context]
  * @property {boolean} tour
  * @property {WidgetDefinition[]} [library]
+ * @property {KindSpec[]} [kinds]
  */
 
 /**

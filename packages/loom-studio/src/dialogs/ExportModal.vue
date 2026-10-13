@@ -11,10 +11,11 @@ const toast = useToast()
 const json = computed(() => JSON.stringify(s.definition, null, 2))
 const libraryFile = computed(() => `${s.props.kit.id ?? 'widgets'}.library.json`)
 /** The whole library as one file, for the app to fetch. Dated when it's made. */
-const libraryJson = () => JSON.stringify(createLibrary(s.props.kit, s.props.library ?? [], { publishedAt: new Date() }), null, 2)
+const libraryJson = () =>
+  JSON.stringify(createLibrary(s.props.kit, s.props.library ?? [], { publishedAt: new Date(), kinds: s.props.kinds }), null, 2)
 /** What a published library would need, and which widgets wouldn't render as written. */
 const librarySummary = computed(() => {
-  const library = createLibrary(s.props.kit, s.props.library ?? [])
+  const library = createLibrary(s.props.kit, s.props.library ?? [], { kinds: s.props.kinds })
   const broken = (s.props.library ?? []).filter((d) => hasErrors(validateDefinition(s.props.kit, d))).map((d) => d.name)
   return { ...library, broken }
 })
@@ -29,13 +30,14 @@ import { kit } from './kit' // your sources, blocks and kinds
 provideKit(kit, context) // context: what your sources need, e.g. a bridge or a cart
 
 // The whole library, fetched at runtime: widgets this app can't render are skipped and reported.
-const { widgets, skipped, missing } = loadLibrary(kit, await (await fetch('/${libraryFile.value}')).json())
+// Render with the kit it returns, which has the library's own kinds added.
+const { kit: libraryKit, widgets, skipped, missing } = loadLibrary(kit, await (await fetch('/${libraryFile.value}')).json())
 </` +
     `script>
 
 <template>
   <!-- Each item gets the widget for its kind, then the variant its rules pick. -->
-  <Widget v-for="(item, i) in items" :key="item.id" :definitions="widgets" :data="item" :index="i" />
+  <Widget v-for="(item, i) in items" :key="item.id" :kit="libraryKit" :definitions="widgets" :data="item" :index="i" />
 </template>`,
 )
 
@@ -90,6 +92,11 @@ function download() {
                 <UBadge v-if="librarySummary.broken.includes(w.name)" label="has errors" size="sm" color="error" variant="subtle" class="ml-auto" />
               </li>
             </ol>
+            <p v-if="librarySummary.kinds?.length" class="text-xs text-muted">
+              Carries {{ librarySummary.kinds.length }} kind{{ librarySummary.kinds.length === 1 ? '' : 's' }} made here:
+              <code>{{ librarySummary.kinds.map((k) => k.id).join(', ') }}</code
+              >. Apps add them to their kit as they load it.
+            </p>
             <p class="text-xs text-muted">
               Needs the sources <code>{{ librarySummary.sources.join(', ') || 'none' }}</code> and the blocks
               <code>{{ librarySummary.blocks.join(', ') }}</code

@@ -151,12 +151,12 @@ export function createStudio(definition, props, events) {
     selection.select(e.target.closest('[data-node-id]')?.dataset.nodeId)
   }
 
+  /** The app's library with this widget as edited so far: what the preview's Widget blocks pick from. */
+  const library = computed(() => props.library?.map((d) => (d.id === definition.value.id ? definition.value : d)))
+
   // --- Validation
   /** The widget picked instead of this one, when an earlier widget in the library matches whenever it does. */
-  const shadowedBy = computed(() => {
-    const library = props.library?.map((d) => (d.id === definition.value.id ? definition.value : d))
-    return library ? shadowedWidgets(library).get(definition.value.id) : undefined
-  })
+  const shadowedBy = computed(() => (library.value ? shadowedWidgets(library.value).get(definition.value.id) : undefined))
   const issues = computed(() => [
     ...validateDefinition(props.kit, definition.value),
     // Studio-only: `shadowed` tells it apart from the colour warnings, which have their own fix.
@@ -214,6 +214,8 @@ export function createStudio(definition, props, events) {
     tour,
     issues,
     errors,
+    /** The library as edited, for nested widgets in the preview. */
+    library,
     /** The frames the canvas draws; the focused one is where editing happens. */
     frames,
     focusFrame,

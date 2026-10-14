@@ -9,7 +9,7 @@
 
 /**
  * @typedef {object} BlockPropSpec
- * @property {'string' | 'number' | 'boolean' | 'enum'} type
+ * @property {'string' | 'number' | 'boolean' | 'enum' | 'object'} type `object` is bound only: it has no value to type in.
  * @property {string} label
  * @property {string[]} [options]
  * @property {unknown} [default]

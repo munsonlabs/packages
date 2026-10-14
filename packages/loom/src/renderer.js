@@ -11,8 +11,9 @@ import { parseAction } from './definitions/validate'
  * @param {Readonly<import('vue').Ref>} options.data The widget's data.
  * @param {Readonly<import('vue').Ref<number>>} options.index
  * @param {() => unknown} options.context
+ * @param {boolean} [options.nested] Drawn by a Widget block inside another widget: its nodes are marked as nested.
  */
-export function createRenderer({ kit, data, index, context }) {
+export function createRenderer({ kit, data, index, context, nested = false }) {
   // Sources are set up lazily, the first time a binding reaches them, inside an effect scope tied
   // to the widget, so a definition edited live can reach new sources without remounting.
   const scope = effectScope()
@@ -69,7 +70,7 @@ export function createRenderer({ kit, data, index, context }) {
     }
   }
 
-  return { kit, readValue, clickHandler }
+  return { kit, readValue, clickHandler, nested }
 }
 
 const RENDERER = Symbol('loom-renderer')

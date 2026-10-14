@@ -54,17 +54,17 @@ import { iconBlock } from '@munsonlabs/loom/icon'
 
 ### `<Widget>`
 
-| Prop          | Type                          | Notes                                                          |
-| ------------- | ----------------------------- | -------------------------------------------------------------- |
-| `kit`         | `Kit`                         | Or `provideKit()`.                                             |
-| `definition`  | `WidgetDefinition`            |                                                                |
-| `definitions` | `WidgetDefinition[]`          | Used when `definition` isn't: the first that matches.          |
-| `data`        | any                           | Required.                                                      |
-| `index`       | `number`                      | Passed to sources. Default `0`.                                |
-| `context`     | any                           | Or `provideKit()`.                                             |
-| `variant`     | `string`                      | Pins a variant, or `'base'`.                                   |
-| `theme`       | `string`                      | One of the kit's themes. Default: its first.                   |
-| `scheme`      | `'auto' \| 'light' \| 'dark'` | Default `auto`: follows the device. Picks the theme's partner. |
+| Prop          | Type                          | Notes                                                                                        |
+| ------------- | ----------------------------- | -------------------------------------------------------------------------------------------- |
+| `kit`         | `Kit`                         | Or `provideKit()`.                                                                           |
+| `definition`  | `WidgetDefinition`            |                                                                                              |
+| `definitions` | `WidgetDefinition[]`          | Used when `definition` isn't: the first that matches. Widget blocks inside pick from it too. |
+| `data`        | any                           | Required.                                                                                    |
+| `index`       | `number`                      | Passed to sources. Default `0`.                                                              |
+| `context`     | any                           | Or `provideKit()`.                                                                           |
+| `variant`     | `string`                      | Pins a variant, or `'base'`.                                                                 |
+| `theme`       | `string`                      | One of the kit's themes. Default: its first.                                                 |
+| `scheme`      | `'auto' \| 'light' \| 'dark'` | Default `auto`: follows the device. Picks the theme's partner.                               |
 
 Emits `variant(id)`. Slot `fallback({ data })` renders when no definition fits.
 

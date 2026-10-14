@@ -32,7 +32,7 @@ const props = defineProps({
   context: { default: undefined },
   /** Starts the guided tour on a first visit (remembered per browser). The help button replays it either way. */
   tour: { type: Boolean, default: true },
-  /** Every widget in the app's library, in order: offered as one file in Export. */
+  /** Every widget in the app's library, in order: offered as one file in Export, and what the preview's Widget blocks pick from. */
   library: Array,
 })
 

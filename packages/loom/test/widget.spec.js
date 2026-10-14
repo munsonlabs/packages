@@ -266,3 +266,55 @@ describe('a kit guard', () => {
     expect(shop.open).toHaveBeenCalledTimes(1)
   })
 })
+
+describe('Widget blocks', () => {
+  const mini = {
+    version: 2,
+    id: 'mini',
+    name: 'Mini',
+    match: [{ path: 'kind', op: 'equals', value: 'product' }],
+    root: { id: 'title', type: 'Text', bind: { text: 'product.title' } },
+  }
+  const price = { ...mini, id: 'price', name: 'Price', root: { id: 'price', type: 'Text', bind: { text: 'product.price' } } }
+  const shelf = (block = {}) => ({
+    version: 2,
+    id: 'shelf',
+    name: 'Shelf',
+    root: {
+      id: 'list',
+      type: 'Repeat',
+      bind: { items: 'product.related' },
+      children: [{ id: 'each', type: 'Widget', bind: { data: 'item' }, ...block }],
+    },
+  })
+  const mountShelf = (props) => mount(Widget, { props: { kit: makeKit(), data: makeProducts()[0], context: makeShop(), ...props } })
+
+  it('draw the widget the bound data matches, with its own sources, marked as nested', () => {
+    const wrapper = mountShelf({ definition: shelf(), definitions: [mini] })
+    expect(wrapper.findAll('[data-widget="mini"]').map((w) => w.text())).toEqual(['Matching mug', 'Spare lid'])
+    expect(wrapper.findAll('[data-node-id="each"]')).toHaveLength(2)
+    expect(wrapper.find('[data-node-id="title"]').exists()).toBe(false)
+    expect(wrapper.findAll('[data-nested-node-id="title"]')).toHaveLength(2)
+  })
+
+  it('draw the widget they name instead, when they name one', () => {
+    const wrapper = mountShelf({ definition: shelf({ props: { widget: 'price' } }), definitions: [mini, price] })
+    expect(wrapper.findAll('[data-widget="price"]').map((w) => w.text())).toEqual(['£8', '£3'])
+  })
+
+  it('never draw a widget inside itself', () => {
+    // The shelf takes any data, so each related product would get the shelf again.
+    const wrapper = mountShelf({ definitions: [shelf()] })
+    expect(wrapper.attributes('data-widget')).toBe('shelf')
+    expect(wrapper.findAll('[data-widget]')).toHaveLength(1)
+  })
+
+  it('draw nothing without a library to pick from', () => {
+    expect(mountShelf({ definition: shelf() }).find('.w-widget').exists()).toBe(false)
+  })
+
+  it('only take an object as their data', () => {
+    const issues = validateDefinition(makeKit(), shelf({ bind: { data: 'item.title' } }))
+    expect(issues.map((i) => i.message)).toEqual(['Widget.data can\'t take a string ("item.title")'])
+  })
+})

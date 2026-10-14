@@ -1,8 +1,9 @@
 <script setup>
-import { computed, onMounted, onScopeDispose, ref, toRef, watch } from 'vue'
+import { computed, getCurrentInstance, onMounted, onScopeDispose, ref, toRef, watch } from 'vue'
 import WidgetNode from './WidgetNode.vue'
 import { injectContext, injectKit } from './kit'
 import { matchDefinition } from './definitions/match'
+import { injectNesting, MAX_DEPTH, provideNesting } from './nesting'
 import { createRenderer, provideRenderer } from './renderer'
 import { resolveScheme, themeForScheme, usePreferredScheme } from './theme/scheme'
 import { tokenVars } from './theme/tokens'
@@ -16,6 +17,7 @@ import { applyVariant, BASE_VARIANT, findVariant, matchVariant } from './definit
  * - The variant is the `variant` prop when given (`'base'` forces the base), otherwise the first
  *   whose rule matches the data and the widget's measured width.
  * - It themes the root, then hands the variant's tree to `<WidgetNode>`, which draws it node by node.
+ * - Widget blocks inside draw other widgets from the same `definitions`, through `nesting.js`.
  */
 defineOptions({ name: 'LoomWidget' })
 
@@ -23,7 +25,7 @@ const props = defineProps({
   /** Falls back to the kit given to `provideKit()`. */
   kit: { type: Object, default: undefined },
   definition: { type: Object, default: undefined },
-  /** Picks the first whose `match` holds for the data when `definition` isn't given. */
+  /** Picks the first whose `match` holds for the data when `definition` isn't given. Widget blocks inside pick from it too. */
   definitions: { type: Array, default: undefined },
   /** What the widget renders: a story, a product, anything the kit's sources read. */
   data: { type: null, required: true },
@@ -46,6 +48,9 @@ const emit = defineEmits(['variant'])
 
 const injectedKit = injectKit()
 const injectedContext = injectContext()
+// Set when this widget is drawn by a Widget block inside another.
+const parent = injectNesting()
+const depth = parent ? parent.depth + 1 : 0
 const kit = computed(() => {
   const k = props.kit ?? injectedKit
   if (!k) throw new Error('[loom] <Widget> needs a kit: pass `kit` or call provideKit()')
@@ -57,13 +62,42 @@ const renderer = createRenderer({
   data: toRef(() => props.data),
   index: toRef(() => props.index),
   context: () => props.context ?? injectedContext,
+  nested: depth > 0,
 })
 provideRenderer(renderer)
 
 const device = usePreferredScheme()
 const scheme = computed(() => resolveScheme(props.scheme, device.value))
 
-const definition = computed(() => props.definition ?? (props.definitions ? matchDefinition(props.data, props.definitions) : undefined))
+const definition = computed(() => {
+  const def = props.definition ?? (props.definitions ? matchDefinition(props.data, props.definitions) : undefined)
+  // A widget inside itself, however deep, would never end; nor would a long enough chain.
+  if (def && parent && (depth > MAX_DEPTH || parent.ancestors.includes(def.id))) return undefined
+  return def
+})
+
+provideNesting({
+  component: getCurrentInstance().type,
+  depth,
+  get ancestors() {
+    return [...(parent?.ancestors ?? []), ...(definition.value ? [definition.value.id] : [])]
+  },
+  get kit() {
+    return kit.value
+  },
+  get definitions() {
+    return props.definitions
+  },
+  get context() {
+    return props.context ?? injectedContext
+  },
+  get theme() {
+    return props.theme
+  },
+  get scheme() {
+    return scheme.value
+  },
+})
 
 // The widget's own width, for variant rules by size.
 const el = ref()

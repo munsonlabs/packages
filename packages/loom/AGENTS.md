@@ -19,9 +19,10 @@ src/
   Widget.vue     <Widget>: picks the definition and variant, themes the root, provides the renderer
   WidgetNode.vue draws one node (if, props, block) and recurses into its children
   renderer.js    createRenderer: lazy sources, readValue(path, locals), clickHandler (runs the guard)
+  nesting.js     what a <Widget> hands the Widget blocks inside it, and the guard against a widget inside itself
   types/         definition.js, blocks.js, kit.js, guard.js: every shape, no runtime code
   kit/           createKit.js, provide.js (provideKit/inject*), lookup.js (themes, blockDefaults)
-  blocks/        builtin/ (the 15 built-ins, one SFC each: spec, template, CSS; index.js gathers builtinBlocks), video/ and icon/ (optional entries)
+  blocks/        builtin/ (the 16 built-ins, one SFC each: spec, template, CSS; index.js gathers builtinBlocks), video/ and icon/ (optional entries)
   definitions/   paths.js, match.js, variants.js, validate.js, library.js
   theme/         tokens.js, scheme.js, lightDark.js, styles.css
 test/            mirrors src/; fixtures.js (a small shop kit) is imported as @test/fixtures
@@ -45,6 +46,7 @@ test/            mirrors src/; fixtures.js (a small shop kit) is imported as @te
 - **A widget says which data it's for, as JSON.** `match` holds conditions on the raw data, never on sources, which don't exist until a widget renders; `conditionHolds` in `definitions/match.js` is the only place they run. Among several definitions, the first that matches wins: there's no specificity, so order is the tie-break and editors warn about widgets an earlier one shadows.
 - **`uses` is a widget's scope.** When set, editors offer only those sources and validation treats any other as out of scope. Unset means every source.
 - **Keep the main entry small.** Something only an editor needs goes in `editor.js`, not `index.js`; something nothing outside loom uses isn't exported at all.
+- **A widget never draws inside itself.** A Widget block's `<Widget>` skips a definition already above it (`nesting.js` keeps the ancestors), and nesting stops at `MAX_DEPTH`. Nested nodes carry `data-nested-node-id`, never `data-node-id`, so editors only ever select the outer widget's nodes.
 - **Kits are values.** No module-level registries; two kits must be able to share a page.
 
 ## Testing

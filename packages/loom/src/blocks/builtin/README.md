@@ -19,6 +19,7 @@ One single-file component per block. Each exports its spec (what it accepts), ta
 | `Progress.vue` | A labelled bar.                                                                                                                                    |
 | `Divider.vue`  | A rule.                                                                                                                                            |
 | `Spacer.vue`   | Fixed space, or space that grows.                                                                                                                  |
+| `Widget.vue`   | Another `<Widget>` for the data bound to it, picked from the outer widget's library (or named), with its kit, context, theme and scheme.           |
 | `shared.js`    | `blockProps(spec)` (Vue props from a spec), and the small helpers the templates share (`toText`, `isBlank`, …).                                    |
 | `index.js`     | `builtinBlocks`: block type → its spec and component.                                                                                              |
 
@@ -27,4 +28,5 @@ One single-file component per block. Each exports its spec (what it accepts), ta
 - One file per block, in four parts: a plain `<script>` exporting its `spec`; a `<script setup>` calling `defineProps(blockProps(spec))`, so props and defaults are written once; the template; and a `<style>` with its rules. The style isn't scoped: its classes are `w-*` already.
 - Each has one root element, so whatever the node carries (`data-node-id`, its `style`, an `is-clickable` class, the click handler) falls through onto it, after the block's own class and style.
 - A block that draws nothing (blank text, no image) uses `v-if` on its root.
+- `Widget.vue` is the one block that knows the widget it's in: it reads the outer `<Widget>` from `nesting.js`, which hands down the component itself rather than importing it, since `Widget.vue` imports the blocks.
 - Text-bearing blocks use `v-text` rather than `{{ }}` so formatting the template can never add whitespace to the output.

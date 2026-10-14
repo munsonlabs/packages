@@ -104,6 +104,7 @@ function onVariant(frame, id) {
             :key="frame.sampleIndex"
             :kit="s.props.kit"
             :definition="s.definition"
+            :definitions="s.library"
             :data="s.props.samples[frame.sampleIndex]"
             :index="frame.sampleIndex"
             :context="s.callLog.previewContext"

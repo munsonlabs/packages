@@ -13,6 +13,7 @@ import Carousel, { spec as carouselSpec } from './Carousel.vue'
 import Avatar, { spec as avatarSpec } from './Avatar.vue'
 import Rating, { spec as ratingSpec } from './Rating.vue'
 import Progress, { spec as progressSpec } from './Progress.vue'
+import WidgetBlock, { spec as widgetSpec } from './Widget.vue'
 
 /**
  * The blocks every kit has, by type: each one's spec, from its SFC, and the component that draws
@@ -35,4 +36,5 @@ export const builtinBlocks = {
   Avatar: { ...avatarSpec, component: Avatar },
   Rating: { ...ratingSpec, component: Rating },
   Progress: { ...progressSpec, component: Progress },
+  Widget: { ...widgetSpec, component: WidgetBlock },
 }

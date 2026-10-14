@@ -1,6 +1,6 @@
 # `blocks/`: the pieces widgets are built from
 
-Every node in a definition is a block: a Stack, a Text, an Image, a Button. This folder holds the 15 built-ins, one file each: what the block **accepts**, the **HTML** it draws, and its **CSS**. Video and Icon are optional extras in their own subfolders.
+Every node in a definition is a block: a Stack, a Text, an Image, a Button. This folder holds the 16 built-ins, one file each: what the block **accepts**, the **HTML** it draws, and its **CSS**. Video and Icon are optional extras in their own subfolders.
 
 | File / folder | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

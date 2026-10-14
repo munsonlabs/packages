@@ -63,8 +63,9 @@ function setBind(name, path) {
           />
         </div>
         <template v-if="!node.bind?.[name]">
+          <p v-if="prop.type === 'object'" class="text-xs text-dimmed">Bind it to data, such as a Repeat's item.</p>
           <USelect
-            v-if="prop.type === 'enum'"
+            v-else-if="prop.type === 'enum'"
             :model-value="staticValue(name, prop)"
             :items="prop.options"
             size="xs"

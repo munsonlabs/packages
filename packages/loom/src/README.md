@@ -9,9 +9,10 @@ src/
   Widget.vue     <Widget>: picks the definition and variant, themes the root, and the one place every part below comes together
   WidgetNode.vue one node of the tree, and through itself its children: checks `if`, resolves props, draws the block
   renderer.js    what every node of one widget shares: its sources, path → value, tap → guard → action
+  nesting.js     what a widget hands the Widget blocks inside it, so they can draw other widgets
   types/         the shapes of everything: definitions, kits, blocks, guards
   kit/           making a kit, sharing it with widgets, and finding things in it
-  blocks/        the 15 built-in blocks, one file each (what it accepts, the HTML it draws, its CSS), plus Video and Icon
+  blocks/        the 16 built-in blocks, one file each (what it accepts, the HTML it draws, its CSS), plus Video and Icon
   definitions/   working with definitions: bindings, matching, variants, validation, libraries
   theme/         design tokens, themes, light and dark, and the shared CSS
 ```

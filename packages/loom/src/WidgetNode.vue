@@ -15,7 +15,8 @@ const props = defineProps({
   locals: { type: Object, required: true },
 })
 
-const { kit, readValue, clickHandler } = useRenderer()
+// A nested widget's nodes say so (`data-nested-node-id`), so an editor of the outer one sees the Widget block, not its insides.
+const { kit, readValue, clickHandler, nested } = useRenderer()
 
 const spec = computed(() => kit().blocks[props.node.type])
 const component = computed(() => spec.value?.component)
@@ -39,7 +40,16 @@ const classes = computed(() => [
 </script>
 
 <template>
-  <component :is="component" v-if="shown" v-bind="values" :data-node-id="node.id" :class="classes" :style="node.style" :onClick="onClick">
+  <component
+    :is="component"
+    v-if="shown"
+    v-bind="values"
+    :data-node-id="nested ? undefined : node.id"
+    :data-nested-node-id="nested ? node.id : undefined"
+    :class="classes"
+    :style="node.style"
+    :onClick="onClick"
+  >
     <!-- A Repeat draws its children once per item, with that item in scope. -->
     <template v-if="node.type === 'Repeat'" #default="{ item, repeat }">
       <WidgetNode v-for="child in node.children ?? []" :key="child.id" :node="child" :locals="{ ...locals, item, repeat }" />

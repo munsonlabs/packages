@@ -16,8 +16,10 @@ export function createCachedResolver<Args extends unknown[], Result>(
   }
 }
 
+const insecureRank = (src: string) => (src.startsWith('https:') ? 0 : 1)
+
 export function pickBestSource(sources: Array<{ src: string; type: string }>) {
   return sources
     .filter((s) => s.src && SOURCE_TYPE_PRIORITY.includes(s.type))
-    .sort((a, b) => SOURCE_TYPE_PRIORITY.indexOf(a.type) - SOURCE_TYPE_PRIORITY.indexOf(b.type))
+    .sort((a, b) => SOURCE_TYPE_PRIORITY.indexOf(a.type) - SOURCE_TYPE_PRIORITY.indexOf(b.type) || insecureRank(a.src) - insecureRank(b.src))
 }

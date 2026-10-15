@@ -61,6 +61,22 @@ describe('resolveSource', () => {
     })
   })
 
+  it('plays the https manifest when the Playback API lists the http one first', async () => {
+    mockFetch(
+      { video_cloud: { policy_key: 'pk123' } },
+      {
+        sources: [
+          { src: 'http://manifest.prod.boltdns.net/master.m3u8', type: 'application/x-mpegURL' },
+          { src: 'https://manifest.prod.boltdns.net/master.m3u8', type: 'application/x-mpegURL' },
+        ],
+      },
+    )
+
+    const result = await resolveSource(uniqueUrl())
+
+    expect(result.src).toBe('https://manifest.prod.boltdns.net/master.m3u8')
+  })
+
   it('extracts the ima3 ad tag URL from the player config plugins', async () => {
     mockFetch(
       {

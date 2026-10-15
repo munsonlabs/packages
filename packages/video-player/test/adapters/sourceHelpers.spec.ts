@@ -25,6 +25,27 @@ describe('pickBestSource', () => {
     expect(result[0].type).toBe('video/mp4')
   })
 
+  it('prefers https over http for the same type', () => {
+    const sources = [
+      { src: 'http://cdn.example.com/master.m3u8', type: 'application/x-mpegURL' },
+      { src: 'https://cdn.example.com/master.m3u8', type: 'application/x-mpegURL' },
+    ]
+    expect(pickBestSource(sources)[0].src).toBe('https://cdn.example.com/master.m3u8')
+  })
+
+  it('still prefers HLS over MP4 when only the MP4 is https', () => {
+    const sources = [
+      { src: 'https://cdn.example.com/video.mp4', type: 'video/mp4' },
+      { src: 'http://cdn.example.com/master.m3u8', type: 'application/x-mpegURL' },
+    ]
+    expect(pickBestSource(sources)[0].type).toBe('application/x-mpegURL')
+  })
+
+  it('keeps http sources when there is no https one', () => {
+    const sources = [{ src: 'http://cdn.example.com/master.m3u8', type: 'application/x-mpegURL' }]
+    expect(pickBestSource(sources)).toHaveLength(1)
+  })
+
   it('returns empty array for empty input', () => {
     expect(pickBestSource([])).toEqual([])
   })

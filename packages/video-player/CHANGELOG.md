@@ -1,5 +1,11 @@
 # @munsonlabs/video-player
 
+## 0.3.2
+
+### Patch Changes
+
+- f3716ff: When a platform lists a source over both http and https, as Brightcove's Playback API does, the player now picks the https one, so https pages no longer have the manifest blocked as mixed content or by a Content Security Policy.
+
 ## 0.3.1
 
 ### Patch Changes

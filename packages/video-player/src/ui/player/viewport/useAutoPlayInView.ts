@@ -10,7 +10,7 @@ export function useAutoPlayInView(
   getPlayer: () => PlaybackAdapter | null,
   isFullscreen: Ref<boolean>,
   isFullscreenPending: Ref<boolean>,
-  explicitMuted: boolean | undefined,
+  getExplicitMuted: () => boolean | undefined,
 ): void {
   let unobserve: (() => void) | null = null
 
@@ -21,7 +21,7 @@ export function useAutoPlayInView(
     unobserve = observeViewportPriority(shell, () => {
       const player = getPlayer()
       if (!player || !player.paused() || isFullscreen.value || isFullscreenPending.value) return
-      player.setMuted(resolveInitialMuted(explicitMuted, true))
+      player.setMuted(resolveInitialMuted(getExplicitMuted(), true))
       void player.play().catch(() => {})
     })
   })

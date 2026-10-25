@@ -147,7 +147,7 @@ export function usePlayer(
     fullscreen.isFullscreenPending,
     computed(() => !!props.pin),
   )
-  if (props.playInView) useAutoPlayInView(videoEl, getPlayer, fullscreen.isFullscreen, fullscreen.isFullscreenPending, props.muted)
+  if (props.playInView) useAutoPlayInView(videoEl, getPlayer, fullscreen.isFullscreen, fullscreen.isFullscreenPending, () => props.muted)
 
   function finalizeAdapter(mounted: MountedAdapter): void {
     adapter = mounted.adapter

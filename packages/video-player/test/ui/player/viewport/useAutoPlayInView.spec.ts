@@ -19,6 +19,7 @@ function makeAdapter(paused: boolean): PlaybackAdapter {
 }
 
 function setup(adapter: PlaybackAdapter | null, explicitMuted?: boolean) {
+  const muted = ref(explicitMuted)
   const shell = document.createElement('div')
   shell.className = 'player__shell'
   const video = document.createElement('video')
@@ -28,8 +29,16 @@ function setup(adapter: PlaybackAdapter | null, explicitMuted?: boolean) {
 
   const isFullscreen = ref(false)
   const isFullscreenPending = ref(false)
-  const { wrapper } = withSetup(() => useAutoPlayInView(videoEl, () => adapter, isFullscreen, isFullscreenPending, explicitMuted))
-  return { isFullscreen, isFullscreenPending, wrapper }
+  const { wrapper } = withSetup(() =>
+    useAutoPlayInView(
+      videoEl,
+      () => adapter,
+      isFullscreen,
+      isFullscreenPending,
+      () => muted.value,
+    ),
+  )
+  return { isFullscreen, isFullscreenPending, muted, wrapper }
 }
 
 beforeEach(() => {
@@ -99,6 +108,16 @@ describe('onWin (this player won the viewport-priority race)', () => {
 
     expect(adapter.setMuted).toHaveBeenCalledWith(false)
   })
+
+  it('reads the muted prop as it is when the player wins, not as it was at mount', () => {
+    const adapter = makeAdapter(true)
+    const { muted } = setup(adapter, true)
+    muted.value = false
+
+    capturedOnWin?.()
+
+    expect(adapter.setMuted).toHaveBeenCalledWith(false)
+  })
 })
 
 describe('lifecycle', () => {
@@ -116,7 +135,15 @@ describe('lifecycle', () => {
     const videoEl = ref<HTMLVideoElement | null>(document.createElement('video'))
     const adapter = makeAdapter(true)
 
-    withSetup(() => useAutoPlayInView(videoEl, () => adapter, ref(false), ref(false), undefined))
+    withSetup(() =>
+      useAutoPlayInView(
+        videoEl,
+        () => adapter,
+        ref(false),
+        ref(false),
+        () => undefined,
+      ),
+    )
 
     expect(observeViewportPriority).not.toHaveBeenCalled()
   })

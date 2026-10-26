@@ -1,5 +1,11 @@
 # @munsonlabs/video-player
 
+## 0.3.3
+
+### Patch Changes
+
+- 676302f: Fullscreen now fits the whole video on screen instead of cropping it to fill, so a video whose shape differs from the screen keeps its edges, matching the YouTube, Vimeo and Dailymotion embeds and iOS.
+
 ## 0.3.2
 
 ### Patch Changes

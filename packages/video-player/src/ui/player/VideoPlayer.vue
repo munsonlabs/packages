@@ -299,4 +299,9 @@ defineExpose(exposePlayerSurface(player))
   width: 100% !important;
   height: 100% !important;
 }
+
+.player__shell:fullscreen .ml-video-media,
+.player__shell:fullscreen .player__poster img {
+  object-fit: contain;
+}
 </style>

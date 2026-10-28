@@ -39,6 +39,8 @@ export const PLAYER_STATE_KEYS = [
   'isLooping',
   'currentPlaybackRate',
   'hasStarted',
+  'hasFirstFrame',
+  'hasPlayedFrame',
   'isError',
   'errorMessage',
   'progress',

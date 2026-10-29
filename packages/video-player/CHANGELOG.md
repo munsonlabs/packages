@@ -1,5 +1,12 @@
 # @munsonlabs/video-player
 
+## 0.3.4
+
+### Patch Changes
+
+- 29e6b7d: The player handle now exposes `hasFirstFrame` and `hasPlayedFrame`, so a custom poster can hide at the same moment the built-in one does.
+- 15ff829: A `playInView` player now reads `muted` when it scrolls into view rather than when it mounted, so unmuting a preloaded player before it is reached no longer has it start muted.
+
 ## 0.3.3
 
 ### Patch Changes

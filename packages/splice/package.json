@@ -1,0 +1,73 @@
+{
+  "name": "@munsonlabs/splice",
+  "version": "0.0.0",
+  "description": "In-browser clip making with WebCodecs: trim, crop, caption and export an MP4 on the device, with a clip editor built on @munsonlabs/video-player.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/munsonlabs/packages.git",
+    "directory": "packages/splice"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "./dist/elements/**",
+    "./dist/**/*.css"
+  ],
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
+    },
+    "./element": {
+      "source": "./src/elements/index.ts",
+      "import": "./dist/elements/index.mjs",
+      "types": "./dist/elements/index.d.mts"
+    },
+    "./vue": {
+      "source": "./src/vue.ts",
+      "import": "./dist/vue.mjs",
+      "types": "./dist/vue.d.mts"
+    },
+    "./style": {
+      "types": "./src/types/style.d.ts",
+      "import": "./dist/style.css"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "AUTO_ENTRIES=1 vp pack --watch",
+    "clean": "rm -rf dist",
+    "lint": "vp lint",
+    "fmt": "vp fmt",
+    "test:watch": "vp test --watch"
+  },
+  "dependencies": {
+    "@munsonlabs/sigil": "*",
+    "mediabunny": "^1.61.0"
+  },
+  "devDependencies": {
+    "@munsonlabs/shipkit": "*",
+    "@munsonlabs/video-player": "*",
+    "vue": "3.5.42"
+  },
+  "peerDependencies": {
+    "@munsonlabs/video-player": "*",
+    "vue": ">=3"
+  },
+  "peerDependenciesMeta": {
+    "@munsonlabs/video-player": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
+  }
+}

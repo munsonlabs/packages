@@ -8,9 +8,11 @@
   },
   "dependencies": {
     "@munsonlabs/sigil": "*",
+    "@munsonlabs/splice": "*",
     "@munsonlabs/video-player": "*",
     "better-sqlite3": "^12.6.2",
     "docus": "latest",
+    "hls.js": "^1.6.16",
     "nuxt": "^4.3.1"
   },
   "devDependencies": {

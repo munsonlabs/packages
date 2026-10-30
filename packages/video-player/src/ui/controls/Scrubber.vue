@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useScrubber } from '@/ui/controls/useScrubber'
 import { useResolvedPlayer, type ResolvedPlayerProps } from '@/ui/controls/useResolvedPlayer'
 import { fmtTime } from '@/utils/time'
@@ -10,10 +11,27 @@ const player = useResolvedPlayer(props)
 const { scrubbing, displayPercent, previewSeconds, onInput, onChange, onTouchStart, onTouchEnd, onPointerCancel } = useScrubber(player)
 
 const formatTime = (seconds: number): string => fmtTime(seconds, true)
+
+/** The deep-linked range as percentages of the duration, for the highlight under the track. */
+const range = computed(() => {
+  const clip = player.value?.clipRange
+  const duration = player.value?.duration
+  if (!clip || !duration) return null
+  const start = Math.min(100, (clip.start / duration) * 100)
+  const end = clip.end === null ? start : Math.min(100, (clip.end / duration) * 100)
+  return { start, width: Math.max(end - start, 0.6) }
+})
 </script>
 
 <template>
   <div class="ml-video-scrubber-wrap">
+    <div
+      v-if="range"
+      class="ml-video-scrubber__range"
+      data-testid="clip-range"
+      aria-hidden="true"
+      :style="{ left: `${range.start}%`, width: `${range.width}%` }"
+    />
     <input
       type="range"
       min="0"
@@ -23,7 +41,11 @@ const formatTime = (seconds: number): string => fmtTime(seconds, true)
       class="ml-video-scrubber"
       :style="{ '--p': `${displayPercent}%`, '--b': `${player?.bufferedDisplay ?? 0}%` }"
       aria-label="Seek"
-      :aria-valuetext="`${formatTime(previewSeconds)} of ${formatTime(player?.duration ?? 0)}`"
+      :aria-valuetext="
+        `${formatTime(previewSeconds)} of ${formatTime(player?.duration ?? 0)}` +
+        (player?.clipRange ? `, linked moment from ${formatTime(player.clipRange.start)}` : '') +
+        (player?.clipRange?.end != null ? ` to ${formatTime(player.clipRange.end)}` : '')
+      "
       @input="onInput"
       @change="onChange"
       @touchstart="onTouchStart"
@@ -54,6 +76,16 @@ const formatTime = (seconds: number): string => fmtTime(seconds, true)
 :where(.ml-video-scrubber):focus-visible {
   outline: 2px solid #fff !important;
   outline-offset: 0 !important;
+}
+
+.ml-video-scrubber__range {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  transform: translateY(-50%);
+  background: var(--ml-video-range-color, color-mix(in srgb, var(--ml-video-accent, #3b82f6) 55%, transparent));
+  pointer-events: none;
+  margin-top: -2px;
 }
 
 .ml-video-scrubber__preview {

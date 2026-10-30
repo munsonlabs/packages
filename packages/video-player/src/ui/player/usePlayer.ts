@@ -7,6 +7,8 @@ import { useFullscreen } from '@/ui/player/features/useFullscreen'
 import { useBuffering } from '@/ui/player/features/useBuffering'
 import { createQuartileEvents } from '@/ui/player/features/createQuartileEvents'
 import { usePositionMemory } from '@/ui/player/features/usePositionMemory'
+import { useDeepLink } from '@/ui/player/features/useDeepLink'
+import { useClipRange, type UseClipRangeReturn } from '@/ui/player/features/useClipRange'
 import { useAutoPauseOffscreen } from '@/ui/player/viewport/useAutoPauseOffscreen'
 import { useAutoPlayInView } from '@/ui/player/viewport/useAutoPlayInView'
 import { createPlayerControls, type PlayerControls } from '@/ui/player/createPlayerControls'
@@ -18,9 +20,11 @@ import type { PlayerProps, StateChangeEvent, StateChangeType } from '@/types/pla
 import { getQualityPreference } from '@/preferences/qualityPreference'
 
 export type UsePlayerReturn = PlayerState &
-  PlayerControls & {
+  PlayerControls &
+  UseClipRangeReturn & {
     fire: (type: StateChangeType, extras?: Partial<StateChangeEvent>) => void
     retry: () => void
+    setControls: (value: boolean | null) => void
     isBuffering: Ref<boolean>
     toggleAdMute: () => void
     isFullscreen: Ref<boolean>
@@ -81,6 +85,22 @@ export function usePlayer(
     buffering,
     fullscreen,
   })
+
+  const { setClipRange } = useClipRange(state, {
+    seek: controls.seek,
+    pause: controls.pause,
+    play: controls.play,
+    forgoRestore: positionMemory.forgo,
+  })
+  useDeepLink(videoEl, props, state, { seek: controls.seek, setClipRange })
+
+  /**
+   * Overrides the `controls` prop: `false` hides the HUD, `true` shows it, `null` gives the prop back
+   * its say.
+   */
+  function setControls(value: boolean | null): void {
+    state.controlsOverride.value = value
+  }
 
   function retry(): void {
     if (!adapter) return
@@ -151,6 +171,7 @@ export function usePlayer(
 
   function finalizeAdapter(mounted: MountedAdapter): void {
     adapter = mounted.adapter
+    state.mediaElement.value = mounted.adapter.el instanceof HTMLVideoElement ? mounted.adapter.el : null
     if (mounted.nativeUi !== undefined) isNativeUi.value = mounted.nativeUi
     if (mounted.poster) state.resolvedPoster.value = mounted.poster
     unregister = registerPauseHandler(controls.pause)
@@ -181,11 +202,14 @@ export function usePlayer(
     adSetup.dispose()
     adapter?.dispose()
     adapter = null
+    state.mediaElement.value = null
   })
 
   return {
     ...state,
     ...controls,
+    setClipRange,
+    setControls,
     fire,
     retry,
     isBuffering: buffering.isBuffering,

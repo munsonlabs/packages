@@ -1,5 +1,14 @@
 # @munsonlabs/video-player
 
+## 0.3.5
+
+### Patch Changes
+
+- 3b1e462: `playInViewRatio` sets how much of a `playInView` player must be on screen before it plays (0.5 by default). `1` waits for all of it, and a player too big to fit plays once it fills as much of the screen as it can. That also applies at the default, so a player more than twice the screen's height now plays in view instead of never.
+- c25d3f2: A `playInView` player no longer starts again when scrolled back into view after the viewer paused it or it finished.
+- ce6445b: Vimeo caption tracks and the caption files Brightcove and JW Player list beside a stream now appear in the player's captions menu.
+- 74444a7: `setClipRange()` highlights part of the video and can pause or loop at its end. Opt-in deep links like `#ml-t=42,52` open the player at that moment. `useResolvedPlayer()` and `setControls()` help tools built on top of the player.
+
 ## 0.3.4
 
 ### Patch Changes

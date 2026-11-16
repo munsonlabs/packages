@@ -4,6 +4,7 @@ import { WIN_VIDEO_SELECT, DEFAULT_ASPECT_RATIO } from '@/constants'
 import { dispatchStageEvent } from '@/ui/stage/useStageBus'
 import { stageState } from '@/registries/stageRegistry'
 import { observeViewportPriority } from '@/ui/player/viewport/viewportObserver'
+import { resolvePlayRatio } from '@/ui/player/viewport/playRatio'
 import type { VideoEntry } from '@/types/player'
 import { parseAspectRatio } from '@/utils/aspectRatio'
 import { resolveGestureMuted } from '@/preferences/audioPreference'
@@ -55,7 +56,7 @@ onMounted(() => {
   if (props.autoStage) dispatchSelect(false)
 
   if (props.playInView && shellEl.value) {
-    unobserve = observeViewportPriority(shellEl.value, () => emit('enter-view'))
+    unobserve = observeViewportPriority(shellEl.value, () => emit('enter-view'), resolvePlayRatio(props.playInViewRatio))
   }
 })
 

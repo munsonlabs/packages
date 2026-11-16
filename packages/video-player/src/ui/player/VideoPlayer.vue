@@ -33,6 +33,7 @@ const props = withDefaults(defineProps<PlayerProps>(), {
   disableKeyboardShortcuts: false,
   controls: true,
   playInView: false,
+  playInViewRatio: undefined,
   loop: false,
   preload: undefined,
   captionLine: undefined,

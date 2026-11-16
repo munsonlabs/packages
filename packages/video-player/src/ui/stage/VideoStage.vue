@@ -64,7 +64,7 @@ watch([minified, playerMounted, current], ([nextMinified], [prevMinified]) => {
 
 let intersectionObserver: IntersectionObserver | null = null
 
-/** Own observer at 0.98, not the shared [0.1, 0.5] registry: the inner player's auto-pause (0.1) would fire before a later threshold could pin it. */
+/** Own observer at 0.98, not the shared one at 0.1: the inner player's auto-pause (0.1) would fire before a later threshold could pin it. */
 function setupObservers(): void {
   intersectionObserver?.disconnect()
   if (!wrapperEl.value) return

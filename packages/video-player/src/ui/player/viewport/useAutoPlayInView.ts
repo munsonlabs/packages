@@ -12,6 +12,7 @@ export function useAutoPlayInView(
   isFullscreenPending: Ref<boolean>,
   getExplicitMuted: () => boolean | undefined,
   shouldStayPaused: () => boolean = () => false,
+  ratio?: number,
 ): void {
   let unobserve: (() => void) | null = null
 
@@ -19,12 +20,16 @@ export function useAutoPlayInView(
     const shell = videoEl.value && getShellEl(videoEl.value)
     if (!shell) return
 
-    unobserve = observeViewportPriority(shell, () => {
-      const player = getPlayer()
-      if (!player || !player.paused() || isFullscreen.value || isFullscreenPending.value || shouldStayPaused()) return
-      player.setMuted(resolveInitialMuted(getExplicitMuted(), true))
-      void player.play().catch(() => {})
-    })
+    unobserve = observeViewportPriority(
+      shell,
+      () => {
+        const player = getPlayer()
+        if (!player || !player.paused() || isFullscreen.value || isFullscreenPending.value || shouldStayPaused()) return
+        player.setMuted(resolveInitialMuted(getExplicitMuted(), true))
+        void player.play().catch(() => {})
+      },
+      ratio,
+    )
   })
 
   onBeforeUnmount(() => unobserve?.())

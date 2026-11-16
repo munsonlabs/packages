@@ -11,6 +11,7 @@ import { useDeepLink } from '@/ui/player/features/useDeepLink'
 import { useClipRange, type UseClipRangeReturn } from '@/ui/player/features/useClipRange'
 import { useAutoPauseOffscreen } from '@/ui/player/viewport/useAutoPauseOffscreen'
 import { useAutoPlayInView } from '@/ui/player/viewport/useAutoPlayInView'
+import { resolvePlayRatio } from '@/ui/player/viewport/playRatio'
 import { createPlayerControls, type PlayerControls } from '@/ui/player/createPlayerControls'
 import { createPlayerEvents } from '@/ui/player/createPlayerEvents'
 import { createAdSetup } from '@/ui/player/features/createAdSetup'
@@ -175,6 +176,7 @@ export function usePlayer(
       fullscreen.isFullscreenPending,
       () => props.muted,
       () => state.isPausedByViewer.value || state.hasEnded.value,
+      resolvePlayRatio(props.playInViewRatio),
     )
   }
 

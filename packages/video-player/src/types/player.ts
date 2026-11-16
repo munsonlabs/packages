@@ -102,8 +102,13 @@ export interface PlayerProps {
   disableTapCapture?: boolean
   disableKeyboardShortcuts?: boolean
   controls?: boolean
-  /** Play when at least half visible, pause when not. Implies muted unless `muted` is set. */
+  /** Play when at least half visible (see `playInViewRatio`), pause when not. Implies muted unless `muted` is set. */
   playInView?: boolean
+  /**
+   * How much of a `playInView` player (above 0, up to 1) must be on screen before it plays; 0.5 by default.
+   * A player too big to fit on screen plays once it fills as much as it can, so `1` means "all of it".
+   */
+  playInViewRatio?: number
   pin?: PinCorner
   loop?: boolean
   /** Native `<video preload>`. `'none'` also holds hls.js back until first play. Embeds ignore it. */

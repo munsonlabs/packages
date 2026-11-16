@@ -15,8 +15,8 @@ afterEach(() => {
 })
 
 /** A playInView player at the top of a page tall enough to scroll it fully out of view. */
-async function mountInView(): Promise<MountedPlayer> {
-  const mounted = await mountPlayer(catalogue.playInView, { muted: true })
+async function mountInView(playInViewRatio?: number): Promise<MountedPlayer> {
+  const mounted = await mountPlayer(catalogue.playInView, { muted: true, playInViewRatio })
   await mounted.sink.next('play')
   spacer = document.body.appendChild(document.createElement('div'))
   spacer.style.height = `${innerHeight * 3}px`
@@ -35,14 +35,25 @@ function leftView(el: Element): Promise<void> {
   })
 }
 
-async function scrollAwayAndBack({ screen, player, sink }: MountedPlayer): Promise<void> {
+async function scrollAway({ screen, player, sink }: MountedPlayer): Promise<void> {
   const pauses = sink.of('pause').length
   const shell = screen.container.querySelector('.player__shell')!
   scrollTo(0, document.body.scrollHeight)
   await leftView(shell)
   if (player.isPlaying) await sink.next('pause', pauses)
-  scrollTo(0, 0)
+}
+
+/** Scrolls so that `ratio` of the shell (which sits at the top of the page) is on screen, and waits. */
+async function scrollToShowing({ screen }: MountedPlayer, ratio: number): Promise<void> {
+  const shell = screen.container.querySelector('.player__shell')!
+  const { top, height } = shell.getBoundingClientRect()
+  scrollTo(0, scrollY + top + height * (1 - ratio))
   await new Promise((r) => setTimeout(r, SETTLE_MS))
+}
+
+async function scrollAwayAndBack(mounted: MountedPlayer): Promise<void> {
+  await scrollAway(mounted)
+  await scrollToShowing(mounted, 1)
 }
 
 describe('playInView', () => {
@@ -76,5 +87,16 @@ describe('playInView', () => {
     expect(mounted.player.hasEnded).toBe(true)
     expect(mounted.player.isPlaying).toBe(false)
     expect(mounted.sink.of('play')).toHaveLength(1)
+  })
+
+  it('waits for more of the player when given a higher playInViewRatio', async () => {
+    const mounted = await mountInView(1)
+    await scrollAway(mounted)
+
+    await scrollToShowing(mounted, 0.7)
+    expect(mounted.player.isPlaying).toBe(false)
+
+    await scrollToShowing(mounted, 1)
+    await waitFor(() => mounted.player.isPlaying, 'playback to resume once all of it is in view')
   })
 })
